@@ -811,6 +811,100 @@ Eq(16, marchSquad!.X, "orbital picker squad spawns at player X");
 marchSim.World.Advance();
 Eq(17, marchSquad.X, "orbital picker squad marches toward rally on tick");
 
+// ---- Slice 3 Step 1: save-format completion (0.17.0) ----
+// Core health survives a save/load round-trip, including destroyed.
+var coreWorld = new WorldZone(42);
+coreWorld.DamageCore(40);
+Eq(60, SaveSystem.LoadZone(SaveSystem.SaveZone(coreWorld)).CoreHealth, "save/load core health survives");
+var deadCoreWorld = new WorldZone(42);
+deadCoreWorld.DamageCore(100);
+Eq(0, SaveSystem.LoadZone(SaveSystem.SaveZone(deadCoreWorld)).CoreHealth, "save/load destroyed core stays destroyed, not healed");
+// An old save (no CoreHealth field) still loads, with a fresh 100 core.
+var coreJson = SaveSystem.SaveZone(coreWorld);
+var coreOldJson = coreJson[..coreJson.LastIndexOf(",\"CoreHealth\":", StringComparison.Ordinal)] + "}";
+Eq(100, SaveSystem.LoadZone(coreOldJson).CoreHealth, "old save without core health loads fresh 100 core");
+// Out-of-range core values in a save are clamped, never fatal.
+Eq(100, SaveSystem.LoadZone(coreJson.Replace("\"CoreHealth\":60", "\"CoreHealth\":999")).CoreHealth, "save/load core health above 100 clamps to 100");
+Eq(0, SaveSystem.LoadZone(coreJson.Replace("\"CoreHealth\":60", "\"CoreHealth\":-20")).CoreHealth, "save/load core health below 0 clamps to 0");
+// World-level skill effects restore through the SaveZone overload:
+// the shield cap and workstation regen arrive with the world, so a
+// skilled save's shields are not clamped to the base cap on load.
+var worldSkillBuild = new SkillBuild();
+Check(worldSkillBuild.Allocate("S1") && worldSkillBuild.Allocate("S2") && worldSkillBuild.Allocate("N1") && worldSkillBuild.Allocate("S3") && worldSkillBuild.Allocate("N2") && worldSkillBuild.Allocate("K1"), "save-format test full cluster allocates");
+var worldSkillLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(new WorldZone(42), worldSkillBuild, null));
+Eq(105, worldSkillLoaded.Player.MaxShields, "save/load world-level skill shield cap restored");
+Eq(10, worldSkillLoaded.WorkstationRegenPerTick, "save/load world-level skill workstation regen restored");
+// Full Simulation round-trip: loot weapon (one shot fired, so the
+// mag is 29 not 30), full skill build, shields above the base cap,
+// and a damaged core all survive into a fresh Simulation.
+var saveLoot = LootGenerator.Generate(0, 1);
+var saveBuild = new SkillBuild();
+Check(saveBuild.Allocate("S1") && saveBuild.Allocate("S2") && saveBuild.Allocate("N1") && saveBuild.Allocate("S3") && saveBuild.Allocate("N2") && saveBuild.Allocate("K1"), "save-format simulation full cluster allocates");
+var saveSim = new Simulation(42, saveLoot, saveBuild);
+saveSim.World.Player.Restore(100, 100);
+saveSim.World.DamageCore(35);
+Check(saveSim.Weapon.Fire(), "save-format test fires one shot before saving");
+var fullJson = saveSim.SaveToJson();
+var loadSim = new Simulation(99);
+Check(loadSim.LoadFromJson(fullJson), "simulation save/load round-trip succeeds");
+Eq("Titan Long Pulse Rifle", loadSim.Weapon.Name, "save/load weapon name survives");
+Eq(20, loadSim.Weapon.Damage, "save/load weapon damage survives");
+Eq(30, loadSim.Weapon.MagCapacity, "save/load weapon mag capacity survives");
+Eq(29, loadSim.Weapon.Mag, "save/load weapon mag survives with no free refill");
+Eq(120, loadSim.Weapon.Reserve, "save/load weapon reserve survives");
+Eq(24, loadSim.EffectiveDamage, "save/load skill build restores damage");
+Eq(105, loadSim.World.Player.MaxShields, "save/load skill build restores shield cap");
+Eq(100, loadSim.World.Player.Shields, "save/load shields above base cap survive (cap raised before restore)");
+Check(Math.Abs(loadSim.Fps.EffectiveSpeed - 6.3f) < 0.001f, "save/load skill build restores move speed");
+Eq(65, loadSim.World.CoreHealth, "save/load core health survives via simulation save");
+// An empty build (a respec) persists as an empty build, not as
+// "no build": loading it returns to base values, not to the
+// previous build.
+var respecSim = new Simulation(42, saveLoot, saveBuild);
+respecSim.ApplySkills(new SkillBuild());
+var respecLoadedSim = new Simulation(99);
+Check(respecLoadedSim.LoadFromJson(respecSim.SaveToJson()), "save/load respec round-trip succeeds");
+Eq(85, respecLoadedSim.World.Player.MaxShields, "save/load empty build respecs to base cap");
+Eq(20, respecLoadedSim.EffectiveDamage, "save/load empty build restores base damage");
+Check(respecLoadedSim.AppliedSkills != null && respecLoadedSim.AppliedSkills.Allocated.Count == 0, "save/load empty build is present but empty");
+// The default Pulse Rifle persists too, not just loot weapons.
+var defaultLoadedSim = new Simulation(99);
+Check(defaultLoadedSim.LoadFromJson(new Simulation(42).SaveToJson()), "save/load default weapon round-trip succeeds");
+Eq("Pulse Rifle", defaultLoadedSim.Weapon.Name, "save/load default weapon name survives");
+Eq(42, defaultLoadedSim.Weapon.MagCapacity, "save/load default weapon mag capacity survives");
+// An old save (core, build, and weapon fields stripped) loaded
+// into a skilled, loot-equipped Simulation keeps the current
+// weapon and build — in-place semantics — while its core, having
+// no saved value, loads fresh at 100, as before.
+var keepSim = new Simulation(42, saveLoot, saveBuild);
+keepSim.World.DamageCore(50);
+var oldFullJson = fullJson[..fullJson.LastIndexOf(",\"CoreHealth\":", StringComparison.Ordinal)] + "}";
+Check(keepSim.LoadFromJson(oldFullJson), "old save loads into skilled simulation");
+Eq("Titan Long Pulse Rifle", keepSim.Weapon.Name, "old save keeps current weapon");
+Eq(24, keepSim.EffectiveDamage, "old save keeps current skill build");
+Eq(100, keepSim.World.CoreHealth, "old save loads fresh 100 core");
+// A malformed skill string in an otherwise valid save is skipped,
+// never fatal: the load succeeds, the weapon and core still
+// restore, and no build is applied.
+int badSkillStart = fullJson.IndexOf("\"SkillBuild\":\"", StringComparison.Ordinal) + "\"SkillBuild\":\"".Length;
+int badSkillEnd = fullJson.IndexOf("\"", badSkillStart);
+var badSkillJson = fullJson[..badSkillStart] + "!!!not-base64!!!" + fullJson[badSkillEnd..];
+var badSkillSim = new Simulation(99);
+Check(badSkillSim.LoadFromJson(badSkillJson), "malformed skill string still loads");
+Eq("Titan Long Pulse Rifle", badSkillSim.Weapon.Name, "malformed skill string keeps weapon restore");
+Check(badSkillSim.AppliedSkills == null, "malformed skill string restores no build");
+Eq(65, badSkillSim.World.CoreHealth, "malformed skill string keeps core restore");
+// A partial weapon (mag and reserve stripped) is skipped, never
+// fatal, while the skill build in the same save still applies.
+var partialWeaponJson = fullJson[..fullJson.LastIndexOf(",\"WeaponMag\":", StringComparison.Ordinal)] + "}";
+var partialSim = new Simulation(99);
+Check(partialSim.LoadFromJson(partialWeaponJson), "partial weapon still loads");
+Eq("Pulse Rifle", partialSim.Weapon.Name, "partial weapon keeps current weapon");
+// The build still applies to the kept weapon: Pulse Rifle 10 damage
+// with the cluster's +20% is 12, which proves the skill restore
+// happened even though the weapon restore was skipped.
+Eq(12, partialSim.EffectiveDamage, "partial weapon keeps skill restore");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

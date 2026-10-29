@@ -23,21 +23,24 @@ public class GameManager : MonoBehaviour
         Simulation.World.SpawnWave(3);
     }
 
+    // Full save (0.17.0): Simulation.SaveToJson carries the world,
+    // the applied skill build, and the equipped weapon, so a Unity
+    // save no longer drops them the way the old world-only save did.
     public string SaveToJson()
     {
         if (Simulation == null) return "";
-        return SaveSystem.SaveZone(Simulation.World);
+        return Simulation.SaveToJson();
     }
 
-    // In-place restore (0.14.0): Simulation.LoadFromJson swaps the
+    // In-place restore (0.14.0, extended 0.17.0): Simulation.LoadFromJson swaps the
     // world inside the same Simulation object and teleports its FPS
     // controller to the saved player position, so this GameManager
     // and the MeshRenderer keep working with no re-wiring. On
     // success the mesh is refreshed from the restored chunk; on
     // failure the current world is left untouched and a warning is
-    // logged instead of a half-loaded state. The equipped weapon is
-    // kept (the save format carries no weapon) and an applied skill
-    // build is re-applied to the restored world by core.
+    // logged instead of a half-loaded state. A skill build or weapon
+    // carried by the save replaces the current ones; an old save
+    // carrying neither keeps them, as before.
     public void LoadFromJson(string json)
     {
         if (Simulation == null) return;

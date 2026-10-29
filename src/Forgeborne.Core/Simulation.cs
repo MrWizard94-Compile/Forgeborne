@@ -74,11 +74,13 @@ public sealed class Simulation
     /// teleported to the loaded player's grid position (fractional
     /// feet position is not saved, so it restarts at the cell corner).
     /// Session counters reset, because they describe the pre-load
-    /// session; the equipped weapon is kept, because the save format
-    /// carries no weapon; an applied skill build is re-applied to the
-    /// new world, so caps, speed, and regen stay coherent instead of
-    /// silently reverting to base values. Returns false for null,
-    /// leaving everything untouched.
+    /// session; the equipped weapon and skill build are kept by this
+    /// world-only path, because a WorldZone carries neither —
+    /// LoadFromJson (which uses LoadSave) is the path that restores
+    /// them from a full save. An applied skill build is re-applied
+    /// to the new world, so caps, speed, and regen stay coherent
+    /// instead of silently reverting to base values. Returns false
+    /// for null, leaving everything untouched.
     /// </summary>
     public bool RestoreWorld(WorldZone? loaded)
     {
@@ -93,20 +95,32 @@ public sealed class Simulation
         return true;
     }
 
+    /// <summary>Full save: world, applied skill build, and equipped weapon, via SaveSystem.SaveZone. World-only callers should keep using SaveSystem.SaveZone directly.</summary>
+    public string SaveToJson() => SaveSystem.SaveZone(World, AppliedSkills, Weapon);
+
     /// <summary>
-    /// Load a save JSON into this Simulation via RestoreWorld.
+    /// Load a full save JSON into this Simulation via RestoreWorld.
     /// Fail-closed: null, empty, or malformed JSON returns false and
     /// leaves the current world untouched (the new world is fully
-    /// parsed before any swap happens). Save-format limits are
-    /// inherited: the core objective's health is not in the save
-    /// format, so a loaded world starts with a fresh 100-HP core.
+    /// parsed before any swap happens). A save that carries a skill
+    /// build replaces the current build; a save that carries a weapon
+    /// replaces the current weapon. A save that carries neither (an
+    /// old save) keeps the current build and weapon, as RestoreWorld
+    /// did before — and its core loads at 100 HP, as before, because
+    /// the old format had no core field. A malformed skill string or
+    /// a partial weapon in an otherwise valid save is skipped, never
+    /// fatal, and leaves the current build / weapon in place.
     /// </summary>
     public bool LoadFromJson(string? json)
     {
         if (string.IsNullOrWhiteSpace(json)) return false;
         try
         {
-            return RestoreWorld(SaveSystem.LoadZone(json));
+            var loaded = SaveSystem.LoadSave(json);
+            if (!RestoreWorld(loaded.World)) return false;
+            if (loaded.Skills != null) ApplySkills(loaded.Skills);
+            if (loaded.Weapon != null) Weapon = loaded.Weapon;
+            return true;
         }
         catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException or ArgumentException)
         {

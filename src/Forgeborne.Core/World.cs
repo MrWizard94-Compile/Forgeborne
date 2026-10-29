@@ -65,6 +65,8 @@ public sealed class WorldZone
     public int CoreZ { get; } = 28;
     public int CoreHealth { get; private set; } = 100;
     public void DamageCore(int amount) { if (amount > 0) CoreHealth = Math.Max(0, CoreHealth - amount); }
+    /// <summary>Restore the core's health from a save file, clamped to 0..100. Used only by SaveSystem, so a damaged core stays damaged across a load instead of silently healing to 100.</summary>
+    public void RestoreCoreHealth(int health) { CoreHealth = Math.Clamp(health, 0, 100); }
     public void RestoreTick(int tick) { Tick = Math.Max(0, tick); }
 
     public WorldZone(int seed)

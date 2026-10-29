@@ -27,6 +27,14 @@ public sealed class Weapon
         return new Weapon(generated.Name, generated.Damage, generated.MagSize);
     }
 
+    /// <summary>Restore a live weapon from saved state (Slice 3 save-format completion): the same clamps as the constructor, plus the in-progress mag, so a half-empty mag survives a load instead of refilling for free. Used only by SaveSystem.</summary>
+    public static Weapon FromSaved(string name, int damage, int magCapacity, int mag, int reserve)
+    {
+        var weapon = new Weapon(name, damage, magCapacity, reserve);
+        weapon.Mag = Math.Clamp(mag, 0, weapon.MagCapacity);
+        return weapon;
+    }
+
     public bool Fire()
     {
         if (Mag <= 0) return false;

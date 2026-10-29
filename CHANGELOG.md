@@ -1,5 +1,62 @@
 # Forgeborne — Changelog
 
+## 0.17.0 — 2026-10-29 — Slice 3 Step 1: save-format completion
+
+- Closes the first Slice 3 debt: a load no longer silently
+  resets what the game promises. The save format now carries,
+  in addition to everything it carried before: the core
+  objective's health, the applied skill build, and the
+  equipped weapon — the weapon question the 0.16.0 scope left
+  open is decided here, in DECISIONS.md, as YES, it joins the
+  format. A damaged core stays damaged across a load (a
+  destroyed core stays destroyed); a fresh Simulation loading
+  a save restores the build instead of starting at base values
+  until someone re-applies it; a loot weapon, including its
+  in-progress mag, survives instead of reverting to the Pulse
+  Rifle.
+- How it is built, without breaking old saves: new fields are
+  nullable and declared last in `SaveData` (`CoreHealth`,
+  `SkillBuild` as the existing Base64 encoding, and five
+  weapon fields — name, damage, mag capacity, current mag,
+  reserve — all together or none), and null fields are omitted
+  when writing, so a world-only save grows only by the
+  CoreHealth field. `SaveSystem.LoadSave` returns the world
+  plus the build and weapon, if any; `LoadZone` still returns
+  just the world for existing callers. `Simulation.SaveToJson`
+  is the full save (world + build + weapon) and
+  `Simulation.LoadFromJson` restores all three, replacing the
+  current build and weapon when the save carries them and
+  keeping them when it does not (an old save). `WorldZone.
+  RestoreCoreHealth` clamps to 0..100 and `Weapon.FromSaved`
+  restores a live weapon with its current mag, under the
+  constructor's clamps. The skill build is decoded before the
+  player is restored, so the raised shield cap is in place
+  before shields are restored — a skilled save with 100
+  shields no longer clamps to the base 85 cap on load.
+  Malformed skill strings and partial weapons are skipped,
+  never fatal, matching the 0.10.0 squad rule; out-of-range
+  core values clamp to 0..100. `GameManager.SaveToJson` now
+  uses the full Simulation save instead of the world-only
+  save, so Unity saves stop dropping the build and weapon too
+  (Unity compile itself is still unverified headlessly).
+- Demo: a Slice 3 Step 1 scenario after the Slice 2 scenario —
+  a skilled, loot-equipped Simulation fires twice at its core
+  from near it (FPS teleported there as the headless stand-in
+  for walking), then saves and loads into a fresh Simulation.
+  Evidence: core 42 HP, Titan Long Pulse Rifle 28/120,
+  effective damage 24, shields 100/105, before and after the
+  load alike; full save JSON 44,016 chars.
+- Tests: **381 passed, 0 failed** (was 342; +39). One test
+  failure during the run was a test-arithmetic error, not a
+  code bug: with the weapon restore skipped, the fresh
+  Simulation keeps the 10-damage Pulse Rifle, so the restored
+  build gives 12, not the loot weapon's 24 — the expectation
+  was corrected to 12. Demo otherwise unchanged: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars (was 43,864;
+  the +17 is the CoreHealth field); Slice 2 save 43,908 chars
+  (was 43,891; same +17). Next in order: Slice 3 Step 2,
+  squad economy (cost and cap).
+
 ## 0.16.0 — 2026-10-29 — Slice 3 scope (documentation only)
 
 - Added `docs/slice-03-scope.md`: Slice 3 is scoped, as its

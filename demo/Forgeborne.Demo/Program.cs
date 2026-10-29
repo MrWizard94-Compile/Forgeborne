@@ -58,3 +58,27 @@ for (int tick = 0; tick < 20; tick++)
 var save2 = SaveSystem.SaveZone(sim2.World);
 var loaded2 = SaveSystem.LoadZone(save2);
 Console.WriteLine($"Slice 2 done: gathered {sim2.BlocksGathered}, built {sim2.BlocksBuilt}, killed {sim2.EnemiesKilled}, kinetic gathered {sim2.World.KineticBlocksGathered}, player dead: {sim2.IsPlayerDead}, squads saved+loaded: {loaded2.Squads.Count}, save JSON length: {save2.Length} chars");
+
+// Slice 3 Step 1 scenario: save-format completion. A skilled,
+// loot-equipped Simulation damages its core, then saves with the
+// full format and loads into a fresh Simulation — proving the
+// core health, the skill build, the shields above the base cap,
+// and the equipped weapon (with its in-progress mag) all survive.
+// The FPS controller is teleported near the core as the headless
+// stand-in for walking there; FireAtCore then does real damage.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 3 Step 1 scenario — core health, skill build, and weapon survive a save/load round-trip");
+var loot3 = LootGenerator.Generate(0, 1);
+var skillBuild3 = new SkillBuild();
+skillBuild3.Allocate("S1"); skillBuild3.Allocate("S2"); skillBuild3.Allocate("N1");
+skillBuild3.Allocate("S3"); skillBuild3.Allocate("N2"); skillBuild3.Allocate("K1");
+var sim3 = new Simulation(42, loot3, skillBuild3);
+sim3.World.Player.Restore(100, 100);
+sim3.Fps.Teleport(24, 5, 24);
+sim3.FireAtCore();
+sim3.FireAtCore();
+Console.WriteLine($"Before save: core {sim3.World.CoreHealth} HP, weapon {sim3.Weapon.Name} {sim3.Weapon.Mag}/{sim3.Weapon.Reserve}, effective damage {sim3.EffectiveDamage}, shields {sim3.World.Player.Shields}/{sim3.World.Player.MaxShields}");
+var save3 = sim3.SaveToJson();
+var sim4 = new Simulation(99);
+Console.WriteLine($"Load: {sim4.LoadFromJson(save3)}");
+Console.WriteLine($"After load: core {sim4.World.CoreHealth} HP, weapon {sim4.Weapon.Name} {sim4.Weapon.Mag}/{sim4.Weapon.Reserve}, effective damage {sim4.EffectiveDamage}, shields {sim4.World.Player.Shields}/{sim4.World.Player.MaxShields}, save JSON length: {save3.Length} chars");

@@ -523,6 +523,48 @@ look inevitable.
 - Next, in order: Slice 3 Step 1, save-format completion
   (core health + skill build, weapon decided there).
 
+## 2026-10-29 — Slice 3 Step 1: save-format completion (0.17.0, under delegation)
+
+- Decision, closing the question the 0.16.0 scope left open:
+  the equipped weapon JOINS the save format, with core health
+  and the applied skill build. The 0.14.0 rationale for leaving
+  it out (kept on in-place restore, dropped on a fresh load)
+  was defensible for a restore step, but it made a fresh load
+  silently downgrade the player — loot weapon lost, build
+  lost, core healed — which is exactly the debt Slice 3 exists
+  to pay. Persisting all three together is the coherent unit:
+  a load now restores the game that was saved, not a
+  base-values approximation of it. The cost is a format change,
+  contained by the rules below, not a new system.
+- Design choices, all reversible: new fields are nullable and
+  declared last, so old saves (fields absent) still load —
+  core at 100, no build, no weapon, and the loading
+  Simulation keeps its current build and weapon, preserving
+  the 0.14.0 in-place semantics; a present core value of 0
+  means destroyed, not missing, which is why the field is
+  nullable instead of a plain int defaulting to 0; null fields
+  are omitted when writing, so a world-only save grows only
+  by the CoreHealth field; the skill build is decoded before
+  the player is restored, so the raised shield cap is in place
+  before shields are restored — otherwise a skilled save with
+  100 shields would clamp to the base 85 cap and the build
+  would restore the cap without the shields; malformed skill
+  strings and partial weapons are skipped, never fatal,
+  matching the 0.10.0 squad rule; the weapon is saved as live
+  state (name, damage, mag capacity, current mag, reserve),
+  not as a generator seed, because a default Pulse Rifle has
+  no generated equivalent and a half-empty mag must not
+  refill for free; an explicitly saved empty build is a respec
+  to base values, distinct from no build at all.
+- Deliberately NOT in this step: any squad cost or cap (that
+  is Step 2's decision with its own evidence), any new
+  doctrine, kind, automation tier, or skill node, any balance
+  change, and any claim about Windows Unity verification —
+  the GameManager save path now uses the full format, but
+  its Unity compile is still unverified headlessly, as before.
+- Next, in order: Slice 3 Step 2, squad economy (cost and
+  cap, pricing basis decided there).
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
