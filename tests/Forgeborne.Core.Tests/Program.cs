@@ -736,6 +736,81 @@ var chunkSim2 = new Simulation(43);
 Check(chunkSim2.LoadFromJson(chunkJson), "load from json round-trip succeeds");
 Check(chunkSim.World.Chunk.ToBytes().SequenceEqual(chunkSim2.World.Chunk.ToBytes()), "load from json round-trip keeps the chunk");
 
+// ---- Slice 2 follow-up: doctrine menu / rally picker (0.15.0) ----
+// Defaults: the only current doctrine/kind pair, no pick in progress.
+var pickSim = new Simulation(42);
+Eq(TacticalDoctrine.HoldGround, pickSim.OrbitalCommand.Doctrine, "orbital picker defaults to HoldGround");
+Eq(SquadKind.Vanguard, pickSim.OrbitalCommand.Kind, "orbital picker defaults to Vanguard");
+Check(!pickSim.OrbitalCommand.IsPicking, "orbital picker starts idle");
+Check(!pickSim.OrbitalCommand.HasRally, "orbital picker starts with no rally");
+// Confirm with no pick deploys nothing and changes nothing.
+Check(pickSim.ConfirmOrbitalDeploy() == null, "orbital picker confirm with no pick deploys nothing");
+Eq(0, pickSim.World.Squads.Count, "orbital picker confirm with no pick adds no squad");
+// SetRally outside picking fails closed.
+Check(!pickSim.SetOrbitalRally(20, 5, 16), "orbital picker rally outside picking rejected");
+Check(!pickSim.OrbitalCommand.HasRally, "orbital picker rally outside picking leaves no rally");
+// Pick, rally, confirm: one squad, selected doctrine/kind, at the rally.
+pickSim.BeginOrbitalPick();
+Check(pickSim.OrbitalCommand.IsPicking, "orbital picker begin opens picking");
+Check(pickSim.SetOrbitalRally(20, 5, 16), "orbital picker rally while picking accepted");
+Check(pickSim.OrbitalCommand.HasRally, "orbital picker has rally after set");
+var picked = pickSim.ConfirmOrbitalDeploy();
+Check(picked != null, "orbital picker confirm deploys a squad");
+Eq(1, pickSim.World.Squads.Count, "orbital picker confirm adds exactly one squad");
+Eq(20, picked!.RallyX, "orbital picker squad rally X");
+Eq(TacticalDoctrine.HoldGround, picked.Doctrine, "orbital picker squad doctrine");
+Eq(SquadKind.Vanguard, picked.Kind, "orbital picker squad kind");
+Check(!pickSim.OrbitalCommand.IsPicking, "orbital picker closes after confirm");
+Check(!pickSim.OrbitalCommand.HasRally, "orbital picker clears rally after confirm");
+// A second confirm without a new pick deploys nothing.
+Check(pickSim.ConfirmOrbitalDeploy() == null, "orbital picker second confirm without pick deploys nothing");
+Eq(1, pickSim.World.Squads.Count, "orbital picker second confirm adds no squad");
+// Out-of-bounds rally rejected; the picker stays open for a re-pick.
+var oobSim = new Simulation(42);
+oobSim.BeginOrbitalPick();
+Check(!oobSim.SetOrbitalRally(99, 5, 16), "orbital picker out-of-bounds rally rejected");
+Check(!oobSim.OrbitalCommand.HasRally, "orbital picker rejected rally leaves no rally");
+Check(oobSim.ConfirmOrbitalDeploy() == null, "orbital picker confirm with no rally deploys nothing");
+Check(oobSim.OrbitalCommand.IsPicking, "orbital picker stays open after failed confirm");
+Eq(0, oobSim.World.Squads.Count, "orbital picker failed confirm adds no squad");
+// Re-picking a rally overwrites the earlier pending point.
+Check(oobSim.SetOrbitalRally(18, 5, 16), "orbital picker first rally accepted");
+Check(oobSim.SetOrbitalRally(22, 5, 16), "orbital picker re-pick accepted");
+var repicked = oobSim.ConfirmOrbitalDeploy();
+Eq(22, repicked!.RallyX, "orbital picker confirm uses the latest rally");
+// BeginPick clears a stale pending rally, so Enter cannot deploy it.
+var staleSim = new Simulation(42);
+staleSim.BeginOrbitalPick();
+Check(staleSim.SetOrbitalRally(20, 5, 16), "orbital picker stale rally set");
+staleSim.BeginOrbitalPick();
+Check(!staleSim.OrbitalCommand.HasRally, "orbital picker begin clears stale rally");
+Check(staleSim.ConfirmOrbitalDeploy() == null, "orbital picker confirm after stale clear deploys nothing");
+// Cancel abandons the pick with no squad.
+var cancelSim = new Simulation(42);
+cancelSim.BeginOrbitalPick();
+Check(cancelSim.SetOrbitalRally(20, 5, 16), "orbital picker cancel-test rally set");
+cancelSim.CancelOrbitalPick();
+Check(!cancelSim.OrbitalCommand.IsPicking, "orbital picker cancel closes picking");
+Check(!cancelSim.OrbitalCommand.HasRally, "orbital picker cancel drops rally");
+Check(cancelSim.ConfirmOrbitalDeploy() == null, "orbital picker confirm after cancel deploys nothing");
+Eq(0, cancelSim.World.Squads.Count, "orbital picker cancel adds no squad");
+// Unknown doctrine/kind selections are rejected, selection unchanged.
+var selSim = new Simulation(42);
+Check(!selSim.OrbitalCommand.SelectDoctrine((TacticalDoctrine)99), "orbital picker unknown doctrine rejected");
+Eq(TacticalDoctrine.HoldGround, selSim.OrbitalCommand.Doctrine, "orbital picker doctrine unchanged after rejection");
+Check(!selSim.OrbitalCommand.SelectKind((SquadKind)99), "orbital picker unknown kind rejected");
+Eq(SquadKind.Vanguard, selSim.OrbitalCommand.Kind, "orbital picker kind unchanged after rejection");
+Check(selSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround), "orbital picker valid doctrine accepted");
+Check(selSim.OrbitalCommand.SelectKind(SquadKind.Vanguard), "orbital picker valid kind accepted");
+// A picked squad actually marches to its rally on later ticks.
+var marchSim = new Simulation(42);
+marchSim.BeginOrbitalPick();
+Check(marchSim.SetOrbitalRally(20, 5, 16), "orbital picker march rally set");
+var marchSquad = marchSim.ConfirmOrbitalDeploy();
+Eq(16, marchSquad!.X, "orbital picker squad spawns at player X");
+marchSim.World.Advance();
+Eq(17, marchSquad.X, "orbital picker squad marches toward rally on tick");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

@@ -181,9 +181,30 @@ public sealed class Simulation
     /// spawns at the player's grid position and moves to the rally
     /// on subsequent ticks; see WorldZone.DeploySquad for the
     /// rejection rules. Returns null if the rally is rejected.
+    /// This direct path remains for headless use and the demo;
+    /// the Unity adapter now goes through OrbitalCommand instead,
+    /// so a deploy in play is always a picked rally, not a key
+    /// that fires a squad at the player's feet.
     /// </summary>
     public TacticalSquad? DeployOrbitalSquad(int rallyX, int rallyY, int rallyZ) =>
         World.DeploySquad(rallyX, rallyY, rallyZ);
+
+    /// <summary>
+    /// Doctrine menu / rally picker state (0.15.0): the selected
+    /// doctrine/kind and the pending rally, if any. The Unity
+    /// adapter binds O / crosshair / Enter / Esc to this object;
+    /// it holds no rendering and no second copy of squad rules.
+    /// </summary>
+    public OrbitalCommand OrbitalCommand { get; } = new();
+
+    /// <summary>Open the rally picker (clears any stale pending rally).</summary>
+    public void BeginOrbitalPick() => OrbitalCommand.BeginPick();
+    /// <summary>Update the pending rally while picking; false outside picking or out of bounds.</summary>
+    public bool SetOrbitalRally(int x, int y, int z) => OrbitalCommand.SetRally(x, y, z);
+    /// <summary>Cancel the pick: no squad, pending rally dropped.</summary>
+    public void CancelOrbitalPick() => OrbitalCommand.CancelPick();
+    /// <summary>Deploy the picker's selected squad at its pending rally; null if not picking, no rally, or rejected.</summary>
+    public TacticalSquad? ConfirmOrbitalDeploy() => OrbitalCommand.Confirm(World);
 
     public BuildResult BuildKineticMillAhead()
     {

@@ -1,5 +1,55 @@
 # Forgeborne — Changelog
 
+## 0.15.0 — 2026-10-29 — Doctrine menu / rally picker replacing provisional O
+
+- Closes Slice 2 review follow-up (3): the provisional O key
+  from 0.11.0, which deployed a squad instantly at the player's
+  feet, is gone from the Unity adapter. Core now holds the menu
+  as `OrbitalCommand` in `src/Forgeborne.Core/Orbital.cs`:
+  selected doctrine/kind (HoldGround / Vanguard, the only pair
+  so far), `BeginPick` (opens the picker, clearing any stale
+  pending rally), `SetRally` (bounds-checked, picking-only),
+  `Confirm` (deploys one squad at the pending rally, then
+  closes and clears; no pick or no rally deploys nothing and
+  a failed deploy keeps the picker open for a re-pick),
+  `CancelPick` (no squad, rally dropped), and
+  `SelectDoctrine` / `SelectKind` (unknown values rejected,
+  selection unchanged). `Simulation` exposes the same flow as
+  `BeginOrbitalPick`, `SetOrbitalRally`, `CancelOrbitalPick`,
+  and `ConfirmOrbitalDeploy`; the direct `DeployOrbitalSquad`
+  path remains for headless use and the demo only.
+- Unity adapters stay thin: `FpsInputAdapter` binds O (open /
+  cancel picker), crosshair raycast while picking (forward,
+  30 m, voxel cell hit), Enter (deploy), Esc (cancel), and 1
+  (re-select HoldGround / Vanguard), and suppresses weapon fire
+  while picking so a click cannot shoot during rally aiming.
+  `OrbitalSquadDisplay` shows a picker prompt line first while
+  picking, then the squad list unchanged; with no squads it now
+  reads `ORBITAL: NO SQUADS (press O to pick a rally)`.
+  `VoxelMeshRenderer` gains a `MeshCollider` sharing the built
+  mesh, so the picker's raycast actually hits the chunk.
+  All three adapters are still NOT compiled headlessly — see
+  `docs/orbital-command.md` for the Windows verification
+  checklist, including the honest limit that the camera only
+  yaws in Slice 1 (no pitch yet), so the ray runs horizontally
+  from eye height and picks a rally by aiming at a face, not by
+  looking down at flat ground.
+- Deployment cost / cap decided, deferred: none yet, because
+  inventory holds blocks, not a currency, so a price invented
+  here would be a balance guess with no economy to price
+  against. Cost and cap belong to a Slice 3 economy step, not
+  to the picker. Repeated picker use still deploys repeatedly
+  — a known, documented gap, not a balance decision.
+- Updated `docs/orbital-view.md` (provisional-O section now says
+  replaced, wiring and checklist steps use the picker) and added
+  `docs/orbital-command.md` (menu flow, bindings, checklist).
+- Tests: **342 passed, 0 failed** (was 297; +45). Demo unchanged:
+  Slice 1 gathered 1, built 1, killed 2, save 43,864 chars;
+  Slice 2 save 43,891 chars. With this step, all three Slice 2
+  review follow-ups are complete (demo scenario, in-place
+  restore, picker) — but Slice 3 is still NOT scoped by this
+  step; scoping it is the next decision, not smuggled in here.
+
 ## 0.14.0 — 2026-10-29 — GameManager.LoadFromJson in-place restore
 
 - Closed the Slice 1 limitation named in 0.3.0 and repeated in

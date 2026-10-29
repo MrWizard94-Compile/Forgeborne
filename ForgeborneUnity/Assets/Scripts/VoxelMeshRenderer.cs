@@ -5,16 +5,23 @@
 using UnityEngine;
 using Forgeborne.Core;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+// MeshCollider added in 0.15.0 so the Orbital rally picker's
+// crosshair raycast can hit the voxel mesh: without a collider
+// the raycast would pass through the rendered chunk and never
+// set a rally. The collider shares the same mesh buffers, so it
+// adds no second chunk representation.
+[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class VoxelMeshRenderer : MonoBehaviour
 {
     public Simulation? Simulation;
     private Mesh? _mesh;
+    private MeshCollider? _collider;
 
     void Awake()
     {
         _mesh = new Mesh { name = "ForgeborneChunk" };
         GetComponent<MeshFilter>().mesh = _mesh;
+        _collider = GetComponent<MeshCollider>();
     }
 
     // Call this when the chunk changes (gather / build / destruction).
@@ -34,10 +41,14 @@ public class VoxelMeshRenderer : MonoBehaviour
             uvs[i] = new Vector2(data.Uvs[i].Item1, data.Uvs[i].Item2);
         }
         _mesh.Clear();
+        if (_collider != null) _collider.sharedMesh = null;
         _mesh.vertices = verts;
         _mesh.normals = norms;
         _mesh.uv = uvs;
         _mesh.triangles = data.Indices.ToArray();
         _mesh.RecalculateBounds();
+        // Re-attach after the clear/rebuild, so the raycast collider
+        // matches the freshly built mesh instead of the cleared one.
+        if (_collider != null) _collider.sharedMesh = _mesh;
     }
 }

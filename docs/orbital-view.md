@@ -21,7 +21,9 @@ because a tick ran.
 adapter only: it renders the snapshot as one text line per squad
 (`VANGUARD HOLDGROUND - 3 MEMBERS 90 HP 30 DMG - HOLDING AT
 (16,5,16) -> RALLY (16,5,16)`), or `ORBITAL: NO SQUADS (press O
-to deploy)` when none are deployed. It contains no squad logic.
+to pick a rally)` when none are deployed, plus a picker prompt
+line while the picker is open (see `docs/orbital-command.md`).
+It contains no squad logic.
 
 ## Wiring (Unity 6000, Windows)
 
@@ -33,18 +35,23 @@ to deploy)` when none are deployed. It contains no squad logic.
    a second Simulation for the Orbital view.
 3. Add a Text field to the HUD Canvas near the objective readout
    and drag it into `SquadText`.
-4. Press Play, then press **O**: a Vanguard squad deploys under
-   HoldGround at the player's current position and holds there.
-   The display line appears; pressing O again deploys another.
+4. Press Play, then use the picker (see
+   `docs/orbital-command.md`): press **O**, aim the crosshair
+   at a rally cell, press **Enter**. A Vanguard squad deploys
+   under HoldGround, marches to the rally, and holds there.
+   The display line appears; repeating the picker deploys
+   another squad.
 
-## The provisional O key
+## The provisional O key — replaced in 0.15.0
 
-O is a provisional command binding, not the final Orbital UI.
-It deploys at the player's feet, so the squad holds immediately
-and fires at enemies in range 3. There is deliberately no rally
-picker yet: picking a distant rally in the FPS view is a later
-step. O is reversible — it will be replaced by a doctrine menu /
-rally picker, and the binding can change without touching core.
+O was a provisional command binding, not the final Orbital UI:
+it deployed instantly at the player's feet, so the squad held
+immediately and fired at enemies in range 3, with no rally
+choice at all. That binding is gone. O now opens the doctrine
+menu / rally picker (`docs/orbital-command.md`): aim, Enter to
+deploy at the picked rally, Esc to cancel. The old instant
+deploy survives only as the headless `DeployOrbitalSquad`
+path, used by tests and the demo — not by the Unity adapter.
 
 ## Deliberately NOT in this step
 
@@ -52,10 +59,11 @@ rally picker, and the binding can change without touching core.
   is a text list; a player can see squads exist, where they are,
   and whether they are moving or holding, but not as figures in
   the voxel scene yet.
-- No doctrine menu, rally picker, deployment cost, or squad cap.
-  O deploys unlimited squads for now, exactly as the headless
-  command does — that is a known, documented gap, not a balance
-  decision.
+- No deployment cost or squad cap (decided in 0.15.0, deferred
+  to a Slice 3 economy step — see `docs/orbital-command.md`).
+  The picker deploys unlimited squads for now, exactly as the
+  headless command does — that is a known, documented gap, not
+  a balance decision.
 - No enemy AI targeting squads (unchanged from 0.9.0/0.10.0).
 - No change to save/load: squads already persist (0.10.0), and
   the snapshot reads the same live list the saver reads.
@@ -65,13 +73,14 @@ rally picker, and the binding can change without touching core.
 1. [ ] Project opens with no compile errors in
    `OrbitalSquadDisplay.cs` and the edited `FpsInputAdapter.cs`.
 2. [ ] With no squads, the display reads
-   `ORBITAL: NO SQUADS (press O to deploy)`.
-3. [ ] Press O: one line appears, `3 MEMBERS 90 HP`, `HOLDING`,
-   at the player's position.
+   `ORBITAL: NO SQUADS (press O to pick a rally)`.
+3. [ ] Press O, aim at a rally cell, Enter: one line appears,
+   `3 MEMBERS 90 HP`, `MOVING` then `HOLDING` at the rally.
 4. [ ] Walk an enemy into range 3 of the held squad: the squad
    fires (enemy loses 30 HP per tick at full strength) and the
    line's HP/members update as the squad takes adjacent damage.
-5. [ ] Press O twice more: three lines, in deploy order.
+5. [ ] Repeat the picker twice more: three lines, in deploy
+   order.
 6. [ ] Save, close, reopen, load: the same squads return (save
    persistence is already headless-tested in 0.10.0, and the
    in-place restore is headless-tested in 0.14.0 via

@@ -132,6 +132,97 @@ public sealed class TacticalSquad
 }
 
 /// <summary>
+/// The doctrine menu / rally picker state machine, in pure C# core.
+/// This is the menu, not a rendering: the Unity adapter only binds
+/// keys and a crosshair raycast to it (see docs/orbital-command.md),
+/// and every rule below is headless-tested. Flow: BeginPick opens
+/// the picker (clearing any stale pending rally, so Enter cannot
+/// deploy yesterday's point by accident), SetRally updates the
+/// pending rally while picking, Confirm deploys one squad with the
+/// selected doctrine/kind at that rally, Cancel abandons the pick.
+/// Confirm without a pick or without a rally, and SetRally outside
+/// picking or out of bounds, fail closed and change nothing.
+/// A failed deploy (which cannot happen for a bounds-checked rally
+/// with a defined doctrine/kind, but is guarded anyway) keeps the
+/// picker open so the player can re-pick instead of losing the menu.
+/// There is deliberately no deployment cost or squad cap yet:
+/// the squad economy does not exist to price against (inventory
+/// holds blocks, not a currency), so a cost invented here would be
+/// a balance guess, not a system. Cost/cap is a Slice 3 economy
+/// decision, recorded in DECISIONS.md, not smuggled in here.
+/// </summary>
+public sealed class OrbitalCommand
+{
+    public TacticalDoctrine Doctrine { get; private set; } = TacticalDoctrine.HoldGround;
+    public SquadKind Kind { get; private set; } = SquadKind.Vanguard;
+    public bool IsPicking { get; private set; }
+    public bool HasRally { get; private set; }
+    public int RallyX { get; private set; }
+    public int RallyY { get; private set; }
+    public int RallyZ { get; private set; }
+
+    /// <summary>Select a doctrine. Unknown values are rejected and leave the selection unchanged.</summary>
+    public bool SelectDoctrine(TacticalDoctrine doctrine)
+    {
+        if (!Enum.IsDefined(doctrine)) return false;
+        Doctrine = doctrine;
+        return true;
+    }
+
+    /// <summary>Select a squad kind. Unknown values are rejected and leave the selection unchanged.</summary>
+    public bool SelectKind(SquadKind kind)
+    {
+        if (!Enum.IsDefined(kind)) return false;
+        Kind = kind;
+        return true;
+    }
+
+    /// <summary>Open the picker. Clears any pending rally from an earlier pick.</summary>
+    public void BeginPick()
+    {
+        IsPicking = true;
+        HasRally = false;
+    }
+
+    /// <summary>
+    /// Update the pending rally while picking. Only bounds are
+    /// checked here, matching WorldZone.DeploySquad: a rally inside
+    /// a solid block is accepted and the squad then holds short of
+    /// it, so a bad rally is visible, not silent.
+    /// </summary>
+    public bool SetRally(int x, int y, int z)
+    {
+        if (!IsPicking) return false;
+        if (!VoxelChunk.InBounds(x, y, z)) return false;
+        RallyX = x; RallyY = y; RallyZ = z;
+        HasRally = true;
+        return true;
+    }
+
+    /// <summary>Abandon the pick: no squad is deployed, the pending rally is dropped.</summary>
+    public void CancelPick()
+    {
+        IsPicking = false;
+        HasRally = false;
+    }
+
+    /// <summary>
+    /// Deploy the selected squad at the pending rally. On success
+    /// the picker closes and the rally is cleared; on failure the
+    /// picker stays open for a re-pick. Returns null on failure.
+    /// </summary>
+    public TacticalSquad? Confirm(WorldZone world)
+    {
+        if (!IsPicking || !HasRally) return null;
+        var squad = world.DeploySquad(RallyX, RallyY, RallyZ, Doctrine, Kind);
+        if (squad == null) return null;
+        IsPicking = false;
+        HasRally = false;
+        return squad;
+    }
+}
+
+/// <summary>
 /// Snapshot of one squad, copied by value at snapshot time.
 /// The Unity view renders this, never the live squad objects,
 /// so rendering cannot mutate core state and a snapshot taken

@@ -444,6 +444,49 @@ look inevitable.
   provisional O, with deployment cost/cap decided as part of
   that step.
 
+## 2026-10-29 — Doctrine menu / rally picker (0.15.0, under delegation)
+
+- Decision: the picker is a core state machine, not Unity UI
+  logic. The provisional O key was an adapter shortcut that
+  bypassed any choice; replacing it in the adapter alone would
+  have left the choice untestable headlessly, so `OrbitalCommand`
+  holds selection + pending rally in core and the adapter only
+  binds keys and a crosshair raycast to it. That keeps the
+  "Unity scripts are thin adapters, no duplicate logic" rule
+  intact and makes every picker rule — fail-closed confirm,
+  stale-rally clearing, bounds-only rally check matching
+  DeploySquad's solid-rally acceptance — provable in tests.
+- Design choices, all reversible: BeginPick clears a stale
+  rally, because the failure mode of keeping it (Enter deploying
+  a point the player picked minutes ago, in a different fight)
+  is worse than re-aiming; a failed Confirm keeps the picker
+  open, because losing the menu on a failure would punish the
+  player for the system's rejection; while picking, the mouse
+  does not fire, because Enter is the confirm and a click
+  during aiming must not also be a shot; the raycast uses the
+  hit cell itself (even if solid), consistent with DeploySquad,
+  so the squad holds short visibly instead of the picker
+  silently refusing a face the player clearly aimed at.
+- Cost/cap decided here, as the 0.12.0 review required: none
+  yet, deferred to a Slice 3 economy step. Inventory holds
+  blocks, not a currency, so any price now would be invented
+  balance, and a cap without an economy would be an arbitrary
+  limit. Recording "none, deferred with reason" closes the
+  decision for this step without pretending a system exists.
+- Deliberately NOT in this step: extra doctrines/kinds (the
+  selection API is ready for them, the values are not added),
+  3D squad or rally markers, pitch aiming for the raycast
+  (camera yaws only in Slice 1, so the ray is horizontal from
+  eye height — documented in docs/orbital-command.md, not
+  hidden), and Slice 3 scope. The Windows Unity verification
+  of the picker, display prompt, and MeshCollider remains open
+  — headless tests prove the core path, not the Unity compile
+  or the raycast wiring.
+- Next, in order: scope Slice 3 as its own decision step, with
+  the Slice 2 review's deliberately-not-done list and the
+  picker/cost decision as its inputs — not as a system smuggled
+  into this picker step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

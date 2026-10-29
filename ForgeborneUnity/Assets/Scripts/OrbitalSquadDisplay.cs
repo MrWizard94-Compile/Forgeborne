@@ -1,14 +1,15 @@
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // Displays the Orbital Tactical view from Forgeborne.Core. No squad
 // logic lives here: it renders OrbitalView.Snapshot, a copied
-// snapshot of the live squads, one line per squad. Squad markers
-// in the 3D scene, a doctrine menu, and a rally picker are later
-// steps, not claimed here — this step is the readable squad list.
+// snapshot of the live squads, one line per squad, plus — while the
+// rally picker is open — one prompt line from Simulation.
+// OrbitalCommand (selected doctrine/kind, pending rally). Squad
+// markers in the 3D scene are a later step, not claimed here.
 // Wire SquadText in the Inspector (a Text field on the HUD Canvas,
-// near the objective readout). Deploy with O: a Vanguard squad
-// under HoldGround, rallying at the player's current position,
-// so it holds and fires there. See FpsInputAdapter and
-// docs/orbital-view.md. No deployment cost or squad cap yet.
+// near the objective readout). Deploy with the picker: O opens it,
+// aim the crosshair at a rally cell, Enter deploys, Esc cancels.
+// See FpsInputAdapter and docs/orbital-command.md. No deployment
+// cost or squad cap yet.
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,12 +24,23 @@ public class OrbitalSquadDisplay : MonoBehaviour
     {
         if (Simulation == null || SquadText == null) return;
         var squads = OrbitalView.Snapshot(Simulation.World);
-        if (squads.Count == 0)
+        var sb = new StringBuilder();
+        // Rally picker prompt first, so it is visible even with squads
+        // already deployed; the squad list follows unchanged.
+        if (Simulation.OrbitalCommand.IsPicking)
         {
-            SquadText.text = "ORBITAL: NO SQUADS (press O to deploy)";
+            var cmd = Simulation.OrbitalCommand;
+            if (cmd.HasRally)
+                sb.Append($"ORBITAL: PICKING RALLY - {cmd.Kind} {cmd.Doctrine} -> ({cmd.RallyX},{cmd.RallyY},{cmd.RallyZ}) - ENTER TO DEPLOY, ESC TO CANCEL\n");
+            else
+                sb.Append("ORBITAL: PICKING RALLY - AIM AT A TARGET CELL - ENTER TO DEPLOY, ESC TO CANCEL\n");
+        }
+        if (squads.Count == 0 && !Simulation.OrbitalCommand.IsPicking)
+        {
+            SquadText.text = "ORBITAL: NO SQUADS (press O to pick a rally)";
             return;
         }
-        var sb = new StringBuilder("ORBITAL SQUADS:\n");
+        if (squads.Count > 0) sb.Append("ORBITAL SQUADS:\n");
         foreach (var s in squads)
         {
             string state = s.AtRally ? "HOLDING" : "MOVING";
