@@ -1,5 +1,29 @@
 # Forgeborne — Changelog
 
+## 0.2.0 — 2026-10-29 — Slice 1 Steps 2-3: mesher, FPS, weapon, HUD
+
+- Added `Mesher.GreedyMesh`: standard greedy rectangle merging.
+  Verified: single voxel 6 quads, 2x2x2 cube 6 quads, flat 32x32
+  slab 6 quads, generated world 187 quads vs 2608 naive faces.
+  Empty chunk 0 quads. Quads carry axis, slice, bounds, type, and
+  facing, with 4 corners.
+- Added `FpsController`: speed 6, jump 8, gravity -20, AABB
+  0.3 half-width x 1.8 height, axis-separated movement with wall
+  sliding, grounded detection. Fixed a real tunnelling bug found
+  by tests: a large fall step (4.4 -> 2.8) previously snapped to
+  Y=3 instead of ground top Y=4; landing now snaps to the highest
+  solid block at or below the previous feet position.
+- Added `Weapon` (Pulse Rifle, 42 mag / 120 reserve, damage 10,
+  fire / reload) and `HudState` (health, shields, DESTROY CORE
+  objective distance and percent, ammo, enemy count, 32x32
+  mini-map solid data). Core objective added to `WorldZone`
+  (core at 28,5,28, health 100, DamageCore).
+- Fixed a test arithmetic error (not code): reload reserve is
+  120 - 42 = 78, not 79.
+- Tests: **70 passed, 0 failed** (was 42). Still no Unity scene,
+  no GPU rendering, no Orbital mode — those remain later steps,
+  not claimed here.
+
 ## 0.1.0 — 2026-10-29 — Slice 1 Step 1: deterministic voxel core
 
 - Added `src/Forgeborne.Core`: 32^3 chunk, deterministic seeded

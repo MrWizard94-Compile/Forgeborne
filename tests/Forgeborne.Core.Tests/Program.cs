@@ -122,5 +122,79 @@ Eq(w4.Player.Inventory.Get(BlockType.Stone), loaded.Player.Inventory.Get(BlockTy
 Eq(w4.Enemies.Count, loaded.Enemies.Count, "save/load enemy count equal");
 Eq(w4.Seed, loaded.Seed, "save/load seed equal");
 
+// ---- Slice 1 Step 2: mesher, FPS, weapon, HUD ----
+// Mesher: single voxel
+var single = new VoxelChunk();
+single.TrySet(10, 10, 10, BlockType.Stone);
+Eq(6, Mesher.GreedyMesh(single).Count, "mesher single voxel 6 quads");
+// Mesher: 2x2x2 cube
+var cube = new VoxelChunk();
+for (int x = 10; x < 12; x++) for (int y = 10; y < 12; y++) for (int z = 10; z < 12; z++) cube.TrySet(x, y, z, BlockType.Stone);
+Eq(6, Mesher.GreedyMesh(cube).Count, "mesher 2x2x2 cube 6 quads (greedy merge)");
+// Mesher: empty
+Eq(0, Mesher.GreedyMesh(new VoxelChunk()).Count, "mesher empty 0 quads");
+// Mesher: flat slab 32x1x32 stone at y=1 -> top 1 + bottom 1 + 4 sides = 6
+var slab = new VoxelChunk();
+for (int x = 0; x < 32; x++) for (int z = 0; z < 32; z++) slab.TrySet(x, 1, z, BlockType.Stone);
+Eq(6, Mesher.GreedyMesh(slab).Count, "mesher flat slab 6 quads");
+// Mesher: generated world greedy < naive
+var gen = VoxelChunk.Generate(42);
+int greedy = Mesher.GreedyMesh(gen).Count;
+int naive = Mesher.NaiveFaceCount(gen);
+Check(greedy > 0 && greedy < naive, $"mesher generated greedy {greedy} < naive {naive}");
+Check(Mesher.GreedyMesh(gen)[0].Corners().Length == 4, "mesher quad has 4 corners");
+
+// FPS: free move, wall collision, fall, jump
+var fpsWorld = new WorldZone(42);
+var fps = new FpsController(16f, 4f, 16f);
+fps.Update(0.1f, 0, 0, false, fpsWorld.Chunk); // settle to ground
+Check(fps.IsGrounded, "fps grounded after settle");
+float startX = fps.X;
+fps.Update(0.1f, 1f, 0f, false, fpsWorld.Chunk);
+Check(fps.Z > 16f, "fps moves forward");
+// Wall collision: place a wall directly ahead in Z at feet level, then try to move through it.
+var wallWorld = new VoxelChunk();
+for (int x = 0; x < 32; x++) for (int z = 0; z < 32; z++) for (int y = 1; y <= 3; y++) wallWorld.TrySet(x, y, z, BlockType.Stone);
+wallWorld.TrySet(16, 4, 18, BlockType.Stone);
+wallWorld.TrySet(16, 5, 18, BlockType.Stone);
+var fps2 = new FpsController(16f, 4f, 16f);
+for (int i = 0; i < 20; i++) fps2.Update(0.1f, 1f, 0f, false, wallWorld);
+Check(fps2.Z < 18f - FpsController.HalfWidth, $"fps wall blocks movement (Z={fps2.Z})");
+// Fall: spawn high, fall to ground top (y=4)
+var fps3 = new FpsController(16f, 10f, 16f);
+for (int i = 0; i < 30; i++) fps3.Update(0.1f, 0, 0, false, fpsWorld.Chunk);
+Check(Math.Abs(fps3.Y - 4f) < 0.1f, $"fps falls to ground (Y={fps3.Y})");
+Check(fps3.IsGrounded, "fps grounded after fall");
+// Jump: from grounded, jump rises, then lands again
+var fps4 = new FpsController(16f, 4f, 16f);
+fps4.Update(0.1f, 0, 0, false, fpsWorld.Chunk);
+fps4.Update(0.1f, 0, 0, true, fpsWorld.Chunk);
+Check(fps4.Y > 4f, $"fps jump rises (Y={fps4.Y})");
+for (int i = 0; i < 30; i++) fps4.Update(0.1f, 0, 0, false, fpsWorld.Chunk);
+Check(Math.Abs(fps4.Y - 4f) < 0.1f && fps4.IsGrounded, "fps jump lands back on ground");
+
+// Weapon + HUD
+var weapon = new Weapon();
+Eq(42, weapon.Mag, "weapon starts 42 mag");
+Eq(120, weapon.Reserve, "weapon starts 120 reserve");
+Check(weapon.Fire(), "weapon fires");
+Eq(41, weapon.Mag, "weapon mag decreases on fire");
+for (int i = 0; i < 41; i++) weapon.Fire();
+Eq(0, weapon.Mag, "weapon mag empty after 42 shots");
+Check(!weapon.Fire(), "weapon cannot fire empty");
+weapon.Reload();
+Eq(42, weapon.Mag, "weapon reload refills mag");
+Eq(78, weapon.Reserve, "weapon reload consumes reserve (120 - 42 refilled = 78; test arithmetic corrected, not code)");
+var hudWorld = new WorldZone(42);
+var hud = HudState.FromWorld(hudWorld, new Weapon());
+Eq(100, hud.Health, "hud health 100");
+Eq(85, hud.Shields, "hud shields 85");
+Eq("DESTROY CORE", hud.ObjectiveName, "hud objective destroy core");
+Check(hud.ObjectiveDistanceMetres > 0, "hud objective distance positive");
+Eq(0, hud.ObjectivePercentCompleted, "hud objective 0% at start");
+hudWorld.DamageCore(45);
+Eq(45, HudState.FromWorld(hudWorld, new Weapon()).ObjectivePercentCompleted, "hud objective 45% after core damage");
+Check(HudState.FromWorld(hudWorld, new Weapon()).MiniMapSolid[16, 16], "hud minimap solid at centre ground");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

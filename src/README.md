@@ -19,7 +19,7 @@ Requires .NET 8 SDK. From this repository root:
 dotnet run --project tests/Forgeborne.Core.Tests
 ```
 
-Expected, verified 2026-10-29: **42 passed, 0 failed.**
+Expected, verified 2026-10-29: **70 passed, 0 failed** (42 in Step 1, +28 in Steps 2-3: mesher, FPS, weapon, HUD).
 
 ## What is NOT here yet (Slice 1 Steps 2-4)
 

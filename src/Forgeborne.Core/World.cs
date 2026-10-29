@@ -51,6 +51,12 @@ public sealed class WorldZone
     public Player Player { get; }
     public List<Enemy> Enemies { get; } = new();
     public int Tick { get; private set; }
+    // Slice 1 objective core, from the reference image: DESTROY CORE.
+    public int CoreX { get; } = 28;
+    public int CoreY { get; } = 5;
+    public int CoreZ { get; } = 28;
+    public int CoreHealth { get; private set; } = 100;
+    public void DamageCore(int amount) { if (amount > 0) CoreHealth = Math.Max(0, CoreHealth - amount); }
     public void RestoreTick(int tick) { Tick = Math.Max(0, tick); }
 
     public WorldZone(int seed)
