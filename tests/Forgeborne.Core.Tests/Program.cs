@@ -242,6 +242,26 @@ var benchMesh = MeshBuilder.BuildFromChunk(VoxelChunk.Generate(42));
 benchSw.Stop();
 Check(benchSw.ElapsedMilliseconds < 500, $"mesher benchmark <500ms (got {benchSw.ElapsedMilliseconds}ms, {benchMesh.QuadCount} quads)");
 
+// ---- Slice 2 Step 1: procedural loot ----
+var lootA = LootGenerator.Generate(42, 1);
+var lootB = LootGenerator.Generate(42, 1);
+Check(lootA.Name == lootB.Name && lootA.Damage == lootB.Damage && lootA.Rarity == lootB.Rarity, "loot same seed same weapon");
+var lootC = LootGenerator.Generate(43, 1);
+Check(lootC.Name != lootA.Name || lootC.Damage != lootA.Damage, "loot different seed usually differs");
+Check(lootA.Damage > 0 && lootA.MagSize > 0 && lootA.FireRatePerSecond > 0, "loot stats positive");
+Check(Enum.IsDefined(lootA.Rarity) && Enum.IsDefined(lootA.Element), "loot rarity and element valid");
+var legendaryFound = false;
+for (int s = 0; s < 500; s++) if (LootGenerator.Generate(s, 10).Rarity == Rarity.Legendary) { legendaryFound = true; break; }
+Check(legendaryFound, "loot legendary exists in 500 seeds (rare, not impossible)");
+var drop = LootGenerator.EnemyDrop(42, 1, 1);
+Check(drop == null || drop.Damage > 0, "loot enemy drop is null or a valid weapon");
+var highLevel = LootGenerator.Generate(42, 20);
+var lowLevel = LootGenerator.Generate(42, 1);
+// Level scaling is via base damage formula, but rarity is seed-driven, so only check both are valid and level 20 is not weaker on average across seeds.
+int sumLow = 0, sumHigh = 0;
+for (int s = 0; s < 50; s++) { sumLow += LootGenerator.Generate(s, 1).Damage; sumHigh += LootGenerator.Generate(s, 20).Damage; }
+Check(sumHigh > sumLow, $"loot level scaling: level 20 total {sumHigh} > level 1 total {sumLow}");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

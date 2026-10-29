@@ -1,5 +1,20 @@
 # Forgeborne — Changelog
 
+## 0.4.0 — 2026-10-29 — Slice 2 Step 1: procedural loot
+
+- Added `LootGenerator`: deterministic procedural weapons from
+  Body / Barrel / Stock / Grip / Sight / Capacitor (element),
+  rarity Common to Legendary, affixes by rarity, level-scaled
+  damage. Same seed + level always gives the same weapon.
+  Enemy drop: 30% chance, deterministic by seed + enemy id.
+- Note on continuity: work pauses between user messages because
+  this agent only runs on a user message or a scheduled job; it
+  does not run continuously in the background on its own. The
+  silence rule (no messages unless absolutely needed) is about
+  messages, not about work — but without a scheduled job or a new
+  user message, there is no new turn to do work in. See DECISIONS.
+- Tests: **96 passed, 0 failed** (was 89).
+
 ## 0.3.0 — 2026-10-29 — Slice 1 Step 4: Unity adapters + headless demo
 
 - Added Unity adapter scripts (NOT compiled headlessly, to be opened

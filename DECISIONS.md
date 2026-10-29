@@ -182,6 +182,22 @@ look inevitable.
 - This rule does not stop the work. It stops the messages about
   the work.
 
+## 2026-10-29 — Why work pauses between messages (explained to Rob)
+
+- Rob asked "Why have you stopped?" after a period with no messages.
+- Answer recorded honestly: (1) Rob's silence rule said no messages
+  unless absolutely needed, until done, or in direct response to
+  him — so Ember did not message. (2) Separately, this agent does
+  not run continuously between user messages on its own; it runs
+  when the user messages, or when a scheduled job / handoff runs.
+  Silence about progress and pausing work are two different things,
+  and they were conflated by the silence rule.
+- Fix, if Rob wants truly continuous work: set up a scheduled job
+  that runs Slice work, pushes to the repo, and logs in the repo,
+  without messaging Rob unless done or absolutely needed. That
+  job is NOT created here without Rob's explicit approval for the
+  schedule, because it is background work on his behalf.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
