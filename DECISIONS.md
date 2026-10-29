@@ -79,9 +79,74 @@ look inevitable.
   changed by the owner on GitHub; it is not changed by agents here
   without director instruction.
 
+## 2026-10-29 — Director delegation: Ember makes all future decisions
+
+- Rob, 2026-10-29, with the reference image: "Please make all future
+  decisions for this project. I am needed else where. Continue for as
+  long as it takes. I can wait months if needed."
+- Effect: Ember is authorised to make routine and strategic project
+  decisions for Forgeborne — engine, scope slicing, systems, art
+  direction, and milestone order — without waiting for per-decision
+  approval, within the existing hard limits (PC native, FPS + Orbital,
+  single-player first, no 2D, no turn-based, studio quality as a gate,
+  original material only, WPAI Constitution).
+- Accountability: every decision Ember makes under this delegation is
+  recorded here, with rationale, and in `CHANGELOG.md`, so Rob can
+  review, change, or revoke it at any time. Delegation does not remove
+  Rob's authority; it defers it. Irreversible public-release,
+  monetisation, or licence-granting actions are still logged here
+  before they are taken, and are not taken silently.
+- Timeline: no rushing. Months is acceptable. Completeness and
+  verification outrank speed.
+
+## 2026-10-29 — Engine decision (made under delegation)
+
+- **Chosen: Unity 6000 (Unity 6) + Entities / DOTS, URP, C#.**
+- Why Unity over Unreal: the blueprint anchors in DOTS / ECS, and
+  Unity Entities + Burst is the most direct implementation of that,
+  with a proven mass-entity path; C# iteration is faster and safer
+  for a one-person AI-assisted team than Unreal C++; URP fits the
+  60 FPS / 1440p target on GTX 1660 Ti-class hardware better than
+  Lumen / Nanite-heavy Unreal defaults.
+- Why Unity over Godot / custom Rust: Godot's mass-ECS path is less
+  proven at the blueprint's scale; a custom Rust engine (in the spirit
+  of WPAI's Strata) would put graphics, editor, and tooling on the
+  critical path and delay the core loop by months to years.
+- Unreal concepts kept as patterns: Mass-style ECS thinking,
+  StateTree-style doctrine evaluation, and EQS-style environment
+  queries are design patterns to implement in Unity, not engine
+  requirements.
+- Reversibility: locked for Slice 1. If Slice 1 voxel meshing,
+  navigation, or performance in Unity DOTS fails its gates, reopen
+  the engine decision before Slice 2 and record the evidence here.
+
+## 2026-10-29 — Art direction (from director reference image)
+
+- See `docs/art-direction.md`. In brief: dark sci-fi, dusk / storm
+  sky, neon cyan and orange on dark voxel city, FPS pulse weapon,
+  voxel destruction debris, squad + armour advancing, objective HUD
+  (health, shields, objective distance / completion, mini-map, ammo).
+- The reference image itself (Gemini-generated, provided by Rob) is
+  a style reference only. It is NOT a shipped asset, NOT a texture,
+  and NOT to be copied pixel-for-pixel. All in-game art must be
+  original.
+
+## 2026-10-29 — Licence decision (made under delegation)
+
+- No open-source licence is added at foundation stage. The repository
+  is public for transparency, but all code, art, and design in it
+  remain Wizard Productions AI Studio property, all rights reserved,
+  until a release licence is chosen. Public visibility is not a
+  licence grant.
+- Rationale: an open licence chosen now (e.g. MIT) would be hard to
+  retract if the game later becomes commercial. Deferring the licence
+  to release stage preserves Rob's options and is reversible in the
+  direction of opening, not closing.
+
 ## Open decisions
 
-- Exact native engine (Unity DOTS implied by the blueprint, not locked).
-- Licence for this repository (not added by agents without direction).
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
-  `docs/slice-01-plan.md`).
+  `docs/slice-01-plan.md`; further slices are decided under delegation
+  as Slice 1 evidence arrives).
+- Release licence, monetisation, and release date — deferred to
+  release stage, logged here when decided.

@@ -1,5 +1,8 @@
 # Forgeborne — Slice 1 Plan
 
+**Engine: Unity 6000 + Entities / DOTS, URP, C# (locked 2026-10-29
+under director delegation).**
+
 ## Goal
 
 Prove that gather → build → survive is fun in one small 3D voxel

@@ -85,9 +85,25 @@ entities first, not tens of thousands.
 
 ## Building
 
-Engine is not yet locked. Do not assume Unity, Unreal, Godot, or a custom
-engine from this README. The engine decision is a director decision for
-the foundation stage, recorded in `DECISIONS.md` when made.
+**Engine, locked 2026-10-29 under director delegation (see
+`DECISIONS.md`): Unity 6000 (Unity 6) + Entities / DOTS, Universal
+Render Pipeline (URP), C#.**
+
+Rationale in brief: DOTS / Entities is the blueprint's ECS foundation
+and the proven route to tens of thousands of entities; C# is the
+fastest iteration language for a one-person, AI-assisted team; URP,
+not HDRP, is chosen for performance on mid-range hardware (including
+the director's GTX 1660 Ti-class dev machine) at the 60 FPS / 1440p
+target. Unreal's Mass / StateTree / EQS concepts are adopted as
+design patterns (doctrine-based squads, environment queries), not as
+a requirement to use Unreal Engine. If Slice 1 proves Unity DOTS
+voxel meshing insufficient, the engine decision is re-opened before
+Slice 2 — it is locked for Slice 1, not irreversible for the whole
+game.
+
+Art direction is recorded in `docs/art-direction.md`, from the
+director-provided reference image. That image is a style reference
+only; it is not a game asset and must not be shipped as one.
 
 ## Wizard Productions AI Studio
 
