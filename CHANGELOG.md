@@ -1,5 +1,36 @@
 # Forgeborne — Changelog
 
+## 0.9.0 — 2026-10-29 — Slice 2 Step 6: Orbital Tactical doctrine prototype (one doctrine, one squad type)
+
+- Added `src/Forgeborne.Core/Orbital.cs`: `TacticalDoctrine.
+  HoldGround` (only doctrine in this step) and `SquadKind.
+  Vanguard` (only squad type in this step), as `TacticalSquad`:
+  3 members, 30 HP each (90 total), 10 damage per living member
+  per engagement tick, engagement range 3 (Manhattan).
+- HoldGround behaviour, real-time, one world tick at a time, no
+  individual micromanagement and no turn-like pauses: the squad
+  moves one voxel per tick toward its rally point (largest-gap
+  axis first, ties X then Y then Z, as with Enemy movement),
+  refusing steps out of bounds, into solid blocks, or into an
+  enemy-occupied cell; it does NOT fire while moving. Once
+  holding the rally it fires once per tick at the nearest enemy
+  in range, then takes 10 damage per enemy still adjacent to it
+  — so a squad that kills its adjacent attacker that tick is not
+  hit by it, and firepower steps down 30 -> 20 -> 10 as members
+  fall. Dead squads are removed by `WorldZone.Advance`.
+- `WorldZone.DeploySquad(rally, ...)` spawns a squad at the
+  player's position; out-of-bounds rallies and unknown doctrines
+  are rejected (null, no squad added). `Simulation.
+  DeployOrbitalSquad(...)` exposes the same command to the
+  headless loop. Squads are session-only in this prototype:
+  they are NOT yet saved by SaveSystem, and there is no Orbital
+  camera / Unity adapter yet — those are the next follow-ups,
+  not claimed here. No deployment resource cost yet, also a
+  follow-up, not a balance decision.
+- Tests: **224 passed, 0 failed** (was 180; +44). Demo unchanged:
+  still gathered 1, built 1, killed 2, save JSON 43,852 chars
+  (mesher 27 ms this run, timing varies).
+
 ## 0.8.0 — 2026-10-29 — Slice 2 Step 5: automation tier 1 (Kinetic only)
 
 - Added `BlockType.KineticMill` (value 7, appended only — earlier

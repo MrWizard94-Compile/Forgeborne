@@ -50,6 +50,8 @@ public sealed class WorldZone
     public VoxelChunk Chunk { get; }
     public Player Player { get; }
     public List<Enemy> Enemies { get; } = new();
+    /// <summary>Orbital Tactical squads deployed in this zone. Empty by default, so zones without squads behave exactly as before. Session-only in this prototype: squads are NOT yet saved (see CHANGELOG 0.9.0).</summary>
+    public List<TacticalSquad> Squads { get; } = new();
     public int Tick { get; private set; }
     /// <summary>Shields restored per tick near a workstation. Base 5; skill WorkstationRegenBonus raises it via Simulation.ApplySkills.</summary>
     public int WorkstationRegenPerTick { get; set; } = 5;
@@ -150,7 +152,25 @@ public sealed class WorldZone
         return false;
     }
 
-    /// <summary>One world tick: enemies move, then adjacent enemies attack, then the workstation effect applies, then — every 5th tick — Kinetic Mills act. Dead enemies are removed.</summary>
+    /// <summary>
+    /// Deploy an Orbital Tactical squad: it spawns at the player's
+    /// position and follows its doctrine toward the rally point.
+    /// The rally must be in bounds; a rally inside a solid block is
+    /// accepted (the squad then holds short of it, blocked) rather
+    /// than rejected, so a bad rally is visible, not silent. An
+    /// unknown doctrine is rejected. Returns null on rejection.
+    /// </summary>
+    public TacticalSquad? DeploySquad(int rallyX, int rallyY, int rallyZ,
+        TacticalDoctrine doctrine = TacticalDoctrine.HoldGround, SquadKind kind = SquadKind.Vanguard)
+    {
+        if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return null;
+        if (!Enum.IsDefined(doctrine) || !Enum.IsDefined(kind)) return null;
+        var squad = new TacticalSquad(Player.X, Player.Y, Player.Z, rallyX, rallyY, rallyZ, doctrine, kind);
+        Squads.Add(squad);
+        return squad;
+    }
+
+    /// <summary>One world tick: enemies move, then adjacent enemies attack, then the workstation effect applies, then squads move / engage / take adjacent-enemy damage (in that order, so a squad that kills its attacker that tick is not hit by it), then — every 5th tick — Kinetic Mills act. Dead enemies and squads are removed.</summary>
     public void Advance()
     {
         Tick++;
@@ -161,7 +181,30 @@ public sealed class WorldZone
         }
         Enemies.RemoveAll(e => e.IsDead);
         if (IsNearWorkstation()) Player.RestoreShields(WorkstationRegenPerTick);
+        RunSquads();
         if (Tick % KineticIntervalTicks == 0) RunKineticAutomation();
+    }
+
+    /// <summary>
+    /// Orbital squad phase, in squad list order: move toward the
+    /// rally, then (only if holding) fire at the nearest enemy in
+    /// range, then take 10 damage per enemy still adjacent to the
+    /// squad. A squad at 0 health is removed at the end of the phase.
+    /// </summary>
+    private void RunSquads()
+    {
+        foreach (var squad in Squads.ToList())
+        {
+            if (squad.IsDead) continue;
+            squad.MoveTowardRally(Chunk, Enemies);
+            var target = squad.FindTarget(Enemies);
+            if (target != null) AttackEnemy(target, squad.DamagePerTick);
+            int adjacent = 0;
+            foreach (var e in Enemies)
+                if (!e.IsDead && Math.Abs(e.X - squad.X) + Math.Abs(e.Y - squad.Y) + Math.Abs(e.Z - squad.Z) == 1) adjacent++;
+            if (adjacent > 0) squad.TakeDamage(adjacent * Enemy.Damage);
+        }
+        Squads.RemoveAll(s => s.IsDead);
     }
 
     /// <summary>

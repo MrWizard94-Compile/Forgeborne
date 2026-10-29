@@ -272,6 +272,42 @@ look inevitable.
   prototype (one doctrine, one squad type) is the next Slice 2
   step in body order, now that automation tier 1 is in.
 
+## 2026-10-29 — Slice 2 Step 6: Orbital Tactical doctrine prototype, one doctrine and one squad type (under delegation)
+
+- Decision: the first Orbital system is a single Vanguard squad
+  under a single HoldGround doctrine, not a full RTS command
+  layer. It exists to prove the blueprint's core command idea in
+  the headless core — squads follow doctrines, the player issues
+  a rally point, nobody micromanages individuals — before any
+  Orbital camera, multi-squad UI, or doctrine menu is built.
+- Design choices, all reversible: the squad spawns at the player
+  (the commander) and walks to its rally in real time, one voxel
+  per world tick, the same tick rhythm as enemies and Kinetic
+  Mills, so Orbital play is continuous pressure, not a paused
+  planning phase; it fires only while holding, so moving a squad
+  has a real opportunity cost (no fire on the move); engagement
+  range 3 and 10 damage per living member keep a full squad
+  exactly lethal to one 30 HP enemy per tick, which is strong
+  but bounded — it cannot be in two places, and it takes
+  adjacent-enemy damage after firing. Movement refuses solid,
+  out-of-bounds, and enemy-occupied cells rather than pathfinding
+  around them: true SVO / A* pathfinding is a later step, and
+  this prototype makes blocked rallies visible (the squad holds
+  short) instead of silently rerouting.
+- Deliberately NOT in this step: squad save / load persistence
+  (squads are session-only and vanish on load, like the Kinetic
+  session counter — documented, not hidden); deployment resource
+  cost or a squad cap; additional doctrines (advance, defend
+  core, patrol) or squad types (recon, heavy, flyer); enemy AI
+  targeting squads (enemies still chase the player; squads take
+  damage only from enemies already adjacent to them); Orbital
+  camera or Unity adapter changes (adapters render core state
+  and need no new logic yet, but an Orbital view is not built).
+- Open follow-up, not lost: squad save persistence and an
+  Orbital view / adapter note are the next candidates after
+  this prototype, to be chosen as the next small slice; Slice 2
+  is still not treated as complete until those are addressed.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

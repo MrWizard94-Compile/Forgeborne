@@ -120,6 +120,16 @@ public sealed class Simulation
         return r;
     }
 
+    /// <summary>
+    /// Orbital Tactical command from the headless loop: deploy a
+    /// Vanguard squad under the HoldGround doctrine. The squad
+    /// spawns at the player's grid position and moves to the rally
+    /// on subsequent ticks; see WorldZone.DeploySquad for the
+    /// rejection rules. Returns null if the rally is rejected.
+    /// </summary>
+    public TacticalSquad? DeployOrbitalSquad(int rallyX, int rallyY, int rallyZ) =>
+        World.DeploySquad(rallyX, rallyY, rallyZ);
+
     public BuildResult BuildKineticMillAhead()
     {
         // Front-left, mirroring BuildWallAhead's front-right, so the

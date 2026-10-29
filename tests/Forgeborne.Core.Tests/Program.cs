@@ -445,6 +445,130 @@ for (int i = 0; i < 5; i++) simMill.Tick(0.1f, 0, 0, false);
 Eq(1, simMill.World.KineticBlocksGathered, "simulation kinetic mill gathers 1 block in 5 ticks");
 Check(simMill.World.Player.Inventory.Get(BlockType.Stone) >= 1, "simulation kinetic mill output reaches player inventory");
 
+// ---- Slice 2 Step 6: Orbital Tactical doctrine prototype (one doctrine, one squad type) ----
+// Player starts at (16,5,16) in a fresh WorldZone; y=5 is open air, so
+// X/Z movement at that height is unblocked unless a test places a block.
+var orbWorld = new WorldZone(42);
+var squad = orbWorld.DeploySquad(16, 5, 16);
+Check(squad != null, "orbital deploy at player rally succeeds");
+Eq(1, orbWorld.Squads.Count, "orbital deploy adds 1 squad");
+Eq(SquadKind.Vanguard, squad!.Kind, "orbital squad kind is Vanguard");
+Eq(TacticalDoctrine.HoldGround, squad.Doctrine, "orbital squad doctrine is HoldGround");
+Eq(16, squad.X, "orbital squad spawns at player X");
+Eq(3, squad.AliveMembers, "orbital squad starts with 3 members");
+Eq(90, squad.Health, "orbital squad starts at 90 health");
+Eq(30, squad.DamagePerTick, "orbital squad deals 30 per tick at full strength");
+Check(squad.AtRally, "orbital squad at rally when rally is spawn point");
+Check(orbWorld.DeploySquad(-1, 5, 5) == null, "orbital deploy out-of-bounds rally rejected");
+Eq(1, orbWorld.Squads.Count, "orbital rejected deploy adds no squad");
+Check(orbWorld.DeploySquad(5, 5, 5, (TacticalDoctrine)99) == null, "orbital deploy unknown doctrine rejected");
+Eq(1, orbWorld.Squads.Count, "orbital unknown doctrine adds no squad");
+// Movement: one voxel per tick, largest-gap axis first, ties X before Z.
+var moveWorld = new WorldZone(42);
+var mover = moveWorld.DeploySquad(20, 5, 20)!;
+moveWorld.Advance();
+Eq(17, mover.X, "orbital squad moves one voxel in X first on diagonal rally");
+Eq(16, mover.Z, "orbital squad does not also move in Z on the same tick");
+Check(!mover.AtRally, "orbital squad not at rally while moving");
+for (int i = 0; i < 7; i++) moveWorld.Advance();
+Eq(20, mover.X, "orbital squad reaches rally X after 8 ticks");
+Eq(20, mover.Z, "orbital squad reaches rally Z after 8 ticks");
+Check(mover.AtRally, "orbital squad at rally after moving");
+moveWorld.Advance();
+Eq(20, mover.X, "orbital squad holds rally X on later ticks");
+Eq(20, mover.Z, "orbital squad holds rally Z on later ticks");
+// Blocked movement: a solid block on the path stops the squad that tick.
+var blockWorld = new WorldZone(42);
+blockWorld.Chunk.TrySet(17, 5, 16, BlockType.Stone);
+var blocked = blockWorld.DeploySquad(20, 5, 16)!;
+blockWorld.Advance();
+Eq(16, blocked.X, "orbital squad does not move into a solid block");
+Check(!blocked.AtRally, "orbital squad blocked short of rally is not at rally");
+// An enemy on the path cell also blocks movement, and a moving squad does not fire.
+var pathWorld = new WorldZone(42);
+var pathEnemy = new Enemy(17, 5, 16);
+pathWorld.Enemies.Add(pathEnemy);
+var pathSquad = pathWorld.DeploySquad(20, 5, 16)!;
+pathWorld.Advance();
+Eq(16, pathSquad.X, "orbital squad does not move into an enemy-occupied cell");
+Eq(30, pathEnemy.Health, "orbital moving squad does not fire at the blocking enemy");
+// En-route squad does not fire even when an enemy is in range.
+var routeWorld = new WorldZone(42);
+var routeEnemy = new Enemy(17, 5, 18); // distance 3 from spawn (16,5,16)
+routeWorld.Enemies.Add(routeEnemy);
+routeWorld.DeploySquad(22, 5, 16);
+routeWorld.Advance();
+Eq(30, routeEnemy.Health, "orbital en-route squad does not fire in-range enemy");
+// Holding squad fires: 3 members x 10 = 30 kills a 30 HP enemy in one tick.
+var holdWorld = new WorldZone(42);
+var holdEnemy = new Enemy(18, 5, 16); // distance 2 from rally (16,5,16)
+holdWorld.Enemies.Add(holdEnemy);
+holdWorld.DeploySquad(16, 5, 16);
+holdWorld.Advance();
+Eq(0, holdWorld.Enemies.Count, "orbital holding squad kills in-range enemy in one tick");
+// Range limit: distance 4 is out of the 3-range engagement. The
+// player is moved far away first, because enemies move toward the
+// player on Advance and would otherwise walk into squad range
+// before the squad phase runs; the enemy here moves in Z, away
+// from the squad's range, so the range rule itself is what is tested.
+var rangeWorld = new WorldZone(42);
+var farEnemy = new Enemy(20, 5, 16); // distance 4 from rally (16,5,16)
+rangeWorld.Enemies.Add(farEnemy);
+rangeWorld.DeploySquad(16, 5, 16);
+rangeWorld.Player.X = 28; rangeWorld.Player.Z = 28;
+rangeWorld.Advance();
+Eq(30, farEnemy.Health, "orbital holding squad does not fire beyond range 3");
+Eq(1, rangeWorld.Enemies.Count, "orbital out-of-range enemy survives");
+// Firepower steps down with members: after 30 damage, 2 members deal 20.
+var weakWorld = new WorldZone(42);
+var weakEnemy = new Enemy(18, 5, 16);
+weakWorld.Enemies.Add(weakEnemy);
+var weakSquad = weakWorld.DeploySquad(16, 5, 16)!;
+weakSquad.TakeDamage(30);
+Eq(2, weakSquad.AliveMembers, "orbital squad drops to 2 members after 30 damage");
+Eq(20, weakSquad.DamagePerTick, "orbital 2-member squad deals 20 per tick");
+weakWorld.Advance();
+Eq(10, weakEnemy.Health, "orbital 2-member squad leaves 10 HP on a 30 HP enemy");
+// Squad takes adjacent-enemy damage after firing: 1 member deals 10,
+// the surviving adjacent enemy then deals 10 back.
+var hurtWorld = new WorldZone(42);
+var hurtEnemy = new Enemy(17, 5, 16); // adjacent to rally (16,5,16)
+hurtWorld.Enemies.Add(hurtEnemy);
+var hurtSquad = hurtWorld.DeploySquad(16, 5, 16)!;
+hurtSquad.TakeDamage(60); // 90 -> 30, 1 member
+Eq(1, hurtSquad.AliveMembers, "orbital squad drops to 1 member after 60 damage");
+hurtWorld.Advance();
+Eq(20, hurtEnemy.Health, "orbital 1-member squad deals 10 to adjacent enemy");
+Eq(20, hurtSquad.Health, "orbital squad takes 10 from surviving adjacent enemy");
+// A squad that kills its adjacent attacker that tick is not hit by it.
+var killWorld = new WorldZone(42);
+var killEnemy = new Enemy(17, 5, 16);
+killWorld.Enemies.Add(killEnemy);
+var killSquad = killWorld.DeploySquad(16, 5, 16)!;
+killWorld.Advance();
+Eq(0, killWorld.Enemies.Count, "orbital full squad kills adjacent enemy before it can hit back");
+Eq(90, killSquad.Health, "orbital squad unharmed when it kills its adjacent attacker");
+// Dead squads are removed by Advance.
+var deadWorld = new WorldZone(42);
+var deadSquad = deadWorld.DeploySquad(16, 5, 16)!;
+deadSquad.TakeDamage(90);
+Check(deadSquad.IsDead, "orbital squad dead at 0 health");
+deadWorld.Advance();
+Eq(0, deadWorld.Squads.Count, "orbital dead squad removed on tick");
+// Determinism: same deploy + advance gives the same squad position.
+var detA = new WorldZone(42); var detB = new WorldZone(42);
+var sA = detA.DeploySquad(20, 5, 16)!; var sB = detB.DeploySquad(20, 5, 16)!;
+detA.Advance(); detB.Advance();
+Check(sA.X == sB.X && sA.Z == sB.Z, "orbital squad movement is deterministic across worlds");
+// Simulation command: deploy via Simulation, squad moves on sim ticks.
+var simOrb = new Simulation(42);
+var simSquad = simOrb.DeployOrbitalSquad(20, 5, 16);
+Check(simSquad != null, "simulation deploy orbital squad succeeds");
+Eq(1, simOrb.World.Squads.Count, "simulation deploy adds squad to world");
+simOrb.Tick(0.1f, 0, 0, false);
+Eq(17, simSquad!.X, "simulation orbital squad moves on sim tick");
+Check(simOrb.DeployOrbitalSquad(-1, 5, 5) == null, "simulation deploy out-of-bounds rally rejected");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
