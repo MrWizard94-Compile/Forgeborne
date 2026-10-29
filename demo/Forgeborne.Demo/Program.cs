@@ -121,3 +121,56 @@ var simS3Loaded = new Simulation(99);
 Console.WriteLine($"Load: {simS3Loaded.LoadFromJson(saveS3)}");
 var s3Snap = OrbitalView.Snapshot(simS3Loaded.World);
 Console.WriteLine($"After load: core {simS3Loaded.World.CoreHealth} HP, weapon {simS3Loaded.Weapon.Name} {simS3Loaded.Weapon.Mag}/{simS3Loaded.Weapon.Reserve}, effective damage {simS3Loaded.EffectiveDamage}, shields {simS3Loaded.World.Player.Shields}/{simS3Loaded.World.Player.MaxShields}, squads loaded {s3Snap.Count} (HP {(s3Snap.Count == 0 ? 0 : s3Snap[0].Health)}, members {(s3Snap.Count == 0 ? 0 : s3Snap[0].AliveMembers)}), ore {simS3Loaded.World.Player.Inventory.Get(BlockType.EmberOre)}, can deploy more: {simS3Loaded.CanDeployOrbitalSquad()}, save JSON length: {saveS3.Length} chars");
+
+// Slice 4 Step 3 scenario: Slice 4 composed in one run — the Step 1
+// enemy pursuit and the Step 2 Advance doctrine together, not two
+// separate proofs. Both squads deploy through the paid picker
+// (10 EmberOre each, as in play), both weakened to 1 member so
+// their 10-damage fire does not kill an enemy outright and hide
+// the engagement, and the player moves far away so every enemy
+// step is a squad pursuit, not player chasing. Enemy A (east)
+// pursues the HoldGround squad; enemy B (west) pursues the
+// squads from the other side; the Advance squad hunts enemy A,
+// then turns to enemy B after A dies. After 4 ticks the game
+// saves and loads, and 2 more ticks prove both doctrines keep
+// their behaviour from the saved positions and health.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 4 Step 3 scenario — pursued HoldGround squad, hunting Advance squad, save/load round-trip");
+var simS4 = new Simulation(42);
+simS4.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+simS4.BeginOrbitalPick();
+simS4.SetOrbitalRally(20, 5, 16);
+var s4Hold = simS4.ConfirmOrbitalDeploy();
+simS4.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+simS4.BeginOrbitalPick();
+simS4.SetOrbitalRally(24, 5, 16);
+var s4Adv = simS4.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: HoldGround {(s4Hold == null ? "REJECTED" : "ok")}, Advance {(s4Adv == null ? "REJECTED" : "ok")}, ore left {simS4.World.Player.Inventory.Get(BlockType.EmberOre)}");
+s4Hold!.TakeDamage(60); // 90 -> 30, 1 member
+s4Adv!.TakeDamage(60); // 90 -> 30, 1 member
+simS4.World.Player.X = 28; simS4.World.Player.Z = 28;
+simS4.World.Enemies.Add(new Enemy(22, 5, 16));
+simS4.World.Enemies.Add(new Enemy(10, 5, 16));
+void PrintS4(string label, Simulation s)
+{
+    var snap = OrbitalView.Snapshot(s.World);
+    var enemies = string.Join(", ", s.World.Enemies.Select(e => $"({e.X},5,{e.Z}) {e.Health} HP"));
+    Console.WriteLine($"{label}: HoldGround ({(snap.Count > 0 ? snap[0].X : -1)},5,{(snap.Count > 0 ? snap[0].Z : -1)}) {snap[0].Health} HP, Advance ({(snap.Count > 1 ? snap[1].X : -1)},5,{(snap.Count > 1 ? snap[1].Z : -1)}) {snap[1].Health} HP, enemies [{enemies}]");
+}
+PrintS4("Slice 4 start", simS4);
+for (int tick = 1; tick <= 4; tick++)
+{
+    simS4.World.Advance();
+    PrintS4($"Slice 4 tick {tick}", simS4);
+}
+var saveS4 = simS4.SaveToJson();
+var simS4Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS4Loaded.LoadFromJson(saveS4)}");
+PrintS4("Slice 4 after load", simS4Loaded);
+for (int tick = 5; tick <= 6; tick++)
+{
+    simS4Loaded.World.Advance();
+    PrintS4($"Slice 4 tick {tick} (loaded)", simS4Loaded);
+}
+var s4LoadedSnap = OrbitalView.Snapshot(simS4Loaded.World);
+Console.WriteLine($"Slice 4 done: HoldGround doctrine {s4LoadedSnap[0].Doctrine} at rally: {s4LoadedSnap[0].AtRally}, Advance doctrine {s4LoadedSnap[1].Doctrine}, enemies left {simS4Loaded.World.Enemies.Count}, save JSON length: {saveS4.Length} chars");

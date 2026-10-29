@@ -1,5 +1,49 @@
 # Forgeborne — Changelog
 
+## 0.23.0 — 2026-10-29 — Slice 4 Step 3: demo scenario + review
+
+- Composed Slice 4 demo scenario, plus `docs/slice-04-review.md`
+  (documentation only, no new core system, by design). One
+  Simulation proves Step 1 and Step 2 together, not
+  separately: a HoldGround squad and an Advance squad, both
+  deployed through the paid picker (10 EmberOre each, 0 left),
+  both weakened to 1 member so their 10-damage fire does not
+  kill outright and hide the engagement, player moved far
+  away, one enemy east and one west. Tick 1: both enemies
+  pursue the squads, both squads march east, nobody hurt.
+  Tick 2: Advance fires the east enemy 30 -> 20 while
+  HoldGround, still marching, stays silent. Tick 3: the east
+  enemy reaches adjacency and both squads take exactly 10
+  each (single adjacent damage, not double) while Advance
+  fires it 20 -> 10. Tick 4: HoldGround takes a second 10
+  while Advance kills its attacker and takes nothing from
+  it, and the west enemy has pursued to 14. Save/load after
+  tick 4 keeps positions, health, doctrines, rallies, and
+  spent ore, and the loaded game cannot deploy more without
+  ore. Tick 5 (loaded): HoldGround marches on while Advance
+  moves WEST toward the west enemy and fires it — hunting
+  from the saved position, not marching to its stored rally.
+  Tick 6 (loaded): HoldGround reaches its rally; the west
+  enemy retargets to the nearer Advance squad, Advance fires
+  it to 10 and takes exactly one adjacent 10, HoldGround at
+  its rally unharmed. Save JSON 44,026 chars.
+- Review verdict: Slice 4 is **reviewed and closed as tested,
+  integrated combat answers** — not playtested, balanced, or
+  Unity-verified. Slice 5 is NOT scoped by this review; its
+  ranked candidates are carried from the 0.20.0 scope in the
+  same order (automation tier 2, then FPS pitch + 3D markers
+  including the Advance display gap, then a second squad
+  type), with gaps named in priority order in the review.
+- Tests: **579 passed, 0 failed** (was 528; +51: paid picker
+  deploys for both doctrines, per-tick positions / health /
+  damage in the composed run, save/load preservation of
+  doctrines / rallies / health / spent ore, loaded-game
+  hunting and retargeting). Demo unchanged except the new
+  scenario: Slice 1 gathered 1, built 1, killed 2, save
+  43,881 chars; Slice 2 save 43,908 chars; Step 1 scenario
+  save 44,016 chars; Step 3 scenario save 44,103 chars.
+  Next in order: scoping Slice 5 as its own decision step.
+
 ## 0.22.0 — 2026-10-29 — Slice 4 Step 2: second doctrine, Advance
 
 - Exactly one second doctrine, chosen in this step from

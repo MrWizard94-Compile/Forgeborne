@@ -1336,6 +1336,112 @@ var advViewWorld = new WorldZone(42);
 advViewWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
 Eq(TacticalDoctrine.Advance, OrbitalView.Snapshot(advViewWorld)[0].Doctrine, "slice4 advance snapshot doctrine");
 
+// ---- Slice 4 Step 3: demo scenario + review (0.23.0) ----
+// One Simulation composing Slice 4 end to end, mirroring the demo:
+// a HoldGround squad pursued by an enemy, an Advance squad
+// hunting in the same world, both deployed through the paid
+// picker, both weakened to 1 member so their 10-damage fire does
+// not kill an enemy outright and hide the engagement, and the
+// player moved far away so every enemy step is a squad pursuit.
+// Enemy A starts east, enemy B west; the Advance squad hunts A,
+// then turns to B after A dies. A save/load round-trip after
+// tick 4 proves both doctrines keep their behaviour from the
+// saved positions and health — the loaded Advance squad moves
+// WEST toward B, not east toward its stored rally.
+var s4Sim = new Simulation(42);
+s4Sim.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+s4Sim.BeginOrbitalPick();
+Check(s4Sim.SetOrbitalRally(20, 5, 16), "slice 4 demo picker HoldGround rally set");
+var s4Hold = s4Sim.ConfirmOrbitalDeploy();
+Check(s4Hold != null, "slice 4 demo paid HoldGround squad deploys");
+Check(s4Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance), "slice 4 demo picker Advance doctrine selectable");
+s4Sim.BeginOrbitalPick();
+Check(s4Sim.SetOrbitalRally(24, 5, 16), "slice 4 demo picker Advance rally set");
+var s4Adv = s4Sim.ConfirmOrbitalDeploy();
+Check(s4Adv != null, "slice 4 demo paid Advance squad deploys");
+Eq(TacticalDoctrine.HoldGround, s4Hold!.Doctrine, "slice 4 demo HoldGround squad doctrine");
+Eq(TacticalDoctrine.Advance, s4Adv!.Doctrine, "slice 4 demo Advance squad doctrine");
+Eq(0, s4Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice 4 demo two paid squads cost all 20 ore");
+s4Hold.TakeDamage(60); // 90 -> 30, 1 member
+s4Adv.TakeDamage(60); // 90 -> 30, 1 member
+s4Sim.World.Player.X = 28; s4Sim.World.Player.Z = 28;
+s4Sim.World.Enemies.Add(new Enemy(22, 5, 16));
+s4Sim.World.Enemies.Add(new Enemy(10, 5, 16));
+// Tick 1: both enemies step toward the squads, both squads march
+// east, nobody in range yet, nobody hurt.
+s4Sim.World.Advance();
+Eq(17, s4Hold.X, "slice 4 demo tick 1 HoldGround marches east");
+Eq(17, s4Adv.X, "slice 4 demo tick 1 Advance marches east with HoldGround");
+Eq(21, s4Sim.World.Enemies[0].X, "slice 4 demo tick 1 east enemy pursues squads");
+Eq(11, s4Sim.World.Enemies[1].X, "slice 4 demo tick 1 west enemy pursues squads");
+Eq(30, s4Hold.Health, "slice 4 demo tick 1 squads unharmed out of range");
+Eq(30, s4Adv.Health, "slice 4 demo tick 1 Advance unharmed out of range");
+// Tick 2: Advance moves into range of enemy A and fires 10;
+// HoldGround is still marching, so it does not fire.
+s4Sim.World.Advance();
+Eq(18, s4Hold.X, "slice 4 demo tick 2 HoldGround marches east");
+Eq(18, s4Adv.X, "slice 4 demo tick 2 Advance marches east");
+Eq(20, s4Sim.World.Enemies[0].Health, "slice 4 demo tick 2 Advance fires 10 at east enemy");
+Eq(30, s4Sim.World.Enemies[1].Health, "slice 4 demo tick 2 west enemy untouched");
+Eq(30, s4Hold.Health, "slice 4 demo tick 2 squads still unharmed");
+// Tick 3: enemy A reaches adjacency; both squads take exactly
+// 10 each (single adjacent damage, not double), and Advance
+// fires A down to 10 while HoldGround, still moving, stays silent.
+s4Sim.World.Advance();
+Eq(18, s4Hold.X, "slice 4 demo tick 3 HoldGround blocked by adjacent enemy");
+Eq(18, s4Adv.X, "slice 4 demo tick 3 Advance blocked by adjacent enemy");
+Eq(10, s4Sim.World.Enemies[0].Health, "slice 4 demo tick 3 Advance fires adjacent enemy to 10");
+Eq(20, s4Hold.Health, "slice 4 demo tick 3 HoldGround takes single adjacent damage");
+Eq(20, s4Adv.Health, "slice 4 demo tick 3 Advance takes single adjacent damage");
+// Tick 4: HoldGround takes a second 10 from the surviving enemy,
+// while Advance kills that enemy and takes nothing from it —
+// the no-double-count killing case, inside the composed run.
+s4Sim.World.Advance();
+Eq(10, s4Hold.Health, "slice 4 demo tick 4 HoldGround takes second adjacent damage");
+Eq(20, s4Adv.Health, "slice 4 demo tick 4 Advance unharmed when it kills its attacker");
+Eq(1, s4Sim.World.Enemies.Count, "slice 4 demo tick 4 east enemy dead, west enemy remains");
+Eq(14, s4Sim.World.Enemies[0].X, "slice 4 demo tick 4 west enemy pursued squads");
+Eq(30, s4Sim.World.Enemies[0].Health, "slice 4 demo tick 4 west enemy unharmed");
+// Save/load after tick 4: positions, health, doctrines, rallies,
+// and the spent ore all survive; the loaded game cannot deploy
+// more (no ore left), even though it is under the squad cap.
+var s4Json = s4Sim.SaveToJson();
+var s4Loaded = new Simulation(99);
+Check(s4Loaded.LoadFromJson(s4Json), "slice 4 demo save/load round-trip succeeds");
+Eq(2, s4Loaded.World.Squads.Count, "slice 4 demo 2 squads survive round-trip");
+Eq(TacticalDoctrine.HoldGround, s4Loaded.World.Squads[0].Doctrine, "slice 4 demo HoldGround doctrine survives round-trip");
+Eq(TacticalDoctrine.Advance, s4Loaded.World.Squads[1].Doctrine, "slice 4 demo Advance doctrine survives round-trip");
+Eq(20, s4Loaded.World.Squads[0].RallyX, "slice 4 demo HoldGround rally survives round-trip");
+Eq(24, s4Loaded.World.Squads[1].RallyX, "slice 4 demo Advance rally survives round-trip");
+Eq(18, s4Loaded.World.Squads[0].X, "slice 4 demo HoldGround position survives round-trip");
+Eq(10, s4Loaded.World.Squads[0].Health, "slice 4 demo HoldGround health survives round-trip");
+Eq(20, s4Loaded.World.Squads[1].Health, "slice 4 demo Advance health survives round-trip");
+Eq(0, s4Loaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice 4 demo spent ore survives round-trip");
+Check(!s4Loaded.CanDeployOrbitalSquad(), "slice 4 demo loaded game cannot deploy without ore");
+// Tick 5 (loaded): HoldGround marches on toward its rally, but
+// the loaded Advance squad moves WEST toward enemy B and fires
+// it — hunting from the saved position, not marching east to
+// its stored rally, which is what proves the doctrine survived.
+s4Loaded.World.Advance();
+Eq(19, s4Loaded.World.Squads[0].X, "slice 4 demo tick 5 loaded HoldGround marches toward rally");
+Eq(17, s4Loaded.World.Squads[1].X, "slice 4 demo tick 5 loaded Advance moves west toward enemy, not rally");
+Eq(20, s4Loaded.World.Enemies[0].Health, "slice 4 demo tick 5 loaded Advance fires west enemy to 20");
+// Tick 6 (loaded): HoldGround reaches its rally; enemy B, now
+// nearer the Advance squad than HoldGround, retargets to it and
+// steps adjacent; Advance fires it to 10 and takes exactly one
+// adjacent 10, while HoldGround at its rally is untouched and
+// out of range, so it does not fire.
+s4Loaded.World.Advance();
+Eq(20, s4Loaded.World.Squads[0].X, "slice 4 demo tick 6 loaded HoldGround reaches rally");
+Check(s4Loaded.World.Squads[0].AtRally, "slice 4 demo tick 6 loaded HoldGround is at rally");
+Eq(17, s4Loaded.World.Squads[1].X, "slice 4 demo tick 6 loaded Advance holds against adjacent enemy");
+Eq(16, s4Loaded.World.Enemies[0].X, "slice 4 demo tick 6 enemy retargets to nearer Advance squad");
+Eq(10, s4Loaded.World.Enemies[0].Health, "slice 4 demo tick 6 loaded Advance fires enemy to 10");
+Eq(10, s4Loaded.World.Squads[0].Health, "slice 4 demo tick 6 HoldGround at rally unharmed");
+Eq(10, s4Loaded.World.Squads[1].Health, "slice 4 demo tick 6 Advance takes single adjacent damage");
+var s4LoadedSnap = OrbitalView.Snapshot(s4Loaded.World);
+Eq(TacticalDoctrine.Advance, s4LoadedSnap[1].Doctrine, "slice 4 demo snapshot carries Advance doctrine after load");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

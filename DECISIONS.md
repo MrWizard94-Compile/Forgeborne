@@ -931,6 +931,62 @@ look inevitable.
 - Next, in order: Slice 4 Step 3, demo scenario +
   documentation-only Slice 4 review.
 
+## 2026-10-29 — Slice 4 Step 3: demo scenario + review (0.23.0, under delegation)
+
+- Decision: Step 3 is composition + review only, no new
+  system, following the 0.13.0 / 0.19.0 pattern and the
+  0.20.0 scope's own wording ("an enemy pursuing and
+  engaging a squad, and a squad under the new doctrine, in
+  the same Simulation — not two separate proofs"). A demo
+  that re-ran Step 1 and Step 2 separately would not prove
+  they compose — in particular, it would not prove that an
+  enemy pursuing a HoldGround squad and an Advance squad
+  hunting the same enemy resolve through the single
+  adjacent-damage path without double-counting, or that a
+  loaded Advance squad keeps hunting instead of falling
+  back to its stored rally. So the demo is one Simulation
+  running both together: two paid picker squads (HoldGround
+  rally 20, Advance rally 24), both weakened to 1 member so
+  their 10-damage fire does not kill outright and hide the
+  engagement, player moved far away so every enemy step is
+  a squad pursuit, one enemy east and one west, 4 ticks,
+  save/load, then 2 more ticks in the loaded game.
+- Decision, on what the composition run is allowed to
+  claim: the tick-6 retarget — enemy B steps to the nearer
+  Advance squad instead of the HoldGround squad it was
+  pursuing — is reported as nearest-rule behaviour in
+  composition, not as a new rule. It re-proves the Step 1
+  rule (nearest live target, re-derived every tick) in a
+  world where the nearest target changes because a squad
+  diverged, which the Step 1 isolation tests could not
+  show: there, squads marched in lockstep or alone. The
+  player-as-target claim, by contrast, is NOT re-proved by
+  this demo (the player is far away throughout), and the
+  review says so plainly: that claim still rests on the
+  Step 1 tie and retarget tests, not on this scenario.
+- Decision, on the review's candidate order: the ranked
+  Slice 5 candidates are carried from the 0.20.0 scope in
+  the same order (automation tier 2 first, then pitch +
+  markers, then a second squad type). The Step 3 evidence
+  gives no reason to reorder them, with one addition that
+  is a gap, not a reordering: the Advance display gap
+  (rally-relative MOVING / HOLDING does not describe
+  hunting) is folded into the pitch + markers candidate,
+  because it is a presentation question for that step to
+  fix, not a reason to promote presentation above
+  automation tier 2. Reordering, if a later run finds a
+  reason, belongs to the Slice 5 scoping step, not to this
+  review.
+- Deliberately NOT in this step: any Slice 5 system, any
+  balance change to targeting, damage, price, or cap, any
+  fix to the Advance display gap (named in the review's
+  gaps instead of quietly fixed here), any enforcement of
+  the free-path rule beyond its existing documentation,
+  and any claim about Windows Unity verification or the
+  pending Slice 1 director playtest gate — both remain
+  open, and Slice 4 does not close either.
+- Next, in order: scoping Slice 5 as its own decision step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
