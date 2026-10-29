@@ -1,5 +1,34 @@
 # Forgeborne — Changelog
 
+## 0.16.0 — 2026-10-29 — Slice 3 scope (documentation only)
+
+- Added `docs/slice-03-scope.md`: Slice 3 is scoped, as its
+  own decision step, as **economy and persistence** — the two
+  debts Slice 2 left behind. In order: (1) save-format
+  completion — core objective health and the applied skill
+  build persisted in the existing format, old saves still
+  loading, equipped weapon decided in that step, not here;
+  (2) squad economy — deployment cost and cap decided in
+  that step, with resource pricing as the starting hypothesis
+  but not a decision, and fail-closed enforcement in the
+  picker; (3) a Slice 3 demo scenario and a documentation-only
+  Slice 3 review that closes the slice. Ranked Slice 4
+  candidates are recorded for the review to start from, not
+  promised.
+- Deliberately NOT in Slice 3: the full 1,500-node graph,
+  automation tiers 2-4, crafting, fuel/power, extra doctrines
+  or squad types, enemy AI targeting squads, 3D markers or an
+  Orbital camera, a balance pass, FPS pitch, or any licence /
+  monetisation / release change. Windows Unity verification
+  remains open for Slices 1-3 alike.
+- No code changed in this step, by design: a scope document
+  must not smuggle in a system, and the economy's pricing
+  basis is explicitly left to its own step to decide with
+  evidence. Tests re-run unchanged: **342 passed, 0 failed**.
+  Demo unchanged: Slice 1 gathered 1, built 1, killed 2, save
+  43,864 chars; Slice 2 save 43,891 chars. Next in order:
+  Slice 3 Step 1, save-format completion.
+
 ## 0.15.0 — 2026-10-29 — Doctrine menu / rally picker replacing provisional O
 
 - Closes Slice 2 review follow-up (3): the provisional O key

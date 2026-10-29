@@ -487,6 +487,42 @@ look inevitable.
   picker/cost decision as its inputs — not as a system smuggled
   into this picker step.
 
+## 2026-10-29 — Slice 3 scope (0.16.0, under delegation)
+
+- Decision: Slice 3 is economy and persistence, in that
+  theme order's reverse — persistence first, then economy.
+  Slice 2 left two debts that converge on one slice: things
+  a load silently resets (fresh 100-HP core, base skill
+  values on a fresh Simulation) and the one unlimited action
+  (squad deployment, cost/cap deferred from 0.15.0 for want
+  of an economy). Widening the game with a second doctrine,
+  a second automation tier, or a bigger skill graph before
+  paying those debts would price and persist fiction, so
+  Slice 3 is deliberately narrow: two systems and a review.
+- Design choices, all reversible: persistence precedes
+  economy, because an economy priced against a build that
+  vanishes on load is not an economy; the equipped weapon
+  is left as a candidate for Step 1 to decide, because the
+  0.14.0 rationale (kept on in-place restore, no format
+  field) is defensible either way and the scope step should
+  not pre-decide a save-format question it has not examined;
+  resource pricing is named as the economy step's starting
+  hypothesis, not its decision, because the step — not the
+  scope — must test whether squads competing with walls and
+  mills for Stone distorts gathering; the Slice 4 candidate
+  ranking pairs enemy AI targeting squads with a second
+  doctrine, because a doctrine that moves squads into danger
+  is only fair once enemies can answer them.
+- Deliberately NOT in this step: any Slice 3 system (this
+  document scopes, it does not build), any price or cap value
+  (those are Step 2's decision with evidence), any Slice 4
+  promise (the ranking is a starting list for the Slice 3
+  review, which may reorder it), and any claim about the
+  pending Slice 1 director playtest gate, which Slice 3 does
+  not close.
+- Next, in order: Slice 3 Step 1, save-format completion
+  (core health + skill build, weapon decided there).
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
