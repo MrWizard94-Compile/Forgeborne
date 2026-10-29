@@ -20,20 +20,45 @@ public sealed class Enemy
         Health = Math.Max(0, Health - amount);
     }
 
-    /// <summary>One tick: move one voxel toward the player on the axis with the largest gap, if that cell is free. No diagonal moves.</summary>
-    public void TickToward(Player player, VoxelChunk chunk)
+    /// <summary>One tick: move one voxel toward the player, on the
+    /// axis with the largest gap, if that cell is free. No diagonal
+    /// moves. Kept for callers that target the player; WorldZone
+    /// uses TickTowardPosition with the per-tick target instead.</summary>
+    public void TickToward(Player player, VoxelChunk chunk) =>
+        TickTowardPosition(player.X, player.Y, player.Z, chunk, null);
+
+    /// <summary>
+    /// One tick of the single enemy movement rule, generalised in
+    /// Slice 4 Step 1 from "toward the player" to "toward a target
+    /// position": move one voxel on the axis with the largest gap
+    /// (ties: X, then Y, then Z — the same tie-break as squad
+    /// movement, so the path is deterministic). No diagonal moves.
+    /// The step is refused if the enemy is already adjacent to its
+    /// target (distance 0 or 1: the attack / adjacency-damage
+    /// phases handle damage, so the enemy never moves into its
+    /// target), if it would leave the chunk, enter a solid block,
+    /// or enter a cell in <paramref name="occupied"/> (the player
+    /// and every live squad, so an enemy pursuing one target
+    /// cannot walk through — and overlap — another target on its
+    /// way there). There is one movement rule, not a player rule
+    /// and a squad rule that could drift apart.
+    /// </summary>
+    public void TickTowardPosition(int targetX, int targetY, int targetZ, VoxelChunk chunk,
+        IReadOnlyList<(int X, int Y, int Z)>? occupied = null)
     {
         if (IsDead) return;
-        int dx = player.X - X, dy = player.Y - Y, dz = player.Z - Z;
-        if (Math.Abs(dx) + Math.Abs(dy) + Math.Abs(dz) <= 1) return; // adjacent: attack phase handles damage, do not move into player
+        int dx = targetX - X, dy = targetY - Y, dz = targetZ - Z;
+        if (Math.Abs(dx) + Math.Abs(dy) + Math.Abs(dz) <= 1) return; // adjacent: damage phases handle it, do not move into target
         int nx = X, ny = Y, nz = Z;
         if (Math.Abs(dx) >= Math.Abs(dy) && Math.Abs(dx) >= Math.Abs(dz)) nx += Math.Sign(dx);
         else if (Math.Abs(dy) >= Math.Abs(dz)) ny += Math.Sign(dy);
         else nz += Math.Sign(dz);
-        if (VoxelChunk.InBounds(nx, ny, nz) && !BlockInfo.IsSolid(chunk.Get(nx, ny, nz)))
-        {
-            X = nx; Y = ny; Z = nz;
-        }
+        if (!VoxelChunk.InBounds(nx, ny, nz)) return;
+        if (BlockInfo.IsSolid(chunk.Get(nx, ny, nz))) return;
+        if (occupied != null)
+            foreach (var (ox, oy, oz) in occupied)
+                if (ox == nx && oy == ny && oz == nz) return;
+        X = nx; Y = ny; Z = nz;
     }
 
     public bool IsAdjacentTo(Player player) =>
@@ -201,13 +226,66 @@ public sealed class WorldZone
         return squad;
     }
 
-    /// <summary>One world tick: enemies move, then adjacent enemies attack, then the workstation effect applies, then squads move / engage / take adjacent-enemy damage (in that order, so a squad that kills its attacker that tick is not hit by it), then — every 5th tick — Kinetic Mills act. Dead enemies and squads are removed.</summary>
+    /// <summary>
+    /// Slice 4 Step 1 targeting rule, re-derived every tick, in
+    /// WorldZone so the choice is testable through Advance: the
+    /// nearest live target wins, by Manhattan distance — the
+    /// player or any live squad, moving and holding squads alike
+    /// (a marching squad is as valid a target as a holding one,
+    /// or the Step 2 moving doctrine would be untargetable while
+    /// it moves). Ties go to the player (strictly-less comparison
+    /// keeps the player, the starting candidate), and ties between
+    /// squads go to the first squad in deploy order. Dead squads
+    /// are never targeted. The player therefore remains a valid
+    /// target — chosen whenever nearest or tied, and re-chosen as
+    /// soon as a nearer squad dies or moves away — rather than
+    /// abandoned wholesale: an enemy ignores the player only for
+    /// the ticks a squad is strictly nearer, which is exactly
+    /// what lets a squad intercept or draw pressure off the
+    /// player. No target is persisted: the save format is
+    /// unchanged, because positions and health are saved and the
+    /// target is recomputed from them on the next tick.
+    /// </summary>
+    private (int X, int Y, int Z) ChooseTarget(Enemy enemy)
+    {
+        int best = Math.Abs(Player.X - enemy.X) + Math.Abs(Player.Y - enemy.Y) + Math.Abs(Player.Z - enemy.Z);
+        int bx = Player.X, by = Player.Y, bz = Player.Z;
+        foreach (var squad in Squads)
+        {
+            if (squad.IsDead) continue;
+            int d = Math.Abs(squad.X - enemy.X) + Math.Abs(squad.Y - enemy.Y) + Math.Abs(squad.Z - enemy.Z);
+            if (d < best) { best = d; bx = squad.X; by = squad.Y; bz = squad.Z; }
+        }
+        return (bx, by, bz);
+    }
+
+    /// <summary>One world tick: enemies move toward their per-tick
+    /// target (player or nearest live squad), then adjacent enemies
+    /// damage the player, then the workstation effect applies, then
+    /// squads move / engage / take adjacent-enemy damage (in that
+    /// order, so a squad that kills its attacker that tick is not
+    /// hit by it), then — every 5th tick — Kinetic Mills act. Dead
+    /// enemies and squads are removed.
+    /// Damage reconciliation (Slice 4 Step 1): squad damage has
+    /// exactly ONE path, the squad phase's "10 per surviving
+    /// adjacent enemy, after the squad fires". The enemy phase
+    /// adds no squad damage, so an enemy that pursues a squad and
+    /// stands next to it is not counted twice for the same hit:
+    /// it hits in the squad phase if still adjacent after the
+    /// squad moves and fires, and not at all if the squad killed
+    /// it first. Player damage stays proximity-based in the enemy
+    /// phase (adjacent to the player, whatever the enemy's
+    /// movement target was), matching pre-Slice 4 behaviour.</summary>
     public void Advance()
     {
         Tick++;
+        var occupied = new List<(int X, int Y, int Z)>(Squads.Count + 1) { (Player.X, Player.Y, Player.Z) };
+        foreach (var s in Squads)
+            if (!s.IsDead) occupied.Add((s.X, s.Y, s.Z));
         foreach (var e in Enemies)
         {
-            e.TickToward(Player, Chunk);
+            var target = ChooseTarget(e);
+            e.TickTowardPosition(target.X, target.Y, target.Z, Chunk, occupied);
             if (e.IsAdjacentTo(Player)) Player.TakeDamage(Enemy.Damage);
         }
         Enemies.RemoveAll(e => e.IsDead);

@@ -507,13 +507,18 @@ holdWorld.DeploySquad(16, 5, 16);
 holdWorld.Advance();
 Eq(0, holdWorld.Enemies.Count, "orbital holding squad kills in-range enemy in one tick");
 // Range limit: distance 4 is out of the 3-range engagement. The
-// player is moved far away first, because enemies move toward the
-// player on Advance and would otherwise walk into squad range
-// before the squad phase runs; the enemy here moves in Z, away
-// from the squad's range, so the range rule itself is what is tested.
+// player is moved far away first. UPDATED in Slice 4 Step 1 for
+// the intended behaviour change: enemies now pursue the nearest
+// live target, so this enemy would walk toward the nearer squad
+// (distance 4) into range 3 and be killed before the range rule
+// could be isolated. A solid block on its step (19,5,16) blocks
+// that move, so the enemy stays at distance 4 and the range rule
+// itself is still what is tested — the pursuit-into-range case
+// is covered by the Slice 4 tests below instead.
 var rangeWorld = new WorldZone(42);
 var farEnemy = new Enemy(20, 5, 16); // distance 4 from rally (16,5,16)
 rangeWorld.Enemies.Add(farEnemy);
+rangeWorld.Chunk.TrySet(19, 5, 16, BlockType.Stone);
 rangeWorld.DeploySquad(16, 5, 16);
 rangeWorld.Player.X = 28; rangeWorld.Player.Z = 28;
 rangeWorld.Advance();
@@ -1062,6 +1067,151 @@ Check(!s3Loaded.CanDeployOrbitalSquad(), "slice 3 demo loaded game still at cap,
 var s3Snap = OrbitalView.Snapshot(s3Loaded.World);
 Eq(3, s3Snap.Count, "slice 3 demo snapshot shows 3 loaded squads");
 Eq(3, s3Snap[0].AliveMembers, "slice 3 demo loaded squad has 3 living members");
+
+// ---- Slice 4 Step 1: enemy AI targeting squads ----
+// Targeting rule (decided here, rationale in DECISIONS.md):
+// nearest live target by Manhattan distance, player wins ties,
+// squads in deploy order win squad-squad ties, moving and holding
+// squads alike, dead squads never targeted, re-derived every tick.
+// Damage reconciliation: squad damage stays ONLY in the squad
+// phase (10 per surviving adjacent enemy, after squad fire) —
+// the enemy phase adds no squad damage, so a pursued squad is
+// never counted twice for the same hit.
+// Enemy pursues the nearer squad: player far away, squad holding
+// at its spawn rally, enemy 4 away. The squad is weakened to 1
+// member so it deals 10 (not 30) and the enemy survives to show
+// both the move and the fire.
+var pursueWorld = new WorldZone(42);
+var pursueSquad = pursueWorld.DeploySquad(16, 5, 16)!;
+pursueSquad.TakeDamage(60); // 90 -> 30, 1 member
+pursueWorld.Player.X = 28; pursueWorld.Player.Z = 28;
+var pursueEnemy = new Enemy(20, 5, 16);
+pursueWorld.Enemies.Add(pursueEnemy);
+pursueWorld.Advance();
+Eq(19, pursueEnemy.X, "slice4 enemy moves toward nearer squad, not far player");
+Eq(20, pursueEnemy.Health, "slice4 1-member squad deals 10 to pursued enemy");
+Eq(30, pursueSquad.Health, "slice4 pursued squad unharmed at distance 3");
+// Player nearer wins: squad marches west, player stays at spawn,
+// enemy starts equidistant at tick start (both at 16) — tie goes
+// to the player, so the enemy steps east toward the player.
+var nearPlayerWorld = new WorldZone(42);
+var nearSquad = nearPlayerWorld.DeploySquad(10, 5, 16)!;
+var nearEnemy = new Enemy(20, 5, 16);
+nearPlayerWorld.Enemies.Add(nearEnemy);
+nearPlayerWorld.Advance();
+Eq(19, nearEnemy.X, "slice4 enemy moves toward nearer player, not farther squad");
+Eq(15, nearSquad.X, "slice4 squad still marches west while enemy goes for player");
+// Tie, distinct positions: squad holding at 16, player moved to
+// 24, enemy at 20 — distance 4 to both. Player wins the tie, so
+// the enemy steps east (21), not west toward the squad (19).
+var tieWorld = new WorldZone(42);
+tieWorld.DeploySquad(16, 5, 16);
+tieWorld.Player.X = 24;
+var tieEnemy = new Enemy(20, 5, 16);
+tieWorld.Enemies.Add(tieEnemy);
+tieWorld.Advance();
+Eq(21, tieEnemy.X, "slice4 tie goes to player, enemy moves toward player not squad");
+// Dead squad never targeted: dead squad at 16 is nearer than the
+// player at 28, but the enemy still steps toward the player.
+var deadTargetWorld = new WorldZone(42);
+var deadTargetSquad = deadTargetWorld.DeploySquad(16, 5, 16)!;
+deadTargetSquad.TakeDamage(90);
+deadTargetWorld.Player.X = 28;
+var deadTargetEnemy = new Enemy(20, 5, 16);
+deadTargetWorld.Enemies.Add(deadTargetEnemy);
+deadTargetWorld.Advance();
+Eq(21, deadTargetEnemy.X, "slice4 dead squad never targeted, enemy moves toward player");
+Eq(0, deadTargetWorld.Squads.Count, "slice4 dead squad removed on tick");
+// Moving squad targeted alike: squad marches east from 16, player
+// far away, enemy at 22 follows the squad's position tick by tick.
+var movingTargetWorld = new WorldZone(42);
+var movingTargetSquad = movingTargetWorld.DeploySquad(20, 5, 16)!;
+movingTargetWorld.Player.X = 28; movingTargetWorld.Player.Z = 28;
+var movingTargetEnemy = new Enemy(22, 5, 16);
+movingTargetWorld.Enemies.Add(movingTargetEnemy);
+movingTargetWorld.Advance();
+Eq(21, movingTargetEnemy.X, "slice4 enemy follows moving squad tick 1");
+Eq(17, movingTargetSquad.X, "slice4 moving squad marches while pursued tick 1");
+movingTargetWorld.Advance();
+Eq(20, movingTargetEnemy.X, "slice4 enemy follows moving squad tick 2");
+Eq(18, movingTargetSquad.X, "slice4 moving squad marches while pursued tick 2");
+// No double-count, non-killing case: 1-member squad adjacent to
+// an enemy, player far. Squad deals 10, surviving enemy deals 10
+// back in the squad phase — squad 30 -> 20, not 10 (double) and
+// not 30 (enemy phase hitting first would still leave 20 here,
+// so the killing case below is the sharper proof).
+var onceWorld = new WorldZone(42);
+var onceSquad = onceWorld.DeploySquad(16, 5, 16)!;
+onceSquad.TakeDamage(60); // 90 -> 30, 1 member
+onceWorld.Player.X = 28; onceWorld.Player.Z = 28;
+var onceEnemy = new Enemy(17, 5, 16);
+onceWorld.Enemies.Add(onceEnemy);
+onceWorld.Advance();
+Eq(20, onceEnemy.Health, "slice4 adjacent squad deals 10, enemy survives");
+Eq(20, onceSquad.Health, "slice4 squad takes adjacent damage exactly once");
+// No double-count, killing case: full squad adjacent to an enemy,
+// player far. If the enemy phase hit the squad before the squad
+// fired, the squad would be 80 even though it killed its attacker;
+// it stays 90, proving the enemy phase adds no squad damage.
+var killTargetWorld = new WorldZone(42);
+var killTargetSquad = killTargetWorld.DeploySquad(16, 5, 16)!;
+killTargetWorld.Player.X = 28; killTargetWorld.Player.Z = 28;
+var killTargetEnemy = new Enemy(17, 5, 16);
+killTargetWorld.Enemies.Add(killTargetEnemy);
+killTargetWorld.Advance();
+Eq(0, killTargetWorld.Enemies.Count, "slice4 full squad kills adjacent pursued enemy");
+Eq(90, killTargetSquad.Health, "slice4 squad unharmed when it kills its adjacent attacker");
+// Retargeting, derived each tick: enemy pursues the squad on tick
+// 1, the squad is then killed outright, and on tick 2 the enemy
+// turns toward the player (largest gap is Z, so it steps in Z).
+var retargetWorld = new WorldZone(42);
+var retargetSquad = retargetWorld.DeploySquad(16, 5, 16)!;
+retargetSquad.TakeDamage(60); // 1 member, so tick 1 does not kill the enemy
+retargetWorld.Player.X = 28; retargetWorld.Player.Z = 28;
+var retargetEnemy = new Enemy(20, 5, 16);
+retargetWorld.Enemies.Add(retargetEnemy);
+retargetWorld.Advance();
+Eq(19, retargetEnemy.X, "slice4 retarget setup enemy pursues squad first");
+retargetSquad.TakeDamage(90); // killed outright between ticks
+retargetWorld.Advance();
+Eq(17, retargetEnemy.Z, "slice4 enemy retargets player after squad dies");
+Eq(19, retargetEnemy.X, "slice4 retargeted enemy does not also step in X that tick");
+Eq(0, retargetWorld.Squads.Count, "slice4 retargeted dead squad removed");
+// Movement generalisation, direct: one rule for any target —
+// largest-gap axis, X tie-break, adjacent stop, solid block, and
+// an occupied cell all refuse the step.
+var genWorld = new WorldZone(42);
+var genEnemy = new Enemy(16, 5, 20);
+genEnemy.TickTowardPosition(20, 5, 20, genWorld.Chunk);
+Eq(17, genEnemy.X, "slice4 generalised movement steps in X on diagonal target");
+Eq(20, genEnemy.Z, "slice4 generalised movement does not also step in Z");
+var genTie = new Enemy(16, 5, 16);
+genTie.TickTowardPosition(20, 5, 20, genWorld.Chunk);
+Eq(17, genTie.X, "slice4 generalised movement tie goes to X first");
+Eq(16, genTie.Z, "slice4 generalised movement tie does not step in Z");
+var genAdjacent = new Enemy(16, 5, 17);
+genAdjacent.TickTowardPosition(16, 5, 16, genWorld.Chunk);
+Eq(17, genAdjacent.Z, "slice4 generalised movement stops when adjacent to target");
+var genBlockedWorld = new WorldZone(42);
+genBlockedWorld.Chunk.TrySet(17, 5, 16, BlockType.Stone);
+var genBlocked = new Enemy(16, 5, 16);
+genBlocked.TickTowardPosition(20, 5, 16, genBlockedWorld.Chunk);
+Eq(16, genBlocked.X, "slice4 generalised movement blocked by solid block");
+var genOccupied = new Enemy(16, 5, 16);
+genOccupied.TickTowardPosition(20, 5, 16, genWorld.Chunk, new[] { (17, 5, 16) });
+Eq(16, genOccupied.X, "slice4 generalised movement blocked by occupied cell");
+// Targeting needs no new save field: after a save/load round-trip
+// the enemy still pursues the nearer squad, because the target is
+// recomputed from saved positions and health, not read from a field.
+var saveTargetWorld = new WorldZone(42);
+var saveTargetSquad = saveTargetWorld.DeploySquad(16, 5, 16)!;
+saveTargetSquad.TakeDamage(60);
+saveTargetWorld.Player.X = 28; saveTargetWorld.Player.Z = 28;
+saveTargetWorld.Enemies.Add(new Enemy(20, 5, 16));
+var saveTargetLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveTargetWorld));
+saveTargetLoaded.Advance();
+Eq(19, saveTargetLoaded.Enemies[0].X, "slice4 targeting derived after load, no new save field");
+Eq(20, saveTargetLoaded.Enemies[0].Health, "slice4 loaded squad fires at pursued enemy");
 
 // ---- Silence instruction (recorded, not a test) ----
 

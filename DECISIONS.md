@@ -717,6 +717,92 @@ look inevitable.
   not close either.
 - Next, in order: Slice 4 Step 1, enemy AI targeting squads.
 
+## 2026-10-29 — Slice 4 Step 1: enemy AI targeting squads (under delegation)
+
+- Decision, closing the 0.20.0 scope's Step 1 questions:
+  enemies target the NEAREST live target by Manhattan
+  distance, re-derived every tick, with the player winning
+  ties and the first squad in deploy order winning
+  squad-squad ties. This confirms the scope's starting
+  hypothesis rather than overturning it, for a reason the
+  hypothesis alone did not state: nearest is the only rule
+  in the set that needs no new value, matches the squad's
+  own nearest-enemy rule, and still leaves the player a
+  real target — because "nearest" is per-tick, not a
+  permanent allegiance. The scope's warning (enemies
+  ignoring the player whenever a squad is anywhere
+  closer) is answered, not evaded: yes, a strictly nearer
+  squad draws the enemy, and that is the intended
+  interception behaviour — a squad placed between the
+  player and a wave, or marching toward a wave, SHOULD
+  draw pressure. Wholesale abandonment would be an enemy
+  that never returns to the player; this enemy returns
+  the tick the squad dies, moves away, or stops being
+  nearest, and it chooses the player on every tie.
+- Decision, on moving vs holding squads: treated ALIKE.
+  A moving squad that could not be targeted would make
+  the Step 2 moving doctrine untargetable exactly while
+  it moves into danger, which would defeat the Slice 4
+  pairing rationale. Holding squads are not safer by
+  rule; they are safer only in the sense that they do not
+  walk toward enemies.
+- Decision, on movement generalisation: one rule, in
+  `Enemy.TickTowardPosition`, with the old player-only
+  `TickToward` delegating to it. A second squad-target
+  movement method would have been a drift risk (two
+  tie-breaks, two block rules). The occupied-cell refusal
+  (player + live squads) is new but narrow: it prevents
+  an enemy pursuing one target from overlapping another
+  target it passes, which the old player-only movement
+  could already do to a squad standing in its path.
+- Decision, on the damage reconciliation: NO second hit
+  is added, so there is nothing to de-duplicate. Squad
+  damage keeps its single existing path (squad phase,
+  after squad fire, per surviving adjacent enemy), and
+  the enemy phase damages only the player, by proximity,
+  as before. Alternatives considered and rejected: an
+  enemy-phase squad attack plus a "skip already-hit
+  enemies" set in the squad phase would have been a
+  second damage system with per-tick bookkeeping to keep
+  it honest, for no behaviour the single path does not
+  already produce — a pursued enemy that stands adjacent
+  to a squad IS hit by that squad's phase damage, and a
+  squad that kills its attacker IS unhit, exactly as
+  before. The one asymmetry this accepts is stated
+  plainly: a moving squad can step away from an adjacent
+  enemy before the squad phase, so that enemy deals
+  nothing that tick — real-time kiting by marching to a
+  rally, not a bug, and holding squads (the only doctrine
+  so far) cannot do it.
+- Decision, on saves: nothing new is persisted. Targets
+  are not state; they are a function of positions and
+  health, both already saved, so a loaded world targets
+  correctly on its first tick. Adding a target field
+  would have risked loading a stale target for a squad
+  that died or moved, for no benefit.
+- Test evidence, and the one changed test: the Slice 2
+  range test was updated for the intended behaviour
+  change — under nearest targeting its enemy walks into
+  squad range and dies, which is itself targeting
+  evidence, so the test now blocks that step with a solid
+  block to keep isolating the range rule, and the new
+  pursuit tests cover walking into range. No other
+  pre-existing test changed, and no test was weakened to
+  pass: the killing-case test (full squad, adjacent
+  enemy, player far) is the sharp proof that the enemy
+  phase adds no squad damage, because an enemy-phase hit
+  would have left the squad at 80 despite killing its
+  attacker.
+- Deliberately NOT in this step: any second doctrine,
+  kind, or enemy type (Step 2 chooses the doctrine);
+  any price or cap change (Slice 3 economy stands);
+  any balance change to damage, range, or speed; any
+  claim about Windows Unity verification or the pending
+  Slice 1 director playtest gate — both remain open.
+- Next, in order: Slice 4 Step 2, exactly one second
+  doctrine, chosen in that step from Advance / Defend
+  Core / Patrol, deployed through the Slice 3 paid path.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

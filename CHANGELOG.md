@@ -1,5 +1,59 @@
 # Forgeborne — Changelog
 
+## 0.21.0 — 2026-10-29 — Slice 4 Step 1: enemy AI targeting squads
+
+- Enemies now pursue squads, not only the player. Targeting
+  rule, decided in this step (rationale in DECISIONS.md):
+  nearest live target by Manhattan distance, re-derived
+  every tick — the player or any live squad, moving and
+  holding squads alike. Ties go to the player, and ties
+  between squads go to the first squad in deploy order.
+  Dead squads are never targeted. The player remains a
+  valid target, chosen whenever nearest or tied and
+  re-chosen as soon as a nearer squad dies or moves away,
+  so an enemy ignores the player only for the ticks a
+  squad is strictly nearer — which is what lets a squad
+  intercept or draw pressure off the player, not abandon
+  the player wholesale.
+- Movement is generalised, not duplicated: `Enemy.
+  TickTowardPosition` now holds the single movement rule
+  (one voxel per tick, largest-gap axis, ties X then Y
+  then Z, no move when adjacent to the target, solid or
+  occupied cells refused), and the player-only
+  `TickToward` delegates to it. An enemy pursuing one
+  target cannot walk through and overlap another target
+  on its way there.
+- Damage reconciliation, the scope's named risk, is by
+  keeping exactly one squad-damage path: the squad phase's
+  existing "10 per surviving adjacent enemy, after the
+  squad fires". The enemy phase adds no squad damage, so
+  a pursued squad is never counted twice for the same
+  hit, and a squad that kills its attacker still takes
+  nothing from it. Player damage stays proximity-based in
+  the enemy phase, as before. Tick order (enemies, then
+  squads) is unchanged. No new save field: targets are
+  recomputed from saved positions and health, and a
+  save/load round-trip still targets correctly.
+- One pre-existing test changed for the intended behaviour
+  change, not for a bug: the Slice 2 range test's enemy
+  would now walk toward the nearer squad into range 3 and
+  be killed, so its step is blocked by a solid block to
+  keep isolating the range rule; pursuit-into-range is
+  covered by the new tests instead.
+- Tests: **495 passed, 0 failed** (was 466; +29: nearer-
+  squad pursuit, player-nearer, player tie-break, dead
+  squad never targeted, moving-squad pursuit over two
+  ticks, exactly-once adjacent damage in both the
+  surviving and the killing case, retargeting after a
+  squad dies, direct movement-generalisation cases, and
+  targeting derived after a save/load round-trip).
+  Demo unchanged: Slice 1 gathered 1, built 1, killed 2,
+  save 43,881 chars; Slice 2 save 43,908 chars; Step 1
+  scenario save 44,016 chars; Step 3 scenario save
+  44,103 chars. Next in order: Slice 4 Step 2, exactly
+  one second doctrine, chosen in that step from Advance /
+  Defend Core / Patrol.
+
 ## 0.20.0 — 2026-10-29 — Slice 4 scope (documentation only)
 
 - Added `docs/slice-04-scope.md`: Slice 4 is scoped, as its
