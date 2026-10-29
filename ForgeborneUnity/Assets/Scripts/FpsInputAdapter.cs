@@ -28,5 +28,12 @@ public class FpsInputAdapter : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E)) Simulation.GatherAhead();
         if (Input.GetKeyDown(KeyCode.Q)) Simulation.BuildWallAhead();
         if (Input.GetKeyDown(KeyCode.R)) Simulation.Weapon.Reload();
+        // Provisional Orbital command (reversible, to be replaced by
+        // a doctrine menu / rally picker later): O deploys a Vanguard
+        // squad under HoldGround at the player's current position,
+        // so it holds and fires there. No deployment cost or squad
+        // cap yet — pressing O repeatedly deploys repeatedly.
+        if (Input.GetKeyDown(KeyCode.O)) Simulation.DeployOrbitalSquad(
+            Simulation.World.Player.X, Simulation.World.Player.Y, Simulation.World.Player.Z);
     }
 }

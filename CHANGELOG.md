@@ -1,5 +1,38 @@
 # Forgeborne — Changelog
 
+## 0.11.0 — 2026-10-29 — Slice 2 Step 8: Orbital view snapshot + Unity adapter
+
+- Added `OrbitalView.Snapshot(world)` in `src/Forgeborne.Core/
+  Orbital.cs`: a copied, read-only snapshot of every live squad
+  (position, rally, health, living members, damage per tick,
+  at-rally / moving state, doctrine, kind), in deploy order.
+  It is a copy, not live references, so rendering cannot mutate
+  core state and a pre-tick snapshot keeps its pre-tick position.
+  Dead squads never appear (Advance already removes them).
+- Added Unity adapter `ForgeborneUnity/Assets/Scripts/
+  OrbitalSquadDisplay.cs` (NOT compiled headlessly, to be opened
+  in Unity 6000 on Windows): renders the snapshot as one text
+  line per squad, or `ORBITAL: NO SQUADS (press O to deploy)`
+  when empty. No squad logic lives in the adapter.
+- Provisional Unity command in `FpsInputAdapter`: **O** deploys
+  a Vanguard squad under HoldGround at the player's current
+  position, so it holds and fires there. This binding exists so
+  the view can actually be verified in Unity; it is reversible
+  and will be replaced by a doctrine menu / rally picker later.
+- Added `docs/orbital-view.md`: wiring steps, what the snapshot
+  carries, the provisional O key, and a Windows Unity verification
+  checklist (including the honest note that `GameManager.
+  LoadFromJson` still only logs a load and does not yet replace
+  `Simulation.World` in place, so the save-then-view step may
+  surface that as the next follow-up).
+- Still deliberately NOT in this step: 3D squad markers or an
+  Orbital camera, a doctrine menu or rally picker, deployment
+  cost or a squad cap, and enemy AI targeting squads. With the
+  view in place, Slice 2 can now be reviewed as a whole before
+  Slice 3 is scoped.
+- Tests: **254 passed, 0 failed** (was 235; +19). Demo unchanged:
+  still gathered 1, built 1, killed 2, save JSON 43,864 chars.
+
 ## 0.10.0 — 2026-10-29 — Slice 2 Step 7: Orbital squad save / load persistence
 
 - Squads are no longer session-only: `SaveData` gains a `Squads`

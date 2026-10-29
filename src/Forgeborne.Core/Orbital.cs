@@ -130,3 +130,56 @@ public sealed class TacticalSquad
         return nearest;
     }
 }
+
+/// <summary>
+/// Snapshot of one squad, copied by value at snapshot time.
+/// The Unity view renders this, never the live squad objects,
+/// so rendering cannot mutate core state and a snapshot taken
+/// before a tick still shows the pre-tick position afterwards.
+/// </summary>
+public sealed class SquadSnapshot
+{
+    public int X { get; init; }
+    public int Y { get; init; }
+    public int Z { get; init; }
+    public int RallyX { get; init; }
+    public int RallyY { get; init; }
+    public int RallyZ { get; init; }
+    public int Health { get; init; }
+    public int AliveMembers { get; init; }
+    public int DamagePerTick { get; init; }
+    public bool AtRally { get; init; }
+    public TacticalDoctrine Doctrine { get; init; }
+    public SquadKind Kind { get; init; }
+    /// <summary>True while the squad is still marching to its rally; false once it is holding and firing.</summary>
+    public bool IsMoving => !AtRally;
+}
+
+/// <summary>
+/// The Orbital view: a copied, read-only snapshot of every live
+/// squad in a world, in squad list order. This is the single
+/// source the Unity adapter renders; it contains no rendering
+/// logic and no second copy of squad rules. Dead squads are
+/// already removed by WorldZone.Advance, so they never appear.
+/// </summary>
+public static class OrbitalView
+{
+    public static IReadOnlyList<SquadSnapshot> Snapshot(WorldZone world)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        var list = new List<SquadSnapshot>(world.Squads.Count);
+        foreach (var s in world.Squads)
+        {
+            if (s.IsDead) continue;
+            list.Add(new SquadSnapshot
+            {
+                X = s.X, Y = s.Y, Z = s.Z,
+                RallyX = s.RallyX, RallyY = s.RallyY, RallyZ = s.RallyZ,
+                Health = s.Health, AliveMembers = s.AliveMembers,
+                DamagePerTick = s.DamagePerTick, AtRally = s.AtRally,
+                Doctrine = s.Doctrine, Kind = s.Kind,
+            });
+        }
+        return list;
+    }
+}

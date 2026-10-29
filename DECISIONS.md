@@ -327,6 +327,34 @@ look inevitable.
   the next candidate, after which Slice 2 can be reviewed as a
   whole before Slice 3 is scoped.
 
+## 2026-10-29 — Slice 2 Step 8: Orbital view snapshot + adapter (under delegation)
+
+- Decision: the Orbital view is a copied snapshot in core
+  (`OrbitalView.Snapshot`), rendered by a thin text adapter
+  (`OrbitalSquadDisplay`), closing the adapter gap the 0.9.0 and
+  0.10.0 decisions explicitly left open. A player in Unity can
+  now see squads exist, where they are, and whether they are
+  moving or holding — without any second copy of squad rules.
+- Design choices, all reversible: the snapshot copies values,
+  so a frame's display cannot change mid-frame and rendering
+  cannot mutate squads; the adapter is text-only, because 3D
+  markers and an Orbital camera are a larger, later step and
+  must not be half-built here; the Unity deploy key is O, at
+  the player's feet, because a view that cannot be triggered in
+  Unity cannot be verified there, and a feet-rally squad holds
+  immediately, which exercises the HOLDING display and firing
+  at once. A distant-rally picker is the later step, not smuggled
+  in as a half-done aiming mode.
+- Deliberately NOT in this step: 3D markers / Orbital camera,
+  doctrine menu / rally picker, deployment cost or squad cap
+  (O still deploys unlimited squads, as the headless command
+  does), enemy AI targeting squads. The `GameManager.
+  LoadFromJson` in-place-restore limitation is documented in
+  `docs/orbital-view.md` as a possible next follow-up, not hidden.
+- Next: with squads deployable, persistent, and now visible,
+  Slice 2 can be reviewed as a whole before Slice 3 is scoped;
+  that review, not another system, is the next candidate.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

@@ -601,6 +601,56 @@ deadSaveSquad.TakeDamage(90);
 var deadSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(deadSaveWorld));
 Eq(0, deadSaveLoaded.Squads.Count, "dead squad in save is skipped on load");
 
+// ---- Slice 2 Step 8: Orbital view snapshot + Unity adapter data ----
+// An empty world snapshots to an empty list, not null.
+var viewEmpty = new WorldZone(42);
+Eq(0, OrbitalView.Snapshot(viewEmpty).Count, "orbital view empty world snapshots to empty list");
+// A deployed squad snapshots with position, rally, health, members,
+// damage, doctrine, and kind — holding at its spawn-point rally.
+var viewWorld = new WorldZone(42);
+viewWorld.DeploySquad(16, 5, 16);
+var viewSnap = OrbitalView.Snapshot(viewWorld);
+Eq(1, viewSnap.Count, "orbital view snapshot has 1 squad");
+Eq(16, viewSnap[0].X, "orbital view snapshot squad X");
+Eq(16, viewSnap[0].RallyX, "orbital view snapshot squad rally X");
+Eq(90, viewSnap[0].Health, "orbital view snapshot squad health");
+Eq(3, viewSnap[0].AliveMembers, "orbital view snapshot squad members");
+Eq(30, viewSnap[0].DamagePerTick, "orbital view snapshot squad damage");
+Check(viewSnap[0].AtRally, "orbital view snapshot squad at rally");
+Check(!viewSnap[0].IsMoving, "orbital view snapshot holding squad is not moving");
+Eq(SquadKind.Vanguard, viewSnap[0].Kind, "orbital view snapshot squad kind");
+Eq(TacticalDoctrine.HoldGround, viewSnap[0].Doctrine, "orbital view snapshot squad doctrine");
+// A marching squad snapshots as moving, and the snapshot is a copy:
+// advancing the world after the snapshot leaves the old snapshot
+// at its pre-tick position.
+var viewMove = new WorldZone(42);
+viewMove.DeploySquad(20, 5, 16);
+var moveSnap = OrbitalView.Snapshot(viewMove);
+Check(moveSnap[0].IsMoving, "orbital view snapshot marching squad is moving");
+Check(!moveSnap[0].AtRally, "orbital view snapshot marching squad not at rally");
+viewMove.Advance();
+Eq(16, moveSnap[0].X, "orbital view snapshot is a copy, not the live squad");
+Eq(17, viewMove.Squads[0].X, "orbital view live squad moved after snapshot");
+// A wounded squad snapshots its reduced member count and damage.
+var viewWeak = new WorldZone(42);
+var weakViewSquad = viewWeak.DeploySquad(16, 5, 16)!;
+weakViewSquad.TakeDamage(60);
+var weakSnap = OrbitalView.Snapshot(viewWeak);
+Eq(1, weakSnap[0].AliveMembers, "orbital view wounded snapshot has 1 member");
+Eq(10, weakSnap[0].DamagePerTick, "orbital view wounded snapshot deals 10 per tick");
+// Two squads snapshot in deploy order, and a dead squad (removed
+// by Advance) never appears in a snapshot.
+var viewTwo = new WorldZone(42);
+viewTwo.DeploySquad(16, 5, 16);
+var viewTwoDead = viewTwo.DeploySquad(20, 5, 16)!;
+viewTwoDead.TakeDamage(90);
+viewTwo.Advance();
+Eq(1, OrbitalView.Snapshot(viewTwo).Count, "orbital view snapshot omits dead squad");
+// Snapshot through Simulation, the path the Unity adapter uses.
+var viewSim = new Simulation(42);
+viewSim.DeployOrbitalSquad(20, 5, 16);
+Eq(1, OrbitalView.Snapshot(viewSim.World).Count, "orbital view snapshot via simulation world has 1 squad");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
