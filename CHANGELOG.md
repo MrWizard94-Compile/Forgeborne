@@ -1,5 +1,29 @@
 # Forgeborne — Changelog
 
+## 0.1.0 — 2026-10-29 — Slice 1 Step 1: deterministic voxel core
+
+- Added `src/Forgeborne.Core`: 32^3 chunk, deterministic seeded
+  generation (bedrock, stone, ~4% EmberOre, sparse wood), gather
+  (stone / ore / wood, bedrock ungatherable, inventory-full does not
+  consume the block), build (wall 2 stone, workstation 10 stone +
+  5 ore, support rule, no floating builds), player (100 HP, 85
+  shields, shields-first damage, death at 0), enemies (move toward
+  player, attack adjacent for 10, death removes), waves, and JSON
+  save / load (chunk Base64, player, inventory, enemies with health,
+  seed, tick).
+- Added `tests/Forgeborne.Core.Tests`: headless console test runner,
+  no external packages. Verified 2026-10-29 with .NET 8 SDK
+  (8.0.427, installed locally in the dev environment, not in the
+  repo): **42 passed, 0 failed.**
+- Added `ForgeborneUnity/` skeleton: Packages manifest (Entities,
+  URP, Input System), ProjectVersion placeholder, and an integration
+  note. NOT compiled in the Linux headless environment; to be opened
+  in Unity 6000 on Windows. Canonical state remains
+  `Forgeborne.Core.WorldZone`.
+- Known limits of this step: no Unity scene, no FPS input, no voxel
+  meshing / rendering, no HUD, no Orbital mode. Those are Slice 1
+  Steps 2-4, not claimed here.
+
 ## 0.0.2 — 2026-10-29 — Delegation, engine, art direction
 
 - Director delegation recorded: Rob authorised Ember to make all

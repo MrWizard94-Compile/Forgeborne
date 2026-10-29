@@ -11,6 +11,13 @@ Thumbs.db
 # Local saves and test output (never commit player saves by default)
 /saves/
 *.save
+# .NET build output
+**/bin/
+**/obj/
+# Unity build output
+ForgeborneUnity/Library/
+ForgeborneUnity/Temp/
+ForgeborneUnity/Builds/
 # OS / editor
 .vscode/
 .idea/
