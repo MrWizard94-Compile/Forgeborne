@@ -1,5 +1,32 @@
 # Forgeborne — Changelog
 
+## 0.13.0 — 2026-10-29 — Slice 2 demo scenario (composition evidence)
+
+- Extended `demo/Forgeborne.Demo` with a Slice 2 scenario after
+  the unchanged Slice 1 run: one Simulation composed with every
+  Slice 2 system at once — seed-0 loot equipped (Titan Long
+  Pulse Rifle, 20 damage, 30 mag), the full Forge Survivor
+  cluster applied, a Kinetic Mill built, a Vanguard HoldGround
+  squad deployed at the player position, 20 ticks of combined
+  play, then a save/load round-trip. This closes the
+  composition gap named first by the 0.12.0 review: Slice 2
+  systems are now shown working together, not only in isolation.
+- Demo evidence this run: effective damage 24, core damage 29,
+  shields cap 105, speed 6.3 m/s; mill built and 1 block
+  excavated by tick 4; squad intact at 3 members / 90 HP through
+  tick 19; 2 enemies killed, player alive; squad survives the
+  save/load round-trip (1 squad loaded); Slice 2 save JSON
+  43,891 chars. Slice 1 demo unchanged: gathered 1, built 1,
+  killed 2, save JSON 43,864 chars.
+- Added 9 composed-integration tests: loot name, skilled damage
+  20 -> 24 and core damage 20 -> 29, shields cap 85 -> 105, mill
+  build, squad deploy, snapshot count, and save/load keeping the
+  squad — all through one Simulation, mirroring the demo.
+- Tests: **263 passed, 0 failed** (was 254; +9). Next in order:
+  (2) the `GameManager.LoadFromJson` in-place restore, then (3)
+  a doctrine menu / rally picker replacing provisional O. Slice 3
+  is still NOT scoped.
+
 ## 0.12.0 — 2026-10-29 — Slice 2 review as a whole (documentation only)
 
 - Added `docs/slice-02-review.md`: a headless review of all

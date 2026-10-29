@@ -382,6 +382,33 @@ look inevitable.
   picker replacing provisional O, with deployment cost/cap
   decided as part of that step.
 
+## 2026-10-29 — Slice 2 demo scenario (0.13.0, under delegation)
+
+- Decision: the Slice 2 demo scenario is step (1) from the
+  0.12.0 review, not a new Slice 2 system, so it does not reopen
+  the closed Slice 2 scope — it evidences it. The demo keeps
+  the Slice 1 run byte-identical in behaviour and appends the
+  composed run, so a Slice 2 regression cannot hide behind a
+  changed Slice 1 baseline, and the composed run's numbers are
+  printed as evidence rather than asserted as balance targets.
+- Design choices, all reversible: the demo uses the same
+  discriminating seed-0 loot and full cluster as the tests, so
+  demo and test evidence agree; the squad rallies on the player
+  position (hold-and-fire immediately) rather than marching, so
+  the 20-tick window shows engagement, not travel; the mill's
+  single excavated block is reported as-is (1, not a target),
+  because a demo that inflates its numbers would be worse than
+  no demo. No balance change is made on the strength of this
+  run — the numbers are first-pass values, still untuned.
+- Deliberately NOT in this step: any new system, any balance
+  change, any Slice 3 scope, and the LoadFromJson restore,
+  which remains next. The demo's save/load round-trip uses the
+  headless `SaveSystem.LoadZone`, not Unity's `GameManager`,
+  so it does not claim the Unity restore gap is closed.
+- Next, in order: (2) the `GameManager.LoadFromJson` in-place
+  restore, then (3) a doctrine menu / rally picker replacing
+  provisional O.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

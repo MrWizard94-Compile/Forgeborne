@@ -651,6 +651,23 @@ var viewSim = new Simulation(42);
 viewSim.DeployOrbitalSquad(20, 5, 16);
 Eq(1, OrbitalView.Snapshot(viewSim.World).Count, "orbital view snapshot via simulation world has 1 squad");
 
+// ---- Slice 2 composition: loot + skills + mill + squad in one Simulation ----
+var compLoot = LootGenerator.Generate(0, 1);
+var compBuild = new SkillBuild();
+Check(compBuild.Allocate("S1") && compBuild.Allocate("S2") && compBuild.Allocate("N1") && compBuild.Allocate("S3") && compBuild.Allocate("N2") && compBuild.Allocate("K1"), "slice 2 composition full cluster allocates");
+var compSim = new Simulation(42, compLoot, compBuild);
+Eq("Titan Long Pulse Rifle", compSim.Weapon.Name, "slice 2 composition loot weapon equipped");
+Eq(24, compSim.EffectiveDamage, "slice 2 composition skilled damage 20 -> 24");
+Eq(29, compSim.EffectiveCoreDamage, "slice 2 composition skilled core damage 20 -> 29");
+Eq(105, compSim.World.Player.MaxShields, "slice 2 composition shields cap 85 -> 105");
+compSim.World.Player.Inventory.Add(BlockType.Stone, 10);
+compSim.World.Player.Inventory.Add(BlockType.Wood, 5);
+Eq(BuildResult.Success, compSim.BuildKineticMillAhead(), "slice 2 composition kinetic mill builds");
+Check(compSim.DeployOrbitalSquad(compSim.World.Player.X, compSim.World.Player.Y, compSim.World.Player.Z) != null, "slice 2 composition squad deploys");
+Eq(1, OrbitalView.Snapshot(compSim.World).Count, "slice 2 composition snapshot has 1 squad");
+var compLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(compSim.World));
+Eq(1, compLoaded.Squads.Count, "slice 2 composition save/load keeps the squad");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
