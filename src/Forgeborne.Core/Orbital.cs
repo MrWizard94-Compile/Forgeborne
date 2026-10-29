@@ -1,16 +1,26 @@
 namespace Forgeborne.Core;
 
-/// <summary>Orbital Tactical doctrines. Prototype scope: HoldGround only.
-/// A doctrine is a standing order for a whole squad, not a per-unit
-/// command — the blueprint's "no individual micromanagement" rule.
-/// New doctrines are added as enum values with their own Tick
-/// behaviour, never as per-member orders.</summary>
+/// <summary>Orbital Tactical doctrines. A doctrine is a standing
+/// order for a whole squad, not a per-unit command — the
+/// blueprint's "no individual micromanagement" rule. New doctrines
+/// are added as enum values with their own Tick behaviour, never
+/// as per-member orders.</summary>
 public enum TacticalDoctrine
 {
     /// <summary>Move to the rally point, then hold it and engage
     /// enemies in range. While moving, the squad does not fire:
     /// relocation is the order until the rally is reached.</summary>
     HoldGround = 0,
+    /// <summary>Slice 4 Step 2: hunt the nearest living enemy, one
+    /// voxel per tick, and fire at the nearest enemy in range
+    /// whether or not the squad is at its rally — because this
+    /// doctrine has no holding point. The rally a picker still
+    /// requires to deploy is ignored after deployment: an
+    /// Advance squad with no living enemy stands still, it
+    /// does not march to its rally, and that is what keeps
+    /// Advance from collapsing into "HoldGround at a moving
+    /// rally". See MoveTowardNearestEnemy and FindTarget.</summary>
+    Advance = 1,
 }
 
 /// <summary>Squad types. Prototype scope: Vanguard only — a
@@ -97,7 +107,49 @@ public sealed class TacticalSquad
     public bool MoveTowardRally(VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
     {
         if (AtRally) return false;
-        int dx = RallyX - X, dy = RallyY - Y, dz = RallyZ - Z;
+        return MoveTowardPosition(RallyX, RallyY, RallyZ, chunk, enemies);
+    }
+
+    /// <summary>
+    /// Advance movement: one voxel per tick toward the NEAREST
+    /// living enemy, re-derived every call (Manhattan distance,
+    /// ties go to the first enemy in list order — the same rule
+    /// as FindTarget, so movement and fire never disagree about
+    /// which enemy is nearest). With no living enemy the squad
+    /// does not move at all: it does not fall back to its rally,
+    /// because a rally fallback would make Advance a HoldGround
+    /// squad whenever the battlefield is empty. The step itself
+    /// is the shared MoveTowardPosition rule, so Advance and
+    /// HoldGround cannot drift apart on axis choice, tie-break,
+    /// or blocking — only the target differs. A step onto the
+    /// target enemy's cell is refused (enemy-occupied), so an
+    /// advancing squad stops adjacent to its prey and fires
+    /// from there instead of overlapping it. Returns true if
+    /// the squad moved.
+    /// </summary>
+    public bool MoveTowardNearestEnemy(VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
+    {
+        Enemy? nearest = null;
+        int best = int.MaxValue;
+        foreach (var e in enemies)
+        {
+            if (e.IsDead) continue;
+            int d = Math.Abs(e.X - X) + Math.Abs(e.Y - Y) + Math.Abs(e.Z - Z);
+            if (d < best) { best = d; nearest = e; }
+        }
+        if (nearest == null) return false;
+        return MoveTowardPosition(nearest.X, nearest.Y, nearest.Z, chunk, enemies);
+    }
+
+    /// <summary>The single squad movement rule, shared by both
+    /// doctrines: one voxel on the largest-gap axis (ties X, then
+    /// Y, then Z), refused out of bounds, into a solid block, or
+    /// onto a living enemy's cell. Callers choose the target;
+    /// this method owns only the step.</summary>
+    private bool MoveTowardPosition(int targetX, int targetY, int targetZ,
+        VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
+    {
+        int dx = targetX - X, dy = targetY - Y, dz = targetZ - Z;
         int nx = X, ny = Y, nz = Z;
         if (Math.Abs(dx) >= Math.Abs(dy) && Math.Abs(dx) >= Math.Abs(dz)) nx += Math.Sign(dx);
         else if (Math.Abs(dy) >= Math.Abs(dz)) ny += Math.Sign(dy);
@@ -111,14 +163,20 @@ public sealed class TacticalSquad
     }
 
     /// <summary>
-    /// HoldGround engagement: only once holding the rally, the
-    /// nearest living enemy within EngagementRange (Manhattan).
-    /// Ties go to the first enemy in list order. Returns null if
-    /// the squad is still moving, dead, or nothing is in range.
+    /// Squad engagement: the nearest living enemy within
+    /// EngagementRange (Manhattan), ties to the first enemy in
+    /// list order. HoldGround fires only once holding its rally;
+    /// Advance fires regardless of its rally, because it has no
+    /// holding point — an advancing squad that is in range but
+    /// not at its rally is engaging, not relocating, so the
+    /// HoldGround "do not fire while moving" rule must not
+    /// silence it. Returns null if dead, or nothing is in range
+    /// (or, for HoldGround, the squad is still moving).
     /// </summary>
     public Enemy? FindTarget(IReadOnlyList<Enemy> enemies)
     {
-        if (IsDead || !AtRally) return null;
+        if (IsDead) return null;
+        if (Doctrine == TacticalDoctrine.HoldGround && !AtRally) return null;
         Enemy? nearest = null;
         int best = int.MaxValue;
         foreach (var e in enemies)

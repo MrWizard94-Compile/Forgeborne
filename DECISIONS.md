@@ -803,6 +803,134 @@ look inevitable.
   doctrine, chosen in that step from Advance / Defend
   Core / Patrol, deployed through the Slice 3 paid path.
 
+## 2026-10-29 — Slice 4 Step 2: second doctrine, Advance (under delegation)
+
+- Decision, closing the 0.20.0 scope's Step 2 question:
+  the second doctrine is ADVANCE. This confirms the scope's
+  starting hypothesis, for a reason the hypothesis alone did
+  not fully state: Advance is the only candidate whose value
+  depends on Step 1 having happened first. Before targeting,
+  a hunting squad would have advanced for free — enemies
+  would never have answered it. After Step 1, an advancing
+  squad walks toward enemies that now pursue squads, so it
+  is contested the whole way in, and it can also draw
+  pressure off the player by being the nearer target. That
+  is the Slice 4 pairing rationale paying off in the order
+  it was scoped in, not a doctrine chosen in isolation.
+- Decision, on why not Defend Core first: Defend Core would
+  have been HoldGround with a preset rally — march to the
+  fixed core, hold, fire in range. It reuses the existing
+  holding behaviour almost exactly, so it would have proved
+  very little about squads under fire beyond a different
+  destination, and the core objective is not yet under a
+  distinct attack pressure that makes core defence the
+  urgent doctrine. It is deferred, not rejected: once Advance
+  shows how contested movement behaves, Defend Core can be
+  judged as a real contrast (a squad that must stay put
+  under fire) rather than as HoldGround renamed.
+- Decision, on why not Patrol first: Patrol needs waypoint
+  state — a route, a current leg, a loop rule — and that
+  state would need a save-format decision (persist the leg
+  or restart the route on load) for a doctrine whose combat
+  value is unproven. Advance needs no new state at all:
+  its target is re-derived every tick from enemy positions
+  already in the world, so its save behaviour falls out of
+  the existing format. Patrol is deferred, not rejected; it
+  is the natural third doctrine once a moving doctrine and
+  a fixed-point doctrine both exist to contrast it with.
+- Decision, on the collapse risk the scope named: Advance
+  does NOT collapse into "HoldGround at a moving rally",
+  because it has no rally semantics after deployment at
+  all. A moving-rally doctrine would still be a waypoint
+  doctrine — go here, then hold and fire — with the waypoint
+  merely updated to the enemy's last position. Advance is
+  instead a target doctrine: every tick it re-derives the
+  nearest living enemy, moves one voxel toward it, and
+  fires in range regardless of any rally. The sharp test of
+  the difference is the empty battlefield: a moving-rally
+  squad would march to its last waypoint, while an Advance
+  squad stands still, and a second sharp test is the kill:
+  after its prey dies, Advance does not resume marching to
+  the deployment rally. Both are tested, and both pass.
+- Decision, on firing while moving: HoldGround's silence
+  while moving exists because relocation is its order —
+  firing mid-march would let it fight its way to a rally it
+  was ordered to reach intact. Advance has no relocation
+  order, so silencing it until it reaches a rally it ignores
+  would be nonsense: an advancing squad in range is already
+  doing its job. It therefore fires after moving, in the
+  same tick it enters range, and fires while adjacent even
+  though its movement step that tick was refused (onto an
+  enemy-occupied cell). Range, damage, and speed are
+  unchanged — Advance is a behaviour difference, not a
+  stat boost: same 3 range, same 10 per living member, same
+  1 voxel per tick.
+- Decision, on movement sharing: one step rule, in
+  TacticalSquad.MoveTowardPosition, with MoveTowardRally and
+  MoveTowardNearestEnemy as target-choosers only. A second
+  axis/tie-break/block rule for Advance would have been the
+  same drift risk Step 1 removed from enemy movement, and
+  the tests for blocked Advance movement reuse the same
+  expectations as HoldGround (solid block holds the squad,
+  fire still happens in range). Enemy-occupied refusal is
+  what makes an advancing squad stop adjacent to its prey
+  instead of overlapping it, and adjacent-enemy damage then
+  applies through the single existing squad-phase path —
+  no second damage system, no reconciliation problem to
+  solve twice.
+- Decision, on the picker and the rally it still requires:
+  the picker is a deploy mechanism, not a doctrine: it needs
+  a point to spawn a squad at, and its Confirm path is
+  shared by both doctrines. For Advance that point is a
+  deployment formality, recorded in the save (rally fields
+  were already persisted) but ignored by the doctrine
+  afterwards. This is stated in the code, the docs, and the
+  tests rather than hidden, because a player picking a
+  rally for an Advance squad and expecting it to go there
+  would otherwise be misled. If a future doctrine needs
+  the rally to mean something different again, that meaning
+  is a doctrine decision, not a picker change.
+- Decision, on pricing: none invented. Advance deploys
+  through TryDeployPaidSquad at the settled 10 EmberOre /
+  cap 3, tested through the picker, because the scope
+  refused to smuggle an economy decision into a doctrine
+  step. A doctrine-specific price would need its own
+  justification (is Advance stronger than HoldGround in a
+  way a price should reflect?) and that justification does
+  not exist yet — Advance trades a holding position for
+  exposure to pursuing enemies, so it is not obviously
+  stronger, only differently risky. Balance remains a
+  later pass, not a claim in this step.
+- Decision, on saves: nothing new is persisted, for the
+  same reason as Step 1 — doctrine and rally were already
+  saved fields, and Advance's target is derived, not stored.
+  A loaded Advance squad hunts from its saved position on
+  its first tick, tested. The one known presentation gap is
+  also recorded, not fixed here: OrbitalSquadDisplay words a
+  squad MOVING / HOLDING by rally position, which for
+  Advance is not a hunting state (an Advance squad standing
+  adjacent to an enemy and firing still reads MOVING unless
+  it happens to stand on its rally). The doctrine name in
+  the same line is the reliable marker; a hunting-state
+  display word belongs with the Slice 5 presentation work
+  (pitch / markers), not smuggled into a combat step.
+- Test evidence: no pre-existing test changed and none
+  weakened — the 33 new tests are all additive, and the
+  full suite passes on the first run of the new code. The
+  stale adapter comment claiming no cost or cap existed
+  (false since 0.18.0) was corrected in the same step, as
+  a documentation fix, not a behaviour change.
+- Deliberately NOT in this step: Defend Core and Patrol
+  (deferred, not rejected); any second squad type; any
+  price, cap, damage, range, or speed change; any
+  waypoint / route state; any claim about Windows Unity
+  verification (adapter key 2 is written, not compiled or
+  run in Unity — checklist item 8 in docs/orbital-command.md)
+  or about the pending Slice 1 director playtest gate —
+  both remain open.
+- Next, in order: Slice 4 Step 3, demo scenario +
+  documentation-only Slice 4 review.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

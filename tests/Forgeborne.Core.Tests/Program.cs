@@ -1213,6 +1213,129 @@ saveTargetLoaded.Advance();
 Eq(19, saveTargetLoaded.Enemies[0].X, "slice4 targeting derived after load, no new save field");
 Eq(20, saveTargetLoaded.Enemies[0].Health, "slice4 loaded squad fires at pursued enemy");
 
+// ---- Slice 4 Step 2: second doctrine — Advance (chosen from Advance / Defend Core / Patrol) ----
+// Advance is a hunting doctrine, not HoldGround at a moving rally:
+// it seeks the nearest living enemy every tick, fires in range
+// whether or not it is at its rally, and stands still when no
+// enemy lives — it never falls back to marching to its rally.
+// Defend Core and Patrol are deferred, not rejected (see DECISIONS).
+// Deploy accepts Advance; HoldGround behaviour is unchanged elsewhere.
+var advWorld = new WorldZone(42);
+var advSquad = advWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance)!;
+Eq(TacticalDoctrine.Advance, advSquad.Doctrine, "slice4 advance deploy doctrine is Advance");
+Eq(SquadKind.Vanguard, advSquad.Kind, "slice4 advance deploy kind stays Vanguard");
+Check(advWorld.DeploySquad(5, 5, 5, (TacticalDoctrine)99) == null, "slice4 advance unknown doctrine still rejected");
+// No living enemy: an Advance squad stands still, it does NOT march to its rally.
+var advIdleWorld = new WorldZone(42);
+var advIdle = advIdleWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance)!;
+for (int i = 0; i < 3; i++) advIdleWorld.Advance();
+Eq(16, advIdle.X, "slice4 advance with no enemy does not march to rally X");
+Eq(16, advIdle.Z, "slice4 advance with no enemy does not march to rally Z");
+// Advance moves toward its enemy, not its rally: rally east, enemy
+// west. Weakened to 1 member so its fire (10) does not kill the
+// enemy outright and hide the movement. Enemy phase first: the
+// enemy is tied with the player at 4, so the player wins the tie
+// and the enemy steps east toward the player, then the squad
+// steps west toward the enemy and fires.
+var advWestWorld = new WorldZone(42);
+var advWest = advWestWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance)!;
+advWest.TakeDamage(60); // 90 -> 30, 1 member
+advWestWorld.Enemies.Add(new Enemy(12, 5, 16));
+advWestWorld.Advance();
+Eq(15, advWest.X, "slice4 advance moves toward enemy, not rally");
+Eq(13, advWestWorld.Enemies[0].X, "slice4 advance enemy steps toward player on tie before squad moves");
+Eq(20, advWestWorld.Enemies[0].Health, "slice4 advance weakened squad deals 10 to enemy it moved toward");
+// Advance fires while NOT at its rally: adjacent enemy, rally far
+// east. The step onto the enemy's cell is refused, so the squad
+// stays put and fires — HoldGround would stay silent while moving.
+var advFireWorld = new WorldZone(42);
+var advFire = advFireWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+advFire.TakeDamage(60); // 1 member, 10 damage
+advFireWorld.Player.X = 28; advFireWorld.Player.Z = 28;
+advFireWorld.Enemies.Add(new Enemy(17, 5, 16));
+advFireWorld.Advance();
+Eq(16, advFire.X, "slice4 advance does not step onto adjacent enemy cell");
+Check(!advFire.AtRally, "slice4 advance firing squad is not at its rally");
+Eq(20, advFireWorld.Enemies[0].Health, "slice4 advance fires at adjacent enemy despite not at rally");
+Eq(20, advFire.Health, "slice4 advance takes single adjacent damage after firing");
+// Advance moves, then fires in the same tick on entering range:
+// enemy 4 away, player far so the enemy pursues the squad. Enemy
+// steps 20 -> 19, squad steps 16 -> 17 (distance 2), fires 10.
+var advRangeWorld = new WorldZone(42);
+var advRange = advRangeWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+advRange.TakeDamage(60);
+advRangeWorld.Player.X = 28; advRangeWorld.Player.Z = 28;
+advRangeWorld.Enemies.Add(new Enemy(20, 5, 16));
+advRangeWorld.Advance();
+Eq(17, advRange.X, "slice4 advance moves into range in one tick");
+Eq(19, advRangeWorld.Enemies[0].X, "slice4 advance enemy pursues advancing squad");
+Eq(20, advRangeWorld.Enemies[0].Health, "slice4 advance fires in the same tick it enters range");
+// Advance picks the nearest enemy, ties to the first in list order:
+// enemies west and east both 4 away at tick start; the player at
+// the spawn is tied with both, so both enemies step toward the
+// player first, leaving a 3-3 tie the squad breaks west (first).
+var advTieWorld = new WorldZone(42);
+var advTie = advTieWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+advTie.TakeDamage(60);
+advTieWorld.Enemies.Add(new Enemy(12, 5, 16));
+advTieWorld.Enemies.Add(new Enemy(20, 5, 16));
+advTieWorld.Advance();
+Eq(15, advTie.X, "slice4 advance tie goes to first enemy in list order");
+// Advance blocked by a solid block holds its position that tick
+// but still fires at the in-range enemy it cannot reach.
+var advBlockWorld = new WorldZone(42);
+advBlockWorld.Chunk.TrySet(17, 5, 16, BlockType.Stone);
+var advBlock = advBlockWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+advBlock.TakeDamage(60);
+advBlockWorld.Enemies.Add(new Enemy(20, 5, 16));
+advBlockWorld.Advance();
+Eq(16, advBlock.X, "slice4 advance blocked by solid block stays put");
+Eq(20, advBlockWorld.Enemies[0].Health, "slice4 advance blocked squad still fires in range");
+// Advance stops hunting when its prey dies: full squad kills an
+// enemy on tick 1, then on tick 2 it stands still instead of
+// marching to the rally it was deployed with.
+var advStopWorld = new WorldZone(42);
+var advStop = advStopWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+advStopWorld.Player.X = 28; advStopWorld.Player.Z = 28;
+advStopWorld.Enemies.Add(new Enemy(19, 5, 16));
+advStopWorld.Advance();
+Eq(0, advStopWorld.Enemies.Count, "slice4 advance full squad kills enemy in range");
+Eq(17, advStop.X, "slice4 advance position after killing its enemy");
+advStopWorld.Advance();
+Eq(17, advStop.X, "slice4 advance stands still after prey dies, no rally fallback");
+// Advance persists through save/load and keeps hunting afterwards:
+// loaded squad doctrine is Advance and it moves toward its enemy,
+// not toward the rally stored in the save.
+var advSaveWorld = new WorldZone(42);
+var advSave = advSaveWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+advSave.TakeDamage(60);
+advSaveWorld.Player.X = 28; advSaveWorld.Player.Z = 28;
+advSaveWorld.Enemies.Add(new Enemy(20, 5, 16));
+var advSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(advSaveWorld));
+Eq(TacticalDoctrine.Advance, advSaveLoaded.Squads[0].Doctrine, "slice4 advance doctrine survives save/load");
+Eq(24, advSaveLoaded.Squads[0].RallyX, "slice4 advance rally survives save/load");
+advSaveLoaded.Advance();
+Eq(17, advSaveLoaded.Squads[0].X, "slice4 advance loaded squad moves toward enemy, not rally");
+Eq(20, advSaveLoaded.Enemies[0].Health, "slice4 advance loaded squad fires after moving into range");
+// Picker: Advance is selectable, and a picker confirm deploys it
+// through the paid path — 10 EmberOre charged, cap unchanged —
+// with no new price invented for the doctrine.
+var advPickSim = new Simulation(42);
+Check(advPickSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance), "slice4 advance picker doctrine selectable");
+Eq(TacticalDoctrine.Advance, advPickSim.OrbitalCommand.Doctrine, "slice4 advance picker selection sticks");
+advPickSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+advPickSim.BeginOrbitalPick();
+Check(advPickSim.SetOrbitalRally(20, 5, 16), "slice4 advance picker rally set");
+var advPicked = advPickSim.ConfirmOrbitalDeploy();
+Check(advPicked != null, "slice4 advance picker confirm deploys");
+Eq(TacticalDoctrine.Advance, advPicked!.Doctrine, "slice4 advance picker squad doctrine");
+Eq(0, advPickSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice4 advance picker deploy charges the settled 10 ore");
+Check(!advPickSim.OrbitalCommand.IsPicking, "slice4 advance picker closes after confirm");
+// Snapshot carries the new doctrine, so the Unity display can show it.
+var advViewWorld = new WorldZone(42);
+advViewWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+Eq(TacticalDoctrine.Advance, OrbitalView.Snapshot(advViewWorld)[0].Doctrine, "slice4 advance snapshot doctrine");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

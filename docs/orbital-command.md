@@ -12,9 +12,10 @@ is gone: in play, a deploy is now always a picked rally.
 
 `OrbitalCommand` in `src/Forgeborne.Core/Orbital.cs` is the
 menu state, in pure C# core — no rendering, no second copy of
-squad rules. It holds the selected doctrine (HoldGround) and
-squad kind (Vanguard), the only pair that exists so far, and
-a pending rally while picking. Flow:
+squad rules. It holds the selected doctrine (HoldGround by
+default, Advance since Slice 4 Step 2) and squad kind
+(Vanguard, still the only kind), and a pending rally while
+picking. Flow:
 
 1. `BeginPick()` opens the picker and clears any stale pending
    rally, so Enter cannot deploy yesterday's point.
@@ -55,9 +56,47 @@ no longer uses it.
   aiming is a later FPS step, not claimed here.
 - **Enter** — deploy the selected squad at the pending rally.
 - **Esc** — cancel the pick, no squad.
-- **1** — re-select HoldGround / Vanguard (the only pair).
+- **1** — re-select HoldGround / Vanguard.
+- **2** — select Advance / Vanguard (Slice 4 Step 2).
 - While picking, the mouse does not fire: Enter is the confirm,
   so a click cannot shoot while the player is aiming a rally.
+
+## Second doctrine — Advance (Slice 4 Step 2, 0.22.0)
+
+Chosen in that step from Advance / Defend Core / Patrol, with
+the reasoning in DECISIONS.md. Advance is a hunting doctrine,
+not HoldGround at a moving rally:
+
+- Each tick the squad moves one voxel toward its NEAREST living
+  enemy (Manhattan, first in list order on ties), re-derived
+  every tick — the same nearest-enemy rule as its fire, so
+  movement and fire never disagree about the prey.
+- It fires at the nearest enemy in range 3 whether or not it is
+  at its rally. HoldGround's "do not fire while moving" rule
+  does not apply to Advance, because an advancing squad in
+  range is engaging, not relocating.
+- The rally the picker still requires to deploy is IGNORED
+  after deployment for Advance. With no living enemy the squad
+  stands still; it does not march to its rally, and it stops
+  hunting (and stands still) once its prey dies. That
+  no-rally-fallback is the behaviour that keeps Advance from
+  collapsing into HoldGround.
+- Movement itself is not a second rule: Advance and HoldGround
+  share one step rule (largest-gap axis, X/Y/Z tie-break,
+  solid and enemy-occupied cells refused), only the target
+  differs. Adjacent-enemy damage is unchanged — one path, in
+  the squad phase, after the squad fires.
+- Pricing is settled, not reopened: Advance deploys through
+  the Slice 3 paid path, 10 EmberOre, cap 3 live squads, no
+  new price. Vanguard is still the only squad kind.
+- Display note, not a core rule: `OrbitalSquadDisplay` still
+  words a squad MOVING / HOLDING by its rally position, so for
+  an Advance squad that word is rally-relative, not a hunting
+  state — it can read MOVING while the squad is standing
+  adjacent to an enemy and firing. The doctrine name in the
+  same line (`VANGUARD ADVANCE`) is the reliable marker. A
+  hunting-state display word is a presentation gap, not a
+  core behaviour gap.
 
 `OrbitalSquadDisplay.cs` shows a picker prompt line first while
 picking (`ORBITAL: PICKING RALLY - VANGUARD HOLDGROUND ->
@@ -131,6 +170,13 @@ final balance):
 7. [ ] Save, close, reopen, load: a picked squad returns
    (persistence is headless-tested in 0.10.0, restore in
    0.14.0; this step checks the Unity path shows it).
+8. [ ] Advance, added 0.22.0 (adapter code written, NOT yet
+   compiled or run in Unity on Windows): press O, press 2,
+   aim, Enter — the prompt shows VANGUARD ADVANCE, the squad
+   deploys for 10 EmberOre, and it hunts the nearest enemy
+   instead of marching to the picked rally; with no enemy it
+   stands still. Do not claim this verified in Unity until
+   this item is completed there and recorded in DECISIONS.md.
 
 Record the result of each step, with Unity version and GPU, in
 DECISIONS.md.

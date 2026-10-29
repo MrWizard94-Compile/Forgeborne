@@ -1,5 +1,52 @@
 # Forgeborne — Changelog
 
+## 0.22.0 — 2026-10-29 — Slice 4 Step 2: second doctrine, Advance
+
+- Exactly one second doctrine, chosen in this step from
+  Advance / Defend Core / Patrol (rationale in DECISIONS.md):
+  Advance. An Advance Vanguard squad hunts the nearest living
+  enemy, one voxel per tick, re-derived every tick (Manhattan,
+  first in list order on ties), and fires at the nearest enemy
+  in range 3 whether or not it is at its rally. The rally the
+  picker still requires to deploy is ignored after deployment
+  for Advance: with no living enemy the squad stands still,
+  and it stands still again once its prey dies — it never
+  falls back to marching to its rally, which is what keeps
+  Advance from collapsing into "HoldGround at a moving
+  rally". Movement is not duplicated: Advance and HoldGround
+  share one step rule in TacticalSquad (largest-gap axis,
+  X/Y/Z tie-break, solid and enemy-occupied cells refused);
+  only the target differs. Adjacent-enemy damage is unchanged
+  (one path, squad phase, after squad fire), and HoldGround
+  behaviour is unchanged.
+- Picker and economy: Advance is selectable in core via
+  OrbitalCommand.SelectDoctrine and in the Unity adapter via
+  key 2 (1 stays HoldGround); a picker confirm deploys it
+  through the Slice 3 paid path — 10 EmberOre, cap 3 live
+  squads — with no new price invented. Save/load needs no
+  new field: doctrine and rally were already persisted, and
+  a loaded Advance squad keeps hunting from its saved
+  position. The Unity adapter code is written, NOT compiled
+  or run in Unity on Windows; see the new checklist item 8
+  in docs/orbital-command.md.
+- Also corrected a stale adapter comment that still claimed
+  no deployment cost or squad cap existed (settled in 0.18.0).
+- Tests: **528 passed, 0 failed** (was 495; +33: Advance
+  deploy, no-enemy standstill, moves toward enemy not rally,
+  fires while not at rally, move-then-fire entering range,
+  nearest-enemy list-order tie, solid-block hold with fire,
+  stops after prey dies with no rally fallback, save/load
+  hunting, paid picker deploy at the settled price, snapshot
+  doctrine). Demo unchanged: Slice 1 gathered 1, built 1,
+  killed 2, save 43,881 chars; Slice 2 save 43,908 chars;
+  Step 1 scenario save 44,016 chars; Step 3 scenario save
+  44,103 chars. Next in order: Slice 4 Step 3, demo scenario
+  + documentation-only review.
+- Defend Core and Patrol are deferred, not rejected; the
+  display's MOVING / HOLDING word remains rally-relative, so
+  for Advance it is not a hunting state — recorded as a
+  presentation gap in DECISIONS.md and docs/orbital-command.md.
+
 ## 0.21.0 — 2026-10-29 — Slice 4 Step 1: enemy AI targeting squads
 
 - Enemies now pursue squads, not only the player. Targeting

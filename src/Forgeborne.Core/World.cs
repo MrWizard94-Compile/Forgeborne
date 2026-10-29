@@ -295,17 +295,21 @@ public sealed class WorldZone
     }
 
     /// <summary>
-    /// Orbital squad phase, in squad list order: move toward the
-    /// rally, then (only if holding) fire at the nearest enemy in
-    /// range, then take 10 damage per enemy still adjacent to the
-    /// squad. A squad at 0 health is removed at the end of the phase.
+    /// Orbital squad phase, in squad list order: move by doctrine
+    /// (HoldGround toward its rally, Advance toward its nearest
+    /// living enemy — no rally fallback when no enemy lives),
+    /// then fire at the nearest enemy in range (HoldGround only
+    /// once holding; Advance whenever in range), then take 10
+    /// damage per enemy still adjacent to the squad. A squad at
+    /// 0 health is removed at the end of the phase.
     /// </summary>
     private void RunSquads()
     {
         foreach (var squad in Squads.ToList())
         {
             if (squad.IsDead) continue;
-            squad.MoveTowardRally(Chunk, Enemies);
+            if (squad.Doctrine == TacticalDoctrine.Advance) squad.MoveTowardNearestEnemy(Chunk, Enemies);
+            else squad.MoveTowardRally(Chunk, Enemies);
             var target = squad.FindTarget(Enemies);
             if (target != null) AttackEnemy(target, squad.DamagePerTick);
             int adjacent = 0;
