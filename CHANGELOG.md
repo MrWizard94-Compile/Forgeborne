@@ -1,5 +1,20 @@
 # Forgeborne — Changelog
 
+## 0.5.0 — 2026-10-29 — Slice 2 Step 2: first passive skill cluster
+
+- Added `SkillGraph.ForgeSurvivorCluster`: 6 nodes only, NOT the
+  full 1,500-node graph. Travel: Sturdy Hands (+5% damage), Iron
+  Skin (+10 shields), Swift Feet (+5% move speed). Notable:
+  Forge Heart (+15% damage, +10 shields, requires S1+S2),
+  Scavenger (+20% gather, requires S3). Keystone: Corebreaker
+  (+25% core damage, +5 workstation regen, requires N1+N2).
+- `SkillBuild`: prereq-gated allocation, duplicate/unknown
+  rejected, summed effects, Base64 encode/decode round-trip.
+  Effects are data only in this step — applying them to
+  Player/Weapon/Simulation is the next Slice 2 step, so the
+  graph can be tested before it changes gameplay.
+- Tests: **111 passed, 0 failed** (was 100).
+
 ## 0.4.1 — 2026-10-29 — Workstation real effect + Slice 1 playtest gate doc
 
 - Workstation now has a real, distinct effect: within Manhattan

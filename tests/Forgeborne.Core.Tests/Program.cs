@@ -276,6 +276,22 @@ farWorld.Chunk.TrySet(1, 5, 1, BlockType.Workstation);
 farWorld.Advance();
 Check(farWorld.Player.Shields == 65, $"far workstation does not restore shields (got {farWorld.Player.Shields})");
 
+// ---- Slice 2 Step 2: passive skill cluster ----
+var build = new SkillBuild();
+Check(!build.Allocate("N1"), "skill prereq blocks N1 before S1+S2");
+Check(build.Allocate("S1") && build.Allocate("S2"), "skill travel nodes allocate");
+Check(!build.Allocate("S1"), "skill duplicate allocate rejected");
+Check(build.Allocate("N1"), "skill N1 allocates after prereqs");
+Check(!build.Allocate("K1"), "skill keystone blocks before N2");
+Check(build.Allocate("S3") && build.Allocate("N2") && build.Allocate("K1"), "skill full cluster allocates in order");
+Check(build.TotalEffect("DamagePct") == 20, $"skill total DamagePct 20 (got {build.TotalEffect("DamagePct")})");
+Check(build.TotalEffect("ShieldBonus") == 20, $"skill total ShieldBonus 20 (got {build.TotalEffect("ShieldBonus")})");
+Check(build.TotalEffect("CoreDamagePct") == 25, "skill keystone CoreDamagePct 25");
+var encoded = build.Encode();
+var decoded = SkillBuild.Decode(encoded);
+Check(decoded.Allocated.Count == 6 && decoded.TotalEffect("DamagePct") == 20, "skill encode/decode round-trip preserves build");
+Check(!new SkillBuild().Allocate("NOPE"), "skill unknown node rejected");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
