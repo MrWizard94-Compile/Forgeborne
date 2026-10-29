@@ -569,6 +569,38 @@ simOrb.Tick(0.1f, 0, 0, false);
 Eq(17, simSquad!.X, "simulation orbital squad moves on sim tick");
 Check(simOrb.DeployOrbitalSquad(-1, 5, 5) == null, "simulation deploy out-of-bounds rally rejected");
 
+// ---- Slice 2 Step 7: Orbital squad save / load persistence ----
+// A wounded squad survives a save/load round-trip with position,
+// rally, health, and member count intact, and keeps moving after load.
+var saveSquadWorld = new WorldZone(42);
+var saveSquad = saveSquadWorld.DeploySquad(20, 5, 16)!;
+saveSquadWorld.Advance(); // squad moves 16 -> 17 toward its rally
+saveSquad.TakeDamage(60); // 90 -> 30, 1 member left
+var saveSquadFull = saveSquadWorld.DeploySquad(20, 5, 16)!;
+var saveSquadJson = SaveSystem.SaveZone(saveSquadWorld);
+var saveSquadLoaded = SaveSystem.LoadZone(saveSquadJson);
+Eq(2, saveSquadLoaded.Squads.Count, "save/load squad count preserved");
+var loadedWounded = saveSquadLoaded.Squads[0];
+Eq(17, loadedWounded.X, "save/load wounded squad position preserved");
+Eq(20, loadedWounded.RallyX, "save/load squad rally preserved");
+Eq(30, loadedWounded.Health, "save/load wounded squad health preserved");
+Eq(1, loadedWounded.AliveMembers, "save/load wounded squad has 1 member");
+Eq(TacticalDoctrine.HoldGround, loadedWounded.Doctrine, "save/load squad doctrine preserved");
+Eq(SquadKind.Vanguard, loadedWounded.Kind, "save/load squad kind preserved");
+Eq(90, saveSquadLoaded.Squads[1].Health, "save/load full squad health preserved");
+saveSquadLoaded.Advance();
+Eq(18, loadedWounded.X, "loaded squad keeps moving toward rally after load");
+// Old saves (no Squads field) still load, with no squads — not a crash.
+var oldJson = saveSquadJson[..saveSquadJson.LastIndexOf(",\"Squads\":", StringComparison.Ordinal)] + "}";
+var oldLoaded = SaveSystem.LoadZone(oldJson);
+Eq(0, oldLoaded.Squads.Count, "old save without squads loads with no squads");
+// A dead squad in the save is skipped on load, not resurrected.
+var deadSaveWorld = new WorldZone(42);
+var deadSaveSquad = deadSaveWorld.DeploySquad(20, 5, 16)!;
+deadSaveSquad.TakeDamage(90);
+var deadSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(deadSaveWorld));
+Eq(0, deadSaveLoaded.Squads.Count, "dead squad in save is skipped on load");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

@@ -1,5 +1,28 @@
 # Forgeborne — Changelog
 
+## 0.10.0 — 2026-10-29 — Slice 2 Step 7: Orbital squad save / load persistence
+
+- Squads are no longer session-only: `SaveData` gains a `Squads`
+  list, one entry per squad — position, rally, health, doctrine,
+  kind — in the same int-array style as the existing enemy entries,
+  and `SaveSystem.LoadZone` restores them. A wounded squad keeps
+  its member count (30 HP = 1 member still firing) and keeps
+  moving toward its rally on the first tick after load.
+- `TacticalSquad` gains a load constructor with restored health,
+  clamped to 0..90, so a corrupt save cannot create a super-squad.
+  The loader skips malformed entries instead of failing the whole
+  load: wrong length, out-of-bounds position or rally, unknown
+  doctrine or kind, and dead (0 HP) squads, which are not
+  resurrected. Old saves without the `Squads` field still load,
+  with no squads, as before.
+- Still deliberately NOT in this step: deployment cost or squad
+  cap, additional doctrines or squad types, enemy AI targeting
+  squads, and an Orbital camera / Unity adapter. The next
+  candidate is the Orbital view / adapter note.
+- Tests: **235 passed, 0 failed** (was 224; +11). Demo unchanged:
+  still gathered 1, built 1, killed 2, save JSON 43,864 chars
+  (was 43,852; the +12 is the empty `Squads` array in the save).
+
 ## 0.9.0 — 2026-10-29 — Slice 2 Step 6: Orbital Tactical doctrine prototype (one doctrine, one squad type)
 
 - Added `src/Forgeborne.Core/Orbital.cs`: `TacticalDoctrine.

@@ -308,6 +308,25 @@ look inevitable.
   this prototype, to be chosen as the next small slice; Slice 2
   is still not treated as complete until those are addressed.
 
+## 2026-10-29 — Slice 2 Step 7: Orbital squads persist in saves (under delegation)
+
+- Decision: squads are saved and loaded with the zone, closing
+  the session-only gap the 0.9.0 decision explicitly left open.
+  A squad that survives a fight, is wounded, and is saved mid-march
+  resumes that march after load, at the same health.
+- Design choices, all reversible: squads ride the existing save
+  format (int arrays, like enemies) rather than a second save
+  system; health restores through a clamped load constructor, so
+  member count follows from health with no extra saved field;
+  malformed squad entries are skipped, never fatal, because one
+  bad squad must not brick a whole save; dead squads are not
+  resurrected. Old saves load unchanged, with no squads.
+- Deliberately NOT in this step: deployment cost or squad cap,
+  additional doctrines or squad types, enemy AI targeting squads,
+  and an Orbital camera / Unity adapter — the adapter note is
+  the next candidate, after which Slice 2 can be reviewed as a
+  whole before Slice 3 is scoped.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

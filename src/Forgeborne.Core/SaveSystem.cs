@@ -14,6 +14,10 @@ public sealed class SaveData
     public int PlayerShields { get; set; }
     public Dictionary<string, int> Inventory { get; set; } = new();
     public List<int[]> Enemies { get; set; } = new();
+    /// <summary>One entry per squad: x, y, z, rallyX, rallyY, rallyZ,
+    /// health, doctrine (int), kind (int). Missing in old saves,
+    /// which then load with no squads, as before.</summary>
+    public List<int[]> Squads { get; set; } = new();
 }
 
 public static class SaveSystem
@@ -32,6 +36,7 @@ public static class SaveSystem
             PlayerShields = world.Player.Shields,
             Inventory = world.Player.Inventory.Items.ToDictionary(k => k.Key.ToString(), v => v.Value),
             Enemies = world.Enemies.Select(e => new[] { e.X, e.Y, e.Z, e.Health }).ToList(),
+            Squads = world.Squads.Select(s => new[] { s.X, s.Y, s.Z, s.RallyX, s.RallyY, s.RallyZ, s.Health, (int)s.Doctrine, (int)s.Kind }).ToList(),
         };
         return JsonSerializer.Serialize(data);
     }
@@ -66,6 +71,19 @@ public static class SaveSystem
             }
         }
         world.RestoreTick(data.Tick);
+        world.Squads.Clear();
+        foreach (var s in data.Squads)
+        {
+            // Skip malformed entries rather than failing the whole load:
+            // wrong length, out-of-bounds position/rally, unknown
+            // doctrine/kind, or a dead squad (removed on next tick anyway).
+            if (s.Length != 9) continue;
+            if (!VoxelChunk.InBounds(s[0], s[1], s[2]) || !VoxelChunk.InBounds(s[3], s[4], s[5])) continue;
+            if (!Enum.IsDefined(typeof(TacticalDoctrine), s[7]) || !Enum.IsDefined(typeof(SquadKind), s[8])) continue;
+            if (s[6] <= 0) continue;
+            world.Squads.Add(new TacticalSquad(s[0], s[1], s[2], s[3], s[4], s[5], s[6],
+                (TacticalDoctrine)s[7], (SquadKind)s[8]));
+        }
         return world;
     }
 }

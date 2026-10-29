@@ -60,9 +60,22 @@ public sealed class TacticalSquad
 
     public TacticalSquad(int spawnX, int spawnY, int spawnZ, int rallyX, int rallyY, int rallyZ,
         TacticalDoctrine doctrine = TacticalDoctrine.HoldGround, SquadKind kind = SquadKind.Vanguard)
+        : this(spawnX, spawnY, spawnZ, rallyX, rallyY, rallyZ, StartingMembers * MemberHealth, doctrine, kind)
+    {
+    }
+
+    /// <summary>
+    /// Load path: same squad, but with restored health (e.g. a wounded
+    /// squad at 30 HP still has 1 living member). Health is clamped
+    /// to 0..90, so a corrupt save cannot create a super-squad; a
+    /// 0-health squad is dead and is skipped by the loader.
+    /// </summary>
+    public TacticalSquad(int spawnX, int spawnY, int spawnZ, int rallyX, int rallyY, int rallyZ,
+        int health, TacticalDoctrine doctrine, SquadKind kind)
     {
         X = spawnX; Y = spawnY; Z = spawnZ;
         RallyX = rallyX; RallyY = rallyY; RallyZ = rallyZ;
+        Health = Math.Clamp(health, 0, StartingMembers * MemberHealth);
         Doctrine = doctrine; Kind = kind;
     }
 

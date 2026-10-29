@@ -50,7 +50,7 @@ public sealed class WorldZone
     public VoxelChunk Chunk { get; }
     public Player Player { get; }
     public List<Enemy> Enemies { get; } = new();
-    /// <summary>Orbital Tactical squads deployed in this zone. Empty by default, so zones without squads behave exactly as before. Session-only in this prototype: squads are NOT yet saved (see CHANGELOG 0.9.0).</summary>
+    /// <summary>Orbital Tactical squads deployed in this zone. Empty by default, so zones without squads behave exactly as before. Saved and loaded with the zone since 0.10.0.</summary>
     public List<TacticalSquad> Squads { get; } = new();
     public int Tick { get; private set; }
     /// <summary>Shields restored per tick near a workstation. Base 5; skill WorkstationRegenBonus raises it via Simulation.ApplySkills.</summary>
