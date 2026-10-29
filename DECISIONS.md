@@ -355,6 +355,33 @@ look inevitable.
   Slice 2 can be reviewed as a whole before Slice 3 is scoped;
   that review, not another system, is the next candidate.
 
+## 2026-10-29 — Slice 2 review (0.12.0, documentation only, under delegation)
+
+- Decision: Slice 2 is reviewed and closed as a set of tested,
+  integrated core systems, recorded in `docs/slice-02-review.md`.
+  Closing it here means no new Slice 2 system is added without
+  a fresh decision; it does not mean Slice 2 is playtested,
+  balanced, or Unity-verified, and the review says so plainly.
+- Design choices, all reversible: the review changes no code,
+  because a review that smuggles in a system cannot be trusted
+  as a review; its one code-adjacent act is correcting a stale
+  Slice 1 gate bullet (loot integration, true at 0.4.1, false
+  since 0.6.0), so the docs stop contradicting the changelog.
+  The review names the demo-composition gap first, because
+  systems tested in isolation have not yet been shown working
+  together, and names `GameManager.LoadFromJson` in-place
+  restore second, because without it the Unity save/view loop
+  cannot be verified even once a Windows check happens.
+- Deliberately NOT in this step: any new system, any balance
+  change, and any Slice 3 scope decision. Slice 3 is scoped
+  only after the Slice 2 demo scenario and the LoadFromJson
+  restore exist, so that scope is chosen with composition
+  evidence rather than guessed.
+- Next, in order: (1) a Slice 2 demo scenario, (2) the
+  LoadFromJson in-place restore, (3) a doctrine menu / rally
+  picker replacing provisional O, with deployment cost/cap
+  decided as part of that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

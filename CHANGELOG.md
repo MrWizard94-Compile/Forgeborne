@@ -1,5 +1,36 @@
 # Forgeborne — Changelog
 
+## 0.12.0 — 2026-10-29 — Slice 2 review as a whole (documentation only)
+
+- Added `docs/slice-02-review.md`: a headless review of all
+  eight Slice 2 steps (0.4.0 loot generation, 0.5.0 skill
+  cluster, 0.6.0 weapon integration, 0.7.0 skill application,
+  0.8.0 Kinetic automation, 0.9.0 Orbital prototype, 0.10.0
+  squad persistence, 0.11.0 Orbital view), with the integration
+  point and test evidence for each, the deliberately-not-done
+  list, and gaps in priority order. Verdict: Slice 2 is reviewed
+  and closed as tested, integrated core systems — not
+  playtested, not balanced, not Unity-verified.
+- Review findings, not new systems: the headless demo still
+  does not exercise any Slice 2 system (it is unchanged since
+  Slice 1, which proves no regression but not composition);
+  `GameManager.LoadFromJson` still only logs a load instead
+  of restoring `Simulation.World` in place; no Unity
+  verification exists yet for Slice 1 or Slice 2; Slice 2
+  numbers are first-pass, untuned values. Next in order: (1)
+  a Slice 2 demo scenario, (2) the LoadFromJson in-place
+  restore, (3) a doctrine menu / rally picker replacing
+  provisional O. Slice 3 is NOT scoped by this review.
+- Corrected doc debt found by the review: `docs/
+  slice-01-playtest-gate.md` still said loot was "NOT
+  integrated into Simulation" — true at 0.4.1, false since
+  0.6.0. That bullet now says the integration happened in
+  0.6.0, so the gate doc no longer contradicts this changelog.
+- No code changed in this step, by design: a review must not
+  smuggle in a system. Tests re-run unchanged: **254 passed,
+  0 failed**. Demo unchanged: gathered 1, built 1, killed 2,
+  save JSON 43,864 chars.
+
 ## 0.11.0 — 2026-10-29 — Slice 2 Step 8: Orbital view snapshot + Unity adapter
 
 - Added `OrbitalView.Snapshot(world)` in `src/Forgeborne.Core/

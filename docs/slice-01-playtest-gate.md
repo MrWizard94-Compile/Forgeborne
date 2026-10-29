@@ -76,6 +76,7 @@ section as pass or fail.
   that could break the project.
 - Mini-map in HudState is 32x32 solid data, not a rendered
   mini-map in Unity yet — placeholder in Slice 1 HUD.
-- Slice 2 loot prototype (LootGenerator) exists in core but is
-  NOT integrated into Simulation — that integration is a later
-  Slice 2 step, and does not change the Slice 1 gate.
+- Slice 2 loot (LootGenerator) was integrated into Simulation
+  in 0.6.0 (see `docs/slice-02-review.md`); that integration
+  does not change the Slice 1 gate, which is about the loop
+  without extra systems.
