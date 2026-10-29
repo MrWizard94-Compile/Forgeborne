@@ -1,5 +1,27 @@
 # Forgeborne — Changelog
 
+## 0.3.0 — 2026-10-29 — Slice 1 Step 4: Unity adapters + headless demo
+
+- Added Unity adapter scripts (NOT compiled headlessly, to be opened
+  in Unity 6000 on Windows): `VoxelMeshRenderer` (assigns MeshBuilder
+  buffers to a Unity Mesh, no duplicate logic), `FpsInputAdapter`
+  (WASD, mouse yaw, Space jump, click fire, E gather, Q build, R
+  reload), `HudDisplay` (health, shields, objective, ammo, in the
+  reference HUD layout), `GameManager` (one Simulation, spawn wave,
+  save to JSON). Load-from-JSON in Unity is documented as not yet
+  a finished UI flow; headless load is verified in Core tests.
+- Added `Simulation.FireAtCore` (10m range, 10 damage, consumes ammo
+  even out of range) and a mesher benchmark test.
+- Added `demo/Forgeborne.Demo`: headless 60-tick run — gather,
+  build, fight, objective, mesher timing, save length. Verified run:
+  gathered 1, built 1, killed 2, player died to enemy pressure
+  (standing still after tick 20), mesher 198 quads / 792 vertices
+  in 74 ms on the second run, save JSON 43,852 chars. Player death
+  in the demo is pressure working, not a bug — movement and building
+  are the counterplay, and the demo deliberately stops moving.
+- Tests: **89 passed, 0 failed** (was 86). Mesher benchmark:
+  13 ms for a generated chunk in tests (< 500 ms gate).
+
 ## 0.2.2 — 2026-10-29 — Simulation loop + silence rule
 
 - Added `Simulation`: headless playable loop (FPS controller,

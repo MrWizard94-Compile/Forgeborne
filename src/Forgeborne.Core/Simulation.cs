@@ -81,6 +81,16 @@ public sealed class Simulation
         return true;
     }
 
+    /// <summary>Fire at the core if within 10 metres. Returns true if a shot was fired.</summary>
+    public bool FireAtCore()
+    {
+        if (!Weapon.Fire()) return false;
+        double dx = World.CoreX - Fps.X, dy = World.CoreY - Fps.Y, dz = World.CoreZ - Fps.Z;
+        double dist = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        if (dist <= 10) World.DamageCore(Weapon.Damage);
+        return true;
+    }
+
     public HudState Hud() => HudState.FromWorld(World, Weapon);
     public bool IsObjectiveComplete => World.CoreHealth <= 0;
     public bool IsPlayerDead => World.Player.IsDead;

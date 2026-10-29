@@ -227,6 +227,21 @@ Check(sim.IsObjectiveComplete, "simulation objective complete at core 0 HP");
 var simHud = sim.Hud();
 Eq(100, simHud.ObjectivePercentCompleted, "simulation hud objective 100% after core destroyed");
 
+// ---- Step 4: core attack + mesher benchmark ----
+var sim2 = new Simulation(42);
+// Move FPS close to the core by teleporting via a fresh controller position is not
+// possible (position is private-set in FpsController), so test FireAtCore at spawn
+// distance: it should fire but not damage (core is >10m away).
+int coreBefore = sim2.World.CoreHealth;
+sim2.FireAtCore();
+Check(sim2.World.CoreHealth == coreBefore, "fire at core out of range does not damage core");
+Check(sim2.Weapon.Mag == 41, "fire at core consumes ammo even out of range");
+// Mesher benchmark: one generated chunk must mesh in under 500 ms on this machine.
+var benchSw = System.Diagnostics.Stopwatch.StartNew();
+var benchMesh = MeshBuilder.BuildFromChunk(VoxelChunk.Generate(42));
+benchSw.Stop();
+Check(benchSw.ElapsedMilliseconds < 500, $"mesher benchmark <500ms (got {benchSw.ElapsedMilliseconds}ms, {benchMesh.QuadCount} quads)");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
