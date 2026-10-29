@@ -1,5 +1,28 @@
 # Forgeborne — Changelog
 
+## 0.24.0 — 2026-10-29 — Slice 5 scope: powered automation
+
+- New `docs/slice-05-scope.md` (documentation only, no new
+  core system, by design). Slice 5 theme: powered automation
+  — the first small electrical loop, not the whole electrical
+  tier. In order: (1) automation tier 2, first loop only —
+  exactly one power source, one distribution rule, and one
+  powered behaviour, with the voltage question, the tier 1
+  inventory question, the build cost, and the save format
+  all decided in that step, not in this scope; (2) Slice 5
+  demo scenario + documentation-only review. Ranked Slice 6
+  candidates carried in the same order (FPS pitch + 3D
+  markers including the Advance display gap, then a second
+  squad type); the rest of tier 2 is deferred, not ranked
+  above them by this scope.
+- Tests: **579 passed, 0 failed** (unchanged). Demo
+  unchanged: Slice 1 gathered 1, built 1, killed 2, save
+  43,881 chars; Slice 2 save 43,908 chars; Step 1 scenario
+  save 44,016 chars; Step 3 scenario save 44,103 chars;
+  Slice 4 scenario save 44,026 chars.
+  Next in order: Slice 5 Step 1, automation tier 2, first
+  small electrical loop only.
+
 ## 0.23.0 — 2026-10-29 — Slice 4 Step 3: demo scenario + review
 
 - Composed Slice 4 demo scenario, plus `docs/slice-04-review.md`

@@ -987,6 +987,78 @@ look inevitable.
   open, and Slice 4 does not close either.
 - Next, in order: scoping Slice 5 as its own decision step.
 
+## 2026-10-29 — Slice 5 scope (0.24.0, under delegation)
+
+- Decision: Slice 5 is scoped as "powered automation",
+  taking the top-ranked candidate from the 0.20.0 scope and
+  the 0.23.0 review in the same order, with no reordering:
+  automation tier 2 first, then pitch + markers, then a
+  second squad type. The order is the decision, not just
+  the list — automation is the building pillar of the
+  gather -> build -> survive loop, and that pillar stalls
+  at the kinetic crank, while pitch + markers improve the
+  presentation of a loop that already runs and a second
+  squad type would widen combat that Slice 4 just closed.
+  Widening either before the building pillar moves would
+  repeat the 0.15.0 mistake of widening before the existing
+  system is fairly complete.
+- Decision, on the gaps this scope does NOT claim to close:
+  Unity verification and the director playtest are higher
+  in the Slice 4 review's priority order, and this scope
+  does not reorder them away — it records that neither is
+  closable by a headless core step (one is blocked on Unity
+  6000 on Windows, the other on the director), so Slice 5
+  starts at the first actionable core gap. A future scope
+  that treated a headless document as closing either gap
+  would be mislabelling, not progress.
+- Decision, on what this scope deliberately leaves open:
+  the source, distribution rule, powered behaviour, voltage
+  handling, inventory rule, build cost, and save handling
+  are hypotheses here, not decisions. The hypotheses are:
+  a powered variant of an existing machine behaviour (so
+  the loop is proved against a known baseline); a single
+  voltage with no mismatch destruction yet (so the first
+  loop proves power on / off before failure modes punish
+  wiring); the tier 1 activation shape and block-gathering
+  path reused, not duplicated; the tier 1 player-inventory
+  rule kept unless the step proves a buffer is needed; a
+  build cost of the same order as the mill's, with the
+  Stone / Wood versus EmberOre competition stated either
+  way; and powered state derived at load, not persisted,
+  unless a buffer decision creates contents that must
+  survive. Each may be overturned in Step 1 with evidence,
+  and the step must record that reasoning rather than
+  defending the hypothesis.
+- Decision, on the inventory question: it is decided in
+  Step 1, not carried again. Tier 1 deferred it, Slice 3
+  carried it, and Slice 4 carried it — a fourth carry
+  would be scope debt pretending to be a plan. If Step 1
+  chooses a buffer, it must also decide size, pickup, and
+  overflow (blocked, never silently lost), and its save
+  consequences; if it keeps the player-inventory rule, it
+  must say why a buffer is not needed for this one powered
+  behaviour. Either answer closes the question for this
+  loop; it does not retroactively rewrite kinetic mills
+  unless the step justifies that too.
+- Decision, on Slice 6 ranking: pitch + markers (including
+  the Advance display gap) first, then a second squad type.
+  The rest of tier 2 — voltage ladder, transformers,
+  mismatch destruction, additional consumers and sources —
+  is deferred, not rejected, but is not ranked above those
+  two by this scope, mirroring how Defend Core and Patrol
+  were deferred after Slice 4 without outranking the next
+  candidates. The Slice 5 review may reorder on Step 1
+  evidence; this scope does not pre-order the remainder
+  first.
+- Deliberately NOT in this step: any Slice 5 system, any
+  balance change, any enforcement of the free-path rule
+  beyond its existing documentation, and any claim about
+  Windows Unity verification or the pending Slice 1 director
+  playtest gate — both remain open, and Slice 5 scoping
+  does not close either.
+- Next, in order: Slice 5 Step 1, automation tier 2, first
+  small electrical loop only.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
