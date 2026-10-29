@@ -1,0 +1,16 @@
+# Forgeborne .gitignore — engine not yet locked, so generic only.
+# Add engine-specific ignores when the engine is chosen, in DECISIONS.md.
+/build/
+/out/
+/dist/
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+# Local saves and test output (never commit player saves by default)
+/saves/
+*.save
+# OS / editor
+.vscode/
+.idea/
