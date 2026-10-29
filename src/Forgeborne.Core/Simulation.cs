@@ -195,13 +195,25 @@ public sealed class Simulation
     /// spawns at the player's grid position and moves to the rally
     /// on subsequent ticks; see WorldZone.DeploySquad for the
     /// rejection rules. Returns null if the rally is rejected.
-    /// This direct path remains for headless use and the demo;
-    /// the Unity adapter now goes through OrbitalCommand instead,
-    /// so a deploy in play is always a picked rally, not a key
-    /// that fires a squad at the player's feet.
+    /// This direct path remains for headless use and the demo
+    /// ONLY: it is the free spawn primitive and ignores the squad
+    /// economy. A deploy in play is always a picked rally through
+    /// ConfirmOrbitalDeploy (paid), or this paid headless path.
     /// </summary>
     public TacticalSquad? DeployOrbitalSquad(int rallyX, int rallyY, int rallyZ) =>
         World.DeploySquad(rallyX, rallyY, rallyZ);
+
+    /// <summary>True when a paid deploy would succeed right now: under the live-squad cap and able to pay 10 EmberOre.</summary>
+    public bool CanDeployOrbitalSquad() => SquadEconomy.CanDeploy(World);
+
+    /// <summary>
+    /// Paid headless deploy: same squad as DeployOrbitalSquad,
+    /// but through the squad economy — refused (null, no charge,
+    /// no squad) when unaffordable or at the 3-live-squad cap.
+    /// This is the headless equivalent of a picker Confirm.
+    /// </summary>
+    public TacticalSquad? DeployOrbitalSquadPaid(int rallyX, int rallyY, int rallyZ) =>
+        World.TryDeployPaidSquad(rallyX, rallyY, rallyZ);
 
     /// <summary>
     /// Doctrine menu / rally picker state (0.15.0): the selected
@@ -217,7 +229,7 @@ public sealed class Simulation
     public bool SetOrbitalRally(int x, int y, int z) => OrbitalCommand.SetRally(x, y, z);
     /// <summary>Cancel the pick: no squad, pending rally dropped.</summary>
     public void CancelOrbitalPick() => OrbitalCommand.CancelPick();
-    /// <summary>Deploy the picker's selected squad at its pending rally; null if not picking, no rally, or rejected.</summary>
+    /// <summary>Deploy the picker's selected squad at its pending rally, paying the squad economy price; null if not picking, no rally, unaffordable, or over-cap — in which cases the picker stays open, with no squad and no charge.</summary>
     public TacticalSquad? ConfirmOrbitalDeploy() => OrbitalCommand.Confirm(World);
 
     public BuildResult BuildKineticMillAhead()

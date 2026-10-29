@@ -66,17 +66,37 @@ CELL` when no rally is set yet), then the squad list unchanged.
 With no squads and no pick in progress it reads
 `ORBITAL: NO SQUADS (press O to pick a rally)`.
 
-## Deployment cost / cap — decided, deferred
+## Deployment cost / cap — Slice 3 Step 2 (0.18.0)
 
-This step decides cost/cap explicitly: **none yet, and that is
-a decision, not an oversight left open.** Inventory holds
-blocks, not a currency, so any squad price invented now would
-be a balance guess with no economy to price against, and a cap
-with no economy behind it would be an arbitrary limit. Cost and
-cap belong to a Slice 3 economy step, where they are designed
-with the resource system instead of bolted onto the picker.
-Pressing through the picker repeatedly still deploys repeatedly,
-exactly as the headless command does — a known, documented gap.
+Cost and cap now exist, decided in the Slice 3 economy step
+(rationale in DECISIONS.md, values labelled first-pass, not
+final balance):
+
+- **Cost: 10 EmberOre per Vanguard squad**, paid from the
+  player inventory at deploy time. Pricing basis: gathered
+  resources, not a new currency. EmberOre only, not Stone, so
+  squads do not compete with walls and mills for the
+  gather -> build loop's core material; the competition is
+  with workstations (5 EmberOre each), a real but bounded
+  tradeoff. Ore is ~4% of ground cells, so 10 ore is
+  deliberate gathering, not incidental pickup.
+- **Cap: 3 concurrent live squads.** At the cap a deploy is
+  refused — no oldest-squad recall, because recall would
+  silently destroy a paid investment and its position. Dead
+  squads do not count toward the cap, so a replacement can
+  deploy after a squad dies. No refund exists, on death or
+  otherwise: deployment is a sunk cost.
+- **Picker enforcement (fail-closed):** `Confirm` deploys
+  through `WorldZone.TryDeployPaidSquad`, which checks cap
+  and affordability BEFORE charging. An unaffordable or
+  over-cap confirm deploys nothing, charges nothing, and
+  leaves the picker open for a re-pick after gathering more
+  ore or after a slot frees up.
+- The direct `DeployOrbitalSquad` / `WorldZone.DeploySquad`
+  path remains the free spawn primitive for headless tests
+  and the demo only; it is not the play path and Unity play
+  must never call it. The demo's Slice 2 squad now deploys
+  through the paid path.
 
 ## Deliberately NOT in this step
 
@@ -85,7 +105,9 @@ exactly as the headless command does — a known, documented gap.
   not reshape the picker.
 - No 3D squad markers, rally marker in the scene, or Orbital
   camera — the rally is shown as text coordinates only.
-- No deployment cost or squad cap (see above).
+- No deployment cost or squad cap beyond the 0.18.0 economy
+  (see above): still no refund, no recall, no second priced
+  unit.
 - No enemy AI targeting squads (unchanged from 0.9.0/0.10.0).
 - No Slice 3 scope: with the picker done, Slice 2's three
   review follow-ups (demo scenario, in-place restore, picker)

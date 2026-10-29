@@ -40,7 +40,11 @@ var sim2 = new Simulation(42, loot, skillBuild);
 Console.WriteLine($"Loot: {loot.Name} ({loot.Rarity}, {loot.Damage} dmg, {loot.MagSize} mag)");
 Console.WriteLine($"Skills: full Forge Survivor cluster — effective damage {sim2.EffectiveDamage}, core damage {sim2.EffectiveCoreDamage}, shields cap {sim2.World.Player.MaxShields}, speed {sim2.Fps.EffectiveSpeed} m/s");
 sim2.World.SpawnWave(3);
-var squad = sim2.DeployOrbitalSquad(sim2.World.Player.X, sim2.World.Player.Y, sim2.World.Player.Z);
+// Slice 3 Step 2: the demo squad deploys through the paid path
+// (10 EmberOre), like a picker Confirm — the free direct path is
+// headless-only and no longer represents a deploy in play.
+sim2.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+var squad = sim2.DeployOrbitalSquadPaid(sim2.World.Player.X, sim2.World.Player.Y, sim2.World.Player.Z);
 Console.WriteLine($"Orbital squad deployed: {(squad == null ? "REJECTED" : "Vanguard HoldGround at player position")}");
 sim2.World.Player.Inventory.Add(BlockType.Stone, 10);
 sim2.World.Player.Inventory.Add(BlockType.Wood, 5);

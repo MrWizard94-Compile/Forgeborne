@@ -750,6 +750,10 @@ Eq(0, pickSim.World.Squads.Count, "orbital picker confirm with no pick adds no s
 Check(!pickSim.SetOrbitalRally(20, 5, 16), "orbital picker rally outside picking rejected");
 Check(!pickSim.OrbitalCommand.HasRally, "orbital picker rally outside picking leaves no rally");
 // Pick, rally, confirm: one squad, selected doctrine/kind, at the rally.
+// Since 0.18.0 the picker confirm is paid, so this confirm is funded
+// with 10 EmberOre first; the unfunded-confirm refusal is tested in
+// the Slice 3 Step 2 section below.
+pickSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
 pickSim.BeginOrbitalPick();
 Check(pickSim.OrbitalCommand.IsPicking, "orbital picker begin opens picking");
 Check(pickSim.SetOrbitalRally(20, 5, 16), "orbital picker rally while picking accepted");
@@ -776,6 +780,7 @@ Eq(0, oobSim.World.Squads.Count, "orbital picker failed confirm adds no squad");
 // Re-picking a rally overwrites the earlier pending point.
 Check(oobSim.SetOrbitalRally(18, 5, 16), "orbital picker first rally accepted");
 Check(oobSim.SetOrbitalRally(22, 5, 16), "orbital picker re-pick accepted");
+oobSim.World.Player.Inventory.Add(BlockType.EmberOre, 10); // picker confirm is paid since 0.18.0
 var repicked = oobSim.ConfirmOrbitalDeploy();
 Eq(22, repicked!.RallyX, "orbital picker confirm uses the latest rally");
 // BeginPick clears a stale pending rally, so Enter cannot deploy it.
@@ -804,6 +809,7 @@ Check(selSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround), "orbita
 Check(selSim.OrbitalCommand.SelectKind(SquadKind.Vanguard), "orbital picker valid kind accepted");
 // A picked squad actually marches to its rally on later ticks.
 var marchSim = new Simulation(42);
+marchSim.World.Player.Inventory.Add(BlockType.EmberOre, 10); // picker confirm is paid since 0.18.0
 marchSim.BeginOrbitalPick();
 Check(marchSim.SetOrbitalRally(20, 5, 16), "orbital picker march rally set");
 var marchSquad = marchSim.ConfirmOrbitalDeploy();
@@ -904,6 +910,113 @@ Eq("Pulse Rifle", partialSim.Weapon.Name, "partial weapon keeps current weapon")
 // with the cluster's +20% is 12, which proves the skill restore
 // happened even though the weapon restore was skipped.
 Eq(12, partialSim.EffectiveDamage, "partial weapon keeps skill restore");
+
+// ---- Slice 3 Step 2: squad economy (cost and cap) ----
+// Constants: one Vanguard squad costs 10 EmberOre; at most 3 live
+// squads may be fielded at once. Both are first-pass values.
+Eq(3, SquadEconomy.MaxConcurrentSquads, "squad economy cap is 3 live squads");
+Eq(10, SquadEconomy.EmberOreCost, "squad economy cost is 10 EmberOre");
+// Paid deploy with exactly the price: succeeds, charges all 10 ore.
+var paidWorld = new WorldZone(42);
+paidWorld.Player.Inventory.Add(BlockType.EmberOre, 10);
+Check(SquadEconomy.CanDeploy(paidWorld), "squad economy affordable and under cap can deploy");
+var paidSquad = paidWorld.TryDeployPaidSquad(16, 5, 16);
+Check(paidSquad != null, "squad economy paid deploy succeeds with exactly 10 ore");
+Eq(1, paidWorld.Squads.Count, "squad economy paid deploy adds exactly one squad");
+Eq(0, paidWorld.Player.Inventory.Get(BlockType.EmberOre), "squad economy paid deploy charges all 10 ore");
+Eq(1, SquadEconomy.LiveSquadCount(paidWorld), "squad economy live count is 1 after paid deploy");
+// Unaffordable by 1 ore: refused, no squad, no partial charge.
+var brokeWorld = new WorldZone(42);
+brokeWorld.Player.Inventory.Add(BlockType.EmberOre, 9);
+Check(!SquadEconomy.CanDeploy(brokeWorld), "squad economy unaffordable cannot deploy");
+Check(brokeWorld.TryDeployPaidSquad(16, 5, 16) == null, "squad economy 9 ore deploy refused");
+Eq(0, brokeWorld.Squads.Count, "squad economy refused deploy adds no squad");
+Eq(9, brokeWorld.Player.Inventory.Get(BlockType.EmberOre), "squad economy refused deploy charges nothing");
+// Zero ore: same fail-closed behaviour.
+var emptyWorld = new WorldZone(42);
+Check(emptyWorld.TryDeployPaidSquad(16, 5, 16) == null, "squad economy zero ore deploy refused");
+Eq(0, emptyWorld.Squads.Count, "squad economy zero ore deploy adds no squad");
+// Cap: 3 paid squads field, the 4th is refused even with ore in hand,
+// and the refused attempt charges nothing.
+var capWorld = new WorldZone(42);
+capWorld.Player.Inventory.Add(BlockType.EmberOre, 40);
+Check(capWorld.TryDeployPaidSquad(16, 5, 16) != null, "squad economy cap deploy 1 succeeds");
+Check(capWorld.TryDeployPaidSquad(17, 5, 16) != null, "squad economy cap deploy 2 succeeds");
+Check(capWorld.TryDeployPaidSquad(18, 5, 16) != null, "squad economy cap deploy 3 succeeds");
+Eq(3, capWorld.Squads.Count, "squad economy 3 squads fielded");
+Eq(10, capWorld.Player.Inventory.Get(BlockType.EmberOre), "squad economy 10 ore left after 3 deploys");
+Check(!SquadEconomy.CanDeploy(capWorld), "squad economy at cap cannot deploy");
+Check(capWorld.TryDeployPaidSquad(19, 5, 16) == null, "squad economy 4th deploy refused at cap");
+Eq(3, capWorld.Squads.Count, "squad economy refused 4th deploy adds no squad");
+Eq(10, capWorld.Player.Inventory.Get(BlockType.EmberOre), "squad economy refused 4th deploy charges nothing");
+// A dead squad frees its cap slot without waiting for Advance to
+// remove it: live count excludes the dead, so a replacement deploys.
+var deadCapWorld = new WorldZone(42);
+deadCapWorld.Player.Inventory.Add(BlockType.EmberOre, 40);
+deadCapWorld.TryDeployPaidSquad(16, 5, 16);
+deadCapWorld.TryDeployPaidSquad(17, 5, 16);
+var doomed = deadCapWorld.TryDeployPaidSquad(18, 5, 16)!;
+doomed.TakeDamage(90);
+Check(doomed.IsDead, "squad economy cap test squad is dead");
+Eq(2, SquadEconomy.LiveSquadCount(deadCapWorld), "squad economy dead squad does not count toward cap");
+Check(deadCapWorld.TryDeployPaidSquad(19, 5, 16) != null, "squad economy replacement deploys after a squad dies");
+Eq(3, SquadEconomy.LiveSquadCount(deadCapWorld), "squad economy live count back to 3 after replacement");
+// Picker enforces the economy: a funded confirm deploys and closes;
+// an unfunded confirm fails closed — picker stays open, no squad,
+// no charge — so the player can gather ore and re-confirm.
+var econPickSim = new Simulation(42);
+econPickSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+econPickSim.BeginOrbitalPick();
+Check(econPickSim.SetOrbitalRally(20, 5, 16), "squad economy picker rally set");
+Check(econPickSim.ConfirmOrbitalDeploy() != null, "squad economy picker funded confirm deploys");
+Eq(1, econPickSim.World.Squads.Count, "squad economy picker funded confirm adds one squad");
+Eq(0, econPickSim.World.Player.Inventory.Get(BlockType.EmberOre), "squad economy picker funded confirm charges 10 ore");
+Check(!econPickSim.OrbitalCommand.IsPicking, "squad economy picker closes after funded confirm");
+econPickSim.BeginOrbitalPick();
+Check(econPickSim.SetOrbitalRally(22, 5, 16), "squad economy picker second rally set");
+Check(econPickSim.ConfirmOrbitalDeploy() == null, "squad economy picker unfunded confirm refused");
+Eq(1, econPickSim.World.Squads.Count, "squad economy picker refused confirm adds no squad");
+Eq(0, econPickSim.World.Player.Inventory.Get(BlockType.EmberOre), "squad economy picker refused confirm charges nothing");
+Check(econPickSim.OrbitalCommand.IsPicking, "squad economy picker stays open after refused confirm");
+// Picker enforces the cap too: 3 funded picker deploys, then a 4th
+// funded confirm is refused and stays open with ore untouched.
+var econCapSim = new Simulation(42);
+econCapSim.World.Player.Inventory.Add(BlockType.EmberOre, 40);
+for (int i = 0; i < 3; i++)
+{
+    econCapSim.BeginOrbitalPick();
+    Check(econCapSim.SetOrbitalRally(20, 5, 16), "squad economy picker cap rally set");
+    Check(econCapSim.ConfirmOrbitalDeploy() != null, "squad economy picker cap deploy succeeds");
+}
+Eq(3, econCapSim.World.Squads.Count, "squad economy picker 3 squads fielded");
+econCapSim.BeginOrbitalPick();
+Check(econCapSim.SetOrbitalRally(22, 5, 16), "squad economy picker over-cap rally set");
+Check(econCapSim.ConfirmOrbitalDeploy() == null, "squad economy picker over-cap confirm refused");
+Eq(3, econCapSim.World.Squads.Count, "squad economy picker over-cap confirm adds no squad");
+Eq(10, econCapSim.World.Player.Inventory.Get(BlockType.EmberOre), "squad economy picker over-cap confirm charges nothing");
+Check(econCapSim.OrbitalCommand.IsPicking, "squad economy picker stays open after over-cap refusal");
+// Simulation paid path mirrors the picker: affordable succeeds,
+// unaffordable fails closed, and the CanDeploy query tracks both.
+var econSim = new Simulation(42);
+Check(!econSim.CanDeployOrbitalSquad(), "squad economy simulation broke cannot deploy");
+Check(econSim.DeployOrbitalSquadPaid(20, 5, 16) == null, "squad economy simulation paid deploy broke refused");
+econSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+Check(econSim.CanDeployOrbitalSquad(), "squad economy simulation funded can deploy");
+Check(econSim.DeployOrbitalSquadPaid(20, 5, 16) != null, "squad economy simulation paid deploy funded succeeds");
+Eq(0, econSim.World.Player.Inventory.Get(BlockType.EmberOre), "squad economy simulation paid deploy charges 10 ore");
+// The free direct path is deliberately unchanged for headless/demo
+// use: it still deploys with no ore. This is the documented
+// distinction, not a bypass in play — Unity play goes through the
+// picker, which is paid (see the picker tests above).
+var freeSim = new Simulation(42);
+Check(freeSim.DeployOrbitalSquad(20, 5, 16) != null, "squad economy free direct path still deploys without ore (headless only)");
+Eq(1, freeSim.World.Squads.Count, "squad economy free direct path adds one squad");
+// Paid squads persist through a save/load round-trip like any squad.
+var paidSaveWorld = new WorldZone(42);
+paidSaveWorld.Player.Inventory.Add(BlockType.EmberOre, 10);
+paidSaveWorld.TryDeployPaidSquad(20, 5, 16);
+var paidLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(paidSaveWorld));
+Eq(1, paidLoaded.Squads.Count, "squad economy paid squad survives save/load");
 
 // ---- Silence instruction (recorded, not a test) ----
 

@@ -132,6 +132,59 @@ public sealed class TacticalSquad
 }
 
 /// <summary>
+/// The Slice 3 squad economy, in pure C# core: what a deployment
+/// costs and how many squads a commander may field at once.
+/// Pricing basis (decided 0.18.0, rationale in DECISIONS.md):
+/// gathered resources, not a new currency. The price is EmberOre
+/// only — 10 ore, twice a workstation's 5 — because ore is the
+/// already-valuable resource (~4% of ground cells, so 10 ore is
+/// deliberate gathering, not incidental pickup) and pricing in
+/// Stone would make every squad compete with walls and mills for
+/// the gather -&gt; build loop's core material. The cap limits
+/// concurrent LIVE squads to 3 (9 members at full strength); at
+/// the cap a deploy is refused, not an oldest-squad recall,
+/// because recall would silently destroy a paid investment and
+/// its position. Deployment is a sunk cost: no refund exists,
+/// on death or otherwise, because there is no recall mechanic
+/// to refund through. Both values are first-pass values for
+/// determinism and testability, not final balance (see the
+/// Slice 3 scope's no-balance-pass rule). Enforcement lives in
+/// WorldZone.TryDeployPaidSquad, which checks cap and
+/// affordability BEFORE charging, so a refused deploy charges
+/// nothing and deploys nothing — no partial charge, no
+/// half-deployed squad. The picker (OrbitalCommand.Confirm)
+/// deploys through that paid path, so the play path is priced;
+/// WorldZone.DeploySquad remains the free spawn primitive for
+/// headless tests and the demo only, never the Unity play path.
+/// </summary>
+public static class SquadEconomy
+{
+    /// <summary>Maximum concurrent live squads. Dead squads do not count.</summary>
+    public const int MaxConcurrentSquads = 3;
+    /// <summary>Deployment price, in EmberOre, for one Vanguard squad.</summary>
+    public const int EmberOreCost = 10;
+
+    /// <summary>Live squads in the world (dead squads, not yet removed by Advance, excluded).</summary>
+    public static int LiveSquadCount(WorldZone world)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        int n = 0;
+        foreach (var s in world.Squads) if (!s.IsDead) n++;
+        return n;
+    }
+
+    public static bool CanAfford(WorldZone world)
+    {
+        ArgumentNullException.ThrowIfNull(world);
+        return world.Player.Inventory.Has(BlockType.EmberOre, EmberOreCost);
+    }
+
+    /// <summary>True only when under the cap AND able to pay.</summary>
+    public static bool CanDeploy(WorldZone world) =>
+        LiveSquadCount(world) < MaxConcurrentSquads && CanAfford(world);
+}
+
+/// <summary>
 /// The doctrine menu / rally picker state machine, in pure C# core.
 /// This is the menu, not a rendering: the Unity adapter only binds
 /// keys and a crosshair raycast to it (see docs/orbital-command.md),
@@ -142,14 +195,12 @@ public sealed class TacticalSquad
 /// selected doctrine/kind at that rally, Cancel abandons the pick.
 /// Confirm without a pick or without a rally, and SetRally outside
 /// picking or out of bounds, fail closed and change nothing.
-/// A failed deploy (which cannot happen for a bounds-checked rally
-/// with a defined doctrine/kind, but is guarded anyway) keeps the
-/// picker open so the player can re-pick instead of losing the menu.
-/// There is deliberately no deployment cost or squad cap yet:
-/// the squad economy does not exist to price against (inventory
-/// holds blocks, not a currency), so a cost invented here would be
-/// a balance guess, not a system. Cost/cap is a Slice 3 economy
-/// decision, recorded in DECISIONS.md, not smuggled in here.
+/// Confirm deploys through the paid economy path
+/// (WorldZone.TryDeployPaidSquad): a deploy the player cannot
+/// afford, or that exceeds the 3-live-squad cap, fails closed
+/// like any failed Confirm — picker stays open, no squad, no
+/// charge — so the player can gather more ore or wait for a
+/// slot and re-confirm instead of losing the menu.
 /// </summary>
 public sealed class OrbitalCommand
 {
@@ -207,14 +258,16 @@ public sealed class OrbitalCommand
     }
 
     /// <summary>
-    /// Deploy the selected squad at the pending rally. On success
-    /// the picker closes and the rally is cleared; on failure the
-    /// picker stays open for a re-pick. Returns null on failure.
+    /// Deploy the selected squad at the pending rally, paying the
+    /// squad economy price. On success the picker closes and the
+    /// rally is cleared; on failure (including unaffordable or
+    /// over-cap) the picker stays open for a re-pick, with no
+    /// squad and no charge. Returns null on failure.
     /// </summary>
     public TacticalSquad? Confirm(WorldZone world)
     {
         if (!IsPicking || !HasRally) return null;
-        var squad = world.DeploySquad(RallyX, RallyY, RallyZ, Doctrine, Kind);
+        var squad = world.TryDeployPaidSquad(RallyX, RallyY, RallyZ, Doctrine, Kind);
         if (squad == null) return null;
         IsPicking = false;
         HasRally = false;

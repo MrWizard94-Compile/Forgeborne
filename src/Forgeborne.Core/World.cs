@@ -161,6 +161,10 @@ public sealed class WorldZone
     /// accepted (the squad then holds short of it, blocked) rather
     /// than rejected, so a bad rally is visible, not silent. An
     /// unknown doctrine is rejected. Returns null on rejection.
+    /// This is the free spawn primitive, for headless tests and
+    /// the demo only: it charges nothing and ignores the squad
+    /// cap. The play path is TryDeployPaidSquad, which the
+    /// picker uses; Unity play must never call this directly.
     /// </summary>
     public TacticalSquad? DeploySquad(int rallyX, int rallyY, int rallyZ,
         TacticalDoctrine doctrine = TacticalDoctrine.HoldGround, SquadKind kind = SquadKind.Vanguard)
@@ -169,6 +173,31 @@ public sealed class WorldZone
         if (!Enum.IsDefined(doctrine) || !Enum.IsDefined(kind)) return null;
         var squad = new TacticalSquad(Player.X, Player.Y, Player.Z, rallyX, rallyY, rallyZ, doctrine, kind);
         Squads.Add(squad);
+        return squad;
+    }
+
+    /// <summary>
+    /// The play deployment path (Slice 3 Step 2): deploy one squad
+    /// under the squad economy. Checks, in order, rally bounds and
+    /// doctrine/kind validity, then the live-squad cap, then
+    /// affordability — and charges ONLY after every check passes,
+    /// so a refused deploy leaves the inventory untouched and
+    /// adds no squad: no partial charge, no half-deployed squad.
+    /// A deploy that unexpectedly fails after charging (impossible
+    /// for a bounds-checked rally with defined doctrine/kind, but
+    /// guarded anyway) refunds the ore in full. Returns null on
+    /// any refusal. Dead squads do not count toward the cap.
+    /// </summary>
+    public TacticalSquad? TryDeployPaidSquad(int rallyX, int rallyY, int rallyZ,
+        TacticalDoctrine doctrine = TacticalDoctrine.HoldGround, SquadKind kind = SquadKind.Vanguard)
+    {
+        if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return null;
+        if (!Enum.IsDefined(doctrine) || !Enum.IsDefined(kind)) return null;
+        if (SquadEconomy.LiveSquadCount(this) >= SquadEconomy.MaxConcurrentSquads) return null;
+        if (!Player.Inventory.Has(BlockType.EmberOre, SquadEconomy.EmberOreCost)) return null;
+        if (!Player.Inventory.Remove(BlockType.EmberOre, SquadEconomy.EmberOreCost)) return null;
+        var squad = DeploySquad(rallyX, rallyY, rallyZ, doctrine, kind);
+        if (squad == null) Player.Inventory.Add(BlockType.EmberOre, SquadEconomy.EmberOreCost);
         return squad;
     }
 

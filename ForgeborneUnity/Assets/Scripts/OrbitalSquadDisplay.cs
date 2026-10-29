@@ -8,8 +8,10 @@
 // Wire SquadText in the Inspector (a Text field on the HUD Canvas,
 // near the objective readout). Deploy with the picker: O opens it,
 // aim the crosshair at a rally cell, Enter deploys, Esc cancels.
-// See FpsInputAdapter and docs/orbital-command.md. No deployment
-// cost or squad cap yet.
+// See FpsInputAdapter and docs/orbital-command.md. Since 0.18.0
+// a deploy costs 10 EmberOre and at most 3 live squads may be
+// fielded; both are enforced in core (the picker Confirm), and
+// this display only shows them, it enforces nothing.
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -31,9 +33,9 @@ public class OrbitalSquadDisplay : MonoBehaviour
         {
             var cmd = Simulation.OrbitalCommand;
             if (cmd.HasRally)
-                sb.Append($"ORBITAL: PICKING RALLY - {cmd.Kind} {cmd.Doctrine} -> ({cmd.RallyX},{cmd.RallyY},{cmd.RallyZ}) - ENTER TO DEPLOY, ESC TO CANCEL\n");
+                sb.Append($"ORBITAL: PICKING RALLY - {cmd.Kind} {cmd.Doctrine} -> ({cmd.RallyX},{cmd.RallyY},{cmd.RallyZ}) - COST 10 EMBERORE, MAX 3 SQUADS - ENTER TO DEPLOY, ESC TO CANCEL\n");
             else
-                sb.Append("ORBITAL: PICKING RALLY - AIM AT A TARGET CELL - ENTER TO DEPLOY, ESC TO CANCEL\n");
+                sb.Append("ORBITAL: PICKING RALLY - AIM AT A TARGET CELL - COST 10 EMBERORE, MAX 3 SQUADS - ENTER TO DEPLOY, ESC TO CANCEL\n");
         }
         if (squads.Count == 0 && !Simulation.OrbitalCommand.IsPicking)
         {

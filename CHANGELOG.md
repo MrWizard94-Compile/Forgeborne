@@ -1,5 +1,55 @@
 # Forgeborne — Changelog
 
+## 0.18.0 — 2026-10-29 — Slice 3 Step 2: squad economy (cost and cap)
+
+- Closes the second Slice 3 debt: Orbital deployment is no
+  longer unlimited. One Vanguard squad under HoldGround now
+  costs 10 EmberOre from the player inventory, and at most 3
+  live squads may be fielded at once. Both are first-pass
+  values for determinism and testability, not final balance,
+  per the Slice 3 scope's no-balance-pass rule.
+- How it is enforced, without a second copy of the rules:
+  `SquadEconomy` in `Orbital.cs` holds the two constants
+  (`MaxConcurrentSquads = 3`, `EmberOreCost = 10`) and the
+  live-count / affordability queries; `WorldZone.
+  TryDeployPaidSquad` is the single play deployment path and
+  checks rally bounds, doctrine/kind validity, the cap, and
+  affordability BEFORE charging, so a refused deploy charges
+  nothing and adds no squad, and an unexpected failure after
+  charging refunds in full. `OrbitalCommand.Confirm` now
+  deploys through that paid path, so a picker confirm the
+  player cannot afford, or that exceeds the cap, fails closed
+  exactly like a failed Confirm in 0.15.0 — picker stays
+  open, no squad, no charge. `Simulation` gains
+  `CanDeployOrbitalSquad` and `DeployOrbitalSquadPaid` as the
+  headless equivalents of a picker Confirm.
+- What deliberately did NOT change: `WorldZone.DeploySquad`
+  and `Simulation.DeployOrbitalSquad` remain the free spawn
+  primitives for headless tests and the demo only — every
+  pre-0.18.0 test that deploys squads still passes unchanged
+  on that path, and the distinction is documented in code,
+  in tests, and in `docs/orbital-command.md`, rather than
+  hidden. Unity play goes through the picker, so play is
+  priced; the demo's Slice 2 squad now deploys through the
+  paid path (funded with 10 EmberOre first). The Unity
+  display's picker prompt now shows the cost and cap; it
+  enforces nothing, core does.
+- Demo: Slice 1 unchanged (gathered 1, built 1, killed 2,
+  save 43,881 chars); Slice 2 unchanged in its reported
+  numbers (built 1, killed 2, kinetic gathered 1, squad
+  intact 3 members / 90 HP, squads saved+loaded 1, save
+  43,908 chars), with the squad now deployed through the
+  paid path. Next in order: Slice 3 Step 3, demo scenario
+  + review.
+- Tests: **437 passed, 0 failed** (was 381; +56). Three
+  pre-existing 0.15.0 picker tests were updated, not the
+  code, for the intended behaviour change: their confirms
+  are now funded with 10 EmberOre, because an unfunded
+  picker confirm is exactly what this step refuses — the
+  unfunded refusal itself is covered by the new tests.
+  Every other pre-existing deploy test passes unchanged
+  on the free headless path.
+
 ## 0.17.0 — 2026-10-29 — Slice 3 Step 1: save-format completion
 
 - Closes the first Slice 3 debt: a load no longer silently

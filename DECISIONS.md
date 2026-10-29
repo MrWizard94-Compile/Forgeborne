@@ -565,6 +565,71 @@ look inevitable.
 - Next, in order: Slice 3 Step 2, squad economy (cost and
   cap, pricing basis decided there).
 
+## 2026-10-29 — Slice 3 Step 2: squad economy (0.18.0, under delegation)
+
+- Decision, closing the Slice 3 scope's Step 2 question: the
+  pricing basis is gathered resources, confirming the scope's
+  starting hypothesis, and NO new currency is introduced —
+  a currency would need sources and sinks of its own, which
+  is a new system, not an economy step. The price is 10
+  EmberOre, EmberOre only, for one Vanguard HoldGround squad.
+  Why not Stone, the obvious alternative: Stone is the
+  gather -> build loop's core material (walls 2, mills and
+  workstations 10 each), so pricing squads in Stone would
+  make every squad cost a mill frame or five walls and
+  distort the pillar the game is built around. EmberOre is
+  already the game's valuable resource (~4% of ground
+  cells, so a chunk holds on the order of 120 ore and 10
+  ore is deliberate gathering, not incidental pickup), and
+  its only other use is the workstation's 5-ore ingredient —
+  so the squad competes with shield-regen infrastructure, a
+  real but bounded tradeoff, not with basic building.
+  Why 10, twice a workstation: a squad is three armed
+  members, so it should cost more than one machine, and 10
+  is large enough to be felt and small enough to be earned
+  in one gathering run. Labelled first-pass, not balance:
+  the scope forbids presenting Step 2 prices as final.
+- Decision: the cap limits concurrent LIVE squads, to 3, and
+  at the cap a deploy is REFUSED. Alternatives rejected:
+  oldest-squad recall would silently destroy a paid
+  investment and its rally position, and a total-deployed
+  cap would permanently punish early experimentation.
+  Dead squads do not count, so a replacement can deploy
+  after a death without waiting for Advance to clean up.
+  No refund exists, on death or otherwise, because there is
+  no recall mechanic to refund through; deployment is a
+  sunk cost, which is also what makes the cap a real limit
+  rather than a revolving door.
+- Layering decision, and its honest limit: enforcement lives
+  in one place, `WorldZone.TryDeployPaidSquad`, which the
+  picker Confirm and the new Simulation paid path both use,
+  checking cap and affordability BEFORE charging, with a
+  refund guard on the impossible post-charge failure — so
+  a refused deploy can never half-charge or half-deploy.
+  The free `DeploySquad` / `DeployOrbitalSquad` path is
+  KEPT, deliberately, for headless tests and the demo: all
+  pre-0.18.0 deploy tests pass unchanged on it, and
+  retrofitting ~30 of them to fund every deploy would have
+  been noise that obscured this step's own tests. The
+  limit is stated plainly in code, tests, and
+  docs/orbital-command.md: the free path is headless-only
+  and Unity play must never call it, because play goes
+  through the picker. If a future step finds a play path
+  reaching the free primitive, that is a bug in that path,
+  not a reason to re-litigate the price here. The three
+  0.15.0 picker tests whose confirms were supposed to
+  succeed were updated to fund them — that is the intended
+  behaviour change, and the unfunded refusal is itself
+  tested in the new section.
+- Deliberately NOT in this step: any second doctrine, kind,
+  or priced unit (HoldGround / Vanguard is the priced unit);
+  any refund, recall, or cap-raising mechanic; any balance
+  change to existing build costs; any claim about Windows
+  Unity verification — the display prompt now shows the
+  cost and cap, but its Unity compile is still unverified
+  headlessly, as before.
+- Next, in order: Slice 3 Step 3, demo scenario + review.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
