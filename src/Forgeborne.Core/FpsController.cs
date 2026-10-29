@@ -25,6 +25,19 @@ public sealed class FpsController
 
     public FpsController(float x, float y, float z) { X = x; Y = y; Z = z; }
 
+    /// <summary>
+    /// Move the feet position instantly, e.g. to a loaded save's player
+    /// position. Vertical velocity is cleared and grounded is reset so
+    /// the next Update re-derives them from the new cell; the caller
+    /// (Simulation.RestoreWorld) is responsible for the world swap.
+    /// </summary>
+    public void Teleport(float x, float y, float z)
+    {
+        X = x; Y = y; Z = z;
+        VelocityY = 0;
+        IsGrounded = false;
+    }
+
     private bool Collides(VoxelChunk chunk, float px, float py, float pz)
     {
         int x0 = (int)Math.Floor(px - HalfWidth), x1 = (int)Math.Floor(px + HalfWidth);

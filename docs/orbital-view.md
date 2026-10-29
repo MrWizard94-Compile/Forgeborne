@@ -73,11 +73,11 @@ rally picker, and the binding can change without touching core.
    line's HP/members update as the squad takes adjacent damage.
 5. [ ] Press O twice more: three lines, in deploy order.
 6. [ ] Save, close, reopen, load: the same squads return (save
-   persistence is already headless-tested in 0.10.0; this checks
-   the Unity load path shows them — note the Slice 1 limitation
-   in `GameManager.LoadFromJson`, which logs a load but does not
-   yet replace `Simulation.World` in place; if that blocks this
-   step, record it as the next follow-up instead of claiming it).
+   persistence is already headless-tested in 0.10.0, and the
+   in-place restore is headless-tested in 0.14.0 via
+   `Simulation.LoadFromJson` + `GameManager.LoadFromJson`; this
+   step checks the Unity load path shows them, including a mesh
+   refresh from the restored chunk).
 
 Record the result of each step, with Unity version and GPU, in
 DECISIONS.md.

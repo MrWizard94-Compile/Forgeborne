@@ -409,6 +409,41 @@ look inevitable.
   restore, then (3) a doctrine menu / rally picker replacing
   provisional O.
 
+## 2026-10-29 — GameManager.LoadFromJson in-place restore (0.14.0, under delegation)
+
+- Decision: the restore is a core API, not adapter logic. The
+  blocker was structural — `Simulation.World` get-only, FPS
+  position private-set — so the fix adds `FpsController.Teleport`,
+  `Simulation.RestoreWorld`, and `Simulation.LoadFromJson` to core
+  and keeps `GameManager` to one call, one mesh refresh, and one
+  log line. An adapter that rebuilt the Simulation would have
+  broken every holder of the old object; in-place restore is the
+  only shape that keeps GameManager + MeshRenderer wiring intact.
+- Design choices, all reversible: the Fps object is never
+  replaced, only teleported, because identity is the point of
+  "in place"; session counters reset on load, because they
+  describe the pre-load session, while the equipped weapon is
+  kept, because the save format carries no weapon and dropping
+  the player's loadout on load would be a silent punishment;
+  an applied skill build is re-applied to the new world, because
+  the alternative — cap/speed/regen silently reverting to base
+  while the build still shows as applied — is incoherent, and
+  the 0.7.0 note about loaded worlds starting at base values
+  described LoadZone alone, not a Simulation that already holds
+  a build. `LoadFromJson` fails closed on malformed input rather
+  than throwing into a UI button handler, since a corrupt save
+  must never produce a half-loaded world.
+- Deliberately NOT in this step: changing the save format to
+  carry weapon or core health (the fresh-100-HP-core-on-load
+  limit is documented in the changelog as a follow-up candidate,
+  not fixed by stealth here), any Unity scene work, and Slice 3
+  scope. The Windows Unity verification of the restore itself
+  remains open — headless tests prove the core path, not the
+  Unity compile or the button wiring.
+- Next, in order: (3) a doctrine menu / rally picker replacing
+  provisional O, with deployment cost/cap decided as part of
+  that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

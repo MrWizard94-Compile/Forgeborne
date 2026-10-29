@@ -29,15 +29,26 @@ public class GameManager : MonoBehaviour
         return SaveSystem.SaveZone(Simulation.World);
     }
 
+    // In-place restore (0.14.0): Simulation.LoadFromJson swaps the
+    // world inside the same Simulation object and teleports its FPS
+    // controller to the saved player position, so this GameManager
+    // and the MeshRenderer keep working with no re-wiring. On
+    // success the mesh is refreshed from the restored chunk; on
+    // failure the current world is left untouched and a warning is
+    // logged instead of a half-loaded state. The equipped weapon is
+    // kept (the save format carries no weapon) and an applied skill
+    // build is re-applied to the restored world by core.
     public void LoadFromJson(string json)
     {
         if (Simulation == null) return;
-        // Slice 1 limitation, documented: LoadZone creates a new WorldZone.
-        // A full in-place restore (replacing Simulation.World) is a later
-        // step; for now, loading is verified headlessly in Core tests,
-        // and in Unity it is exposed here for future wiring, not claimed
-        // as a finished UI flow.
-        var loaded = SaveSystem.LoadZone(json);
-        Debug.Log($"Loaded Forgeborne save: seed {loaded.Seed}, tick {loaded.Tick}, enemies {loaded.Enemies.Count}");
+        if (Simulation.LoadFromJson(json))
+        {
+            if (MeshRenderer != null) MeshRenderer.RefreshMesh();
+            Debug.Log($"Loaded Forgeborne save: seed {Simulation.World.Seed}, tick {Simulation.World.Tick}, enemies {Simulation.World.Enemies.Count}");
+        }
+        else
+        {
+            Debug.LogWarning("Forgeborne load failed: save was null, empty, or malformed; current world unchanged.");
+        }
     }
 }

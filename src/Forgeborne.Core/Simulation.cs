@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Forgeborne.Core;
 
 /// <summary>
@@ -9,7 +11,13 @@ namespace Forgeborne.Core;
 /// </summary>
 public sealed class Simulation
 {
-    public WorldZone World { get; }
+    /// <summary>
+    /// Current world. Replaced in place by RestoreWorld so holders of
+    /// this Simulation (e.g. Unity's GameManager and MeshRenderer) keep
+    /// working without re-wiring; the Fps object itself is never
+    /// replaced, only teleported to the restored player's position.
+    /// </summary>
+    public WorldZone World { get; private set; }
     public FpsController Fps { get; }
     /// <summary>Equipped weapon. Default is the Pulse Rifle; pass a GeneratedWeapon to play with loot stats instead of the fixed weapon.</summary>
     public Weapon Weapon { get; private set; }
@@ -57,6 +65,53 @@ public sealed class Simulation
         World.WorkstationRegenPerTick = 5 + (int)build.TotalEffect("WorkstationRegenBonus");
         _gatherBonusCarry = 0;
         return true;
+    }
+
+    /// <summary>
+    /// Replace the current world with a loaded one, in place: this
+    /// Simulation object (and its Fps object) survives, so Unity
+    /// adapters holding it need no re-wiring. The FPS controller is
+    /// teleported to the loaded player's grid position (fractional
+    /// feet position is not saved, so it restarts at the cell corner).
+    /// Session counters reset, because they describe the pre-load
+    /// session; the equipped weapon is kept, because the save format
+    /// carries no weapon; an applied skill build is re-applied to the
+    /// new world, so caps, speed, and regen stay coherent instead of
+    /// silently reverting to base values. Returns false for null,
+    /// leaving everything untouched.
+    /// </summary>
+    public bool RestoreWorld(WorldZone? loaded)
+    {
+        if (loaded == null) return false;
+        World = loaded;
+        Fps.Teleport(loaded.Player.X, loaded.Player.Y, loaded.Player.Z);
+        EnemiesKilled = 0;
+        BlocksGathered = 0;
+        BlocksBuilt = 0;
+        if (AppliedSkills != null) ApplySkills(AppliedSkills);
+        else _gatherBonusCarry = 0;
+        return true;
+    }
+
+    /// <summary>
+    /// Load a save JSON into this Simulation via RestoreWorld.
+    /// Fail-closed: null, empty, or malformed JSON returns false and
+    /// leaves the current world untouched (the new world is fully
+    /// parsed before any swap happens). Save-format limits are
+    /// inherited: the core objective's health is not in the save
+    /// format, so a loaded world starts with a fresh 100-HP core.
+    /// </summary>
+    public bool LoadFromJson(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return false;
+        try
+        {
+            return RestoreWorld(SaveSystem.LoadZone(json));
+        }
+        catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException or ArgumentException)
+        {
+            return false;
+        }
     }
 
     /// <summary>Swap to a generated weapon (e.g. an enemy drop). Fresh weapon: full mag, 120 reserve. Returns false for null, leaving the current weapon untouched.</summary>

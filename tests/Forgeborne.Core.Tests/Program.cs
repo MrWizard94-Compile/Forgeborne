@@ -668,6 +668,74 @@ Eq(1, OrbitalView.Snapshot(compSim.World).Count, "slice 2 composition snapshot h
 var compLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(compSim.World));
 Eq(1, compLoaded.Squads.Count, "slice 2 composition save/load keeps the squad");
 
+// ---- Slice 2 follow-up: GameManager.LoadFromJson in-place restore ----
+// Teleport moves the feet position and clears vertical velocity.
+var tpFps = new FpsController(1, 4, 1);
+tpFps.Teleport(10, 5, 12);
+Eq(10f, tpFps.X, "fps teleport sets X");
+Eq(5f, tpFps.Y, "fps teleport sets Y");
+Eq(12f, tpFps.Z, "fps teleport sets Z");
+Eq(0f, tpFps.VelocityY, "fps teleport clears vertical velocity");
+// Build a discriminating saved world: different seed, moved player,
+// inventory, and a squad — then restore it into a live Simulation.
+var saveSource = new WorldZone(7);
+saveSource.Player.X = 10; saveSource.Player.Y = 5; saveSource.Player.Z = 12;
+saveSource.Player.Inventory.Add(BlockType.Stone, 4);
+saveSource.DeploySquad(10, 5, 12);
+var saveJson = SaveSystem.SaveZone(saveSource);
+var restoreSim = new Simulation(42);
+var fpsBefore = restoreSim.Fps;
+var loadedWorld = SaveSystem.LoadZone(saveJson);
+Check(restoreSim.RestoreWorld(loadedWorld), "restore world accepts a loaded world");
+Check(ReferenceEquals(loadedWorld, restoreSim.World), "restore world swaps in the loaded world object");
+Check(ReferenceEquals(fpsBefore, restoreSim.Fps), "restore keeps the same fps object in place");
+Eq(7, restoreSim.World.Seed, "restore world has the saved seed");
+Eq(10, restoreSim.World.Player.X, "restore world player X");
+Eq(4, restoreSim.World.Player.Inventory.Get(BlockType.Stone), "restore world inventory");
+Eq(1, restoreSim.World.Squads.Count, "restore world keeps the saved squad");
+Eq(10f, restoreSim.Fps.X, "restore teleports fps to saved player X");
+Eq(5f, restoreSim.Fps.Y, "restore teleports fps to saved player Y");
+Eq(12f, restoreSim.Fps.Z, "restore teleports fps to saved player Z");
+// Restored play continues: one tick advances the restored world.
+int tickBefore = restoreSim.World.Tick;
+restoreSim.Tick(0.016f, 0, 0, false);
+Check(restoreSim.World.Tick > tickBefore, "restored simulation ticks after restore");
+// Null restore fails closed and leaves the world untouched.
+var nullSim = new Simulation(42);
+Check(!nullSim.RestoreWorld(null), "restore world rejects null");
+Eq(42, nullSim.World.Seed, "null restore leaves the world unchanged");
+// Session counters reset on restore, and a skill build is re-applied
+// to the new world instead of silently reverting to base values.
+var counterSim = new Simulation(42);
+counterSim.World.Player.Inventory.Add(BlockType.Stone, 10);
+counterSim.World.Player.Inventory.Add(BlockType.Wood, 5);
+Eq(BuildResult.Success, counterSim.BuildKineticMillAhead(), "restore test mill builds for counter");
+Eq(1, counterSim.BlocksBuilt, "restore test counter before restore is 1");
+var skillBuild = new SkillBuild();
+Check(skillBuild.Allocate("S1") && skillBuild.Allocate("S2") && skillBuild.Allocate("N1") && skillBuild.Allocate("S3") && skillBuild.Allocate("N2") && skillBuild.Allocate("K1"), "restore test full cluster allocates");
+counterSim.ApplySkills(skillBuild);
+Eq(105, counterSim.World.Player.MaxShields, "restore test shields cap before restore is 105");
+Check(counterSim.RestoreWorld(new WorldZone(9)), "restore with skills succeeds");
+Eq(0, counterSim.BlocksBuilt, "restore resets session counters");
+Eq(105, counterSim.World.Player.MaxShields, "restore re-applies skill shield cap");
+Check(Math.Abs(counterSim.Fps.EffectiveSpeed - 6.3f) < 0.001f, "restore re-applies skill move speed");
+// LoadFromJson: valid JSON swaps the world; malformed, empty, and
+// null input fail closed with the current world untouched.
+var jsonSim = new Simulation(42);
+Check(jsonSim.LoadFromJson(saveJson), "load from json accepts a valid save");
+Eq(7, jsonSim.World.Seed, "load from json swaps to the saved seed");
+Check(!jsonSim.LoadFromJson("this is not json"), "load from json rejects malformed json");
+Eq(7, jsonSim.World.Seed, "malformed load leaves the world unchanged");
+Check(!jsonSim.LoadFromJson(""), "load from json rejects empty input");
+Check(!jsonSim.LoadFromJson(null), "load from json rejects null");
+Eq(7, jsonSim.World.Seed, "rejected loads leave the world unchanged");
+// Round-trip through LoadFromJson keeps the chunk identical.
+var chunkSim = new Simulation(42);
+var chunkJson = SaveSystem.SaveZone(chunkSim.World);
+var chunkSim2 = new Simulation(43);
+Check(chunkSim2.LoadFromJson(chunkJson), "load from json round-trip succeeds");
+Check(chunkSim.World.Chunk.ToBytes().SequenceEqual(chunkSim2.World.Chunk.ToBytes()), "load from json round-trip keeps the chunk");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

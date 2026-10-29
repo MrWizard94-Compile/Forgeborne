@@ -1,5 +1,38 @@
 # Forgeborne — Changelog
 
+## 0.14.0 — 2026-10-29 — GameManager.LoadFromJson in-place restore
+
+- Closed the Slice 1 limitation named in 0.3.0 and repeated in
+  the 0.12.0 review: loading a save in Unity previously only
+  logged it, because `Simulation.World` was get-only and the FPS
+  position was private-set, so no adapter could restore in place.
+  Core now supports it, and the Unity adapter is still thin:
+  `FpsController.Teleport(x, y, z)` (clears vertical velocity,
+  resets grounded), `Simulation.RestoreWorld(loaded)` (swaps the
+  world inside the same Simulation object — the Fps object is
+  never replaced, so GameManager and MeshRenderer need no
+  re-wiring — teleports Fps to the saved player position, resets
+  session counters, keeps the equipped weapon since the save
+  format carries none, and re-applies an applied skill build to
+  the new world so caps, speed, and regen do not silently revert
+  to base values), and `Simulation.LoadFromJson(json)` (fail-closed:
+  null, empty, or malformed JSON returns false and leaves the
+  current world untouched, because the new world is fully parsed
+  before any swap). `GameManager.LoadFromJson` now calls it,
+  refreshes the mesh on success, and logs a warning on failure.
+- Inherited save-format limit, documented not hidden: the core
+  objective's health is not in the save format, so a loaded world
+  starts with a fresh 100-HP core. Fixing that is a save-format
+  step, not smuggled into this restore step.
+- Updated `docs/orbital-view.md` step 6: the Unity save/load
+  checklist step no longer carries the "only logs a load"
+  caveat; the restore itself is now headless-tested, and only
+  the Windows Unity verification of it remains open.
+- Tests: **297 passed, 0 failed** (was 263; +34). Demo unchanged:
+  Slice 1 gathered 1, built 1, killed 2, save 43,864 chars;
+  Slice 2 save 43,891 chars. Next in order: (3) a doctrine menu /
+  rally picker replacing provisional O. Slice 3 is still NOT scoped.
+
 ## 0.13.0 — 2026-10-29 — Slice 2 demo scenario (composition evidence)
 
 - Extended `demo/Forgeborne.Demo` with a Slice 2 scenario after
