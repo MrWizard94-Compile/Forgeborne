@@ -1,5 +1,37 @@
 # Forgeborne — Changelog
 
+## 0.20.0 — 2026-10-29 — Slice 4 scope (documentation only)
+
+- Added `docs/slice-04-scope.md`: Slice 4 is scoped, as its
+  own decision step, as **squads under fire** — the combat
+  answers Slice 3 left open. In order: (1) enemy AI
+  targeting squads, with the targeting rule, the movement
+  generalisation, and the reconciliation with the existing
+  squad-phase adjacent damage all decided in that step, not
+  here; (2) exactly one second doctrine, chosen in that step
+  from Advance / Defend Core / Patrol, with Advance as the
+  starting hypothesis because it is the moving-into-danger
+  doctrine the targeting step exists to answer, deployed
+  through the Slice 3 paid path with no new price invented;
+  (3) a Slice 4 demo scenario and a documentation-only
+  Slice 4 review that closes the slice. Ranked Slice 5
+  candidates are recorded for the review to start from, not
+  promised.
+- Deliberately NOT in Slice 4: automation tier 2, FPS pitch
+  + 3D markers, a second squad type, the full 1,500-node
+  graph, a balance pass, or any licence / monetisation /
+  release change. Windows Unity verification remains open
+  for Slices 1-4 alike.
+- No code changed in this step, by design: a scope document
+  must not smuggle in a system, and the targeting rule and
+  the doctrine choice are explicitly left to their own steps
+  to decide with evidence. Tests re-run unchanged: **466
+  passed, 0 failed**. Demo unchanged: Slice 1 gathered 1,
+  built 1, killed 2, save 43,881 chars; Slice 2 save 43,908
+  chars; Step 1 scenario save 44,016 chars; Step 3 scenario
+  save 44,103 chars. Next in order: Slice 4 Step 1, enemy
+  AI targeting squads.
+
 ## 0.19.0 — 2026-10-29 — Slice 3 Step 3: demo scenario + review
 
 - Closes Slice 3 with the composition proof its scope asked

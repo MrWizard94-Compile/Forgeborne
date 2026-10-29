@@ -667,6 +667,56 @@ look inevitable.
   does not close either.
 - Next, in order: scoping Slice 4 as its own decision step.
 
+## 2026-10-29 — Slice 4 scope (0.20.0, under delegation)
+
+- Decision: Slice 4 is scoped as "squads under fire", taking
+  the top-ranked pair from the 0.16.0 scope and the 0.19.0
+  review in the same order, with no reordering: enemy AI
+  targeting squads first, then a second doctrine. The order
+  is the decision, not just the list — the 0.16.0 pairing
+  rationale (a doctrine that moves squads into danger is
+  only fair once enemies can answer them) only holds if
+  targeting is built and tested before the doctrine is
+  judged against it. Scoping the doctrine first would have
+  made Step 1 a retrofit to a doctrine already chosen.
+- Decision, on what this scope deliberately leaves open:
+  the targeting rule and the doctrine choice are hypotheses
+  here, not decisions. Nearest target (deterministic
+  tie-break) is the targeting hypothesis because it needs no
+  new value and matches the squad's own nearest-enemy rule;
+  Advance is the doctrine hypothesis because it is the
+  moving-into-danger doctrine the pairing rationale was
+  about. Either may be overturned in its step with evidence
+  — nearest targeting that makes enemies ignore the player,
+  or an Advance that collapses into HoldGround at a moving
+  rally, would each be a reason to choose otherwise, and
+  the step must record that reasoning rather than defending
+  the hypothesis.
+- Decision, on the reconciliation Step 1 must make: the
+  scope names it instead of solving it, because the answer
+  depends on how targeting is implemented. Enemies already
+  hurt adjacent squads through the squad phase (10 per
+  adjacent enemy, after the squad fires), while never
+  seeking squads out — so a targeting step that simply adds
+  an enemy attack on squads risks counting the same hit
+  twice. The step must record how it avoids that, and
+  whether the enemies-then-squads tick order stands.
+- Decision, on pricing: Slice 4 reopens no economy question.
+  The second doctrine deploys through the Slice 3 paid path
+  (10 EmberOre, cap 3) as-is; a doctrine-specific price
+  would be a new economy decision, and this scope refuses
+  to smuggle one into a doctrine step. Likewise the scope
+  refuses to smuggle in tier 2, pitch/markers, or a second
+  squad type — those are ranked Slice 5 candidates, in the
+  0.16.0 order minus the pair Slice 4 consumes.
+- Deliberately NOT in this step: any Slice 4 system, any
+  balance change, any enforcement of the free-path rule
+  beyond its existing documentation, and any claim about
+  Windows Unity verification or the pending Slice 1 director
+  playtest gate — both remain open, and Slice 4 scoping does
+  not close either.
+- Next, in order: Slice 4 Step 1, enemy AI targeting squads.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
