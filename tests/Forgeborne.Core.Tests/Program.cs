@@ -323,6 +323,56 @@ Check(!simEquip.Equip(null), "simulation equip null rejected, weapon unchanged")
 Eq(genLoot.Name, simEquip.Weapon.Name, "simulation equip null leaves weapon unchanged");
 Eq(genLoot.Name.ToUpperInvariant(), simGen.Hud().WeaponName, "hud weapon name follows equipped generated weapon");
 
+// ---- Slice 2 Step 4: Forge Survivor skill effects applied to gameplay ----
+var fullBuild = new SkillBuild();
+Check(fullBuild.Allocate("S1") && fullBuild.Allocate("S2") && fullBuild.Allocate("N1") && fullBuild.Allocate("S3") && fullBuild.Allocate("N2") && fullBuild.Allocate("K1"), "skill full cluster allocates for application test");
+// Seed 0 loot is 20 damage, so DamagePct 20% -> 24 enemy / 29 core (20% + 25%) is discriminating, not the base 20.
+var simSkill = new Simulation(42, genLoot, fullBuild);
+Eq(24, simSkill.EffectiveDamage, "skill effective enemy damage 24 (20 x 1.20)");
+Eq(29, simSkill.EffectiveCoreDamage, "skill effective core damage 29 (20 x 1.45)");
+Eq(105, simSkill.World.Player.MaxShields, "skill shield cap 105 (85 + 20)");
+Eq(10, simSkill.World.WorkstationRegenPerTick, "skill workstation regen 10 per tick (5 + 5)");
+Check(Math.Abs(simSkill.Fps.SpeedMultiplier - 1.05f) < 0.001f, "skill move speed multiplier 1.05");
+simSkill.World.SpawnWave(1);
+simSkill.FireAtNearestEnemy();
+Eq(6, simSkill.World.Enemies[0].Health, "skill fire deals 24 damage to 30 HP enemy, leaving 6");
+var simNoSkill = new Simulation(42, genLoot);
+Eq(20, simNoSkill.EffectiveDamage, "no-skill effective damage equals base weapon damage");
+Eq(20, simNoSkill.EffectiveCoreDamage, "no-skill effective core damage equals base weapon damage");
+Check(!simNoSkill.ApplySkills(null), "skill apply null rejected");
+Eq(20, simNoSkill.EffectiveDamage, "skill apply null leaves damage unchanged");
+// Respec replaces, never stacks: full build then empty build returns to base.
+var simRespec = new Simulation(42, genLoot, fullBuild);
+Check(simRespec.ApplySkills(new SkillBuild()), "skill respec to empty build succeeds");
+Eq(85, simRespec.World.Player.MaxShields, "skill respec restores shield cap 85");
+Eq(20, simRespec.EffectiveDamage, "skill respec restores base damage");
+// Workstation regen with skills: 65 -> 75 (+10), not the base +5 -> 70.
+var simWsSkill = new Simulation(42, null, fullBuild);
+simWsSkill.World.Player.TakeDamage(20);
+simWsSkill.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+simWsSkill.World.Advance();
+Eq(75, simWsSkill.World.Player.Shields, "skill workstation restores 10 shields per tick");
+// Move speed with Swift Feet only: 6 -> 6.3 m/s, so 0.1 s forward moves 0.63 m.
+var swiftBuild = new SkillBuild();
+Check(swiftBuild.Allocate("S3"), "skill Swift Feet allocates alone");
+var simSwift = new Simulation(42, null, swiftBuild);
+Check(Math.Abs(simSwift.Fps.EffectiveSpeed - 6.3f) < 0.01f, "skill Swift Feet effective speed 6.3");
+simSwift.Tick(0.1f, 1, 0, false);
+Check(Math.Abs(simSwift.Fps.Z - 16.63f) < 0.01f, $"skill Swift Feet moves 0.63m in 0.1s (got Z {simSwift.Fps.Z})");
+// Gather bonus: +20% = one bonus unit per 5 successful gathers; a failed
+// gather in between must not advance the bonus. Target cell is (16,3,17).
+var simGather = new Simulation(42, null, fullBuild);
+for (int i = 0; i < 4; i++)
+{
+    simGather.World.Chunk.TrySet(16, 3, 17, BlockType.Stone);
+    Check(simGather.GatherAhead() == GatherResult.Success, "skill gather bonus setup gather succeeds");
+}
+Check(simGather.GatherAhead() == GatherResult.Air, "skill gather bonus failed gather is air");
+simGather.World.Chunk.TrySet(16, 3, 17, BlockType.Stone);
+Check(simGather.GatherAhead() == GatherResult.Success, "skill gather bonus 5th gather succeeds");
+Eq(5, simGather.BlocksGathered, "skill gather counts 5 gathers, not bonus units");
+Eq(6, simGather.World.Player.Inventory.Get(BlockType.Stone), "skill gather bonus gives 6 stone from 5 gathers (+20%)");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

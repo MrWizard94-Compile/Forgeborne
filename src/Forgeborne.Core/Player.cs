@@ -38,6 +38,8 @@ public sealed class Player
     public int Z { get; set; }
     public int Health { get; private set; } = 100;
     public int Shields { get; private set; } = 85;
+    /// <summary>Shield cap. Base 85 (reference HUD); skill ShieldBonus raises it via SetMaxShields.</summary>
+    public int MaxShields { get; private set; } = 85;
     public Inventory Inventory { get; } = new();
     public bool IsDead => Health <= 0;
 
@@ -58,18 +60,25 @@ public sealed class Player
         Health = Math.Min(100, Health + amount);
     }
 
-    /// <summary>Restore shields, capped at 85. Used by the workstation effect.</summary>
+    /// <summary>Restore shields, capped at MaxShields. Used by the workstation effect.</summary>
     public void RestoreShields(int amount)
     {
         if (amount <= 0 || IsDead) return;
-        Shields = Math.Min(85, Shields + amount);
+        Shields = Math.Min(MaxShields, Shields + amount);
+    }
+
+    /// <summary>Set the shield cap (skill ShieldBonus). Clamps current shields down if a respec lowers the cap below them.</summary>
+    public void SetMaxShields(int cap)
+    {
+        MaxShields = Math.Max(0, cap);
+        if (Shields > MaxShields) Shields = MaxShields;
     }
 
     /// <summary>Restore health/shields from a save file, clamped to valid ranges. Used only by SaveSystem.</summary>
     public void Restore(int health, int shields)
     {
         Health = Math.Clamp(health, 0, 100);
-        Shields = Math.Clamp(shields, 0, 85);
+        Shields = Math.Clamp(shields, 0, MaxShields);
     }
 
     public bool MoveTo(int x, int y, int z, VoxelChunk chunk)

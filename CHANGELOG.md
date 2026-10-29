@@ -1,5 +1,32 @@
 # Forgeborne — Changelog
 
+## 0.7.0 — 2026-10-29 — Slice 2 Step 4: Forge Survivor skill effects applied to gameplay
+
+- `Simulation.ApplySkills(SkillBuild)` (also a third
+  `Simulation(seed, equipped?, skills?)` argument) replaces any
+  previous build — it never stacks — and applies the 0.5.0
+  cluster for real: DamagePct scales weapon damage, CoreDamagePct
+  adds on top for the core only, ShieldBonus raises the shield
+  cap (85 -> 105 for the full cluster), MoveSpeedPct scales FPS
+  speed (6 -> 6.3 m/s with Swift Feet), WorkstationRegenBonus
+  adds to workstation regen (5 -> 10 per tick), and GatherPct
+  accrues a fractional bonus unit (Scavenger +20% = one bonus
+  unit per 5 successful gathers; failed gathers do not advance
+  it). Null is rejected and leaves the build unchanged; an empty
+  build respecs back to base values.
+- Supporting core changes, no duplicate systems: `Player`
+  gains `MaxShields` + `SetMaxShields` (which clamps current
+  shields if a respec lowers the cap), `FpsController` gains a
+  `SpeedMultiplier` / `EffectiveSpeed`, and `WorldZone` gains
+  `WorkstationRegenPerTick`. Save/load is unchanged: a loaded
+  world still starts at the base 85 cap until skills are applied.
+- Damage rounding is away from zero, so a small bonus is visible:
+  a 10-damage weapon with +5% deals 11, not 10. Discriminating
+  test weapon is again seed-0 loot (20 damage): full cluster
+  gives 24 enemy damage and 29 core damage.
+- Tests: **154 passed, 0 failed** (was 128). Demo unchanged:
+  still gathered 1, built 1, killed 2, save JSON 43,852 chars.
+
 ## 0.6.0 — 2026-10-29 — Slice 2 Step 3: GeneratedWeapon integrated into Simulation
 
 - `Weapon.FromGenerated(GeneratedWeapon)`: a generated weapon's

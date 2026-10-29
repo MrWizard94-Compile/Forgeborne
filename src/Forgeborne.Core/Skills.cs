@@ -3,9 +3,8 @@ namespace Forgeborne.Core;
 public enum SkillNodeType { Travel, Notable, Keystone }
 
 /// <summary>
-/// One passive skill node. Effects are data only in this step — applying
-/// them to Player/Weapon/Simulation is a later Slice 2 step, so the
-/// graph can be tested and balanced before it changes gameplay.
+/// One passive skill node. Effects are applied to gameplay by
+/// Simulation.ApplySkills; see that method for the mapping.
 /// Effect keys used in this cluster: DamagePct, ShieldBonus, MoveSpeedPct,
 /// GatherPct, CoreDamagePct, WorkstationRegenBonus.
 /// </summary>

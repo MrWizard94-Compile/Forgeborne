@@ -51,6 +51,8 @@ public sealed class WorldZone
     public Player Player { get; }
     public List<Enemy> Enemies { get; } = new();
     public int Tick { get; private set; }
+    /// <summary>Shields restored per tick near a workstation. Base 5; skill WorkstationRegenBonus raises it via Simulation.ApplySkills.</summary>
+    public int WorkstationRegenPerTick { get; set; } = 5;
     // Slice 1 objective core, from the reference image: DESTROY CORE.
     public int CoreX { get; } = 28;
     public int CoreY { get; } = 5;
@@ -144,7 +146,7 @@ public sealed class WorldZone
             if (e.IsAdjacentTo(Player)) Player.TakeDamage(Enemy.Damage);
         }
         Enemies.RemoveAll(e => e.IsDead);
-        if (IsNearWorkstation()) Player.RestoreShields(5);
+        if (IsNearWorkstation()) Player.RestoreShields(WorkstationRegenPerTick);
     }
 
     public int AttackEnemy(Enemy enemy, int damage)

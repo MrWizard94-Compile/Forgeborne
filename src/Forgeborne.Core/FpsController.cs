@@ -15,6 +15,9 @@ public sealed class FpsController
     public bool IsGrounded { get; private set; }
 
     public const float Speed = 6f;
+    /// <summary>Move-speed multiplier. Base 1; skill MoveSpeedPct raises it via Simulation.ApplySkills.</summary>
+    public float SpeedMultiplier { get; set; } = 1f;
+    public float EffectiveSpeed => Speed * SpeedMultiplier;
     public const float JumpVelocity = 8f;
     public const float Gravity = -20f;
     public const float HalfWidth = 0.3f;
@@ -40,9 +43,9 @@ public sealed class FpsController
     public void Update(float dt, float forward, float strafe, bool jump, VoxelChunk chunk)
     {
         // Horizontal X, then Z, separately.
-        float nx = X + strafe * Speed * dt;
+        float nx = X + strafe * EffectiveSpeed * dt;
         if (!Collides(chunk, nx, Y, Z)) X = nx;
-        float nz = Z + forward * Speed * dt;
+        float nz = Z + forward * EffectiveSpeed * dt;
         if (!Collides(chunk, X, Y, nz)) Z = nz;
 
         // Vertical.

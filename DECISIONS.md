@@ -222,6 +222,30 @@ look inevitable.
   before Slice 2 is treated as complete, ahead of automation tier 1
   if the two would otherwise collide.
 
+## 2026-10-29 — Slice 2 Step 4: skill effects applied, closing the 0.5.0 data-only gap (under delegation)
+
+- Decision: the Forge Survivor cluster is no longer data only.
+  `Simulation.ApplySkills` is the single application point, taken
+  ahead of automation tier 1, as the 0.6.0 decision recorded it
+  should be slotted before Slice 2 is treated as complete.
+- Rationale: a passive graph that never changes a shot, a shield
+  cap, a step, a repair tick, or a gather is decoration, not a
+  Diablo / PoE-style passive system. Applying it through the one
+  existing Simulation (rather than a second damage / speed /
+  regen system in Unity adapters) keeps the headless tests as the
+  authority and the Unity layer thin.
+- Design choices, all reversible: re-applying replaces rather
+  than stacks, so a respec cannot double-count a build; damage
+  rounds away from zero so small bonuses are visible; the gather
+  bonus is fractional-carry (one bonus unit per 5 gathers at
+  +20%) rather than a per-gather chance, so it is deterministic
+  and testable; a respec that lowers the shield cap clamps
+  current shields to the new cap. Save files are unchanged and
+  still load at the base 85 cap until skills are applied.
+- Open follow-up, not lost: automation tier 1 (Kinetic only) is
+  the next Slice 2 step in body order, now that skills actually
+  affect gameplay.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

@@ -16,8 +16,19 @@ public sealed class Simulation
     public int EnemiesKilled { get; private set; }
     public int BlocksGathered { get; private set; }
     public int BlocksBuilt { get; private set; }
+    /// <summary>Currently applied skill build, or null if none. Re-applying replaces it; it never stacks with a previous build.</summary>
+    public SkillBuild? AppliedSkills { get; private set; }
+    /// <summary>Weapon damage after skill DamagePct, rounded away from zero so a small bonus is visible on a 10-damage weapon (10.5 -> 11, not 10).</summary>
+    public int EffectiveDamage => (int)Math.Round(Weapon.Damage * (1 + (AppliedSkills?.TotalEffect("DamagePct") ?? 0) / 100.0), MidpointRounding.AwayFromZero);
+    /// <summary>Core damage after skill DamagePct plus the Corebreaker CoreDamagePct bonus.</summary>
+    public int EffectiveCoreDamage => (int)Math.Round(Weapon.Damage * (1 + ((AppliedSkills?.TotalEffect("DamagePct") ?? 0) + (AppliedSkills?.TotalEffect("CoreDamagePct") ?? 0)) / 100.0), MidpointRounding.AwayFromZero);
+    // Fractional gather bonus carried across gathers: +20% means every
+    // 5th successful gather yields one extra unit. Failed gathers do
+    // not advance it. Reset on ApplySkills so a respec cannot carry
+    // a near-complete bonus from an old build.
+    private double _gatherBonusCarry;
 
-    public Simulation(int seed, GeneratedWeapon? equipped = null)
+    public Simulation(int seed, GeneratedWeapon? equipped = null, SkillBuild? skills = null)
     {
         World = new WorldZone(seed);
         Fps = new FpsController(World.Player.X, 4f, World.Player.Z);
@@ -25,6 +36,27 @@ public sealed class Simulation
         World.Player.X = (int)Math.Floor(Fps.X);
         World.Player.Z = (int)Math.Floor(Fps.Z);
         Weapon = equipped == null ? new Weapon() : Weapon.FromGenerated(equipped);
+        if (skills != null) ApplySkills(skills);
+    }
+
+    /// <summary>
+    /// Apply a skill build to gameplay, replacing any previous build:
+    /// DamagePct scales weapon damage (enemy and core), CoreDamagePct
+    /// adds on top for the core only, ShieldBonus raises the shield
+    /// cap, MoveSpeedPct scales FPS speed, WorkstationRegenBonus adds
+    /// to workstation shield regen per tick, GatherPct accrues a
+    /// fractional bonus unit per gather. Returns false for null,
+    /// leaving the current build untouched.
+    /// </summary>
+    public bool ApplySkills(SkillBuild? build)
+    {
+        if (build == null) return false;
+        AppliedSkills = build;
+        World.Player.SetMaxShields(85 + (int)build.TotalEffect("ShieldBonus"));
+        Fps.SpeedMultiplier = 1f + (float)(build.TotalEffect("MoveSpeedPct") / 100.0);
+        World.WorkstationRegenPerTick = 5 + (int)build.TotalEffect("WorkstationRegenBonus");
+        _gatherBonusCarry = 0;
+        return true;
     }
 
     /// <summary>Swap to a generated weapon (e.g. an enemy drop). Fresh weapon: full mag, 120 reserve. Returns false for null, leaving the current weapon untouched.</summary>
@@ -58,8 +90,21 @@ public sealed class Simulation
         int x = (int)Math.Floor(Fps.X);
         int y = (int)Math.Floor(Fps.Y) - 1;
         int z = (int)Math.Floor(Fps.Z) + 1;
+        var blockBefore = World.Chunk.Get(x, y, z);
         var r = World.Gather(x, y, z);
-        if (r == GatherResult.Success) BlocksGathered++;
+        if (r == GatherResult.Success)
+        {
+            BlocksGathered++;
+            // Skill gather bonus: accrue the fractional bonus; a whole
+            // unit is granted only when the carry reaches 1, so +20%
+            // is exactly one bonus unit per 5 successful gathers.
+            _gatherBonusCarry += (AppliedSkills?.TotalEffect("GatherPct") ?? 0) / 100.0;
+            if (_gatherBonusCarry >= 1)
+            {
+                _gatherBonusCarry -= 1;
+                World.Player.Inventory.Add(blockBefore, 1);
+            }
+        }
         return r;
     }
 
@@ -86,7 +131,7 @@ public sealed class Simulation
             if (d < best) { best = d; nearest = e; }
         }
         if (nearest == null) return true; // shot fired, nothing hit
-        World.AttackEnemy(nearest, Weapon.Damage);
+        World.AttackEnemy(nearest, EffectiveDamage);
         if (nearest.IsDead) EnemiesKilled++;
         return true;
     }
@@ -97,7 +142,7 @@ public sealed class Simulation
         if (!Weapon.Fire()) return false;
         double dx = World.CoreX - Fps.X, dy = World.CoreY - Fps.Y, dz = World.CoreZ - Fps.Z;
         double dist = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-        if (dist <= 10) World.DamageCore(Weapon.Damage);
+        if (dist <= 10) World.DamageCore(EffectiveCoreDamage);
         return true;
     }
 
