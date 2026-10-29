@@ -262,6 +262,20 @@ int sumLow = 0, sumHigh = 0;
 for (int s = 0; s < 50; s++) { sumLow += LootGenerator.Generate(s, 1).Damage; sumHigh += LootGenerator.Generate(s, 20).Damage; }
 Check(sumHigh > sumLow, $"loot level scaling: level 20 total {sumHigh} > level 1 total {sumLow}");
 
+// ---- Begin work: workstation real effect ----
+var wsWorld = new WorldZone(42);
+wsWorld.Player.TakeDamage(20); // shields 85 -> 65
+Check(wsWorld.Player.Shields == 65, $"workstation test setup shields 65 (got {wsWorld.Player.Shields})");
+wsWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+Check(wsWorld.IsNearWorkstation(), "workstation near player detected");
+wsWorld.Advance();
+Check(wsWorld.Player.Shields == 70, $"workstation restores 5 shields per tick (got {wsWorld.Player.Shields})");
+var farWorld = new WorldZone(42);
+farWorld.Player.TakeDamage(20);
+farWorld.Chunk.TrySet(1, 5, 1, BlockType.Workstation);
+farWorld.Advance();
+Check(farWorld.Player.Shields == 65, $"far workstation does not restore shields (got {farWorld.Player.Shields})");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

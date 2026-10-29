@@ -120,7 +120,21 @@ public sealed class WorldZone
         }
     }
 
-    /// <summary>One world tick: enemies move, then adjacent enemies attack. Dead enemies are removed.</summary>
+    /// <summary>Workstation effect: if a workstation block is within Manhattan distance 3 of the player, restore 5 shields per tick, capped at 85. This is the workstation's real, distinct effect — a wall only blocks movement, a workstation repairs shields, so building one and defending it is a real decision.</summary>
+    public bool IsNearWorkstation()
+    {
+        for (int dx = -3; dx <= 3; dx++)
+            for (int dy = -3; dy <= 3; dy++)
+                for (int dz = -3; dz <= 3; dz++)
+                {
+                    if (Math.Abs(dx) + Math.Abs(dy) + Math.Abs(dz) > 3) continue;
+                    int x = Player.X + dx, y = Player.Y + dy, z = Player.Z + dz;
+                    if (VoxelChunk.InBounds(x, y, z) && Chunk.Get(x, y, z) == BlockType.Workstation) return true;
+                }
+        return false;
+    }
+
+    /// <summary>One world tick: enemies move, then adjacent enemies attack, then the workstation effect applies. Dead enemies are removed.</summary>
     public void Advance()
     {
         Tick++;
@@ -130,6 +144,7 @@ public sealed class WorldZone
             if (e.IsAdjacentTo(Player)) Player.TakeDamage(Enemy.Damage);
         }
         Enemies.RemoveAll(e => e.IsDead);
+        if (IsNearWorkstation()) Player.RestoreShields(5);
     }
 
     public int AttackEnemy(Enemy enemy, int damage)

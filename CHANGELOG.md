@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.4.1 — 2026-10-29 — Workstation real effect + Slice 1 playtest gate doc
+
+- Workstation now has a real, distinct effect: within Manhattan
+  distance 3, it restores 5 shields per tick, capped at 85. A wall
+  only blocks movement; a workstation repairs shields, so building
+  one and defending it is a real decision. Tested: near = 65 -> 70
+  shields, far = no restore.
+- Added `docs/slice-01-playtest-gate.md`: headless evidence table,
+  demo numbers, Unity verification checklist for Windows, and an
+  honest pending director playtest section. Slice 1 is NOT claimed
+  approved until Rob plays it in Unity and answers the gate
+  question.
+- Tests: **100 passed, 0 failed** (was 96).
+
 ## 0.4.0 — 2026-10-29 — Slice 2 Step 1: procedural loot
 
 - Added `LootGenerator`: deterministic procedural weapons from

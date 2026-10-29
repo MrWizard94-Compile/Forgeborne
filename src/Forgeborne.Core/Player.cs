@@ -58,6 +58,13 @@ public sealed class Player
         Health = Math.Min(100, Health + amount);
     }
 
+    /// <summary>Restore shields, capped at 85. Used by the workstation effect.</summary>
+    public void RestoreShields(int amount)
+    {
+        if (amount <= 0 || IsDead) return;
+        Shields = Math.Min(85, Shields + amount);
+    }
+
     /// <summary>Restore health/shields from a save file, clamped to valid ranges. Used only by SaveSystem.</summary>
     public void Restore(int health, int shields)
     {
