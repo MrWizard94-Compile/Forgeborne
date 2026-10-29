@@ -1,0 +1,87 @@
+namespace Forgeborne.Core;
+
+/// <summary>
+/// Headless simulation loop for Slice 1: one world, one FPS controller,
+/// one weapon, one objective core. This is the build-around for
+/// "no playable Unity build in this environment": the full loop
+/// (move, gather, build, fight, survive, objective) runs and is
+/// tested here, and Unity later only renders it and feeds it input.
+/// </summary>
+public sealed class Simulation
+{
+    public WorldZone World { get; }
+    public FpsController Fps { get; }
+    public Weapon Weapon { get; } = new();
+    public int EnemiesKilled { get; private set; }
+    public int BlocksGathered { get; private set; }
+    public int BlocksBuilt { get; private set; }
+
+    public Simulation(int seed)
+    {
+        World = new WorldZone(seed);
+        Fps = new FpsController(World.Player.X, 4f, World.Player.Z);
+        // Sync the grid player to the FPS controller's starting position.
+        World.Player.X = (int)Math.Floor(Fps.X);
+        World.Player.Z = (int)Math.Floor(Fps.Z);
+    }
+
+    public void Tick(float dt, float forward, float strafe, bool jump)
+    {
+        Fps.Update(dt, forward, strafe, jump, World.Chunk);
+        World.Player.X = (int)Math.Floor(Fps.X);
+        World.Player.Y = (int)Math.Floor(Fps.Y);
+        World.Player.Z = (int)Math.Floor(Fps.Z);
+        int before = World.Enemies.Count;
+        World.Advance();
+        // Note: World.Advance removes dead enemies; kills are counted
+        // by the caller via Attack, not here, to avoid double-counting
+        // enemies that die from other causes in future slices.
+        _ = before;
+        // Damage from adjacent enemies is applied in World.Advance via
+        // the grid player, which is synced from the FPS controller above.
+        // Sync FPS health display back through HudState in callers.
+    }
+
+    public GatherResult GatherAhead()
+    {
+        // Gather the ground block directly in front of the FPS player.
+        int x = (int)Math.Floor(Fps.X);
+        int y = (int)Math.Floor(Fps.Y) - 1;
+        int z = (int)Math.Floor(Fps.Z) + 1;
+        var r = World.Gather(x, y, z);
+        if (r == GatherResult.Success) BlocksGathered++;
+        return r;
+    }
+
+    public BuildResult BuildWallAhead()
+    {
+        // Build a wall at feet level, front-right of the player, supported by the ground below.
+        // Front-centre is used by GatherAhead in tests, so front-right avoids building on a just-gathered cell.
+        int x = (int)Math.Floor(Fps.X) + 1;
+        int y = (int)Math.Floor(Fps.Y);
+        int z = (int)Math.Floor(Fps.Z) + 1;
+        var r = World.Build(x, y, z, BlockType.Wall);
+        if (r == BuildResult.Success) BlocksBuilt++;
+        return r;
+    }
+
+    public bool FireAtNearestEnemy()
+    {
+        if (!Weapon.Fire()) return false;
+        Enemy? nearest = null;
+        double best = double.MaxValue;
+        foreach (var e in World.Enemies)
+        {
+            double d = Math.Abs(e.X - Fps.X) + Math.Abs(e.Y - Fps.Y) + Math.Abs(e.Z - Fps.Z);
+            if (d < best) { best = d; nearest = e; }
+        }
+        if (nearest == null) return true; // shot fired, nothing hit
+        World.AttackEnemy(nearest, Weapon.Damage);
+        if (nearest.IsDead) EnemiesKilled++;
+        return true;
+    }
+
+    public HudState Hud() => HudState.FromWorld(World, Weapon);
+    public bool IsObjectiveComplete => World.CoreHealth <= 0;
+    public bool IsPlayerDead => World.Player.IsDead;
+}

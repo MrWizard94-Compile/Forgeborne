@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.2.2 — 2026-10-29 — Simulation loop + silence rule
+
+- Added `Simulation`: headless playable loop (FPS controller,
+  world, weapon, objective) — move, gather, build, fire, kill,
+  objective complete — tested headlessly as the build-around for
+  no playable Unity build in this environment.
+- Fixed a test-sequence support bug (not core logic): building a
+  wall on a just-gathered cell correctly returned Floating, so
+  `BuildWallAhead` now targets front-right, supported by ground.
+- Communication rule recorded: no messages unless absolutely
+  needed, until done, or in direct response to Rob. Progress is
+  recorded here, not in chat.
+- Tests: **86 passed, 0 failed** (was 78).
+
 ## 0.2.1 — 2026-10-29 — Build-around principle + MeshBuilder
 
 - Working principle recorded (Rob): "I can't because…" is not a

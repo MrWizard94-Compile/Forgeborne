@@ -208,5 +208,26 @@ Eq(genMesh.QuadCount * 4, genMesh.Vertices.Count, "meshbuilder vertices = quads 
 Eq(genMesh.QuadCount * 6, genMesh.Indices.Count, "meshbuilder indices = quads x 6");
 Check(genMesh.QuadCount == greedy, "meshbuilder quad count matches mesher");
 
+// ---- Simulation loop (headless playable loop) ----
+var sim = new Simulation(42);
+sim.Tick(0.1f, 0, 0, false);
+Check(!sim.IsPlayerDead, "simulation player alive after first tick");
+var gatherResult = sim.GatherAhead();
+Check(gatherResult == GatherResult.Success, $"simulation gather ahead succeeds (got {gatherResult})");
+Check(sim.BlocksGathered == 1, "simulation blocks gathered counts");
+sim.World.Player.Inventory.Add(BlockType.Stone, 10);
+var buildResult = sim.BuildWallAhead();
+Check(buildResult == BuildResult.Success, $"simulation build wall ahead succeeds (got {buildResult})");
+sim.World.SpawnWave(1);
+Check(sim.World.Enemies.Count == 1, "simulation wave spawns 1 enemy");
+for (int i = 0; i < 3; i++) sim.FireAtNearestEnemy();
+Check(sim.EnemiesKilled == 1, "simulation fire kills enemy in 3 shots (30 HP, 10 damage)");
+sim.World.DamageCore(100);
+Check(sim.IsObjectiveComplete, "simulation objective complete at core 0 HP");
+var simHud = sim.Hud();
+Eq(100, simHud.ObjectivePercentCompleted, "simulation hud objective 100% after core destroyed");
+
+// ---- Silence instruction (recorded, not a test) ----
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

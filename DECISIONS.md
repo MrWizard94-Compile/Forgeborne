@@ -169,6 +169,19 @@ look inevitable.
 - This principle does not override law, safety, or the director's
   hard limits. It governs engineering blockers inside the project.
 
+## 2026-10-29 — Communication rule: no messages unless absolutely needed
+
+- Rob: "Unless you ABSOLUTLEY NEED me, send no further messages
+  until done or to directly respond to me."
+- Effect: Ember does not send progress messages, check-ins, or
+  updates about Forgeborne unless (a) it absolutely needs Rob to
+  decide something it cannot decide under delegation, or (b) the
+  work is done, or (c) Rob messages first and Ember is directly
+  responding to him. Progress is recorded in this repository
+  (DECISIONS, CHANGELOG, commits) instead of in chat.
+- This rule does not stop the work. It stops the messages about
+  the work.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
