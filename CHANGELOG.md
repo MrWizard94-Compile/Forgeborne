@@ -1,5 +1,46 @@
 # Forgeborne — Changelog
 
+## 0.19.0 — 2026-10-29 — Slice 3 Step 3: demo scenario + review
+
+- Closes Slice 3 with the composition proof its scope asked
+  for, and with its own review. No new core system rides
+  along with this step, by design: the demo scenario and the
+  review prove Steps 1 and 2 together, they do not widen the
+  game.
+- Demo: a new Slice 3 Step 3 scenario after the Step 1
+  scenario — one skilled, loot-equipped Simulation damages
+  its core with two shots, deploys 3 squads through the paid
+  path, is refused a 4th deploy through the picker at the
+  cap (picker stays open, ore untouched), then saves and
+  loads into a fresh Simulation. Evidence: core 42 HP,
+  Titan Long Pulse Rifle 28/120, effective damage 24,
+  shields 100/105, 3 paid squads at 90 HP, 10 ore left,
+  before and after the load alike — and the loaded game
+  still cannot deploy more (`CanDeployOrbitalSquad` false),
+  because the cap survives the round-trip, not just the
+  squads. Save JSON 44,103 chars.
+- Review: new `docs/slice-03-review.md` checks the Slice 3
+  gate against the scope (all steps pushed with passing
+  tests, old saves load, core / build / weapon survive a
+  round-trip in tests and demo, unaffordable and over-cap
+  deploys refuse without charging or half-deploying) and
+  records the verdict honestly: Slice 3 is reviewed and
+  closed as tested, integrated persistence + economy — not
+  playtested, not balanced, not Unity-verified. It carries
+  the ranked Slice 4 candidates from the 0.16.0 scope in
+  the same order, as the starting point for Slice 4 scoping,
+  not as a promise. Slice 4 is NOT scoped by this review.
+- Demo otherwise unchanged: Slice 1 gathered 1, built 1,
+  killed 2, save 43,881 chars; Slice 2 built 1, killed 2,
+  kinetic gathered 1, squad intact 3 members / 90 HP,
+  squads saved+loaded 1, save 43,908 chars; Step 1 scenario
+  core 42 HP, weapon 28/120, shields 100/105, save
+  44,016 chars.
+- Tests: **466 passed, 0 failed** (was 437; +29 composed-
+  integration tests mirroring the new demo scenario, with
+  no test failures during the run). Next in order: scoping
+  Slice 4 as its own decision step.
+
 ## 0.18.0 — 2026-10-29 — Slice 3 Step 2: squad economy (cost and cap)
 
 - Closes the second Slice 3 debt: Orbital deployment is no

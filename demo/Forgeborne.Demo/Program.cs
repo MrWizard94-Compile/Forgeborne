@@ -86,3 +86,38 @@ var save3 = sim3.SaveToJson();
 var sim4 = new Simulation(99);
 Console.WriteLine($"Load: {sim4.LoadFromJson(save3)}");
 Console.WriteLine($"After load: core {sim4.World.CoreHealth} HP, weapon {sim4.Weapon.Name} {sim4.Weapon.Mag}/{sim4.Weapon.Reserve}, effective damage {sim4.EffectiveDamage}, shields {sim4.World.Player.Shields}/{sim4.World.Player.MaxShields}, save JSON length: {save3.Length} chars");
+
+// Slice 3 Step 3 scenario: Slice 3 composed in one run — the Step 1
+// persistence (damaged core, skilled build, loot weapon) plus the
+// Step 2 economy (paid squads, cap, picker refusal), through a
+// save/load round-trip. This is the composition proof the scope
+// asked for: persistence and economy working together, not only
+// in their own steps' tests.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 3 Step 3 scenario — damaged core, skilled build, paid capped squads, save/load round-trip");
+var lootS3 = LootGenerator.Generate(0, 1);
+var skillBuildS3 = new SkillBuild();
+skillBuildS3.Allocate("S1"); skillBuildS3.Allocate("S2"); skillBuildS3.Allocate("N1");
+skillBuildS3.Allocate("S3"); skillBuildS3.Allocate("N2"); skillBuildS3.Allocate("K1");
+var simS3 = new Simulation(42, lootS3, skillBuildS3);
+simS3.World.Player.Restore(100, 100);
+simS3.Fps.Teleport(24, 5, 24);
+simS3.FireAtCore();
+simS3.FireAtCore();
+simS3.World.Player.Inventory.Add(BlockType.EmberOre, 40);
+var s3Squad1 = simS3.DeployOrbitalSquadPaid(18, 5, 16);
+var s3Squad2 = simS3.DeployOrbitalSquadPaid(19, 5, 16);
+var s3Squad3 = simS3.DeployOrbitalSquadPaid(20, 5, 16);
+Console.WriteLine($"Before save: core {simS3.World.CoreHealth} HP, weapon {simS3.Weapon.Name} {simS3.Weapon.Mag}/{simS3.Weapon.Reserve}, effective damage {simS3.EffectiveDamage}, shields {simS3.World.Player.Shields}/{simS3.World.Player.MaxShields}");
+Console.WriteLine($"Paid squads deployed: {(s3Squad1 == null ? 0 : 1) + (s3Squad2 == null ? 0 : 1) + (s3Squad3 == null ? 0 : 1)} (ore left {simS3.World.Player.Inventory.Get(BlockType.EmberOre)}), squad HP {(simS3.World.Squads.Count == 0 ? 0 : simS3.World.Squads[0].Health)}");
+// The 4th deploy goes through the picker, as in play: at the cap
+// it is refused, the picker stays open, and the ore is untouched.
+simS3.BeginOrbitalPick();
+simS3.SetOrbitalRally(21, 5, 16);
+var s3Fourth = simS3.ConfirmOrbitalDeploy();
+Console.WriteLine($"4th picker deploy: {(s3Fourth == null ? "REFUSED at cap" : "DEPLOYED (unexpected)")}, picker still open: {simS3.OrbitalCommand.IsPicking}, ore left {simS3.World.Player.Inventory.Get(BlockType.EmberOre)}");
+var saveS3 = simS3.SaveToJson();
+var simS3Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS3Loaded.LoadFromJson(saveS3)}");
+var s3Snap = OrbitalView.Snapshot(simS3Loaded.World);
+Console.WriteLine($"After load: core {simS3Loaded.World.CoreHealth} HP, weapon {simS3Loaded.Weapon.Name} {simS3Loaded.Weapon.Mag}/{simS3Loaded.Weapon.Reserve}, effective damage {simS3Loaded.EffectiveDamage}, shields {simS3Loaded.World.Player.Shields}/{simS3Loaded.World.Player.MaxShields}, squads loaded {s3Snap.Count} (HP {(s3Snap.Count == 0 ? 0 : s3Snap[0].Health)}, members {(s3Snap.Count == 0 ? 0 : s3Snap[0].AliveMembers)}), ore {simS3Loaded.World.Player.Inventory.Get(BlockType.EmberOre)}, can deploy more: {simS3Loaded.CanDeployOrbitalSquad()}, save JSON length: {saveS3.Length} chars");

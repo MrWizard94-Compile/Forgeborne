@@ -630,6 +630,43 @@ look inevitable.
   headlessly, as before.
 - Next, in order: Slice 3 Step 3, demo scenario + review.
 
+## 2026-10-29 — Slice 3 Step 3: demo scenario + review (0.19.0, under delegation)
+
+- Decision: Step 3 is composition + review only, no new
+  system, following the 0.12.0 / 0.13.0 pattern and the
+  0.16.0 scope's own wording ("demo scenario and a
+  documentation-only review that closes the slice"). A
+  review that smuggled in a system would not be a review,
+  and a demo that only re-ran Steps 1 and 2 separately
+  would not prove they compose — so the demo is one
+  Simulation running both together: skilled build + loot
+  weapon + damaged core (Step 1) and paid, capped squads
+  with a picker refusal at the cap (Step 2), through one
+  save/load round-trip. The loaded game's cap check is
+  asserted too, not just the loaded squads, because a
+  cap that reset on load would silently un-price the
+  economy the step before just built.
+- Decision, on the review's candidate order: the ranked
+  Slice 4 candidates are carried from the 0.16.0 scope in
+  the same order (enemy AI targeting squads + second
+  doctrine first, then automation tier 2, then pitch +
+  markers, then a second squad type). The Step 3 evidence
+  gives no reason to reorder them: nothing in composition
+  testing argues that markers outrank enemy answers to
+  squads, or that a second squad type should be priced
+  before enemies can answer the first. Reordering, if a
+  later run finds a reason, belongs to the Slice 4 scoping
+  step, not to this review.
+- Deliberately NOT in this step: any Slice 4 system, any
+  balance change to the 10-ore price or the cap of 3, any
+  enforcement of the free-path rule beyond its existing
+  documentation (the review re-names that gap in priority
+  order instead of quietly fixing it here), and any claim
+  about Windows Unity verification or the pending Slice 1
+  director playtest gate — both remain open, and Slice 3
+  does not close either.
+- Next, in order: scoping Slice 4 as its own decision step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

@@ -1018,6 +1018,51 @@ paidSaveWorld.TryDeployPaidSquad(20, 5, 16);
 var paidLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(paidSaveWorld));
 Eq(1, paidLoaded.Squads.Count, "squad economy paid squad survives save/load");
 
+// ---- Slice 3 Step 3: demo scenario + review (0.19.0) ----
+// One Simulation composing Slice 3 end to end, mirroring the demo:
+// a damaged core, a skilled build, a loot weapon with an
+// in-progress mag, three paid squads, a picker refusal at the
+// cap, and a save/load round-trip that keeps all of it.
+var s3Loot = LootGenerator.Generate(0, 1);
+var s3Build = new SkillBuild();
+Check(s3Build.Allocate("S1") && s3Build.Allocate("S2") && s3Build.Allocate("N1") && s3Build.Allocate("S3") && s3Build.Allocate("N2") && s3Build.Allocate("K1"), "slice 3 demo full cluster allocates");
+var s3Sim = new Simulation(42, s3Loot, s3Build);
+s3Sim.World.Player.Restore(100, 100);
+s3Sim.Fps.Teleport(24, 5, 24);
+Check(s3Sim.FireAtCore() && s3Sim.FireAtCore(), "slice 3 demo two core shots fired");
+Eq(42, s3Sim.World.CoreHealth, "slice 3 demo core damaged to 42 before save");
+Eq(28, s3Sim.Weapon.Mag, "slice 3 demo weapon mag is 28 after two core shots");
+s3Sim.World.Player.Inventory.Add(BlockType.EmberOre, 40);
+Check(s3Sim.DeployOrbitalSquadPaid(18, 5, 16) != null, "slice 3 demo paid squad 1 deploys");
+Check(s3Sim.DeployOrbitalSquadPaid(19, 5, 16) != null, "slice 3 demo paid squad 2 deploys");
+Check(s3Sim.DeployOrbitalSquadPaid(20, 5, 16) != null, "slice 3 demo paid squad 3 deploys");
+Eq(3, s3Sim.World.Squads.Count, "slice 3 demo 3 paid squads fielded");
+Eq(10, s3Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice 3 demo 10 ore left after 3 paid squads");
+Eq(90, s3Sim.World.Squads[0].Health, "slice 3 demo squad at full 90 HP before save");
+s3Sim.BeginOrbitalPick();
+Check(s3Sim.SetOrbitalRally(21, 5, 16), "slice 3 demo picker 4th rally set");
+Check(s3Sim.ConfirmOrbitalDeploy() == null, "slice 3 demo picker 4th deploy refused at cap");
+Eq(3, s3Sim.World.Squads.Count, "slice 3 demo refused 4th deploy adds no squad");
+Eq(10, s3Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice 3 demo refused 4th deploy charges nothing");
+Check(s3Sim.OrbitalCommand.IsPicking, "slice 3 demo picker stays open after cap refusal");
+var s3Json = s3Sim.SaveToJson();
+var s3Loaded = new Simulation(99);
+Check(s3Loaded.LoadFromJson(s3Json), "slice 3 demo save/load round-trip succeeds");
+Eq(42, s3Loaded.World.CoreHealth, "slice 3 demo core health survives round-trip");
+Eq("Titan Long Pulse Rifle", s3Loaded.Weapon.Name, "slice 3 demo weapon name survives round-trip");
+Eq(28, s3Loaded.Weapon.Mag, "slice 3 demo weapon mag survives round-trip");
+Eq(120, s3Loaded.Weapon.Reserve, "slice 3 demo weapon reserve survives round-trip");
+Eq(24, s3Loaded.EffectiveDamage, "slice 3 demo skill build survives round-trip");
+Eq(105, s3Loaded.World.Player.MaxShields, "slice 3 demo shield cap survives round-trip");
+Eq(100, s3Loaded.World.Player.Shields, "slice 3 demo shields above base cap survive round-trip");
+Eq(3, s3Loaded.World.Squads.Count, "slice 3 demo 3 squads survive round-trip");
+Eq(90, s3Loaded.World.Squads[0].Health, "slice 3 demo squad health survives round-trip");
+Eq(10, s3Loaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice 3 demo leftover ore survives round-trip");
+Check(!s3Loaded.CanDeployOrbitalSquad(), "slice 3 demo loaded game still at cap, cannot deploy more");
+var s3Snap = OrbitalView.Snapshot(s3Loaded.World);
+Eq(3, s3Snap.Count, "slice 3 demo snapshot shows 3 loaded squads");
+Eq(3, s3Snap[0].AliveMembers, "slice 3 demo loaded squad has 3 living members");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
