@@ -1,5 +1,25 @@
 # Forgeborne — Changelog
 
+## 0.6.0 — 2026-10-29 — Slice 2 Step 3: GeneratedWeapon integrated into Simulation
+
+- `Weapon.FromGenerated(GeneratedWeapon)`: a generated weapon's
+  name, damage, and mag size now become a live weapon — no
+  duplicate damage / mag logic, and Simulation fires that Weapon,
+  so generated stats are the stats that actually hit.
+- `Simulation(seed, equipped?)`: pass a GeneratedWeapon to start
+  equipped with it; no argument still gives the Pulse Rifle
+  (42 mag / 120 reserve, 10 damage). `Simulation.Equip(...)`
+  swaps to a generated weapon mid-run (fresh full mag, 120
+  reserve); null is rejected and leaves the weapon unchanged.
+- HUD weapon name now follows the equipped weapon
+  (upper-cased, as before for the Pulse Rifle), instead of a
+  hard-coded "PULSE RIFLE".
+- Tests use a deliberately discriminating loot seed (seed 0:
+  Titan Long Pulse Rifle, 20 damage, 30 mag) so the integration
+  cannot pass by accident on the Pulse Rifle's 10 / 42 stats.
+- Tests: **128 passed, 0 failed** (was 111). Demo unchanged:
+  still gathered 1, built 1, killed 2, save JSON 43,852 chars.
+
 ## 0.5.0 — 2026-10-29 — Slice 2 Step 2: first passive skill cluster
 
 - Added `SkillGraph.ForgeSurvivorCluster`: 6 nodes only, NOT the

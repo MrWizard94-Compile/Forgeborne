@@ -11,18 +11,28 @@ public sealed class Simulation
 {
     public WorldZone World { get; }
     public FpsController Fps { get; }
-    public Weapon Weapon { get; } = new();
+    /// <summary>Equipped weapon. Default is the Pulse Rifle; pass a GeneratedWeapon to play with loot stats instead of the fixed weapon.</summary>
+    public Weapon Weapon { get; private set; }
     public int EnemiesKilled { get; private set; }
     public int BlocksGathered { get; private set; }
     public int BlocksBuilt { get; private set; }
 
-    public Simulation(int seed)
+    public Simulation(int seed, GeneratedWeapon? equipped = null)
     {
         World = new WorldZone(seed);
         Fps = new FpsController(World.Player.X, 4f, World.Player.Z);
         // Sync the grid player to the FPS controller's starting position.
         World.Player.X = (int)Math.Floor(Fps.X);
         World.Player.Z = (int)Math.Floor(Fps.Z);
+        Weapon = equipped == null ? new Weapon() : Weapon.FromGenerated(equipped);
+    }
+
+    /// <summary>Swap to a generated weapon (e.g. an enemy drop). Fresh weapon: full mag, 120 reserve. Returns false for null, leaving the current weapon untouched.</summary>
+    public bool Equip(GeneratedWeapon? generated)
+    {
+        if (generated == null) return false;
+        Weapon = Weapon.FromGenerated(generated);
+        return true;
     }
 
     public void Tick(float dt, float forward, float strafe, bool jump)

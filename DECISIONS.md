@@ -198,6 +198,30 @@ look inevitable.
   job is NOT created here without Rob's explicit approval for the
   schedule, because it is background work on his behalf.
 
+## 2026-10-29 — Slice 2 Step 3: generated weapons are the live weapon (under delegation)
+
+- Decision: `Simulation` no longer always fires the fixed Pulse
+  Rifle. A `GeneratedWeapon` passed at construction, or via
+  `Equip`, becomes the live `Weapon`; its damage, mag size, and
+  name are what fire, reload, and the HUD use.
+- Rationale: Slice 2 Step 1 generated loot as data only. Loot
+  that never changes a shot is decoration, not a Diablo / PoE-style
+  loot system. Wiring it through the single existing `Weapon`
+  class (via `FromGenerated`) avoids a second damage / ammo system
+  in Simulation or Unity adapters.
+- Reversibility: the Pulse Rifle remains the default when no
+  generated weapon is supplied, so Slice 1 tests, demo, and Unity
+  adapters keep working unchanged. `Equip` gives a fresh mag and
+  reserve rather than preserving ammo across swaps — a loot-pickup
+  simplification, reversible if a later inventory design wants
+  per-weapon ammo persistence.
+- Open follow-up recorded, not lost: applying the Forge Survivor
+  skill-cluster effects (0.5.0, data only) to Player / Weapon /
+  Simulation is still pending. It was not folded into this step,
+  to keep this step small and verifiable; it should be slotted
+  before Slice 2 is treated as complete, ahead of automation tier 1
+  if the two would otherwise collide.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

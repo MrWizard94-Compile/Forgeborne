@@ -2,11 +2,30 @@ namespace Forgeborne.Core;
 
 public sealed class Weapon
 {
-    public string Name { get; } = "Pulse Rifle";
-    public int MagCapacity { get; } = 42;
-    public int Mag { get; private set; } = 42;
-    public int Reserve { get; private set; } = 120;
-    public int Damage { get; } = 10;
+    public string Name { get; }
+    public int MagCapacity { get; }
+    public int Mag { get; private set; }
+    public int Reserve { get; private set; }
+    public int Damage { get; }
+
+    /// <summary>Default Slice 1 weapon: the Pulse Rifle (42 mag / 120 reserve, 10 damage).</summary>
+    public Weapon() : this("Pulse Rifle", 10, 42, 120) { }
+
+    public Weapon(string name, int damage, int magCapacity, int reserve = 120)
+    {
+        Name = string.IsNullOrWhiteSpace(name) ? "Pulse Rifle" : name;
+        Damage = Math.Max(1, damage);
+        MagCapacity = Math.Max(1, magCapacity);
+        Mag = MagCapacity;
+        Reserve = Math.Max(0, reserve);
+    }
+
+    /// <summary>Build a live weapon from a procedurally generated one. No duplicate damage/mag logic: Simulation fires this Weapon, so a generated weapon's stats are the stats that actually hit.</summary>
+    public static Weapon FromGenerated(GeneratedWeapon generated)
+    {
+        ArgumentNullException.ThrowIfNull(generated);
+        return new Weapon(generated.Name, generated.Damage, generated.MagSize);
+    }
 
     public bool Fire()
     {
@@ -45,6 +64,7 @@ public sealed class HudState
         {
             Health = world.Player.Health,
             Shields = world.Player.Shields,
+            WeaponName = weapon.Name.ToUpperInvariant(),
             AmmoMag = weapon.Mag,
             AmmoReserve = weapon.Reserve,
             EnemyCount = world.Enemies.Count,

@@ -292,6 +292,37 @@ var decoded = SkillBuild.Decode(encoded);
 Check(decoded.Allocated.Count == 6 && decoded.TotalEffect("DamagePct") == 20, "skill encode/decode round-trip preserves build");
 Check(!new SkillBuild().Allocate("NOPE"), "skill unknown node rejected");
 
+// ---- Slice 2 Step 3: GeneratedWeapon integrated into Simulation ----
+// Seed 0 is chosen deliberately: it generates a 20-damage / 30-mag weapon,
+// unlike seed 42's 10-damage / 42-mag loot, so these tests cannot pass
+// by accident on the fixed Pulse Rifle's stats.
+var genLoot = LootGenerator.Generate(0, 1);
+var genWeapon = Weapon.FromGenerated(genLoot);
+Eq(genLoot.Name, genWeapon.Name, "generated weapon name preserved");
+Eq(genLoot.Damage, genWeapon.Damage, "generated weapon damage preserved");
+Eq(genLoot.MagSize, genWeapon.MagCapacity, "generated weapon mag capacity preserved");
+Eq(genLoot.MagSize, genWeapon.Mag, "generated weapon starts with full mag");
+var simGen = new Simulation(42, genLoot);
+Eq(genLoot.Damage, simGen.Weapon.Damage, "simulation equipped generated damage");
+Eq(genLoot.MagSize, simGen.Weapon.Mag, "simulation equipped generated mag");
+simGen.World.SpawnWave(1);
+int enemyHpBefore = simGen.World.Enemies[0].Health;
+simGen.FireAtNearestEnemy();
+Eq(Math.Max(0, enemyHpBefore - genLoot.Damage), simGen.World.Enemies.Count == 0 ? 0 : simGen.World.Enemies[0].Health, "simulation fire deals generated damage, not fixed 10");
+var simEquip = new Simulation(42);
+Eq("Pulse Rifle", simEquip.Weapon.Name, "simulation default weapon is still Pulse Rifle");
+Eq(10, simEquip.Weapon.Damage, "simulation default weapon damage still 10");
+Check(simEquip.Equip(genLoot), "simulation equip generated weapon succeeds");
+Eq(genLoot.Name, simEquip.Weapon.Name, "simulation equip changes weapon name");
+Eq(genLoot.Damage, simEquip.Weapon.Damage, "simulation equip changes weapon damage");
+Eq(genLoot.MagSize, simEquip.Weapon.Mag, "simulation equip gives full generated mag");
+int equipMagBefore = simEquip.Weapon.Mag;
+simEquip.FireAtNearestEnemy();
+Eq(equipMagBefore - 1, simEquip.Weapon.Mag, "simulation equip fire consumes generated mag");
+Check(!simEquip.Equip(null), "simulation equip null rejected, weapon unchanged");
+Eq(genLoot.Name, simEquip.Weapon.Name, "simulation equip null leaves weapon unchanged");
+Eq(genLoot.Name.ToUpperInvariant(), simGen.Hud().WeaponName, "hud weapon name follows equipped generated weapon");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
