@@ -1,5 +1,31 @@
 # Forgeborne — Changelog
 
+## 0.8.0 — 2026-10-29 — Slice 2 Step 5: automation tier 1 (Kinetic only)
+
+- Added `BlockType.KineticMill` (value 7, appended only — earlier
+  values unchanged, so old saves still load) and `World.Build`
+  support for it: 10 Stone + 5 Wood, same air-target and support
+  rules as walls and workstations. A mill is solid and is itself
+  not gatherable.
+- Kinetic automation, in `WorldZone.Advance` every 5th tick: each
+  mill excavates at most one adjacent gatherable block, in fixed
+  neighbour order, into the player's inventory, by reusing
+  `World.Gather` — so bedrock, walls, workstations, and other
+  mills are never excavated, and a full inventory consumes
+  nothing. Mills are scanned in chunk-index order, so two mills
+  reaching for the same block resolve deterministically (first
+  in scan order wins; exactly 1 block, not 2).
+- `Simulation.BuildKineticMillAhead` (front-left, mirroring
+  `BuildWallAhead`'s front-right) and `WorldZone.
+  KineticBlocksGathered` (session counter, not saved) expose the
+  system to the headless loop. No separate machine inventory yet:
+  tier 1 output goes to the player's inventory, to be revisited
+  when digital storage (tier 3) arrives. Tiers 2–4 (electrical,
+  digital, arcane) are NOT in this step.
+- Tests: **180 passed, 0 failed** (was 154; +26). Demo unchanged:
+  still gathered 1, built 1, killed 2, save JSON 43,852 chars
+  (mesher timing varies run to run; 86 ms this run).
+
 ## 0.7.0 — 2026-10-29 — Slice 2 Step 4: Forge Survivor skill effects applied to gameplay
 
 - `Simulation.ApplySkills(SkillBuild)` (also a third

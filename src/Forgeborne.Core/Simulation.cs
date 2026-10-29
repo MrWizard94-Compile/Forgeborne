@@ -120,6 +120,19 @@ public sealed class Simulation
         return r;
     }
 
+    public BuildResult BuildKineticMillAhead()
+    {
+        // Front-left, mirroring BuildWallAhead's front-right, so the
+        // two builders do not collide in tests or in play. Supported
+        // by the ground below, like a wall.
+        int x = (int)Math.Floor(Fps.X) - 1;
+        int y = (int)Math.Floor(Fps.Y);
+        int z = (int)Math.Floor(Fps.Z) + 1;
+        var r = World.Build(x, y, z, BlockType.KineticMill);
+        if (r == BuildResult.Success) BlocksBuilt++;
+        return r;
+    }
+
     public bool FireAtNearestEnemy()
     {
         if (!Weapon.Fire()) return false;

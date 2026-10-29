@@ -53,6 +53,10 @@ public sealed class WorldZone
     public int Tick { get; private set; }
     /// <summary>Shields restored per tick near a workstation. Base 5; skill WorkstationRegenBonus raises it via Simulation.ApplySkills.</summary>
     public int WorkstationRegenPerTick { get; set; } = 5;
+    /// <summary>Blocks gathered by Kinetic Mills this session (not saved: a loaded world starts at 0, like Simulation's session counters).</summary>
+    public int KineticBlocksGathered { get; private set; }
+    /// <summary>Kinetic automation interval: mills act once every 5 ticks, so automation is real-time pressure relief, not instant or turn-based.</summary>
+    public const int KineticIntervalTicks = 5;
     // Slice 1 objective core, from the reference image: DESTROY CORE.
     public int CoreX { get; } = 28;
     public int CoreY { get; } = 5;
@@ -86,7 +90,7 @@ public sealed class WorldZone
 
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation)) return BuildResult.InvalidType;
+        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
@@ -100,6 +104,16 @@ public sealed class WorldZone
         if (type == BlockType.Wall)
         {
             if (!Player.Inventory.Remove(BlockType.Stone, 2)) return BuildResult.InsufficientResources;
+        }
+        else if (type == BlockType.KineticMill)
+        {
+            // Kinetic Mill: 10 Stone (frame) + 5 Wood (crank / gears).
+            // Distinct from the workstation's 10 Stone + 5 EmberOre, so
+            // the two machines compete for stone but not for each other.
+            if (!Player.Inventory.Has(BlockType.Stone, 10) || !Player.Inventory.Has(BlockType.Wood, 5))
+                return BuildResult.InsufficientResources;
+            Player.Inventory.Remove(BlockType.Stone, 10);
+            Player.Inventory.Remove(BlockType.Wood, 5);
         }
         else // Workstation: 10 Stone + 5 EmberOre
         {
@@ -136,7 +150,7 @@ public sealed class WorldZone
         return false;
     }
 
-    /// <summary>One world tick: enemies move, then adjacent enemies attack, then the workstation effect applies. Dead enemies are removed.</summary>
+    /// <summary>One world tick: enemies move, then adjacent enemies attack, then the workstation effect applies, then — every 5th tick — Kinetic Mills act. Dead enemies are removed.</summary>
     public void Advance()
     {
         Tick++;
@@ -147,6 +161,38 @@ public sealed class WorldZone
         }
         Enemies.RemoveAll(e => e.IsDead);
         if (IsNearWorkstation()) Player.RestoreShields(WorkstationRegenPerTick);
+        if (Tick % KineticIntervalTicks == 0) RunKineticAutomation();
+    }
+
+    /// <summary>
+    /// Slice 2 automation tier 1 (Kinetic only): each Kinetic Mill
+    /// excavates at most one adjacent gatherable block per activation,
+    /// in fixed neighbour order, into the player's inventory. It reuses
+    /// <see cref="Gather(int, int, int)"/>, so the same rules apply:
+    /// bedrock, walls, workstations, and other mills are never gathered,
+    /// and a full inventory consumes nothing. Mills are scanned in
+    /// chunk-index order, so two mills reaching for the same block
+    /// resolve deterministically — the first in scan order wins.
+    /// No separate machine inventory yet: tier 1 output goes to the
+    /// player's inventory, to be revisited when digital storage
+    /// (tier 3) arrives.
+    /// </summary>
+    private void RunKineticAutomation()
+    {
+        for (int y = 0; y < VoxelChunk.Size; y++)
+        for (int z = 0; z < VoxelChunk.Size; z++)
+        for (int x = 0; x < VoxelChunk.Size; x++)
+        {
+            if (Chunk.Get(x, y, z) != BlockType.KineticMill) continue;
+            foreach (var (dx, dy, dz) in Neighbours)
+            {
+                if (Gather(x + dx, y + dy, z + dz) == GatherResult.Success)
+                {
+                    KineticBlocksGathered++;
+                    break;
+                }
+            }
+        }
     }
 
     public int AttackEnemy(Enemy enemy, int damage)

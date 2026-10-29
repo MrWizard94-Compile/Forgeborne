@@ -246,6 +246,32 @@ look inevitable.
   the next Slice 2 step in body order, now that skills actually
   affect gameplay.
 
+## 2026-10-29 — Slice 2 Step 5: automation tier 1, Kinetic only (under delegation)
+
+- Decision: the first automation tier is a single Kinetic Mill,
+  not the full four-tier factory system. It excavates — it does
+  not craft, smelt, or store — because excavation is the
+  gather-first loop this game is built around, and it is the
+  smallest automation that changes survival (resources arrive
+  while the player fights or builds elsewhere).
+- Design choices, all reversible: cost 10 Stone + 5 Wood (stone
+  frame, timber crank / gears), distinct from the workstation's
+  10 Stone + 5 EmberOre; one block per mill per 5 ticks, so
+  automation is steady real-time help, not instant wealth and
+  not a turn-like pause; output to the player's inventory, with
+  no separate machine inventory yet, so tier 1 adds no second
+  inventory system to save, sync, or render; it reuses
+  `World.Gather`, so full-inventory, bedrock, and built-block
+  rules cannot drift from manual gathering.
+- Deliberately NOT in this step: electrical, digital, and arcane
+  tiers; crushing into new resources; fuel or power networks;
+  per-mill inventory; Unity adapter changes (adapters render
+  core state and need no new logic for a block type — the mill
+  meshes as a solid block through the existing mesher path).
+- Open follow-up, not lost: the Orbital Tactical doctrine
+  prototype (one doctrine, one squad type) is the next Slice 2
+  step in body order, now that automation tier 1 is in.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

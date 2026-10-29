@@ -1,6 +1,6 @@
 namespace Forgeborne.Core;
 
-/// <summary>Block types in Slice 1. Values are stable for save files — do not reorder.</summary>
+/// <summary>Block types in Slice 1. Values are stable for save files — do not reorder. New types are appended only.</summary>
 public enum BlockType : byte
 {
     Air = 0,
@@ -10,6 +10,8 @@ public enum BlockType : byte
     Wall = 4,
     Workstation = 5,
     Bedrock = 6,
+    /// <summary>Slice 2 automation tier 1 (Kinetic): a crank-driven mill that excavates one adjacent gatherable block per activation. Appended in 0.8.0; earlier values unchanged, so old saves still load.</summary>
+    KineticMill = 7,
 }
 
 public static class BlockInfo

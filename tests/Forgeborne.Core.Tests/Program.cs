@@ -373,6 +373,78 @@ Check(simGather.GatherAhead() == GatherResult.Success, "skill gather bonus 5th g
 Eq(5, simGather.BlocksGathered, "skill gather counts 5 gathers, not bonus units");
 Eq(6, simGather.World.Player.Inventory.Get(BlockType.Stone), "skill gather bonus gives 6 stone from 5 gathers (+20%)");
 
+// ---- Slice 2 Step 5: automation tier 1 (Kinetic only) ----
+// Build cost: 10 Stone + 5 Wood, placed above ground (supported below).
+var millWorld = new WorldZone(42);
+millWorld.Player.Inventory.Add(BlockType.Stone, 10);
+millWorld.Player.Inventory.Add(BlockType.Wood, 5);
+Eq(BuildResult.Success, millWorld.Build(15, 4, 15, BlockType.KineticMill), "kinetic mill builds with 10 stone + 5 wood");
+Eq(BlockType.KineticMill, millWorld.Chunk.Get(15, 4, 15), "kinetic mill placed");
+Eq(0, millWorld.Player.Inventory.Get(BlockType.Stone), "kinetic mill consumes 10 stone");
+Eq(0, millWorld.Player.Inventory.Get(BlockType.Wood), "kinetic mill consumes 5 wood");
+Eq(GatherResult.NotGatherable, millWorld.Gather(15, 4, 15), "kinetic mill itself is not gatherable");
+// Insufficient wood: stone alone must not build, and must not be spent.
+var poorWorld = new WorldZone(42);
+poorWorld.Player.Inventory.Add(BlockType.Stone, 10);
+Eq(BuildResult.InsufficientResources, poorWorld.Build(15, 4, 15, BlockType.KineticMill), "kinetic mill without wood fails");
+Eq(BlockType.Air, poorWorld.Chunk.Get(15, 4, 15), "failed kinetic mill leaves air");
+Eq(10, poorWorld.Player.Inventory.Get(BlockType.Stone), "failed kinetic mill does not spend stone");
+// Timing + rate: a mill above ground gathers the ground stone below
+// on the 5th tick, not before, and exactly one block per activation.
+var autoWorld = new WorldZone(42);
+autoWorld.Chunk.TrySet(16, 4, 16, BlockType.KineticMill);
+int stoneBefore = autoWorld.Player.Inventory.Get(BlockType.Stone);
+for (int i = 0; i < 4; i++) autoWorld.Advance();
+Eq(stoneBefore, autoWorld.Player.Inventory.Get(BlockType.Stone), "kinetic mill gathers nothing in first 4 ticks");
+Eq(0, autoWorld.KineticBlocksGathered, "kinetic mill counter 0 before activation tick");
+autoWorld.Advance(); // tick 5
+Eq(stoneBefore + 1, autoWorld.Player.Inventory.Get(BlockType.Stone), "kinetic mill gathers 1 stone on 5th tick");
+Eq(1, autoWorld.KineticBlocksGathered, "kinetic mill counter 1 after activation");
+Eq(BlockType.Air, autoWorld.Chunk.Get(16, 3, 16), "kinetic mill excavated the ground block below it");
+// Built blocks and bedrock are never excavated, even with nothing else adjacent.
+var safeWorld = new WorldZone(42);
+safeWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+safeWorld.Chunk.TrySet(17, 20, 16, BlockType.Wall);
+safeWorld.Chunk.TrySet(15, 20, 16, BlockType.Workstation);
+safeWorld.Chunk.TrySet(16, 21, 16, BlockType.KineticMill);
+safeWorld.Chunk.TrySet(16, 19, 16, BlockType.Bedrock);
+for (int i = 0; i < 5; i++) safeWorld.Advance();
+Eq(BlockType.Wall, safeWorld.Chunk.Get(17, 20, 16), "kinetic mill does not excavate a wall");
+Eq(BlockType.Workstation, safeWorld.Chunk.Get(15, 20, 16), "kinetic mill does not excavate a workstation");
+Eq(BlockType.KineticMill, safeWorld.Chunk.Get(16, 21, 16), "kinetic mill does not excavate another mill");
+Eq(BlockType.Bedrock, safeWorld.Chunk.Get(16, 19, 16), "kinetic mill does not excavate bedrock");
+Eq(0, safeWorld.KineticBlocksGathered, "kinetic mill gathers nothing when only ungatherable neighbours exist");
+// Two mills, one shared stone: exactly one gather, first in scan order wins.
+var raceWorld = new WorldZone(42);
+raceWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+raceWorld.Chunk.TrySet(12, 20, 10, BlockType.KineticMill);
+raceWorld.Chunk.TrySet(11, 20, 10, BlockType.Stone);
+for (int i = 0; i < 5; i++) raceWorld.Advance();
+Eq(BlockType.Air, raceWorld.Chunk.Get(11, 20, 10), "two mills shared stone is excavated");
+Eq(1, raceWorld.KineticBlocksGathered, "two mills competing gather exactly 1 block, not 2");
+// Full inventory: nothing is consumed.
+var fullWorld = new WorldZone(42);
+fullWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+fullWorld.Chunk.TrySet(11, 20, 10, BlockType.Stone);
+fullWorld.Player.Inventory.Add(BlockType.Stone, Inventory.MaxStack);
+for (int i = 0; i < 5; i++) fullWorld.Advance();
+Eq(BlockType.Stone, fullWorld.Chunk.Get(11, 20, 10), "kinetic mill with full inventory leaves the block");
+Eq(0, fullWorld.KineticBlocksGathered, "kinetic mill with full inventory gathers 0");
+// Save/load: the mill block survives the chunk round-trip (byte array).
+var saveMillWorld = new WorldZone(42);
+saveMillWorld.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+var saveMillLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveMillWorld));
+Eq(BlockType.KineticMill, saveMillLoaded.Chunk.Get(15, 4, 15), "kinetic mill survives save/load");
+// Simulation: build a mill ahead, then 5 ticks run its automation.
+var simMill = new Simulation(42);
+simMill.Tick(0.1f, 0, 0, false);
+simMill.World.Player.Inventory.Add(BlockType.Stone, 10);
+simMill.World.Player.Inventory.Add(BlockType.Wood, 5);
+Eq(BuildResult.Success, simMill.BuildKineticMillAhead(), "simulation build kinetic mill ahead succeeds");
+for (int i = 0; i < 5; i++) simMill.Tick(0.1f, 0, 0, false);
+Eq(1, simMill.World.KineticBlocksGathered, "simulation kinetic mill gathers 1 block in 5 ticks");
+Check(simMill.World.Player.Inventory.Get(BlockType.Stone) >= 1, "simulation kinetic mill output reaches player inventory");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
