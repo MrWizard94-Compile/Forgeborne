@@ -196,5 +196,17 @@ hudWorld.DamageCore(45);
 Eq(45, HudState.FromWorld(hudWorld, new Weapon()).ObjectivePercentCompleted, "hud objective 45% after core damage");
 Check(HudState.FromWorld(hudWorld, new Weapon()).MiniMapSolid[16, 16], "hud minimap solid at centre ground");
 
+// ---- Build-around step: MeshBuilder (Unity/GPU not available headlessly) ----
+var singleMesh = MeshBuilder.Build(Mesher.GreedyMesh(single));
+Eq(6, singleMesh.QuadCount, "meshbuilder single voxel quad count");
+Eq(24, singleMesh.Vertices.Count, "meshbuilder single voxel 24 vertices");
+Eq(36, singleMesh.Indices.Count, "meshbuilder single voxel 36 indices");
+Check(singleMesh.Indices.All(i => i >= 0 && i < singleMesh.Vertices.Count), "meshbuilder indices in range");
+Check(singleMesh.Normals.All(n => Math.Abs(Math.Abs(n.Item1) + Math.Abs(n.Item2) + Math.Abs(n.Item3) - 1f) < 0.001f), "meshbuilder normals are unit axis vectors");
+var genMesh = MeshBuilder.BuildFromChunk(gen);
+Eq(genMesh.QuadCount * 4, genMesh.Vertices.Count, "meshbuilder vertices = quads x 4");
+Eq(genMesh.QuadCount * 6, genMesh.Indices.Count, "meshbuilder indices = quads x 6");
+Check(genMesh.QuadCount == greedy, "meshbuilder quad count matches mesher");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

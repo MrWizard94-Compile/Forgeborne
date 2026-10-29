@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.2.1 — 2026-10-29 — Build-around principle + MeshBuilder
+
+- Working principle recorded (Rob): "I can't because…" is not a
+  reason. Build around it; if you can't, build around the reason
+  why, then build around that. See `DECISIONS.md`.
+- Added `MeshBuilder`: converts greedy quads to Unity-ready mesh
+  buffers (vertices, normals, UVs, indices) in pure C#. This builds
+  around Unity / GPU not being available headlessly: mesh data is
+  verified here, Unity adapter later only assigns the buffers.
+- Tests: **78 passed, 0 failed** (was 70). Single voxel: 24 vertices,
+  36 indices, unit axis normals, all indices in range. Generated
+  world: 748 vertices, 1122 indices for 187 quads.
+
 ## 0.2.0 — 2026-10-29 — Slice 1 Steps 2-3: mesher, FPS, weapon, HUD
 
 - Added `Mesher.GreedyMesh`: standard greedy rectangle merging.

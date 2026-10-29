@@ -143,6 +143,32 @@ look inevitable.
   to release stage preserves Rob's options and is reversible in the
   direction of opening, not closing.
 
+## 2026-10-29 — Working principle: "I can't because…" is not a reason
+
+- Rob: "'i can't because (whatever technical reason)' is not a good
+  reason. Build around it. if you can't build around it build around
+  the reason why then build around it."
+- Interpretation recorded: a technical blocker is a problem to
+  route around, not a stopping condition. If the direct route is
+  blocked, build a workaround. If the workaround is blocked, build
+  around the reason the workaround is blocked, and so on, until the
+  work is done or the blocker is proven, with evidence, to be a
+  hard limit (law, safety, or a physical impossibility) — not just
+  a missing tool in the current environment.
+- Examples already applied in Forgeborne:
+  - No Unity editor / GPU in the Linux dev environment → pure C#
+    core, tested headlessly with .NET, Unity as a thin adapter later.
+  - .NET install failed on /tmp (512 MB tmpfs) → rerouted install
+    to home storage, verified SDK works.
+  - GitHub API could not create the repo (403) → Rob created it
+    manually, Ember populated it.
+  - Unity / GPU still unavailable → MeshBuilder: greedy quads are
+    converted to exact Unity Mesh buffers (vertices, normals, UVs,
+    indices) here, so the Unity step is only assigning those buffers,
+    not inventing a second mesh system.
+- This principle does not override law, safety, or the director's
+  hard limits. It governs engineering blockers inside the project.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
