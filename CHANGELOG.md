@@ -1,5 +1,57 @@
 # Forgeborne — Changelog
 
+## 0.61.0 — 2026-10-30 — Slice 14 scope: deferred third source, then demo + review
+
+- Scope, decided in this step (rationale in DECISIONS.md):
+  new docs/slice-14-scope.md, documentation only, no code
+  changed, no system built by it. Slice 14 is the deferred
+  electrical widening, in order: Step 1, exactly one third
+  power source, decided in that step; Step 2, a composed
+  demo scenario plus a documentation-only review closing
+  Slice 14. The scope takes the Slice 13 review's ranked
+  candidates unchanged — third source first, Patrol second,
+  Slice 13 remainders third — because the Slice 13
+  composition evidence gives no reason to reorder them.
+- Scope question, grounded in current code facts verified
+  this run: two sources, both always-on while placed
+  (Dynamo LV for 5 EmberOre, Alternator HV for 10 Stone),
+  three consumers on a two-level ladder LV / HV / None
+  (mill and workstation rated LV, Shock Pylon rated HV),
+  block types appended through ShockPylon = 12. The third
+  source must therefore deliver LV or HV, not a new level:
+  a third voltage level would be a ladder redesign, not a
+  single source step, and is out of scope for Step 1. Its
+  distinctness must come from elsewhere — a condition, a
+  fuel, a cost shape, a delivery shape, or a pulsed
+  output, none of them chosen here — and must be proved
+  by a test neither existing source can pass, the way the
+  Alternator's HV and the pylon's HV rating were proved.
+  A cost-only difference at the same voltage with the
+  same always-on behaviour is named in the scope as the
+  reskin risk Step 1 must answer, not assume away.
+- Gaps handled openly in the scope: Unity verification
+  and the Slice 1 director playtest gate stay open and
+  are not Slice 14 work; electrical balance is not a
+  slice, so any cost, condition, or output shape Step 1
+  chooses is first-pass; the Slice 13 scene-proof gap
+  (vertex-colour material, MeshRenderer wiring, marker
+  occlusion) is carried as a Slice 15 candidate, but
+  stated as three Windows observations inside checklist
+  items 25, 26, and 27, not as a headless step, because a
+  headless run cannot close an observation about a scene
+  it cannot run; Patrol stays deferred with its route
+  question intact; the free deploy primitive remains a
+  headless-only rule, re-named, not enforced here.
+- Verification, stated honestly: documentation-only step,
+  so no new test and no demo scenario — the scope forbids
+  claiming otherwise. Cited headless evidence is only the
+  existing suite, re-run unchanged before writing.
+- Tests: 1807 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 12
+  scenario save 43,974 chars, Slice 13 scenario save
+  44,045 chars, all earlier demo saves as in the 0.60.0
+  entry.
+
 ## 0.60.0 — 2026-10-30 — Slice 13 Step 4: composed demo + review, closing Slice 13
 
 - Composed demo, decided in this step (rationale in

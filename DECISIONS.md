@@ -4653,6 +4653,110 @@ look inevitable.
   marker occlusion observations) third — with Slice 13's
   composition evidence in hand, not guessed now.
 
+## 0.61.0 — Slice 14 scope (2026-10-30, silent scheduled run)
+
+- Decision, on taking the top ranked candidate, not
+  re-ranking from scratch: the Slice 13 review carried its
+  candidates in the order third source, Patrol, Slice 13
+  remainders, and this scope keeps that order, because the
+  Step 4 composition evidence — warned machines, a rewired
+  pylon kill, three kinds in one snapshot — says nothing
+  about source distinctness, and re-ranking on evidence
+  that does not bear on the choice would have been
+  ranking theatre. The scope is therefore the deferred
+  third source, and Patrol and the remainders become the
+  ranked Slice 15 candidates, not a promise and not a
+  rejection.
+- Decision, on the slice shape, two steps not three:
+  Slice 14 has one substantive system (the source) plus
+  demo + review, where Slice 13 needed three substantive
+  steps because warning, marker distinction, and mesh
+  tint are three different kinds of work with different
+  verification. A third source is one system with one
+  proof burden — distinctness beyond voltage — so
+  splitting it into a display step and a source step, as
+  Slice 12 did for its widening, would have invented a
+  step the source does not need: the Slice 12 display
+  already counts live networks and lone sources, and
+  Step 1 must prove the new source is counted by those
+  counts, not build a second display first.
+- Decision, on the voltage boundary, stated as a scope
+  rule, not left for Step 1 to rediscover: the ladder
+  stays LV / HV / None, so the third source delivers LV
+  or HV. This is a boundary, not a choice smuggled in as
+  one: a third level would re-rate every consumer and
+  re-prove every transformer, cable, and conflict case,
+  which is a ladder slice, not a source step, and a scope
+  that left the level open would let Step 1 grow into
+  that slice without ever deciding to. Step 1 still
+  chooses LV or HV, and still carries that voltage's
+  mismatch proofs, but it does not get to choose a third
+  level.
+- Decision, on the distinctness hypotheses, listed, not
+  chosen: condition, fuel, cost shape, delivery shape,
+  and pulsed output are named as starting hypotheses
+  with the reskin warning attached to cost alone, because
+  Slice 10 already taught that a price difference at the
+  same voltage with the same behaviour is a reskin, not
+  a source. Naming the hypotheses without choosing one
+  keeps this scope a scope: the choice, and its test
+  that neither Dynamo nor Alternator can pass, belong
+  to Step 1, where the code exists to prove or refute
+  them, not to a document that cannot run a test.
+- Decision, on the Slice 13 remainders as observations,
+  not as a step: gap 4's three items are questions about
+  a Unity scene (material multiplies vertex colours,
+  MeshRenderer wiring, marker occlusion), and no headless
+  run can answer them, so recording them as a future
+  "step" would have promised a headless proof of a scene
+  fact. They are therefore carried as Windows
+  observations inside checklist items 25, 26, and 27,
+  ranked second for Slice 15 scoping — behind Patrol,
+  because Patrol is a buildable system and the
+  observations are verification to be done when Windows
+  verification runs, not work to be scheduled as if it
+  were buildable headlessly.
+- Decision, on the generalisation burden: Step 1 must
+  generalise DeliveredVoltage, TransformerOutput, and
+  CableNetworkVoltage from two named sources to three,
+  proving every distinct-source pair conflicts to None,
+  not just the pair it stages first. The Slice 10 step
+  generalised once, from Dynamo to direct source, and
+  this scope names the second generalisation explicitly
+  so Step 1 cannot prove only the new source beside a
+  Dynamo and leave the Alternator pair unproved — a
+  conflict rule proved for one pair and assumed for the
+  others would be exactly the silent-winner bug the
+  conflict rule exists to prevent.
+- Decision, on what is deliberately not in Slice 14: no
+  Patrol, fourth kind, or second doctrine (the orbital
+  side is closed for this slice); no third consumer or
+  fourth source as a bonus (one source, one proof
+  burden); no third voltage level (see above); no
+  warning, tint, marker, or HUD-count change except
+  proving the existing readouts cover the new source;
+  no delivery, transformer, or cable rule change beyond
+  the source generalisation; no balance pass; no fuel
+  economy of its own (a fuelled distinctness is one
+  resource, one rule, for this source); no new save
+  field unless the distinctness justifies one and proves
+  old saves load; and no Windows Unity verification
+  claim, which stays blocked on Unity 6000 on Windows.
+- Verification, stated without inflation: documentation-
+  only step, no new test, no demo scenario, no adapter
+  binding, so no new playtest-gate checklist item. The
+  full suite was re-run before writing (1807 passed, 0
+  failed) and the demo re-run (Slice 12 save 43,974
+  chars, Slice 13 save 44,045 chars, all earlier saves
+  as in the 0.60.0 entry); those numbers are the
+  unchanged baseline, not evidence for a source that
+  does not exist yet.
+- Next, in order: Slice 14 Step 1, exactly one third
+  power source, decided in that step, with its
+  distinctness beyond voltage, its LV-or-HV choice, its
+  non-output behaviour, its generalisation, its block,
+  cost, and adapter line each decided and tested there.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
