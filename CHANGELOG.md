@@ -1,5 +1,51 @@
 # Forgeborne — Changelog
 
+## 0.44.0 — 2026-10-30 — Slice 10 scope: electrical widening (second consumer, second source)
+
+- Slice 10 scoped as its own decision step (rationale in
+  DECISIONS.md), following the 0.43.0 decision that named
+  scoping Slice 10 as next, from the ranked candidates
+  carried in the Slice 9 review (additional powered
+  consumers and power sources first, third kind and
+  deferred doctrines second). New `docs/slice-10-scope.md`
+  — documentation only, no code changed, by design.
+  Slice 10 theme: electrical widening against the mill
+  that already exists — one second powered consumer
+  first, one distinct power source second (proved feeding
+  both consumers, not the mill alone), closed by a
+  composed demo and review third. Each step's decisions
+  are left to that step, with starting hypotheses stated
+  in the scope, not decisions smuggled into it: powered
+  Workstation as the leading consumer candidate (with
+  its missing aimed builder and key, and its
+  player-centred regen, named as questions the step must
+  answer), a stated strengthening over an unchanged
+  unpowered behaviour, a consumer rating and mismatch
+  rule that cannot simply inherit the mill-only
+  `IsPowered` / `IsMismatched`, a per-step display
+  decision against the mill-only HUD count, and the
+  blueprint's alternator name taken as a name only for
+  a source that must prove it is not a Dynamo reskin
+  (output level, precedence in `DeliveredVoltage`,
+  requirements, cost, and proof against both consumers).
+  Deliberately NOT in Slice 10: a third consumer or a
+  second source, tiers 3-4, crafting, a fuel system or a
+  per-machine inventory unless a step justifies one for
+  its own behaviour, a per-hop loss, cable length limit,
+  or drag-to-lay mode, a third squad type or a new
+  doctrine, a balance pass, mesh tint / refresh, a
+  pre-destruction warning, free-deploy enforcement, or
+  Windows Unity verification.
+- Tests: 1135 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars; Slice 2
+  save 43,921 chars; Step 1 scenario save 44,016 chars;
+  Step 3 scenario save 44,103 chars; Slice 4 scenario save
+  44,026 chars; Slice 5 Step 2 scenario save 43,974 chars;
+  Slice 6 Step 4 scenario save 44,024 chars; Slice 7 Step 2
+  scenario save 44,013 chars; Slice 8 Step 3 scenario save
+  43,974 chars; Slice 9 Step 4 scenario save 43,975 chars.
+
 ## 0.43.0 — 2026-10-30 — Slice 9 Step 4: demo scenario + documentation-only review
 
 - Slice 9 demo scenario + review, decided in this step

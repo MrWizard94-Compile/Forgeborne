@@ -2838,6 +2838,102 @@ look inevitable.
 - Next, in order: scoping Slice 10 as its own decision
   step, decided in that step.
 
+## 0.44.0 — Slice 10 scope: electrical widening
+
+- Decision, on the slice theme: Slice 10 is electrical
+  widening, not electrical rework — one second powered
+  consumer, then one distinct power source, closed by a
+  composed demo and review. The Slice 9 review's top
+  candidate becomes the slice, and the rest (third kind,
+  deferred doctrines) become the ranked Slice 11
+  candidates, in the same order, because the Step 4
+  evidence gives no reason to reorder them. Widening
+  was chosen over the third kind precisely because Slice
+  9 proved its rules against one load and one generator:
+  a ladder, a cable, and a destruction rule whose
+  generality is still an assumption are the gap the
+  next slice should close, before combat widens again.
+- Decision, on the order: consumer first, source second,
+  because each step creates the next step's proof burden.
+  A source proved only against the mill would prove a
+  generator, not a widening; a consumer proved against
+  the Dynamo alone still leaves the source side singular,
+  but it gives the source step a second load it must
+  feed. The reverse order would let the source step pass
+  on mill-only evidence and leave the consumer step to
+  prove both systems at once. This order is a scoping
+  decision about proof, not a claim about which system
+  matters more.
+- Decision, on the consumer hypothesis: a powered
+  Workstation is the leading candidate, not the decision,
+  because it is the only existing machine with a real
+  effect power could strengthen without inventing a new
+  production chain — but the scope names, rather than
+  hides, the two facts that make it non-trivial: the
+  workstation has no aimed builder and no adapter key
+  (unlike every Slice 5 / Slice 9 machine, which has
+  both), and its regen is player-centred (any
+  workstation within Manhattan 3 of the player), not
+  machine-centred. Step 1 must therefore decide the
+  placement path and the meaning of "powered" for this
+  machine, or choose a new machine instead with a
+  recorded reason none of the existing machines fits.
+  Recording the hypothesis and its obstacles together
+  is deliberate: a scope that named the workstation
+  without its missing key would let Step 1 inherit a
+  placement gap as if it were already solved.
+- Decision, on the rating question: the scope states
+  openly that `IsPowered` and `IsMismatched` are
+  mill-only and cannot be reused for a second consumer
+  by accident. A scope that stayed silent on this would
+  let Step 1 write a powered-workstation check that
+  quietly reuses the mill's rating, and a reader could
+  not tell whether the shared rating was decided or
+  inherited. Step 1 must decide its consumer's rating
+  and mismatch semantics (destroyed like a mill,
+  disabled to unpowered behaviour, or unaffected) with
+  tests, including the destruction phase order.
+- Decision, on the source hypothesis: the blueprint's
+  alternator is taken as a name only, not a design,
+  because the blueprint names alternators without
+  stating output, cost, or requirements. The scope
+  therefore requires Step 2 to prove its source is not
+  a Dynamo reskin — a source outputting LV at Dynamo
+  cost through Dynamo placement would pass mill tests
+  while adding nothing — and to state its output level
+  and its place in `DeliveredVoltage` precedence, where
+  a direct Dynamo today beats any converted or cabled
+  voltage. Fuel is not assumed: a fuel rule is a new
+  system, and Step 2 must justify it as its own decision
+  with boundary tests if it wants one, rather than
+  inheriting it from blueprint vocabulary.
+- Decision, on the gaps carried: Unity verification and
+  the director playtest remain open and are not closed,
+  reordered away, or answered by scoping; balance
+  remains a later pass with first-pass values only; the
+  destruction warning, mesh tint, and mesh refresh
+  remain named gaps, not Slice 10 work; the energised
+  cable feeding no mill showing nothing is the one gap
+  Slice 10 must reckon with directly, because its
+  display question recurs for a powered workstation and
+  a new source — so each step must decide its own
+  display against the mill-only HUD count, rather than
+  inheriting silence. The shared-marker and free-deploy
+  gaps remain documentation, not enforcement.
+- Deliberately NOT in this step: any new core system;
+  any change to the ladder, conversion, cable, kinetic,
+  cadence, Dynamo cost and output, or squad, loot,
+  skill, or core health rules; any save-format field;
+  a third consumer, a second source, tiers 3-4,
+  crafting, a fuel system, or a per-machine inventory
+  decided here rather than in their steps; a balance
+  pass; a mesh tint or refresh; a pre-destruction
+  warning; free-deploy enforcement; any claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 10 Step 1, one second powered
+  consumer, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
