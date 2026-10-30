@@ -213,6 +213,23 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     feeding no consumer shows nothing on the HUD — that
     was the decided behaviour before this display existed.
     Do not claim this verified in Unity until it is
+
+23. [ ] Shock Pylon key, added 0.54.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core HV rating, fire phase, mismatch-disable, cost,
+    and save rules are headless-tested): press P with 5
+    Stone and 10 EmberOre to build a pylon in the cell
+    before the aimed surface, like T / Y / U / I / B / N;
+    P is suppressed while the rally picker is open, like
+    the other builders; wire PylonPowerText in the
+    Inspector to a HUD line and observe it read 0/1 for
+    a lone pylon and 1/1 once an Alternator feeds it HV
+    directly, and 0/1 while a Dynamo feeds it LV; place
+    an enemy within 5 cells of a powered pylon and
+    observe it lose 10 HP per tick, and an enemy 6 cells
+    away lose nothing. Do not claim this verified in
+    Unity until it is observed there and recorded in
+    DECISIONS.md.
     observed there and recorded in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,

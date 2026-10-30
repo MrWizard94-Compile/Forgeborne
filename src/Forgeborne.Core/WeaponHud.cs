@@ -87,6 +87,16 @@ public sealed class HudState
     /// powered, even though it still regens at base rate.</summary>
     public int PoweredWorkstations { get; set; }
     public int TotalWorkstations { get; set; }
+    /// <summary>Slice 12 Step 2 power indicator, third consumer:
+    /// how many Shock Pylons exist, and how many are powered
+    /// (delivered their rated HV, per IsPylonPowered). An
+    /// LV-fed pylon counts as NOT powered, because it is
+    /// disabled that tick, not firing — counting it as powered
+    /// would be the same display lie the mill and workstation
+    /// counts avoid. An unpowered pylon counts as NOT powered,
+    /// even though it still stands as a solid block.</summary>
+    public int PoweredPylons { get; set; }
+    public int TotalPylons { get; set; }
     /// <summary>Slice 12 Step 1 live-power display, derived from
     /// placement on every snapshot, never saved: how many live
     /// electrical structures exist that no consumer count already
@@ -147,6 +157,11 @@ public sealed class HudState
             {
                 hud.TotalWorkstations++;
                 if (world.IsWorkstationPowered(x, y, z)) hud.PoweredWorkstations++;
+            }
+            else if (block == BlockType.ShockPylon)
+            {
+                hud.TotalPylons++;
+                if (world.IsPylonPowered(x, y, z)) hud.PoweredPylons++;
             }
         }
         // Live-power display (Slice 12 Step 1): one counting

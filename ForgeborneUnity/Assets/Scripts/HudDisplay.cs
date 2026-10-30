@@ -34,6 +34,12 @@ public class HudDisplay : MonoBehaviour
     // HUD line is not a mesh tint and not a mesh refresh: a
     // counted network is not thereby visible in the scene.
     public Text? LivePowerText;
+    // Slice 12 Step 2: wire this Text in the Inspector to render
+    // the third-consumer power line, if a line is wanted. Optional
+    // like PowerText: unwired, nothing changes. It renders
+    // HudState only — powered/total pylon counts are derived in
+    // core, so this adapter holds no power rule of its own.
+    public Text? PylonPowerText;
 
     void Update()
     {
@@ -46,5 +52,6 @@ public class HudDisplay : MonoBehaviour
         if (PowerText != null) PowerText.text = $"POWER: {hud.PoweredMills}/{hud.TotalMills} MILLS POWERED";
         if (WorkstationPowerText != null) WorkstationPowerText.text = $"POWER: {hud.PoweredWorkstations}/{hud.TotalWorkstations} WORKSTATIONS POWERED";
         if (LivePowerText != null) LivePowerText.text = $"POWER: {hud.LiveNetworks} LIVE NETWORKS, {hud.LoneSources} LONE SOURCES";
+        if (PylonPowerText != null) PylonPowerText.text = $"POWER: {hud.PoweredPylons}/{hud.TotalPylons} PYLONS POWERED";
     }
 }

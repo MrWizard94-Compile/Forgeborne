@@ -20,6 +20,8 @@ public enum BlockType : byte
     Cable = 10,
     /// <summary>Slice 10 Step 2 (Electrical widening, second source): a native HV generator. Unlike the Dynamo (LV) it cannot safely feed an LV-rated consumer directly — a mill fed HV directly is destroyed, a workstation fed HV directly is disabled — and safe use runs through one transformer step-down. Appended in 0.46.0; earlier values unchanged, so old saves still load.</summary>
     Alternator = 11,
+    /// <summary>Slice 12 Step 2 (Electrical widening, third consumer): an HV-rated defensive consumer. A Shock Pylon delivered its rated HV fires once per tick at the nearest living enemy within Manhattan range 5, dealing 10 damage; delivered LV (the wrong level on this ladder) it is disabled, not destroyed, like a mismatched workstation — it fires again as soon as it is rewired to HV or left unpowered it idles. It gathers nothing and regens nothing: its effect is combat, distinct from the mill's gathering and the workstation's regen, which is what makes it a third consumer rather than a re-rated copy of either. Appended in 0.54.0; earlier values unchanged, so old saves still load.</summary>
+    ShockPylon = 12,
 }
 
 public static class BlockInfo

@@ -420,6 +420,56 @@ public sealed class WorldZone
         return delivered != Voltage.None && delivered != VoltageRules.WorkstationRated;
     }
 
+    /// <summary>Slice 12 Step 2, third powered consumer: a Shock
+    /// Pylon is powered exactly when it is delivered its own
+    /// rated voltage (HV, VoltageRules.PylonRated). This is NOT
+    /// IsPowered or IsWorkstationPowered reused: those are
+    /// LV-rated by construction, and a pylon's power must be
+    /// decided, not inherited — a pylon fed LV through a cable
+    /// or a step-down transformer is not powered, however live
+    /// its wiring looks.</summary>
+    public bool IsPylonPowered(int x, int y, int z) =>
+        Chunk.Get(x, y, z) == BlockType.ShockPylon && DeliveredVoltage(x, y, z) == VoltageRules.PylonRated;
+
+    /// <summary>Slice 12 Step 2 mismatch, decided here, following
+    /// the workstation rather than the mill: a Shock Pylon
+    /// delivered a voltage that is neither nothing nor its
+    /// rating (on this ladder, LV) is mismatched, and a
+    /// mismatched pylon is disabled for that tick, not
+    /// destroyed — it fires again as soon as it is rewired
+    /// to HV. Rationale: LV to an HV machine is undervoltage,
+    /// not overvoltage, and destroying a defensive structure
+    /// for being fed too little would punish the wiring
+    /// mistake harder than the mill's overvoltage rule does
+    /// for being fed too much; the workstation precedent
+    /// (disable, recoverable) fits a support structure, and
+    /// a pylon is a support structure that shoots. No voltage
+    /// (None) is not a mismatch: an unpowered pylon idles,
+    /// like an unpowered workstation regens at base rate.
+    /// RunMismatchedDestruction does not touch pylons: it
+    /// checks IsMismatched, which is mill-only by
+    /// construction.</summary>
+    public bool IsPylonMismatched(int x, int y, int z)
+    {
+        if (Chunk.Get(x, y, z) != BlockType.ShockPylon) return false;
+        var delivered = DeliveredVoltage(x, y, z);
+        return delivered != Voltage.None && delivered != VoltageRules.PylonRated;
+    }
+
+    /// <summary>Slice 12 Step 2 pylon fire rule, first-pass values
+    /// labelled as such, not balance claims: Manhattan range 5
+    /// (the Recon squad's engagement range, so a pylon reaches
+    /// exactly as far as the longest-ranged squad) and 10 damage
+    /// per tick (one squad member's hit, so a 30-HP enemy dies
+    /// in 3 pylon ticks alone — a pylon holds a lane, it does
+    /// not one-shot it). One target per pylon per tick: the
+    /// nearest living enemy, ties to the first in list order,
+    /// the same tie-break the squad target rule uses, so two
+    /// pylons on one enemy stack (20 in a tick) and two enemies
+    /// at equal range resolve deterministically.</summary>
+    public const int PylonRange = 5;
+    public const int PylonDamage = 10;
+
     /// <summary>
     /// Slice 12 Step 1 live-power display counts, derived on every
     /// snapshot, never saved: how many live electrical structures
@@ -522,7 +572,7 @@ public sealed class WorldZone
     }
 
     private static bool IsConsumer(BlockType block) =>
-        block is BlockType.KineticMill or BlockType.Workstation;
+        block is BlockType.KineticMill or BlockType.Workstation or BlockType.ShockPylon;
 
     private bool HasCableNeighbour(int x, int y, int z)
     {
@@ -620,7 +670,7 @@ public sealed class WorldZone
 
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable or BlockType.Alternator)) return BuildResult.InvalidType;
+        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable or BlockType.Alternator or BlockType.ShockPylon)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
@@ -721,6 +771,24 @@ public sealed class WorldZone
             if (!Player.Inventory.Has(BlockType.Stone, 10))
                 return BuildResult.InsufficientResources;
             Player.Inventory.Remove(BlockType.Stone, 10);
+        }
+        else if (type == BlockType.ShockPylon)
+        {
+            // Slice 12 Step 2 Shock Pylon: 5 Stone + 10 EmberOre.
+            // A new combination on purpose: the stone is half a
+            // workstation's frame, and the 10 ore is exactly a
+            // squad's deploy price, so a pylon competes with a
+            // squad for ore — a static defence bought instead
+            // of a mobile one, not alongside it for free — while
+            // staying cheaper in stone than a workstation, because
+            // a pylon is a single emitter, not a bench. It does
+            // not compete with mills for Wood, and it does not
+            // compete with Alternators for stone at their scale.
+            // Same check-before-spend rule as the other machines.
+            if (!Player.Inventory.Has(BlockType.Stone, 5) || !Player.Inventory.Has(BlockType.EmberOre, 10))
+                return BuildResult.InsufficientResources;
+            Player.Inventory.Remove(BlockType.Stone, 5);
+            Player.Inventory.Remove(BlockType.EmberOre, 10);
         }
         else // Workstation: 10 Stone + 5 EmberOre
         {
@@ -880,6 +948,41 @@ public sealed class WorldZone
         RunMismatchedDestruction();
         if (Tick % KineticIntervalTicks == 0) RunKineticAutomation();
         RunPoweredAutomation();
+        RunShockPylons();
+    }
+
+    /// <summary>Slice 12 Step 2 pylon phase, last in the tick so a
+    /// pylon never fires before the squad phase has had its
+    /// shot and before a mismatched mill is removed: every
+    /// HV-powered Shock Pylon, in chunk-index scan order (y,
+    /// then z, then x, like the automation phases), fires once
+    /// at its nearest living enemy within PylonRange, for
+    /// PylonDamage, through the shared AttackEnemy path, so a
+    /// pylon kill removes the enemy exactly like a squad kill
+    /// and a dead enemy is never retargeted by a later pylon
+    /// in the same tick. A mismatched (LV) or unpowered pylon
+    /// fires nothing and survives: this phase only ever sees
+    /// rated-voltage pylons, because IsPylonPowered is the
+    /// gate. It does not touch the player, squads, or the
+    /// core: a pylon is an enemy-only defence, and its fire
+    /// cannot damage the objective it is built to protect.</summary>
+    private void RunShockPylons()
+    {
+        for (int y = 0; y < VoxelChunk.Size; y++)
+        for (int z = 0; z < VoxelChunk.Size; z++)
+        for (int x = 0; x < VoxelChunk.Size; x++)
+        {
+            if (!IsPylonPowered(x, y, z)) continue;
+            Enemy? target = null;
+            int best = int.MaxValue;
+            foreach (var e in Enemies)
+            {
+                if (e.IsDead) continue;
+                int d = Math.Abs(e.X - x) + Math.Abs(e.Y - y) + Math.Abs(e.Z - z);
+                if (d <= PylonRange && d < best) { best = d; target = e; }
+            }
+            if (target != null) AttackEnemy(target, PylonDamage);
+        }
     }
 
     /// <summary>

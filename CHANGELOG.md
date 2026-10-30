@@ -1,5 +1,94 @@
 # Forgeborne — Changelog
 
+## 0.54.0 — 2026-10-30 — Slice 12 Step 2: third consumer, HV-rated Shock Pylon
+
+- Consumer, decided in this step (rationale in
+  DECISIONS.md): new BlockType.ShockPylon = 12,
+  appended only, rated HV (VoltageRules.PylonRated,
+  its own constant, not borrowed from any other
+  consumer) — the first consumer that actually wants
+  HV, so the Alternator gains a safe direct use and
+  HV stops being a voltage that only ever punishes
+  LV consumers. A powered pylon fires once per tick
+  at the nearest living enemy within Manhattan range
+  5, for 10 damage, through the shared AttackEnemy
+  path, in a new pylon phase last in the tick; two
+  pylons on one enemy stack to 20 in a tick, and
+  ties resolve to the first enemy in list order.
+  Its effect is combat only: it gathers nothing and
+  regens nothing, which is what makes it a third
+  consumer rather than a re-rated mill or
+  workstation.
+- Mismatch, decided in this step, following the
+  workstation rather than the mill: a pylon
+  delivered LV (the wrong level on this ladder) is
+  disabled for that tick, not destroyed, and fires
+  again as soon as it is rewired to HV; no voltage
+  (None) idles, and a conflicted (None) pylon is
+  neither powered nor mismatched. RunMismatched-
+  Destruction is untouched: it checks IsMismatched,
+  which is mill-only by construction, so no pylon
+  is ever destroyed by a wiring mistake.
+- Delivery, proved both ways like the Alternator
+  was: direct Alternator HV powers, direct Dynamo
+  LV mismatches, step-up Dynamo -> transformer ->
+  pylon powers, step-down Alternator -> transformer
+  -> pylon mismatches, cable-fed HV powers and
+  cable-fed LV mismatches. No delivery, precedence,
+  conflict, rating, cost, or phase rule for any
+  other consumer moves in this step, and no
+  save-format change: a pylon is a chunk byte, its
+  power re-derives after load, and a loaded pylon
+  fires on its first tick.
+- Cost, decided in this step: 5 Stone + 10 EmberOre,
+  a new combination — half a workstation's stone
+  frame, and exactly a squad's deploy price in ore,
+  so a pylon competes with a squad for ore (a static
+  defence bought instead of a mobile one), while
+  competing with no machine for Wood and with no
+  source for stone at its scale. Check-before-spend,
+  like every other machine.
+- Display and placement, decided in this step:
+  HudState gains PoweredPylons / TotalPylons, and
+  HudDisplay gains an optional PylonPowerText line
+  ("POWER: x/y PYLONS POWERED"), unwired = no change.
+  IsConsumer now includes the pylon, so the Slice 12
+  Step 1 anti-double-count rule extends to it: a
+  network feeding a pylon is shown by the pylon
+  count, not counted again as a live network, and a
+  lone pylon counts as no live network and no lone
+  source, because it is a consumer, not a source.
+  Simulation.BuildShockPylonAhead places by aim;
+  adapter key P, suppressed while the rally picker
+  is open, like the other builders; playtest-gate
+  checklist item 23 (Windows-only) added. No
+  per-block mesh colour exists for any machine, so
+  the pylon shares the generic scene rendering of
+  the other machines — that is a stated rendering
+  fact, not a pylon-specific gap.
+- Behaviour proofs: direct HV powered / direct LV
+  mismatched / lone idle / non-pylon cells neither;
+  step-up powers, step-down mismatches, cable HV
+  powers, cable LV mismatches, conflicting direct
+  sources deliver None; powered pylon 10 per tick,
+  30-HP enemy dead and removed in 3 ticks; range 5
+  fires, range 6 does not; nearest only, ties to
+  first in list, two pylons stack 20 in a tick;
+  mismatched pylon fires nothing, survives, and
+  fires on the tick after rewiring to HV; unpowered
+  pylon idles and survives; cost spends exactly,
+  one ore short refuses with nothing spent; aimed
+  build places by the Slice 10 Step 2 aim; pylon
+  not gatherable; HUD 1/2 powered for one fed and
+  one lone pylon; live counts (0,0) for a fed
+  network and for a lone pylon, (1,0) for one fed
+  plus one free network; save/load chunk equal,
+  powered after load, firing on the first tick.
+- Tests: 1575 passed, 0 failed (was 1519; +56, no
+  failures on the final runs). Demo unchanged:
+  Slice 11 save 44,038 chars, all earlier demo
+  saves as in the 0.53.0 entry.
+
 ## 0.53.0 — 2026-10-30 — Slice 12 Step 1: live-network and lone-source display
 
 - Display, decided in this step (rationale in

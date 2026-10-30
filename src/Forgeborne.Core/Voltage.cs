@@ -56,6 +56,19 @@ public static class VoltageRules
     /// own rating instead of borrowing the mill's.</summary>
     public const Voltage WorkstationRated = Voltage.LV;
 
+    /// <summary>Slice 12 Step 2: the Shock Pylon's rated voltage.
+    /// HV, by decision, not by inheritance: this is the step's
+    /// whole point — the first consumer that actually wants HV,
+    /// so the Alternator gains a safe direct use and HV stops
+    /// being a voltage that only ever punishes LV consumers.
+    /// A separate constant, like WorkstationRated, so a future
+    /// rating change for one consumer cannot silently change
+    /// another. LV delivered to a pylon is therefore a mismatch
+    /// (disabled, not destroyed — see IsPylonMismatched), and
+    /// None is idle, exactly the workstation's mismatch shape
+    /// with the levels swapped.</summary>
+    public const Voltage PylonRated = Voltage.HV;
+
     /// <summary>Transformer conversion on a two-level ladder: each
     /// level converts to the other, so there is no "nowhere higher
     /// / nowhere lower" edge left undefined — LV in gives HV out

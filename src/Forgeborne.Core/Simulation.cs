@@ -367,6 +367,15 @@ public sealed class Simulation
     /// its stone price, not a build-time condition.</summary>
     public BuildResult BuildAlternatorAhead() => BuildAimed(BlockType.Alternator);
 
+    /// <summary>Slice 12 Step 2: a Shock Pylon by aim (see
+    /// BuildAimed), costing 5 Stone + 10 EmberOre as in
+    /// World.Build. Placed by aim like every other block since
+    /// Slice 8 — no placement rule of its own: the aim decides
+    /// one cell and the builder builds there, and the pylon's
+    /// distinctness is its HV rating and its fire phase, not
+    /// a build-time condition.</summary>
+    public BuildResult BuildShockPylonAhead() => BuildAimed(BlockType.ShockPylon);
+
     /// <summary>
     /// Slice 8 Step 2 — fire by aim, replacing BOTH the old
     /// FireAtNearestEnemy (Manhattan-nearest, aim-blind) and

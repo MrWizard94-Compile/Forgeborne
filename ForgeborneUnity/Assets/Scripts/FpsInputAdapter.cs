@@ -119,6 +119,15 @@ public class FpsInputAdapter : MonoBehaviour
             // powered-mill and powered-workstation counts are
             // the Alternator's display, as decided in core.
             if (Input.GetKeyDown(KeyCode.N)) Simulation.BuildAlternatorAhead();
+            // Slice 12 Step 2: P builds a Shock Pylon by aim, via
+            // BuildShockPylonAhead (5 Stone + 10 EmberOre). P is
+            // free: existing keys are WASD / Space / E / Q / R /
+            // O / Return / Esc / 1 / 2 / 3 / 4 / 5 / 6 / T / Y /
+            // U / I / B / N / mouse click. Same picker guard as
+            // the other builders, for the same ore reason — a
+            // pylon key while picking could spend the ore a
+            // pending Confirm needs.
+            if (Input.GetKeyDown(KeyCode.P)) Simulation.BuildShockPylonAhead();
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's

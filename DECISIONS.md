@@ -3623,6 +3623,145 @@ look inevitable.
   first, adapter visibility and fairness second),
   with Slice 11's composition evidence in hand.
 
+## 0.54.0 — Slice 12 Step 2: third consumer, HV-rated Shock Pylon
+
+- Decision, on the widening itself: the scope's
+  starting hypothesis is adopted — a third consumer,
+  not a third source. The reason is the one the
+  scope gave: both existing consumers are LV-rated,
+  so HV has no safe direct use, and a third source
+  would widen the side that already has two distinct
+  outputs while leaving that asymmetry in place. A
+  third source is deferred, not rejected: it is now
+  the ranked Slice 13 electrical candidate, behind
+  the adapter visibility and fairness work the Slice
+  12 scope already ranked first for Slice 13.
+- Decision, on what the third consumer does: a
+  defensive emitter, not a third gatherer and not a
+  second regen bench. A gatherer at HV rating would
+  be a mill with its rating swapped — provable, but
+  a reskin in the exact sense the Alternator step
+  refused for sources — and a regen bench at HV
+  would be a workstation with its rating swapped, the
+  same objection. A pylon that shoots is the only
+  of the three candidate effects that is not one of
+  the existing effects wearing a new rating, and its
+  proof burden is therefore an effect proof (damage
+  per tick, range, targeting, stacking) as well as
+  a rating proof (every delivery path, both ways).
+- Decision, on rating: HV, as its own PylonRated
+  constant, not borrowed from AlternatorOutput and
+  not derived from MillRated or WorkstationRated.
+  The Alternator step proved a source by feeding
+  both consumers; this step proves a consumer the
+  same way, in reverse — direct HV, direct LV,
+  step-up, step-down, cable HV, cable LV — so the
+  rating is demonstrated by delivery, not asserted
+  by the constant's name.
+- Decision, on mismatch: disable, following the
+  workstation, not destroy, following the mill. The
+  distinction is principled, not a coin flip: the
+  mill's destruction punishes overvoltage (too much
+  for the machine), while LV to an HV machine is
+  undervoltage (too little), and destroying a
+  defensive structure for being fed too little would
+  punish the milder mistake harder than the mill's
+  rule punishes the worse one. A disabled pylon
+  also keeps its counterplay intact: the player can
+  rewire and recover, exactly as a mismatched bench
+  recovers, instead of losing the defence and the
+  wiring in one mistake. None is idle, not a
+  mismatch, on the same reasoning as both existing
+  consumers.
+- Decision, on fire numbers: range 5 and damage 10
+  per tick, both first-pass values labelled as such,
+  not balance claims. Range 5 is borrowed, openly,
+  from the Recon squad's engagement range, so a
+  pylon reaches exactly as far as the longest-ranged
+  squad and no farther — a range the game already
+  teaches. Damage 10 is one squad member's hit, so a
+  30-HP enemy dies in 3 pylon ticks alone: a pylon
+  holds a lane, it does not one-shot it, and two
+  pylons stacking to 20 is the deliberate price of
+  building two. No balance pass rides along: these
+  numbers are chosen for determinism and testability,
+  like every first-pass number before them.
+- Decision, on targeting: nearest living enemy, ties
+  to the first in list order, one target per pylon
+  per tick. Nearest-only (not all enemies in range)
+  keeps one pylon from clearing a wave by itself,
+  and the list-order tie-break is the same rule the
+  squad target search uses, so targeting does not
+  fork into a pylon rule and a squad rule that can
+  drift apart. Stacking is the consequence, stated
+  rather than hidden: two pylons may hit one enemy,
+  because each pylon fires at its own nearest.
+- Decision, on tick order: the pylon phase runs last,
+  after squads, after mismatched destruction, after
+  both automation phases. A pylon therefore never
+  fires before the squad phase has had its shot, and
+  never at an enemy a squad already killed that tick
+  (AttackEnemy removes the dead at once, and the
+  phase re-scans per pylon, so a later pylon never
+  retargets a corpse). A pylon also never damages
+  the player, a squad, or the core: it is an
+  enemy-only defence, and firing at the objective
+  it guards would be a category error, not a feature.
+- Decision, on cost: 5 Stone + 10 EmberOre, a
+  combination no existing machine uses. The 10 ore
+  is exactly a squad's deploy price, deliberately:
+  a pylon is bought instead of a squad, a static
+  defence against a mobile one, so the ore economy
+  forces the choice instead of letting both be bought
+  from separate purses. The 5 stone is half a
+  workstation's frame, because a pylon is a single
+  emitter, not a bench. No Wood, so mills keep their
+  own resource; no 10-stone frame, so it does not
+  price itself against Alternators at their scale.
+- Decision, on display and counting: the pylon joins
+  IsConsumer, so the Step 1 anti-double-count rule
+  extends to it without a new rule — a network
+  feeding a pylon reads (0,0) live, because the
+  pylon count already shows that delivery, and a
+  lone pylon reads (0,0) because it is a consumer,
+  not a source, and a consumer with no power is not
+  a live thing. The HUD gains a third consumer line
+  (PoweredPylons / TotalPylons, optional
+  PylonPowerText), following the workstation line's
+  precedent exactly: an LV-fed pylon counts as NOT
+  powered, because it is disabled that tick, and
+  counting it powered would be the display lie the
+  mill and workstation counts were built to avoid.
+- Decision, on placement and scene: aimed builder
+  plus P key, picker-suppressed like every other
+  builder, with P confirmed free (used keys: WASD,
+  Space, E, Q, R, O, Return, Esc, 1-6, T, Y, U, I, B,
+  N, mouse click). No per-block mesh colour exists
+  for any machine in this codebase, so the pylon
+  shares the generic scene rendering of the other
+  machines; that is recorded as a rendering fact,
+  not claimed as a pylon marker, and the three-kind
+  shared marker question stays a Slice 13 visibility
+  question, not smuggled into this step as a fourth
+  marker.
+- Deliberately not in this step: no third source;
+  no balance pass on range, damage, or cost; no
+  pylon-to-pylon chaining, no splash damage, no
+  targeting priority (weakest, nearest-to-core), no
+  pylon damage to the core or to squads, no warning
+  when a pylon is mismatched (gap 4 stays open), no
+  mesh tint or mesh refresh for powered pylons
+  (gap 5 stays open), no pylon inventory or buffer,
+  no change to any existing consumer's rating,
+  cost, effect, or phase, and no demo scenario —
+  that is Slice 12 Step 3's composition work.
+- Next step, decided in this step: Slice 12 Step 3,
+  demo scenario + documentation-only review, closing
+  Slice 12 — composing the pylon with the Step 1
+  display (a powered pylon beside a live network
+  feeding no consumer, read through both HUD lines),
+  and reviewing Slice 12 against its scope.
+
 ## 0.53.0 — Slice 12 Step 1: live-network and lone-source display
 
 - Decision, on what counts as live: the scope's
