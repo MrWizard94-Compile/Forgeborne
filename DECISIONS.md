@@ -5377,6 +5377,124 @@ look inevitable.
   material and MeshRenderer wiring, decided in that
   step.
 
+## 0.68.0 — Slice 16 Step 1: vertex-colour chunk material and
+MeshRenderer wiring (2026-10-30, silent scheduled run)
+
+- Previous state verified from GitHub before work:
+  main head d71a4ac76eb0a7950c946b20690e8452ac5869b1,
+  CHANGELOG 0.67.0 (Slice 16 scope) — local working
+  copy matched and the sync record's last entry was
+  that commit, so no step was repeated: the 0.67.0
+  decision named Slice 16 Step 1 as next, and this
+  run did exactly that. Tests 2130 baseline re-run
+  passing; demo Slice 15 save 44,016 chars.
+- Material decision: code-driven assignment with an
+  Inspector override, not Inspector-only and not
+  code-only. VoxelMeshRenderer.Awake assigns the
+  chunk material before the first RefreshMesh: a
+  wired ChunkMaterial wins, else a runtime material
+  from Universal Render Pipeline/Lit, else Standard.
+  Why this combination: Inspector-only would leave
+  the Slice 13 gap exactly where it was — a scene
+  that renders untinted because nobody wired a
+  material, with nothing in code to say so — while
+  code-only would overwrite a scene author's
+  deliberate Shader Graph material at Play, which
+  is the same failure in the other direction. The
+  override rule (Inspector wins, runtime fills only
+  the unwired case) prevents both, and the
+  neither-shader warning prevents the third
+  failure, a silent pink mesh. Why URP Lit first:
+  it is the shader SquadMarkerDisplay already uses
+  with the same Standard fallback, and the project
+  manifest already depends on URP 17.0.0, so the
+  chunk joins an existing shader family instead of
+  introducing a new asset, texture, or shader file
+  a headless run cannot honestly build. Rejected:
+  a separate ChunkMaterial script (a second script
+  doing what the renderer's own Awake already does
+  at the right time, with a second wiring to
+  forget); a scene-file material (a headless run
+  cannot write a .unity file and call it a built
+  scene, per the Slice 16 honesty rules); and any
+  claim that URP Lit multiplies vertex colours —
+  that is item 26's observation to make on Windows,
+  not a sentence in a comment to assert headlessly.
+  If Windows refutes it, the next evidence is a
+  Shader Graph vertex-colour material wired through
+  the ChunkMaterial override, which this step's
+  rule already leaves room for without code change.
+- Wiring decision: code-driven null-fill in
+  GameManager.Start, not Inspector-only and not
+  overwrite. GameManager already owns the chunk
+  renderer link, so it is the one place that can
+  fill the adapter's matching field without a
+  second search mechanism; Start runs before any
+  adapter Update, so the fill lands before the
+  first tick's refresh check. Why null-fill rather
+  than unconditional assignment: overwriting a
+  non-null field would destroy a deliberate second
+  renderer, the exact kind of silent scene change
+  the Inspector pattern exists to prevent — and
+  item 31 observes the non-overwrite case
+  explicitly, not just the fill case. Why a warning
+  rather than silence when still unwired: a stale
+  first mesh is otherwise indistinguishable from a
+  working scene until a build fails to appear, and
+  the warning names the consequence and the fix.
+  Rejected: leaving the field Inspector-only (the
+  Slice 13 pattern, kept for every other adapter
+  field, but here the failure it protects against
+  is precisely a forgotten second wiring of the
+  same renderer, which a single null-fill removes
+  without touching any other field); having
+  FpsInputAdapter find the renderer itself (a
+  second lookup for a link its owner already
+  holds); and rewiring the adapter's Simulation
+  field in the same step (a second, unrelated
+  wiring change bundled into a material step, with
+  its own failure modes, not a proof the material
+  step needed).
+- What did not move, stated so a later reader can
+  check it: no MeshBuilder colour, no PowerTint
+  value, no PowerState query, no refresh event
+  set, no core file, no save field, no HUD line,
+  no marker, no light. The Slice 13 event set
+  (successful key, gather, destruction, load,
+  Start, and nothing else) is reused, not
+  rewritten — a wiring step that refreshed every
+  frame would spend the Slice 1 budget the event
+  set was built to protect, and a material step
+  that re-tinted a cell would move the display
+  the carried Slice 14 tint-query steps are proved
+  against. Cited headless evidence is only the
+  existing colour-channel coverage (MeshBuilder
+  colours parallel to vertices, untinted white)
+  and the existing refresh-event coverage, proved
+  by earlier slices' tests — no new test and no
+  demo scenario claims a material or a wiring, per
+  the Slice 13 Step 2 precedent.
+- Checklist honesty: this step adds items 30
+  (material assignment: which shader, Inspector
+  vs runtime, untinted blocks unchanged, no pink,
+  override not overwritten) and 31 (wiring
+  null-fill, non-overwrite, and warning), and
+  closes neither item 26 (tint) nor item 27
+  (refresh) nor item 25 (occlusion). Those close
+  only by Windows observation recorded in
+  DECISIONS.md, with Unity version and GPU. The
+  next free playtest-gate checklist number is 32,
+  for Slice 16 Step 2.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 16 Step 2, marker occlusion
+  under the new scene, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

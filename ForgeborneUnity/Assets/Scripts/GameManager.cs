@@ -11,6 +11,29 @@ public class GameManager : MonoBehaviour
     public int Seed = 42;
     public Simulation? Simulation;
     public VoxelMeshRenderer? MeshRenderer;
+    // Slice 16 Step 1: the FPS adapter whose refresh
+    // wiring this step null-fills, decided 0.68.0
+    // (rationale in DECISIONS.md). Inspector-wired and
+    // optional, like every other adapter field: unwired,
+    // nothing changes, and no adapter is conjured by
+    // search. Wired, Start fills a null
+    // FpsInputAdapter.MeshRenderer with the same
+    // VoxelMeshRenderer this GameManager already links
+    // — the exact failure playtest-gate item 27 names
+    // (an unwired field makes every refresh a no-op)
+    // cannot then survive a scene in which the chunk
+    // renderer is wired here but forgotten there. A
+    // non-null adapter field is never overwritten, so a
+    // deliberate second renderer survives, and Start
+    // runs before any adapter Update, so the fill lands
+    // before the first tick's refresh check. This does
+    // not wire the adapter's Simulation field, which
+    // stays Inspector-wired as before — one wiring
+    // change, not a scene-rewiring pass. If the adapter
+    // is still unwired after the fill, a warning logs
+    // naming the stale-mesh consequence, rather than a
+    // silent first mesh that never refreshes.
+    public FpsInputAdapter? FpsAdapter;
 
     void Start()
     {
@@ -19,6 +42,14 @@ public class GameManager : MonoBehaviour
         {
             MeshRenderer.Simulation = Simulation;
             MeshRenderer.RefreshMesh();
+        }
+        if (FpsAdapter != null && FpsAdapter.MeshRenderer == null && MeshRenderer != null)
+        {
+            FpsAdapter.MeshRenderer = MeshRenderer;
+        }
+        if (FpsAdapter != null && FpsAdapter.MeshRenderer == null)
+        {
+            Debug.LogWarning("Forgeborne mesh wiring: FpsInputAdapter.MeshRenderer is still null after GameManager.Start — refresh calls will no-op and the chunk mesh will stay stale after builds, gathers, and destructions. Wire FpsAdapter to the same VoxelMeshRenderer GameManager links, or wire the adapter field directly — see playtest-gate items 27 and 31.");
         }
         Simulation.World.SpawnWave(3);
     }

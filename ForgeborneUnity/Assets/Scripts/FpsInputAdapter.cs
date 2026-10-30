@@ -12,7 +12,16 @@ public class FpsInputAdapter : MonoBehaviour
     // a null renderer makes every refresh call below a no-op,
     // so an unwired scene renders the first mesh and never
     // refreshes it — playtest-gate item 27 names that wiring
-    // as a step, not an assumption.
+    // as a step, not an assumption. Slice 16 Step 1 adds
+    // a code-driven null-fill, decided 0.68.0 (rationale
+    // in DECISIONS.md): GameManager.Start fills a null
+    // field here with the renderer it already links, and
+    // never overwrites a non-null field, so Inspector
+    // wiring still wins and a deliberate second renderer
+    // survives. The fill does not close item 27, and
+    // item 31 is the observation that settles whether
+    // the fill or the Inspector wiring is what the
+    // scene actually runs on.
     public VoxelMeshRenderer? MeshRenderer;
     public float MouseSensitivity = 2f;
 

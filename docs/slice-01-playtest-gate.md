@@ -391,6 +391,59 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     the wall. Do not claim this verified in Unity until
     it is observed there and recorded in DECISIONS.md.
 
+30. [ ] Chunk material assignment, added 0.68.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core colour channel is headless-tested, the
+    material assignment is not): press Play and record
+    explicitly which material the chunk MeshRenderer
+    carries — an Inspector-wired ChunkMaterial, or the
+    runtime fallback, and in the fallback case which
+    shader was found (Universal Render Pipeline/Lit
+    expected, Standard fallback, or neither, with the
+    warning logged). Observe that ordinary stone, ore,
+    and wood render exactly as before, with no pink /
+    missing material on the chunk mesh, and that a
+    deliberately Inspector-wired material is NOT
+    replaced by the runtime fallback at Play. This item
+    does NOT settle whether tints show — that is item
+    26, observed beside it, not duplicated by it: a
+    material can be assigned correctly and still
+    ignore vertex colours, and that is a material
+    finding to record, not a tint-code finding. If
+    neither shader is found, record the warning and
+    the Inspector material the scene fell back to.
+    Do not claim this verified in Unity until it is
+    observed there and recorded in DECISIONS.md.
+
+31. [ ] MeshRenderer wiring null-fill, added 0.68.0 (adapter
+    code written, NOT yet compiled or run in Unity on
+    Windows; the core refresh event set is
+    headless-tested, the wiring is not): first, with
+    FpsInputAdapter.MeshRenderer left unwired in the
+    Inspector but GameManager.MeshRenderer and
+    GameManager.FpsAdapter wired, press Play and
+    observe that a successful build, gather, and mill
+    destruction each appear in the scene on their
+    tick, proving the Start null-fill linked the
+    adapter to the same renderer GameManager links,
+    with no warning logged. Second, with
+    FpsInputAdapter.MeshRenderer wired to a second,
+    deliberate renderer, press Play and observe that
+    the adapter refreshes that renderer, not the
+    GameManager one, proving a non-null field is
+    never overwritten. Third, with neither the
+    adapter field nor GameManager.MeshRenderer wired,
+    press Play and observe the wiring warning logged,
+    proving an unwired scene announces itself rather
+    than silently rendering a stale first mesh. This
+    item does NOT close item 27 — item 27 remains the
+    observation that each builder key, gather, and
+    destruction appears on its tick in a normally
+    wired scene; this item observes the fill and its
+    non-overwrite rule, not the refresh event set
+    itself. Do not claim this verified in Unity until
+    it is observed there and recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

@@ -1,5 +1,68 @@
 # Forgeborne — Changelog
 
+## 0.68.0 — 2026-10-30 — Slice 16 Step 1: vertex-colour chunk
+material and MeshRenderer wiring
+
+- Material, decided in this step (rationale in
+  DECISIONS.md): VoxelMeshRenderer.Awake now assigns
+  the chunk material, before GameManager.Start calls
+  the first RefreshMesh. An Inspector-wired
+  ChunkMaterial wins when present; unwired, Awake
+  creates a runtime material from the Universal Render
+  Pipeline/Lit shader, falling back to Standard — the
+  same shader pair SquadMarkerDisplay already uses,
+  and the project already depends on URP 17.0.0, so
+  no new shader asset, texture, or imported material
+  rides along. If neither shader is found the
+  Inspector material is left untouched and a warning
+  logs, rather than a null material silently
+  rendering pink. Assigning a material does NOT prove
+  it multiplies vertex colours: playtest-gate item
+  26 remains the observation that settles the tint,
+  and new item 30 records which shader was actually
+  assigned and whether untinted stone, ore, and wood
+  still render exactly as before.
+- Wiring, decided in this step (rationale in
+  DECISIONS.md): GameManager gains an optional,
+  Inspector-wired FpsAdapter field, and Start
+  null-fills a null FpsInputAdapter.MeshRenderer
+  with the same VoxelMeshRenderer it already links
+  — the exact failure item 27 names. A non-null
+  adapter field is never overwritten, so a
+  deliberate second renderer survives; Start runs
+  before any adapter Update, so the fill lands
+  before the first tick's refresh check; and if the
+  adapter is still unwired after the fill a warning
+  logs naming the stale-mesh consequence, rather
+  than a silent first mesh that never refreshes.
+  The adapter's Simulation field is NOT rewired
+  here — it stays Inspector-wired as before, so
+  this is one wiring change, not a scene-rewiring
+  pass. New playtest-gate item 31 observes the
+  fill, its non-overwrite rule, and its warning;
+  item 27 is NOT closed by this step and remains
+  the observation that each builder key, gather,
+  and destruction appears on its tick.
+- Deliberately not moved in this step: no
+  MeshBuilder colour, no PowerTint value, no
+  PowerState query, and no refresh event set — the
+  Slice 13 event set (successful key, gather,
+  destruction, load, Start, and nothing else) is
+  reused, not rewritten, so no frame refreshes and
+  no re-tint flatters the material. No core file
+  touched, no save field added, no HUD line, marker,
+  or light changed. Unity adapter code is not
+  compiled headlessly, following the Slice 13 Step
+  2 precedent, so this step adds no headless test
+  and no demo scenario for the material or the
+  wiring.
+- Tests: 2130 passed, 0 failed (unchanged,
+  adapter-only step). Demo unchanged: Slice 15
+  scenario save 44,016 chars, all earlier demo saves
+  as in the 0.67.0 entry.
+- Next, in order: Slice 16 Step 2, marker occlusion
+  under the new scene, decided in that step.
+
 ## 0.67.0 — 2026-10-30 — Slice 16 scope: graphics scene-proof layer
 
 - Scope, decided in this step (rationale in
