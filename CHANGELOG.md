@@ -1,5 +1,28 @@
 # Forgeborne — Changelog
 
+## 0.64.0 — 2026-10-30 — Slice 15 scope: the deferred doctrine, Patrol
+
+- Scope, decided in this step (rationale in
+  DECISIONS.md): new docs/slice-15-scope.md — Slice 15
+  theme is the deferred doctrine, in order: (1) exactly
+  one fourth doctrine, decided in its step, with Patrol
+  as the starting pool (its route question — loop,
+  back-and-forth, or waypoints, and where the route is
+  stored — still unanswered after deferrals in Slice 4
+  and Slice 11); (2) Slice 15 demo scenario +
+  documentation-only review. Slice 14 remainders
+  (single-cable tint query, direct-Conduit count) and
+  Slice 13 scene-proof remainders are carried as ranked
+  Slice 16 candidates, not built here, because a
+  display-query redesign inside a doctrine step would
+  move the display the doctrine is proved against.
+- Tests: 1988 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 14
+  scenario save 43,974 chars, all earlier demo saves
+  as in the 0.63.0 entry.
+- Next, in order: Slice 15 Step 1, exactly one fourth
+  doctrine, decided in that step.
+
 ## 0.63.0 — 2026-10-30 — Slice 14 Step 2: composed demo + review, closing Slice 14
 
 - Composed demo, decided in this step (rationale in

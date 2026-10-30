@@ -4996,6 +4996,69 @@ look inevitable.
   (Patrol first, Slice 14 remainders second, Slice 13
   scene-proof remainders third).
 
+## 0.64.0 — Slice 15 scope: the deferred doctrine, Patrol (2026-10-30, silent scheduled run)
+
+- Previous state verified from GitHub before work:
+  main head 7f580c60509f0f65a31f2d9ae933335227c9289c,
+  CHANGELOG 0.63.0 (Slice 14 Step 2, demo + review,
+  closing Slice 14) — the run log had no entry for
+  0.63.0 yet, but remote head, remote CHANGELOG head,
+  and the sync record (65 entries, last = that commit)
+  all confirmed it, so no step was repeated: the
+  0.63.0 decision named scoping Slice 15 as next,
+  chosen from the review's ranked candidates, and this
+  run did exactly that. Tests 1988 baseline re-run
+  passing; demo Slice 14 save 43,974 chars.
+- Scope decision, stated openly: Patrol first, not
+  the remainders first. The Slice 14 review ranked
+  Patrol first, Slice 14 remainders second, Slice 13
+  scene-proof remainders third, and the Step 2
+  composition evidence gives no reason to reorder
+  them — a Conduit cable mill, a Dynamo mill, and a
+  pylon kill say nothing about whether a squad can
+  walk a route. The deeper reason is testability in
+  isolation: the remainders are display-query
+  decisions (a tint query change would move tint for
+  every existing source's cables; a count redefinition
+  would move a rule two demos were proved against),
+  and deciding either inside a doctrine step would
+  leave a failing test unable to say whether the
+  doctrine or the display failed it. Patrol is the
+  only doctrine question left — HoldGround, Advance,
+  and Defend Core are the whole doctrine set — so a
+  doctrine slice keeps its proof clean, and the
+  remainders lose nothing by waiting one slice,
+  because checklist item 28 already asks the scene
+  observer to record the untinted cell honestly.
+- What the scope does NOT decide, stated openly so
+  Step 1 is not pre-empted: the route shape (loop,
+  back-and-forth, waypoints, or another original
+  definition only with a recorded reason), where the
+  route is stored (rally + spawn derivation, a second
+  picker point, a saved waypoint list, or another
+  stated source), the endpoint behaviour, the blocked-
+  step answer, the fire rule, the chase-or-pass answer,
+  the snapshot activity word, and the adapter key
+  (Alpha7 is a starting hypothesis, with Alpha1–Alpha6
+  in use, confirmed free at step time — not a decision
+  here). What the scope DOES fix is the shape of the
+  proof: route repeat or reverse proved, blocked step
+  proved, firing while moving proved, return to route
+  after any chase proved, idle rule proved (keeps
+  walking, not standing), more than one kind proved,
+  price 10 EmberOre and cap 3 settled, enum appended
+  only unless the route justifies a save field with
+  old saves proved loading.
+- Deliberately not in this step: a doctrine, a kind,
+  an electrical widening, a tint or count redesign, a
+  scene-proof observation as a headless step, a
+  movement rule change, a balance pass, a save field
+  without justification, or Slice 16 scoping (that is
+  the Slice 15 review's successor decision, chosen
+  from the ranked candidates this scope carries).
+- Next step: Slice 15 Step 1, exactly one fourth
+  doctrine, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
