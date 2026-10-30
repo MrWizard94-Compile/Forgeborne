@@ -604,6 +604,60 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     Do not claim this verified in Unity until it is
     observed there and recorded in DECISIONS.md.
 
+35. [ ] Single-cable tint, decided 0.74.0 (core query
+    changed, adapter code unchanged — no headless test
+    proves a tint reads in the scene, so the cited
+    headless evidence is only the Slice 17 Step 1
+    PowerState proof set: a single cable touching a
+    Conduit reads Energised, a two-cable run reads
+    Energised on both cells, and a mixed-voltage run
+    reads None on every cell): build three runs in one
+    scene, against dark voxel and under the Step 3
+    dusk light, and observe them together, not one
+    run at a time — a single-cable Conduit run to a
+    mill, a two-cable Conduit run, and a mixed
+    Dynamo-plus-Conduit run. First, observe the
+    single cable tinted yellow, the two-cable run
+    tinted yellow on both cells, and the mixed run
+    untinted on every cell. Second, observe the
+    live-network evidence beside the tint, in the
+    same scene: the single-cable mill destroyed on
+    its next tick (or a single-cable pylon firing
+    10 per tick), proving the yellow cable is a live
+    network and not a tint without delivery, and the
+    mixed run's mill gathering at kinetic cadence,
+    proving the untinted cable is a dead network
+    and not a tint that failed to refresh. Third,
+    rewire in the scene — place a Conduit beside an
+    existing untinted cable, and place a cable
+    beside an existing Conduit — and observe the
+    tint appear on the next mesh refresh in both
+    orders, with no new refresh key needed: both
+    placements are successful build keys, which the
+    existing event set already refreshes on. This
+    item SUPERSEDES item 28's honest-observation
+    clause for the decided case only: item 28 told
+    the observer to record the single cable as
+    untinted while its network was live, because
+    that was the query's reading then; under the
+    decided component-liveness reading the expected
+    observation is yellow, and an untinted single
+    Conduit cable is now evidence the query or the
+    refresh did not run, not an expected finding
+    to record. Item 28's other observations — the
+    Conduit key, the direct-Conduit mill at kinetic
+    cadence with no warning, and the cable-fed
+    mill destroyed on its next tick — stand
+    unchanged. Item 32 stands as the pre-decision
+    observation of the combined scene, and this
+    item is the post-decision observation of the
+    same scene under the decided reading: item 32
+    is not re-observed here, and this item does not
+    claim the dusk-light observation item 33
+    already covers. Do not claim this verified in
+    Unity until it is observed there and recorded
+    in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

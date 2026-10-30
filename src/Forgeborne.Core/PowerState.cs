@@ -7,7 +7,10 @@ namespace Forgeborne.Core;
 /// Mismatched is a consumer delivered a non-None voltage that is
 /// not its rating (exactly the Step 1 warning predicates, so the
 /// tint and the HUD warning agree cell for cell), Energised is
-/// a Cable cell in a component carrying a non-None voltage, and
+/// a Cable cell in a component carrying a non-None voltage
+/// (Slice 17 Step 1: World.PowerState now reads the component
+/// voltage directly, so this documented meaning is the
+/// implemented meaning even for a single-cable component), and
 /// None is everything else — unpowered, conflicted (None
 /// delivery), a source, a transformer, a non-electrical block,
 /// or air. Sources and transformers are deliberately None, not

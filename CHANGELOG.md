@@ -1,5 +1,107 @@
 # Forgeborne — Changelog
 
+## 0.74.0 — 2026-10-30 — Slice 17 Step 1: single-cable tint query decided
+
+- Decision, decided in this step (rationale in
+  DECISIONS.md): for a cable cell, Energised now
+  means its cable component carries a non-None
+  voltage — component liveness, not cell delivery.
+  Implemented in WorldZone.PowerState only: the
+  cable branch now reads
+  CableNetworkVoltage(CableComponent(x, y, z),
+  null) instead of DeliveredVoltage(x, y, z), so a
+  single cable cell touching a Conduit reads
+  Energised (HV) where it read None before, a
+  two-cable run stays Energised on both cells, and
+  a mixed-voltage component still reads None on
+  every cell. DeliveredVoltage is untouched, so no
+  delivery, precedence, conflict, rating, cost, or
+  phase rule moves: a mill beside a Conduit still
+  reads None and gathers kinetically, a cable-fed
+  mill is still destroyed on tick 1, a cable-fed
+  pylon still fires 10 per tick, and warnings still
+  warn the same machines.
+- Proof set, decided in this step (rationale in
+  DECISIONS.md): the Slice 17 scope's cases, each
+  proved by test — single cable Conduit-to-mill
+  (Energised cable, Mismatched mill, HV delivery,
+  one warned mill, destroyed on tick 1, cable
+  still Energised after the destruction);
+  single cable Conduit-to-air (Energised, one
+  live network, no lone source); two Conduits on
+  one single cable (Energised); two-cable Conduit
+  run (both cells stay Energised); Dynamo-fed and
+  Alternator-fed single cables (stay Energised);
+  transformer-fed single cables from both an
+  Alternator and a Dynamo (stay Energised);
+  mixed Dynamo-Conduit, Dynamo-Alternator, and
+  two-cable Dynamo-Conduit components (all stay
+  None, so the component reading does not
+  resurrect a dead network); unpowered cables
+  (None, alone and beside stone only); rewiring at
+  query level in both placement orders (cable
+  alone None, Energised when a Conduit is placed
+  beside it, None again when it is removed); and
+  save/load re-derivation (Energised cable and
+  Mismatched mill re-derive after load).
+- Refresh consequence, decided in this step
+  (rationale in DECISIONS.md): no new refresh
+  event is needed. Both placement orders are
+  successful build keys (I for cable, M for
+  Conduit), which the existing event set already
+  refreshes on; gather cannot rewire, because
+  only Stone, EmberOre, and Wood are gatherable
+  and no cable or source is; and no source is
+  ever destroyed by any rule — only mills are,
+  and a mill destruction already refreshes — so
+  there is no source-removal path whose tint
+  change could go unrefreshed. A future removal
+  verb, if one is added, must refresh like the
+  build keys do; that requirement is recorded,
+  not implemented here.
+- Checklist relation, decided in this step
+  (rationale in DECISIONS.md): new playtest-gate
+  checklist item 35, a Windows-only post-decision
+  observation of a single-cable run, a two-cable
+  run, and a mixed run together, against dark
+  voxel and under dusk light, with the mill's
+  destruction or the pylon's fire as the
+  live-network evidence beside the tint, and
+  with rewiring in both placement orders. Item
+  35 supersedes item 28's honest-observation
+  clause for the decided case only — an untinted
+  single Conduit cable is now evidence the query
+  or the refresh did not run, not an expected
+  finding — while item 28's other observations
+  stand; item 32 stands as the pre-decision
+  observation, and item 35 is its post-decision
+  counterpart, not a re-observation of item 32
+  or of item 33's dusk light. The next free
+  playtest-gate number is now 36.
+- Superseded assertions, stated openly: four
+  earlier assertions that recorded the old
+  reading (one Slice 14 Step 1 single-cable
+  assertion and three Slice 14 Step 2 composed
+  assertions, including after load) were updated
+  to Energised, each with its history kept in a
+  comment, and the Slice 14 demo's printed text
+  was updated to match — no assertion was
+  deleted silently and no history was rewritten
+  as if the old reading had never existed. No
+  material, shader, marker, light, fog, view
+  model, or HUD value moves in this step: the
+  Slice 16 surface renders whatever this query
+  decides, and the Energised tint colour itself
+  is unchanged.
+- Tests: 2169 passed, 0 failed (was 2130; +39,
+  no failures on the final runs). Demo unchanged
+  except for the Slice 14 print wording: Slice 15
+  scenario save 44,016 chars, all earlier demo
+  saves as in the 0.73.0 entry.
+- Next, in order: Slice 17 Step 2, the
+  direct-Conduit count query, decided in that
+  step.
+
 ## 0.73.0 — 2026-10-30 — Slice 17 scope: electrical display-query remainders
 Slice 17, documentation-only
 

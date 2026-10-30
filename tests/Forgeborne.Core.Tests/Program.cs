@@ -4977,17 +4977,18 @@ foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16,
 Eq(Voltage.HV, condCableMill.DeliveredVoltage(16, 20, 16), "slice14 step1 conduit through cable delivers HV to its mill");
 Check(condCableMill.IsMismatched(16, 20, 16), "slice14 step1 conduit cable mill is mismatched");
 Eq(CellPowerState.Mismatched, condCableMill.PowerState(16, 20, 16), "slice14 step1 conduit cable mill power state is Mismatched");
-// Finding, recorded not fixed here (see DECISIONS.md): a single
-// cable cell touching a Conduit reads None in PowerState, because
-// DeliveredVoltage for a cell counts only its neighbours, and a
-// Conduit is deliberately not a direct source — so the network is
-// live (the mill at its end is destroyed) while its only cable
-// cell reads untinted. A Dynamo-fed single cable reads Energised
-// instead, because the direct branch counts the Dynamo. This is a
-// display-query remainder for the Slice 14 review, not a delivery
-// failure, and the scope forbids redesigning the query inside a
-// source step.
-Eq(CellPowerState.None, condCableMill.PowerState(17, 20, 16), "slice14 step1 single conduit cable cell power state is None, recorded finding");
+// Slice 17 Step 1 supersedes the Slice 14 Step 1 finding recorded
+// here: a single cable cell touching a Conduit now reads
+// Energised, because PowerState reads its component's voltage
+// (HV from the Conduit) rather than the cell's own delivered
+// voltage — DeliveredVoltage for a cell counts only neighbours,
+// and a Conduit is deliberately not a direct source, so the old
+// reading left a live network's only cable untinted while a
+// two-cable run read Energised on both cells. The Slice 14
+// finding is kept in this comment as history; the assertion
+// below is the decided reading, proved again in the Slice 17
+// Step 1 block with the full proof set.
+Eq(CellPowerState.Energised, condCableMill.PowerState(17, 20, 16), "slice17 step1 single conduit cable cell power state is Energised, superseding the slice14 finding");
 // Two-cable run: every cable cell after the first reads its
 // neighbour cable's component, so both read Energised, and the
 // mill at the end is still destroyed — the network is live, and
@@ -5149,13 +5150,17 @@ Eq(CellPowerState.Powered, condLoaded.PowerState(17, 5, 16), "slice14 step1 cond
 // One Simulation carries the Conduit cable-fed mill, the
 // Dynamo mill, the direct-Conduit mill, the Conduit cable
 // pylon, and the Conduit step-down workstation together
-// through ticks and a save/load round-trip. Two findings
-// from Step 1 are asserted here as composition facts, not
-// smoothed over: the single cable cell touching a Conduit
-// reads None in PowerState while its pylon fires, and a
-// Conduit standing directly beside a mill counts as neither
-// a live network nor a lone source, because the Slice 12
-// lone rule disqualifies any source beside a consumer.
+// through ticks and a save/load round-trip. One finding from
+// Step 1 is asserted here as a composition fact, not smoothed
+// over: a Conduit standing directly beside a mill counts as
+// neither a live network nor a lone source, because the
+// Slice 12 lone rule disqualifies any source beside a
+// consumer. The other Step 1 finding — a single cable cell
+// touching a Conduit reading None in PowerState while its
+// pylon fires — was superseded by Slice 17 Step 1 (0.74.0):
+// that cable now reads Energised, and the assertions below
+// were updated to the decided reading rather than left
+// asserting the superseded one.
 var s14Sim = new Simulation(42);
 void SeedPocketS14Test(WorldZone w, int mx, int mz)
 {
@@ -5200,7 +5205,7 @@ Eq(CellPowerState.Energised, s14Sim.World.PowerState(12, 20, 10), "slice14 step2
 Eq(CellPowerState.Powered, s14Sim.World.PowerState(10, 20, 14), "slice14 step2 composed dynamo mill state Powered");
 Eq(CellPowerState.None, s14Sim.World.PowerState(10, 20, 18), "slice14 step2 composed direct conduit mill state None");
 Eq(CellPowerState.Powered, s14Sim.World.PowerState(10, 5, 16), "slice14 step2 composed conduit cable pylon state Powered");
-Eq(CellPowerState.None, s14Sim.World.PowerState(11, 5, 16), "slice14 step2 composed single conduit cable state None while its pylon fires");
+Eq(CellPowerState.Energised, s14Sim.World.PowerState(11, 5, 16), "slice17 step1 composed single conduit cable state Energised while its pylon fires");
 Eq(CellPowerState.Powered, s14Sim.World.PowerState(17, 5, 16), "slice14 step2 composed step-down workstation state Powered");
 Eq(CellPowerState.Energised, s14Sim.World.PowerState(19, 5, 16), "slice14 step2 composed step-down cable state Energised via its transformer");
 Eq(CellPowerState.None, s14Sim.World.PowerState(18, 5, 16), "slice14 step2 composed transformer state None by decision");
@@ -5235,7 +5240,7 @@ Eq(0, s14HudAfter1.LoneSources, "slice14 step2 composed still no lone source aft
 Eq(75, s14Sim.World.Player.Shields, "slice14 step2 composed shields 75 after tick 1 regen");
 Eq(20, s14Sim.World.Enemies[0].Health, "slice14 step2 composed pylon fires 10 on tick 1");
 Eq(11, s14Sim.World.Enemies[0].X, "slice14 step2 composed enemy steps east on tick 1");
-Eq(CellPowerState.None, s14Sim.World.PowerState(11, 5, 16), "slice14 step2 composed single conduit cable still None after tick 1");
+Eq(CellPowerState.Energised, s14Sim.World.PowerState(11, 5, 16), "slice17 step1 composed single conduit cable still Energised after tick 1");
 s14Sim.World.Advance();
 Eq(10, s14Sim.World.Enemies[0].Health, "slice14 step2 composed pylon fires 10 on tick 2");
 s14Sim.World.Advance();
@@ -5271,7 +5276,7 @@ Eq(0, s14LoadedHud.LoneSources, "slice14 step2 composed no lone source after loa
 Eq(CellPowerState.Powered, s14Loaded.World.PowerState(10, 20, 14), "slice14 step2 composed dynamo mill state Powered after load");
 Eq(CellPowerState.None, s14Loaded.World.PowerState(10, 20, 18), "slice14 step2 composed direct conduit mill state None after load");
 Eq(CellPowerState.Powered, s14Loaded.World.PowerState(10, 5, 16), "slice14 step2 composed pylon state Powered after load");
-Eq(CellPowerState.None, s14Loaded.World.PowerState(11, 5, 16), "slice14 step2 composed single cable state None after load");
+Eq(CellPowerState.Energised, s14Loaded.World.PowerState(11, 5, 16), "slice17 step1 composed single cable state Energised after load");
 Eq(CellPowerState.Powered, s14Loaded.World.PowerState(17, 5, 16), "slice14 step2 composed workstation state Powered after load");
 Eq(0, s14Loaded.World.PoweredBlocksGathered, "slice14 step2 composed powered counter resets on load");
 Eq(0, s14Loaded.World.KineticBlocksGathered, "slice14 step2 composed kinetic counter resets on load");
@@ -5584,6 +5589,159 @@ for (int s15Tick = 0; s15Tick < 2; s15Tick++) s15Loaded.World.Advance();
 Eq(23, s15Loaded.World.Squads[0].X, "slice15 step2 composed loaded patrol reaches the east waypoint again");
 Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s15Loaded.World)[0].Activity, "slice15 step2 composed loaded patrol reads patrolling on its resumed loop");
 Eq(SquadActivity.Holding, OrbitalView.Snapshot(s15Loaded.World)[1].Activity, "slice15 step2 composed loaded heavy still reads holding");
+
+// ---- Slice 17 Step 1: single-cable tint query (0.74.0) ----
+// Decision, in one sentence a later reader can quote: for a
+// cable cell, Energised now means its cable component carries
+// a non-None voltage, not that voltage is delivered to that
+// cell itself. The proof set below covers every case the
+// Slice 17 scope requires, plus the delivery-unchanged proofs
+// that separate a PowerState change from a DeliveredVoltage
+// change. Each layout is its own WorldZone, so no case can
+// leak voltage into another through a shared chunk.
+// Motivating case: single cable, Conduit -> cable -> mill.
+var s17Mill = new WorldZone(42);
+s17Mill.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17Mill.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17Mill.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    s17Mill.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(CellPowerState.Energised, s17Mill.PowerState(17, 20, 16), "slice17 step1 single conduit cable to a mill is Energised, not None");
+Eq(CellPowerState.Mismatched, s17Mill.PowerState(16, 20, 16), "slice17 step1 conduit cable mill is Mismatched beside its Energised cable");
+Eq(Voltage.HV, s17Mill.DeliveredVoltage(16, 20, 16), "slice17 step1 conduit cable mill delivery is still HV");
+Eq(1, HudState.FromWorld(s17Mill, new Weapon()).WarnedMills, "slice17 step1 conduit cable mill still warns one mill");
+Check(Mesher.GreedyMesh(s17Mill.Chunk, s17Mill.PowerState).Any(q => q.Type == BlockType.Cable && q.PowerState == CellPowerState.Energised), "slice17 step1 single conduit cable carries an Energised mesh quad");
+s17Mill.Advance();
+Eq(BlockType.Air, s17Mill.Chunk.Get(16, 20, 16), "slice17 step1 conduit cable mill is still destroyed on tick 1");
+Eq(CellPowerState.Energised, s17Mill.PowerState(17, 20, 16), "slice17 step1 cable stays Energised after its mill is destroyed: the component is still live");
+// Single cable, Conduit and air: live network, no consumer.
+var s17Air = new WorldZone(42);
+s17Air.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17Air.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq(CellPowerState.Energised, s17Air.PowerState(17, 20, 16), "slice17 step1 single conduit cable to air is Energised");
+Eq((1, 0), s17Air.LivePowerCounts(), "slice17 step1 single conduit cable to air counts one live network, no lone source");
+// Two Conduits on one single cable: one component, one voltage.
+var s17TwoCond = new WorldZone(42);
+s17TwoCond.Chunk.TrySet(16, 20, 16, BlockType.Conduit);
+s17TwoCond.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17TwoCond.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq(CellPowerState.Energised, s17TwoCond.PowerState(17, 20, 16), "slice17 step1 single cable between two Conduits is Energised");
+// Two-cable Conduit run: already Energised, stays so.
+var s17TwoCable = new WorldZone(42);
+s17TwoCable.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17TwoCable.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17TwoCable.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+s17TwoCable.Chunk.TrySet(19, 20, 16, BlockType.Conduit);
+Eq(CellPowerState.Energised, s17TwoCable.PowerState(17, 20, 16), "slice17 step1 two-cable conduit run first cable stays Energised");
+Eq(CellPowerState.Energised, s17TwoCable.PowerState(18, 20, 16), "slice17 step1 two-cable conduit run second cable stays Energised");
+// Dynamo-fed and Alternator-fed single cables: already
+// Energised by direct delivery, stay so under the component
+// reading (LV and HV respectively, no voltage split in tint).
+var s17Dyn = new WorldZone(42);
+s17Dyn.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s17Dyn.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+Eq(CellPowerState.Energised, s17Dyn.PowerState(17, 20, 16), "slice17 step1 Dynamo-fed single cable stays Energised");
+Eq(Voltage.LV, s17Dyn.DeliveredVoltage(17, 20, 16), "slice17 step1 Dynamo-fed single cable delivery is still LV");
+var s17Alt = new WorldZone(42);
+s17Alt.Chunk.TrySet(16, 20, 16, BlockType.Alternator);
+s17Alt.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+Eq(CellPowerState.Energised, s17Alt.PowerState(17, 20, 16), "slice17 step1 Alternator-fed single cable stays Energised");
+// Transformer-fed single cables: already Energised through
+// the second branch, stay so (Alternator flips to LV, Dynamo
+// flips to HV — the cable reads Energised either way).
+var s17TransAlt = new WorldZone(42);
+s17TransAlt.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s17TransAlt.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+s17TransAlt.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+Eq(CellPowerState.Energised, s17TransAlt.PowerState(17, 20, 16), "slice17 step1 Alternator-transformer-fed single cable stays Energised");
+var s17TransDyn = new WorldZone(42);
+s17TransDyn.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+s17TransDyn.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+s17TransDyn.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+Eq(CellPowerState.Energised, s17TransDyn.PowerState(17, 20, 16), "slice17 step1 Dynamo-transformer-fed single cable stays Energised");
+// Mixed-voltage components: the component reading must NOT
+// resurrect a dead network. Dynamo + Conduit, Dynamo +
+// Alternator, and a two-cable Dynamo + Conduit run all
+// resolve to None, so every cable stays untinted.
+var s17MixedSingle = new WorldZone(42);
+s17MixedSingle.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s17MixedSingle.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17MixedSingle.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq(CellPowerState.None, s17MixedSingle.PowerState(17, 20, 16), "slice17 step1 mixed Dynamo-Conduit single cable stays None");
+var s17MixedAlt = new WorldZone(42);
+s17MixedAlt.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s17MixedAlt.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17MixedAlt.Chunk.TrySet(18, 20, 16, BlockType.Alternator);
+Eq(CellPowerState.None, s17MixedAlt.PowerState(17, 20, 16), "slice17 step1 mixed Dynamo-Alternator single cable stays None");
+var s17MixedTwo = new WorldZone(42);
+s17MixedTwo.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s17MixedTwo.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17MixedTwo.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+s17MixedTwo.Chunk.TrySet(19, 20, 16, BlockType.Conduit);
+Eq(CellPowerState.None, s17MixedTwo.PowerState(17, 20, 16), "slice17 step1 mixed two-cable run first cable stays None");
+Eq(CellPowerState.None, s17MixedTwo.PowerState(18, 20, 16), "slice17 step1 mixed two-cable run second cable stays None");
+// Unpowered components: None under either reading.
+var s17Dead = new WorldZone(42);
+s17Dead.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+Eq(CellPowerState.None, s17Dead.PowerState(17, 20, 16), "slice17 step1 unpowered single cable is None");
+var s17DeadStone = new WorldZone(42);
+s17DeadStone.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17DeadStone.Chunk.TrySet(18, 20, 16, BlockType.Stone);
+Eq(CellPowerState.None, s17DeadStone.PowerState(17, 20, 16), "slice17 step1 cable beside stone only is None");
+// Delivery unchanged, pylon proof: the single cable's tint
+// changes, the pylon's fire does not — 10 per tick, as in
+// Slice 14 Step 1, with the cable Energised before the tick.
+var s17Pylon = new WorldZone(42);
+s17Pylon.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+s17Pylon.Chunk.TrySet(18, 5, 16, BlockType.Cable);
+s17Pylon.Chunk.TrySet(19, 5, 16, BlockType.Conduit);
+s17Pylon.Enemies.Add(new Enemy(17, 5, 20));
+Eq(CellPowerState.Energised, s17Pylon.PowerState(18, 5, 16), "slice17 step1 conduit cable pylon single cable is Energised before firing");
+Eq(Voltage.HV, s17Pylon.DeliveredVoltage(17, 5, 16), "slice17 step1 conduit cable pylon delivery is still HV");
+Check(s17Pylon.IsPylonPowered(17, 5, 16), "slice17 step1 conduit cable pylon is still powered");
+s17Pylon.Advance();
+Eq(20, s17Pylon.Enemies[0].Health, "slice17 step1 conduit cable pylon still fires 10 on its first tick");
+// Delivery unchanged, direct and workstation proofs: a
+// Conduit beside a mill still delivers nothing and the mill
+// survives, and a cable-fed workstation is still mismatched
+// HV with regen 0 — the tint change touches neither.
+var s17Direct = new WorldZone(42);
+s17Direct.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17Direct.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+Eq(Voltage.None, s17Direct.DeliveredVoltage(16, 20, 16), "slice17 step1 direct Conduit still delivers nothing to its mill");
+Eq(CellPowerState.None, s17Direct.PowerState(16, 20, 16), "slice17 step1 direct Conduit mill power state is still None");
+s17Direct.Advance();
+Eq(BlockType.KineticMill, s17Direct.Chunk.Get(16, 20, 16), "slice17 step1 direct Conduit mill still survives its tick");
+var s17Ws = new WorldZone(42);
+s17Ws.Player.TakeDamage(20);
+s17Ws.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+s17Ws.Chunk.TrySet(18, 5, 16, BlockType.Cable);
+s17Ws.Chunk.TrySet(19, 5, 16, BlockType.Conduit);
+Eq(Voltage.HV, s17Ws.DeliveredVoltage(17, 5, 16), "slice17 step1 conduit cable workstation delivery is still HV");
+Check(s17Ws.IsWorkstationMismatched(17, 5, 16), "slice17 step1 conduit cable workstation is still mismatched");
+Eq(0, s17Ws.EffectiveWorkstationRegen(), "slice17 step1 conduit cable workstation regen is still 0: disabled");
+// Rewiring at query level, both placement orders: a cable
+// alone reads None, gains Energised when a Conduit is placed
+// beside it, and loses it again when that Conduit is removed
+// — the query is derived on every call, never a saved tint.
+var s17Rewire = new WorldZone(42);
+s17Rewire.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+Eq(CellPowerState.None, s17Rewire.PowerState(17, 20, 16), "slice17 step1 cable alone reads None before its source is placed");
+s17Rewire.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq(CellPowerState.Energised, s17Rewire.PowerState(17, 20, 16), "slice17 step1 cable gains Energised when a Conduit is placed beside it");
+s17Rewire.Chunk.TrySet(18, 20, 16, BlockType.Air);
+Eq(CellPowerState.None, s17Rewire.PowerState(17, 20, 16), "slice17 step1 cable loses Energised when its Conduit is removed");
+// Save/load re-derivation: the decided reading is derived,
+// never saved, so a loaded single-cable run reads Energised.
+var s17Load = new Simulation(42);
+s17Load.World.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17Load.World.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s17Load.World.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+var s17LoadJson = s17Load.SaveToJson();
+var s17Loaded = new Simulation(99);
+Check(s17Loaded.LoadFromJson(s17LoadJson), "slice17 step1 single-cable world loads");
+Eq(CellPowerState.Energised, s17Loaded.World.PowerState(17, 20, 16), "slice17 step1 single cable reads Energised after load");
+Eq(CellPowerState.Mismatched, s17Loaded.World.PowerState(16, 20, 16), "slice17 step1 conduit cable mill reads Mismatched after load");
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

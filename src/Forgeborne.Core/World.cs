@@ -494,17 +494,37 @@ public sealed class WorldZone
     /// exactly when the same predicate that makes HudState
     /// warn about it is true, Powered exactly when its powered
     /// predicate is true, and a cable is Energised exactly
-    /// when its delivered voltage is not None — so a machine
-    /// the HUD warns about is the machine the mesh tints red,
-    /// and a rewired machine loses both on the next snapshot
-    /// and the next refresh together. No delivery, precedence,
-    /// conflict, rating, cost, or phase rule moves: this method
-    /// only reads the rules the slices already test.</summary>
+    /// when its own cable component carries a non-None voltage
+    /// — Slice 17 Step 1, component liveness, decided in that
+    /// step (rationale in DECISIONS.md), superseding the
+    /// Slice 13 Step 3 reading under which a cable was
+    /// Energised exactly when its own delivered voltage was
+    /// not None. That older reading made a single cable cell
+    /// touching a Conduit read untinted while its network was
+    /// live, because DeliveredVoltage counts only neighbours
+    /// and a Conduit is not a direct source — while a
+    /// two-cable run read Energised on both cells, because
+    /// each cell saw its neighbour cable's component. The
+    /// component reading removes that one-cell inconsistency:
+    /// Energised now means, in one sentence, that the cable
+    /// cell belongs to a component carrying a non-None
+    /// voltage, not that voltage is delivered to that cell
+    /// itself. Cables are carriers, not consumers, so no
+    /// consumer predicate moves with this change: a machine
+    /// the HUD warns about is still the machine the mesh
+    /// tints red, and a rewired machine loses both on the
+    /// next snapshot and the next refresh together.
+    /// DeliveredVoltage itself is untouched — this method
+    /// reads the component voltage directly, through the
+    /// same CableComponent / CableNetworkVoltage walk the
+    /// live-network count already reuses, so delivery,
+    /// precedence, conflict, rating, cost, and phase rules
+    /// cannot move with a tint change by construction.</summary>
     public CellPowerState PowerState(int x, int y, int z)
     {
         var block = Chunk.Get(x, y, z);
         if (block == BlockType.Cable)
-            return DeliveredVoltage(x, y, z) != Voltage.None
+            return CableNetworkVoltage(CableComponent(x, y, z), null) != Voltage.None
                 ? CellPowerState.Energised : CellPowerState.None;
         if (block == BlockType.KineticMill)
         {

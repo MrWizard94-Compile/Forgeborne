@@ -6172,6 +6172,228 @@ documentation-only
 - Next step: Slice 17 Step 1, the single-cable tint
   query, decided in that step.
 
+## 0.74.0 — Slice 17 Step 1: single-cable tint query,
+component liveness decided
+
+- State found on entry: remote main head
+  5d222c08c1814d082df4568f91e073c0627f7e80,
+  CHANGELOG 0.73.0 (Slice 17 scope), sync record
+  ending at that commit, local working copy
+  matched — no step was repeated: the 0.73.0
+  decision named Slice 17 Step 1, the single-cable
+  tint query, decided in that step, and this run
+  did exactly that. (The local run log's top
+  entry was still 0.69.0, but the sync record
+  and the remote head both confirmed 0.70.0
+  through 0.73.0 as pushed, so no step was
+  re-implemented; this entry records that check.)
+  Tests 2130 baseline re-run passing; demo Slice
+  15 save 44,016 chars.
+- Decision, in one sentence a later reader can
+  quote: for a cable cell, Energised now means
+  its cable component carries a non-None voltage,
+  not that voltage is delivered to that cell
+  itself.
+- Why component liveness, not cell delivery, in
+  three reasons. First, cables are carriers, not
+  consumers: "delivered to this cable cell" was
+  never a quantity the game acts on — no
+  consumer predicate, warning, or phase reads a
+  cable's delivery — so defending the old
+  reading as the honest one defended a
+  distinction the game itself never used.
+  Second, the old reading was already
+  inconsistent by exactly one cell: a two-cable
+  run read Energised on both cells only because
+  each cell saw its neighbour cable's component,
+  so the single cable was the only cable whose
+  tint disagreed with its own network, and a
+  rule that changes its answer when an identical
+  second cable is laid beside the first is not a
+  cell property at all. Third, the documented
+  meaning already said component: PowerState.cs
+  has described Energised as "a Cable cell in a
+  component carrying a non-None voltage" since
+  Slice 13 Step 3, while World.PowerState
+  implemented the DeliveredVoltage reading — so
+  this step makes the implementation match the
+  document, rather than inventing a new meaning
+  for the word.
+- Rejected alternative, stated plainly: keeping
+  the cell-delivery reading and naming the
+  player's fallback (the mill's destruction, the
+  pylon's fire, the HUD warning) would have kept
+  a true statement about the cell — nothing is
+  delivered to a lone cable cell — at the cost
+  of a false-looking scene, a live wire rendering
+  dead, with the fallback evidence arriving only
+  after the wiring mistake had already destroyed
+  something. That trade was acceptable as a
+  carried finding while the surface was unsettled;
+  with the Slice 16 material settled, the tint is
+  now the wiring readout the player acts on
+  before the tick, not a caption for the tick's
+  outcome, and a pre-tick readout that reads dead
+  on a live wire misleads exactly the decision
+  it exists to inform.
+- Where the change lives: PowerState only, by
+  construction. The cable branch now reads
+  CableNetworkVoltage(CableComponent(x, y, z),
+  null) directly — the same component walk the
+  live-network count already reuses, with no
+  excluded transformer, so a transformer-fed
+  component still resolves through its
+  transformer's output with the component
+  excluded as that transformer's input, exactly
+  as CableNetworkVoltage already does for every
+  other caller. DeliveredVoltage is untouched:
+  its direct branch still has no Conduit branch,
+  its cable branch still reads neighbour
+  components, and no voltage, precedence,
+  conflict, rating, cost, or phase rule moves.
+  Delivery-unchanged proof, case by case, not
+  by assertion of the boundary: direct-Conduit
+  mill still None delivery, None state, survives
+  its tick; cable-fed mill still HV, Mismatched,
+  one warned mill, destroyed on tick 1;
+  cable-fed pylon still HV, Powered, fires 10 on
+  its first tick; cable-fed workstation still HV,
+  Mismatched, regen 0. A step that had needed a
+  delivery move would have deferred it openly;
+  this step did not, because none was needed.
+- Scope of the change, proved case by case, not
+  only for the motivating Conduit case: the
+  component reading changes tint behaviour for
+  every source's cables, so every source was
+  proved — Dynamo-fed and Alternator-fed single
+  cables stay Energised (they were already
+  Energised by direct delivery, so the change is
+  invisible there, which is itself a proof the
+  reading did not narrow); transformer-fed
+  single cables from both an Alternator and a
+  Dynamo stay Energised; mixed Dynamo-Conduit,
+  Dynamo-Alternator, and two-cable
+  Dynamo-Conduit components stay None on every
+  cell, so the component reading does not
+  resurrect a dead network — a mixed component
+  is dead under both readings, and the tint now
+  agrees with the count on that point; unpowered
+  cables stay None, alone and beside stone only.
+  Sources and transformers stay None by the
+  Slice 13 decision, unchanged: the change is to
+  cable cells only, and a lone Dynamo is still
+  live but untinted, because it feeds nothing.
+- Refresh consequence, checked case by case, not
+  assumed from the placement case: a Conduit
+  placed beside an existing cable refreshes,
+  because M is a successful build key and the
+  event set refreshes on every successful build;
+  a cable placed beside an existing Conduit
+  refreshes, because I is the same kind of key.
+  Cable or source removal by destruction needs
+  no new event, because no such path exists in
+  play: gather removes only Stone, EmberOre, and
+  Wood (BlockInfo.IsGatherable), so gathering
+  cannot remove a cable or a source; no rule
+  destroys a Dynamo, Alternator, Conduit, or
+  Transformer — only mills are destroyed, and a
+  mill destruction already refreshes through the
+  DestroyedMills check — so a source's tint
+  change on removal cannot go unrefreshed,
+  because a source cannot be removed. The one
+  gap this leaves is stated, not hidden: if a
+  future step adds a removal verb (dismantle,
+  gather-for-machines, or any other), that verb
+  must refresh like the build keys do, and the
+  step that adds it must prove the refresh, not
+  inherit this step's event set silently. At
+  query level, rewiring was proved in both
+  placement orders and on removal via TrySet:
+  cable alone None, Energised when a Conduit is
+  placed beside it, None again when it is
+  removed — the query is derived on every call,
+  never a saved tint, and it re-derives after
+  save/load.
+- Checklist relation: new item 35 is the
+  post-decision observation — single-cable,
+  two-cable, and mixed runs together, against
+  dark voxel and under dusk light, with the
+  mill's destruction or the pylon's fire as the
+  live-network evidence beside the tint, and
+  rewiring in both placement orders. Item 35
+  supersedes item 28's honest-observation clause
+  for the decided case only: item 28 told the
+  observer to record the single cable as
+  untinted while its network was live, and under
+  the decided reading an untinted single Conduit
+  cable is evidence the query or the refresh
+  did not run, not an expected finding. Item
+  28's other observations (Conduit key,
+  direct-Conduit mill at kinetic cadence with no
+  warning, cable-fed mill destroyed on its next
+  tick) stand unchanged, and item 28 itself was
+  left unedited, as item 20 was left unedited
+  when item 25 superseded its marker statement —
+  supersession is recorded in the new item, not
+  by rewriting the old one. Item 32 stands as
+  the pre-decision observation of the combined
+  scene; item 35 is its post-decision
+  counterpart, not a re-observation of item 32,
+  and it does not claim item 33's dusk-light
+  observation, which item 33 already covers.
+  The next free playtest-gate number is now 36.
+- Superseded assertions, stated openly: four
+  earlier assertions were updated, not deleted —
+  one Slice 14 Step 1 single-cable assertion and
+  three Slice 14 Step 2 composed assertions
+  (before tick, after tick 1, after load) — each
+  now asserting Energised, each with its history
+  kept in a comment, and the Slice 14 Step 2
+  header comment updated to say the single-cable
+  finding was superseded rather than still
+  standing. The Slice 14 demo's printed text was
+  updated the same way. No test was weakened to
+  pass: the four updated assertions assert a
+  stronger, decided reading, and the suite rose
+  by 39 new assertions on top of them, with no
+  failures.
+- Deliberately not moved in this step: no
+  delivery, precedence, conflict, rating, cost,
+  or phase rule; no material, shader, marker,
+  light, fog, or view model value (the Energised
+  tint colour itself is unchanged — only which
+  cells read Energised moved); no HUD line or
+  count change (the direct-Conduit count
+  question is Step 2's, and this step's cases
+  were proved not to touch it: the single-cable
+  air case counts one live network, no lone
+  source, exactly as before, because the count
+  already read components); no demo scenario
+  (the composed demo belongs to Step 3); no
+  Slice 18 scope; and no claim of Unity
+  verification — item 35 is an observation to be
+  made on Windows, not a result this headless
+  run can close.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 17 Step 2, the direct-Conduit
+  count query, decided in that step. Step 2 must
+  state its independence from this step
+  explicitly: its cases have no cable, so this
+  step's tint answer does not change any Step 2
+  case — but if Step 2 adopts this step's
+  component-liveness vocabulary for counts, it
+  must say so and why, rather than inheriting it
+  by accident, because the Slice 12 count meaning
+  of "live" (carrying a voltage that is not None,
+  feeding no consumer) is a network count, not a
+  cell tint, and the two must not be conflated.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
