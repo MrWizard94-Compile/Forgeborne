@@ -2760,6 +2760,84 @@ look inevitable.
 - Next, in order: Slice 9 Step 4, demo scenario +
   documentation-only review, decided in that step.
 
+## 0.43.0 — Slice 9 Step 4: demo scenario + documentation-only review
+
+- Decision, on composition: one Simulation proves the
+  ladder, the cable, and the destruction rule together,
+  not separately, as the scope's Step 4 requires — an LV
+  cable mill, a round-trip LV mill, an HV cable mill
+  destroyed on tick 1, and a kinetic mill, in four rows
+  on the y=20 plane, through a save/load round-trip and
+  a loaded 5-tick phase. Four rows, not four separate
+  worlds, is the deliberate part: only one run can show
+  that a destroyed mill's neighbours keep gathering, that
+  the HUD total drops while its powered count holds, and
+  that a loaded world re-derives power for the survivors
+  while keeping the destroyed mill gone — separate worlds
+  proved each of those already in Steps 1-3, and repeating
+  them separately would prove nothing new.
+- Decision, on the scope-wording correction: the scope's
+  Step 4 said the second mill "runs at the converted
+  voltage", and after Step 3 that sentence cannot be
+  taken literally, because a mill delivered HV is
+  destroyed on its delivery tick. This step does not
+  quietly rewrite the scope or pretend HV powers a mill:
+  it proves converted voltage two honest ways and says
+  so in the demo, the tests, and the review — the
+  round-trip mill survives on HV converted back to LV,
+  and the HV cable mill is destroyed by HV itself. A
+  future reader who quotes the scope sentence alone gets
+  the correction in the same step's documents, not a
+  contradiction discovered by running the demo.
+- Decision, on staging: the demo stages its four-row
+  layout directly with TrySet, exactly as the Step 1-3
+  tests stage theirs, rather than placing each block by
+  aim. Aim placement of a transformer and of a cable
+  were each proved in their own steps'
+  `BuildTransformerAhead` / `BuildCableAhead` tests, so
+  walking four aim placements here would prove walking,
+  not wiring, and would risk a geometry error masking
+  as a wiring failure. The review states this staging
+  openly and claims composition of the core rules only,
+  not aim placement of this exact layout.
+- Decision, on the review verdict: Slice 9 is reviewed
+  and closed as tested electrical tier 2 core (ladder,
+  transformer, cable, destruction) plus written adapters
+  — not as playtested, balanced, or Unity-verified.
+  The claim split is kept split in words: core rules
+  are tested, adapter keys (U, I) and the rated-voltage
+  HUD count are written and checklist-listed (items 15,
+  16, 17), and neither claim borrows the other's
+  evidence. No new checklist item is added for the demo
+  itself, because it exercises no adapter binding those
+  items do not already cover, following the Slice 7 and
+  Slice 8 reviews' no-new-item rule.
+- Decision, on gaps and candidates: the review carries
+  the gaps in priority order — Windows Unity verification
+  (Slices 1-9), the pending Slice 1 director playtest
+  gate, electrical balance as unproven first-pass values,
+  destruction with no warning by decision, mesh tint and
+  mesh refresh, an energised cable feeding no mill
+  showing nothing, two kinds sharing one marker, and the
+  free-deploy primitive — and carries the Slice 10
+  candidates in the 0.39.0 order (additional powered
+  consumers and sources first; a third squad type and
+  the deferred doctrines second), because the Step 4
+  evidence gives no reason to reorder them. Slice 10 is
+  NOT scoped by this review, by the same rule as every
+  review before it: scoping is its own decision step,
+  chosen with the composition evidence in hand.
+- Deliberately NOT in this step: any new core system;
+  any change to the ladder, conversion, cable, kinetic,
+  cadence, Dynamo cost, or squad, loot, skill, or core
+  health rules; any save-format field; a pre-destruction
+  warning retrofitted as a core rule; a mesh tint or
+  mesh refresh; a HUD cable or destruction line; any
+  claim about Windows Unity verification or the pending
+  Slice 1 director playtest gate.
+- Next, in order: scoping Slice 10 as its own decision
+  step, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

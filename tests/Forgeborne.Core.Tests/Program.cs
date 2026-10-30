@@ -3000,6 +3000,91 @@ var hud3After = HudState.FromWorld(hud3World, new Weapon());
 Eq(1, hud3After.TotalMills, "slice9 step3 HUD total drops to one mill after destruction");
 Eq(1, hud3After.PoweredMills, "slice9 step3 HUD powered count is unchanged after destruction");
 
+// ---- Slice 9 Step 4: composed demo scenario (0.43.0) ----
+// Mirrors the Slice 9 demo scenario step for step: one
+// Simulation with four mills on the y=20 plane — an LV
+// cable mill, a round-trip LV mill (two transformers),
+// an HV cable mill destroyed on tick 1, and a kinetic
+// mill — then a save/load round-trip and a loaded
+// 5-tick phase. The scope's Step 4 wording said the
+// second mill "runs at the converted voltage"; after
+// Step 3 that cannot mean surviving on HV, so the demo
+// proves converted voltage two honest ways: row B
+// survives on HV converted back to LV, and row C is
+// destroyed by HV itself. The layout is staged with
+// TrySet exactly as the Step 1-3 tests stage theirs;
+// aim placement of a transformer and of a cable was
+// each proved in its own step's tests.
+var s9Demo = new Simulation(42);
+void SeedPocketS9Test(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+s9Demo.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s9Demo.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s9Demo.World.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+s9Demo.World.Chunk.TrySet(13, 20, 10, BlockType.Dynamo);
+s9Demo.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+s9Demo.World.Chunk.TrySet(11, 20, 14, BlockType.Transformer);
+s9Demo.World.Chunk.TrySet(12, 20, 14, BlockType.Transformer);
+s9Demo.World.Chunk.TrySet(13, 20, 14, BlockType.Dynamo);
+s9Demo.World.Chunk.TrySet(10, 20, 18, BlockType.KineticMill);
+s9Demo.World.Chunk.TrySet(11, 20, 18, BlockType.Cable);
+s9Demo.World.Chunk.TrySet(12, 20, 18, BlockType.Transformer);
+s9Demo.World.Chunk.TrySet(13, 20, 18, BlockType.Dynamo);
+s9Demo.World.Chunk.TrySet(10, 20, 22, BlockType.KineticMill);
+SeedPocketS9Test(s9Demo.World, 10, 10);
+SeedPocketS9Test(s9Demo.World, 10, 14);
+SeedPocketS9Test(s9Demo.World, 10, 18);
+SeedPocketS9Test(s9Demo.World, 10, 22);
+Eq(Voltage.LV, s9Demo.World.DeliveredVoltage(10, 20, 10), "slice9 step4 composed cable mill receives LV");
+Eq(Voltage.LV, s9Demo.World.DeliveredVoltage(10, 20, 14), "slice9 step4 composed round-trip mill receives LV");
+Eq(Voltage.HV, s9Demo.World.DeliveredVoltage(10, 20, 18), "slice9 step4 composed HV cable mill receives HV");
+Eq(Voltage.None, s9Demo.World.DeliveredVoltage(10, 20, 22), "slice9 step4 composed kinetic mill receives nothing");
+var s9DemoHudBefore = s9Demo.Hud();
+Eq(4, s9DemoHudBefore.TotalMills, "slice9 step4 composed HUD counts 4 mills before destruction");
+Eq(2, s9DemoHudBefore.PoweredMills, "slice9 step4 composed HUD counts only the 2 LV mills as powered");
+s9Demo.World.Advance();
+Eq(BlockType.Air, s9Demo.World.Chunk.Get(10, 20, 18), "slice9 step4 composed HV mill destroyed on tick 1");
+Eq(1, s9Demo.World.DestroyedMills, "slice9 step4 composed destruction counter is 1 after tick 1");
+Eq(2, s9Demo.World.PoweredBlocksGathered, "slice9 step4 composed powered mills gather 2 on tick 1");
+Eq(BlockType.Stone, s9Demo.World.Chunk.Get(9, 20, 18), "slice9 step4 composed destroyed mill excavates nothing: its pocket stone survives");
+Eq(BlockType.Cable, s9Demo.World.Chunk.Get(11, 20, 18), "slice9 step4 composed destroyed mill's cable survives");
+Eq(BlockType.Transformer, s9Demo.World.Chunk.Get(12, 20, 18), "slice9 step4 composed destroyed mill's transformer survives");
+Eq(BlockType.Dynamo, s9Demo.World.Chunk.Get(13, 20, 18), "slice9 step4 composed destroyed mill's Dynamo survives");
+var s9DemoHudAfter1 = s9Demo.Hud();
+Eq(3, s9DemoHudAfter1.TotalMills, "slice9 step4 composed HUD total drops to 3 after destruction");
+Eq(2, s9DemoHudAfter1.PoweredMills, "slice9 step4 composed HUD powered count stays 2 after destruction");
+for (int i = 0; i < 4; i++) s9Demo.World.Advance();
+Eq(10, s9Demo.World.PoweredBlocksGathered, "slice9 step4 composed powered mills gather 5 + 5 in 5 ticks");
+Eq(1, s9Demo.World.KineticBlocksGathered, "slice9 step4 composed kinetic mill gathers 1 in 5 ticks");
+Eq(1, s9Demo.World.DestroyedMills, "slice9 step4 composed destruction counter stays 1 through 5 ticks");
+Eq(11, s9Demo.World.Player.Inventory.Get(BlockType.Stone), "slice9 step4 composed stone is 5 + 5 + 1, no refund for the destroyed mill");
+var s9DemoSave = s9Demo.SaveToJson();
+var s9DemoLoaded = new Simulation(99);
+Check(s9DemoLoaded.LoadFromJson(s9DemoSave), "slice9 step4 composed save loads");
+Eq(BlockType.KineticMill, s9DemoLoaded.World.Chunk.Get(10, 20, 10), "slice9 step4 composed cable mill survives load");
+Eq(BlockType.KineticMill, s9DemoLoaded.World.Chunk.Get(10, 20, 14), "slice9 step4 composed round-trip mill survives load");
+Eq(BlockType.Air, s9DemoLoaded.World.Chunk.Get(10, 20, 18), "slice9 step4 composed destroyed mill stays destroyed after load");
+Eq(BlockType.KineticMill, s9DemoLoaded.World.Chunk.Get(10, 20, 22), "slice9 step4 composed kinetic mill survives load");
+Eq(Voltage.LV, s9DemoLoaded.World.DeliveredVoltage(10, 20, 10), "slice9 step4 composed cable mill re-derives LV after load");
+Eq(Voltage.LV, s9DemoLoaded.World.DeliveredVoltage(10, 20, 14), "slice9 step4 composed round-trip mill re-derives LV after load");
+Eq(0, s9DemoLoaded.World.PoweredBlocksGathered, "slice9 step4 composed powered counter resets on load");
+Eq(0, s9DemoLoaded.World.KineticBlocksGathered, "slice9 step4 composed kinetic counter resets on load");
+Eq(0, s9DemoLoaded.World.DestroyedMills, "slice9 step4 composed destruction counter resets on load");
+Eq(11, s9DemoLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice9 step4 composed load gives no stone refund for the destroyed mill");
+var s9DemoLoadedHud = s9DemoLoaded.Hud();
+Eq(3, s9DemoLoadedHud.TotalMills, "slice9 step4 composed HUD counts 3 mills after load");
+Eq(2, s9DemoLoadedHud.PoweredMills, "slice9 step4 composed HUD counts 2 powered mills after load");
+SeedPocketS9Test(s9DemoLoaded.World, 10, 10);
+SeedPocketS9Test(s9DemoLoaded.World, 10, 14);
+for (int i = 0; i < 5; i++) s9DemoLoaded.World.Advance();
+Eq(10, s9DemoLoaded.World.PoweredBlocksGathered, "slice9 step4 composed loaded mills gather 5 + 5 again in 5 ticks");
+Eq(1, s9DemoLoaded.World.KineticBlocksGathered, "slice9 step4 composed loaded kinetic mill gathers 1 again in 5 ticks");
+Eq(0, s9DemoLoaded.World.DestroyedMills, "slice9 step4 composed loaded world destroys nothing new");
+Eq(22, s9DemoLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice9 step4 composed loaded stone reaches 11 + 11");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

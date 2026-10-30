@@ -438,3 +438,92 @@ Console.WriteLine($"After load: wall at (18,3,16): {simS8Loaded.World.Chunk.Get(
 simS8Loaded.Tick(0.1f, 1f, 0f, false);
 Console.WriteLine($"Loaded walk: fresh-view W walks +Z, feet now ({simS8Loaded.Fps.X:F1}, {simS8Loaded.Fps.Y:F1}, {simS8Loaded.Fps.Z:F1})");
 Console.WriteLine($"Slice 8 done: gathered {simS8.BlocksGathered}, built {simS8.BlocksBuilt}, killed {simS8.EnemiesKilled}, save JSON length: {saveS8.Length} chars");
+
+// Slice 9 Step 4 scenario: Slice 9 composed in one run —
+// the ladder, the cable, and the destruction rule together,
+// not separately. Four mills on one high plane (y=20, the
+// same staged plane the Slice 9 Step 1-3 tests use), in four
+// rows far enough apart that no row touches another:
+// (A, z=10) Dynamo -> cable -> cable -> mill: rated LV
+// through a cable run, powered every tick; (B, z=14)
+// Dynamo -> transformer -> transformer -> mill: the
+// round-trip conversion back to LV, powered every tick;
+// (C, z=18) Dynamo -> transformer -> cable -> mill: the
+// converted HV reaches the mill through a cable run, so
+// the mill is destroyed on its first tick, with no
+// salvage and no cascade — its cable, transformer, and
+// Dynamo all survive; (D, z=22) a mill with no power at
+// all, still excavating every 5th tick beside them. The
+// scope's Step 4 wording said the second mill "runs at
+// the converted voltage" — after Step 3 that wording
+// cannot mean a mill surviving on HV, because HV now
+// destroys a mill, so this scenario proves the converted
+// voltage two honest ways instead: row B survives on the
+// converted voltage converted back to LV, and row C is
+// destroyed by the converted voltage itself. The layout
+// is staged directly with TrySet, exactly as the Step 1-3
+// tests stage theirs, not placed by aim in this run:
+// aim placement of a transformer and of a cable was each
+// proved in its own step's tests, and walking four aim
+// placements here would prove walking, not wiring. Each
+// mill gets a five-stone pocket (its five non-infrastructure
+// neighbours), so the rates are readable: 5 ticks give
+// the two powered mills 5 each, the kinetic mill 1, and
+// the destroyed mill 0, with its pocket untouched. The
+// game then saves and loads: the surviving blocks and
+// the destroyed mill's absence both survive, power
+// re-derives from placement with no stored voltage flag,
+// and the session counters reset — then the loaded world
+// re-seeds the two powered pockets (labelled as fresh
+// seeding, not leftovers) and gathers the same 5 + 5 + 1
+// again, proving the loaded wiring still works. What
+// this demo cannot show, by construction, is any adapter
+// feel or scene visibility: no U / I key press, no HUD
+// voltage line, and no visible disappearance of the
+// destroyed mill appear in a headless run, so those
+// claims stay in their Windows checklist items (15, 16,
+// 17), not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 9 Step 4 scenario — LV cable mill, round-trip LV mill, HV cable mill destroyed, kinetic mill, save/load round-trip");
+var simS9 = new Simulation(42);
+void SeedPocketS9(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+simS9.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+simS9.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+simS9.World.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+simS9.World.Chunk.TrySet(13, 20, 10, BlockType.Dynamo);
+simS9.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+simS9.World.Chunk.TrySet(11, 20, 14, BlockType.Transformer);
+simS9.World.Chunk.TrySet(12, 20, 14, BlockType.Transformer);
+simS9.World.Chunk.TrySet(13, 20, 14, BlockType.Dynamo);
+simS9.World.Chunk.TrySet(10, 20, 18, BlockType.KineticMill);
+simS9.World.Chunk.TrySet(11, 20, 18, BlockType.Cable);
+simS9.World.Chunk.TrySet(12, 20, 18, BlockType.Transformer);
+simS9.World.Chunk.TrySet(13, 20, 18, BlockType.Dynamo);
+simS9.World.Chunk.TrySet(10, 20, 22, BlockType.KineticMill);
+SeedPocketS9(simS9.World, 10, 10);
+SeedPocketS9(simS9.World, 10, 14);
+SeedPocketS9(simS9.World, 10, 18);
+SeedPocketS9(simS9.World, 10, 22);
+Console.WriteLine($"Slice 9 voltages before any tick: cable mill {simS9.World.DeliveredVoltage(10, 20, 10)}, round-trip mill {simS9.World.DeliveredVoltage(10, 20, 14)}, HV cable mill {simS9.World.DeliveredVoltage(10, 20, 18)}, kinetic mill {simS9.World.DeliveredVoltage(10, 20, 22)}");
+var s9HudBefore = simS9.Hud();
+Console.WriteLine($"Slice 9 HUD before: {s9HudBefore.PoweredMills}/{s9HudBefore.TotalMills} MILLS POWERED (only the two LV mills count)");
+simS9.World.Advance();
+Console.WriteLine($"Slice 9 tick 1: HV mill cell now {simS9.World.Chunk.Get(10, 20, 18)} (destroyed), destroyed {simS9.World.DestroyedMills}, powered gathered {simS9.World.PoweredBlocksGathered}, kinetic gathered {simS9.World.KineticBlocksGathered}, stone {simS9.World.Player.Inventory.Get(BlockType.Stone)}, HV pocket stone at (9,20,18) still {simS9.World.Chunk.Get(9, 20, 18)}, HV cable {simS9.World.Chunk.Get(11, 20, 18)}, transformer {simS9.World.Chunk.Get(12, 20, 18)}, Dynamo {simS9.World.Chunk.Get(13, 20, 18)}");
+var s9HudAfter1 = simS9.Hud();
+Console.WriteLine($"Slice 9 HUD after tick 1: {s9HudAfter1.PoweredMills}/{s9HudAfter1.TotalMills} MILLS POWERED (total drops with the destroyed mill)");
+for (int i = 0; i < 4; i++) simS9.World.Advance();
+Console.WriteLine($"Slice 9 after 5 ticks: powered gathered {simS9.World.PoweredBlocksGathered} (5 + 5), kinetic gathered {simS9.World.KineticBlocksGathered}, destroyed {simS9.World.DestroyedMills}, stone {simS9.World.Player.Inventory.Get(BlockType.Stone)} (5 + 5 + 1, no refund for the destroyed mill)");
+var saveS9 = simS9.SaveToJson();
+var simS9Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS9Loaded.LoadFromJson(saveS9)}");
+var s9LoadedHud = simS9Loaded.Hud();
+Console.WriteLine($"Slice 9 after load: cable mill {simS9Loaded.World.Chunk.Get(10, 20, 10)}, round-trip mill {simS9Loaded.World.Chunk.Get(10, 20, 14)}, HV mill cell {simS9Loaded.World.Chunk.Get(10, 20, 18)} (still gone, no resurrection), kinetic mill {simS9Loaded.World.Chunk.Get(10, 20, 22)}, power {s9LoadedHud.PoweredMills}/{s9LoadedHud.TotalMills}, voltages re-derived: cable {simS9Loaded.World.DeliveredVoltage(10, 20, 10)}, round-trip {simS9Loaded.World.DeliveredVoltage(10, 20, 14)}, session counters reset: powered {simS9Loaded.World.PoweredBlocksGathered}, kinetic {simS9Loaded.World.KineticBlocksGathered}, destroyed {simS9Loaded.World.DestroyedMills}, stone {simS9Loaded.World.Player.Inventory.Get(BlockType.Stone)} (no refund on load)");
+SeedPocketS9(simS9Loaded.World, 10, 10);
+SeedPocketS9(simS9Loaded.World, 10, 14);
+for (int i = 0; i < 5; i++) simS9Loaded.World.Advance();
+Console.WriteLine($"Slice 9 loaded phase after 5 ticks: powered gathered {simS9Loaded.World.PoweredBlocksGathered} (5 + 5 again), kinetic gathered {simS9Loaded.World.KineticBlocksGathered}, destroyed {simS9Loaded.World.DestroyedMills} (no new destruction), stone {simS9Loaded.World.Player.Inventory.Get(BlockType.Stone)}");
+Console.WriteLine($"Slice 9 done: powered {simS9.World.PoweredBlocksGathered} + loaded {simS9Loaded.World.PoweredBlocksGathered}, kinetic {simS9.World.KineticBlocksGathered} + loaded {simS9Loaded.World.KineticBlocksGathered}, destroyed {simS9.World.DestroyedMills}, save JSON length: {saveS9.Length} chars");

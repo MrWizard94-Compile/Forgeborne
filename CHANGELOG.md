@@ -1,5 +1,67 @@
 # Forgeborne — Changelog
 
+## 0.43.0 — 2026-10-30 — Slice 9 Step 4: demo scenario + documentation-only review
+
+- Slice 9 demo scenario + review, decided in this step
+  (rationale in DECISIONS.md), following the 0.42.0 decision
+  that named Slice 9 Step 4 as next. No new core system
+  rides along with this step, by design. The demo extends
+  demo/Forgeborne.Demo with one composed Slice 9 run: one
+  Simulation with four mills on the y=20 plane, each with
+  a five-stone pocket — an LV cable mill (Dynamo -> cable
+  -> cable -> mill), a round-trip LV mill (Dynamo ->
+  transformer -> transformer -> mill), an HV cable mill
+  (Dynamo -> transformer -> cable -> mill, destroyed on
+  its first tick), and a kinetic mill with no power at
+  all — through a save/load round-trip and a loaded
+  5-tick phase. Voltages before any tick are LV, LV, HV,
+  and None; HUD 2/4 MILLS POWERED, only the two LV mills
+  counting. Tick 1 destroys the HV mill (cell Air,
+  destroyed 1, powered gathered 2, HV pocket stone
+  untouched, cable / transformer / Dynamo surviving);
+  HUD drops to 2/3 with no new HUD line. After 5 ticks:
+  powered gathered 10 (5 + 5), kinetic gathered 1,
+  destroyed still 1, stone 11 (5 + 5 + 1, no refund).
+  After load: the three surviving mills and all wiring
+  survive, the HV mill's cell stays Air, power still 2/3,
+  voltages re-derived as LV and LV with no stored voltage
+  flag, session counters reset to 0, stone still 11 (no
+  refund on load). After fresh re-seeding of the two
+  powered pockets (labelled as fresh seeding, not
+  leftovers) and 5 loaded ticks: powered gathered 10
+  again, kinetic gathered 1 again, destroyed 0, stone 22.
+  New docs/slice-09-review.md records the verdict honestly:
+  Slice 9 is reviewed and closed as tested electrical
+  tier 2 core (ladder, transformer, cable, destruction)
+  plus written adapters, not as playtested, balanced, or
+  Unity-verified; Slice 10 is NOT scoped by the review.
+  Two facts are stated openly in the demo and the review,
+  not smuggled: the scope's Step 4 wording ("the second
+  mill runs at the converted voltage") cannot mean a mill
+  surviving on HV after Step 3, so converted voltage is
+  proved two honest ways — the round-trip mill surviving
+  on HV converted back to LV, and the HV mill destroyed
+  by HV itself — and the demo stages its four-row layout
+  directly with TrySet, exactly as the Step 1-3 tests
+  stage theirs, because aim placement of a transformer
+  and of a cable were each proved in their own steps.
+  No new playtest-gate checklist item is added, because
+  the demo exercises no adapter binding items 15, 16,
+  and 17 do not already cover. The ladder, conversion,
+  cable distribution, kinetic behaviour, matched-voltage
+  every-tick cadence, Dynamo cost, and squad, loot,
+  skill, and core health rules are unchanged.
+- Tests: 1135 passed, 0 failed (was 1099; +36 composed-
+  integration tests mirroring the demo, no failures
+  during the run). Demo: Slice 1 gathered 1, built 1,
+  killed 2, save 43,881 chars; Slice 2 save 43,921 chars;
+  Step 1 scenario save 44,016 chars; Step 3 scenario save
+  44,103 chars; Slice 4 scenario save 44,026 chars;
+  Slice 5 Step 2 scenario save 43,974 chars; Slice 6
+  Step 4 scenario save 44,024 chars; Slice 7 Step 2
+  scenario save 44,013 chars; Slice 8 Step 3 scenario
+  save 43,974 chars; new Step 4 scenario save 43,975 chars.
+
 ## 0.42.0 — 2026-10-30 — Slice 9 Step 3: mismatched-voltage destruction
 
 - Mismatched-voltage destruction, decided in this step
