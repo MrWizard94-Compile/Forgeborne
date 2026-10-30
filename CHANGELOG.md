@@ -1,5 +1,65 @@
 # Forgeborne — Changelog
 
+## 0.62.0 — 2026-10-30 — Slice 14 Step 1: third power source, the Conduit (cable-only HV)
+
+- Source, decided in this step (rationale in DECISIONS.md):
+  new BlockType.Conduit = 13, appended only, output HV
+  (VoltageRules.ConduitOutput), cost 5 Stone + 5 EmberOre,
+  Simulation.BuildConduitAhead, adapter key M (suppressed
+  while the picker is open), playtest-gate checklist item 28
+  (Windows-only). Its distinctness is its delivery shape,
+  not its voltage and not its price: a Conduit delivers
+  nothing face-adjacent — a mill, workstation, pylon, or
+  transformer standing beside one reads None — and delivers
+  HV only through a Cable network touching it. Safe use for
+  LV consumers runs through a transformer step-down fed by
+  that cable, exactly as the Alternator's does.
+- Generalisation, with precedence and conflict unchanged:
+  DeliveredVoltage, TransformerOutput, and
+  CableNetworkVoltage now know three sources, but the
+  direct set stays two: the Conduit is absent from both
+  direct branches by decision, so a Dynamo beside the same
+  mill as a Conduit still delivers LV (no direct conflict,
+  because the Conduit contributes nothing directly), while
+  a Conduit and a Dynamo both touching one cable component
+  resolve that component to None (mixed network), a Conduit
+  and an Alternator on one component agree at HV, and two
+  Conduits on one component agree at HV. No delivery,
+  precedence, conflict, rating, cost, or phase rule for any
+  existing block moves; the ladder stays LV / HV / None.
+- Non-output behaviour, stated precisely: a Conduit that
+  touches no cable is not broken, fuelled, or conditional —
+  it is unwired, and it reads None everywhere face-adjacent
+  until cabled. There is no per-source state, so there is
+  no save question beyond chunk bytes: a Conduit and its
+  cable chain re-derive HV on load, and old saves load
+  unchanged (earlier block values untouched).
+- Readouts, proved not assumed: the existing warned counts
+  and PowerState query cover the Conduit through its cable
+  delivery (a cable-fed mill warns and reads Mismatched, a
+  cable-fed pylon reads Powered, a cable-fed workstation
+  reads Mismatched), and the existing live-network /
+  lone-source counts cover it with no new HUD count (a lone
+  Conduit counts 1 lone source, two adjacent Conduits count
+  2, a Conduit cabled to nothing counts 1 live network, a
+  Conduit cabled to a mill counts neither). One finding is
+  recorded, not fixed, per the scope: a single cable cell
+  touching a Conduit reads None in PowerState (untinted),
+  because DeliveredVoltage for a cell counts only its
+  neighbours and a Conduit is not a direct source — the
+  network is live (its mill is destroyed) while its only
+  cable cell reads untinted. A two-cable Conduit run reads
+  Energised on both cells. This remainder is carried to the
+  Slice 14 review; redesigning the query inside a source
+  step would have violated the scope.
+- Tests: 1894 passed, 0 failed (was 1807; +87, no failures
+  on the final runs). Demo unchanged: Slice 12 scenario save
+  43,974 chars, Slice 13 scenario save 44,045 chars, all
+  earlier demo saves as in the 0.60.0 entry.
+- Next, in order: Slice 14 Step 2, composed demo scenario
+  plus documentation-only review closing Slice 14, with the
+  single-cable tint finding carried as a remainder.
+
 ## 0.61.0 — 2026-10-30 — Slice 14 scope: deferred third source, then demo + review
 
 - Scope, decided in this step (rationale in DECISIONS.md):

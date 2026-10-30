@@ -346,6 +346,32 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     verified in Unity until it is observed there and
     recorded in DECISIONS.md.
 
+28. [ ] Conduit key, added 0.62.0 (adapter code written,
+    NOT yet compiled or run in Unity on Windows; the core
+    cable-only HV delivery, cost, mismatch proofs, and
+    save/load re-derivation are headless-tested): press M
+    with 5 Stone and 5 EmberOre to build a Conduit in the
+    cell before the aimed surface, like T / Y / U / I / B /
+    N / P; M is suppressed while the rally picker is open,
+    like the other builders. Place a Conduit beside a mill
+    and observe the mill keep running at kinetic cadence
+    with no warning and no tint change, proving direct
+    adjacency delivers nothing; lay one cable from the
+    Conduit to the mill and observe the mill destroyed on
+    its next tick and the HUD warning line reading the
+    mill before destruction, proving cable delivery carries
+    HV. Observe honestly the single-cable tint finding
+    carried from the headless step: a single cable cell
+    touching a Conduit is expected to read untinted in the
+    scene while its network is live, because the headless
+    PowerState query reads None for it — record whether
+    that untinted cell is what is actually seen, and do
+    NOT claim the tint agrees with the network until a
+    two-cable Conduit run is also observed with both cable
+    cells tinted yellow. Do not claim this verified in
+    Unity until it is observed there and recorded in
+    DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

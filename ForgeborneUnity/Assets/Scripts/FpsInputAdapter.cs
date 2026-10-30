@@ -166,6 +166,19 @@ public class FpsInputAdapter : MonoBehaviour
             // pylon key while picking could spend the ore a
             // pending Confirm needs.
             if (Input.GetKeyDown(KeyCode.P) && Simulation.BuildShockPylonAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            // Slice 14 Step 1: M builds a Conduit by aim, via
+            // BuildConduitAhead (5 Stone + 5 EmberOre). M is
+            // free: existing keys are WASD / Space / E / Q / R /
+            // O / Return / Esc / 1 / 2 / 3 / 4 / 5 / 6 / T / Y /
+            // U / I / B / N / P / mouse click. Same picker guard
+            // as the other builders, for the same ore reason —
+            // a Conduit key while picking could spend the ore
+            // a pending Confirm needs. No HUD source count rides
+            // along: the existing live-network and lone-source
+            // counts are the Conduit's display, as decided in
+            // core, and a Conduit with no cable counts as a lone
+            // source like a lone Dynamo or Alternator.
+            if (Input.GetKeyDown(KeyCode.M) && Simulation.BuildConduitAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's

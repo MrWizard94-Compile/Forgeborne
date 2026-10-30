@@ -22,6 +22,8 @@ public enum BlockType : byte
     Alternator = 11,
     /// <summary>Slice 12 Step 2 (Electrical widening, third consumer): an HV-rated defensive consumer. A Shock Pylon delivered its rated HV fires once per tick at the nearest living enemy within Manhattan range 5, dealing 10 damage; delivered LV (the wrong level on this ladder) it is disabled, not destroyed, like a mismatched workstation — it fires again as soon as it is rewired to HV or left unpowered it idles. It gathers nothing and regens nothing: its effect is combat, distinct from the mill's gathering and the workstation's regen, which is what makes it a third consumer rather than a re-rated copy of either. Appended in 0.54.0; earlier values unchanged, so old saves still load.</summary>
     ShockPylon = 12,
+    /// <summary>Slice 14 Step 1 (Electrical widening, third source): a cable-only HV generator. A Conduit delivers nothing face-adjacent — a mill, workstation, or pylon standing beside one reads None, never HV — and delivers HV only through a Cable network touching it, so its wiring pattern is the opposite of the Dynamo's and Alternator's: it must be cabled to do anything at all. Safe use for LV consumers runs through a transformer step-down fed by that cable, exactly as the Alternator's does. Appended in 0.62.0; earlier values unchanged, so old saves still load.</summary>
+    Conduit = 13,
 }
 
 public static class BlockInfo

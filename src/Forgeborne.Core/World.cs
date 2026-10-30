@@ -159,6 +159,19 @@ public sealed class WorldZone
     /// invented here. A Dynamo beside a Dynamo is still one
     /// voltage, as before, and an Alternator beside an
     /// Alternator is likewise one voltage (HV).
+    /// Slice 14 Step 1 generalises the source set to three,
+    /// but NOT the direct set: a Conduit is deliberately
+    /// absent from this direct branch, because a Conduit
+    /// delivers nothing face-adjacent — it feeds only through
+    /// a Cable network (see CableNetworkVoltage). A mill
+    /// touching both a Dynamo and a Conduit therefore reads
+    /// LV, not None: there is no direct conflict to resolve,
+    /// because the Conduit contributes nothing directly, and
+    /// inventing a direct conflict for it would contradict
+    /// its cable-only delivery. The Conduit conflict lives on
+    /// the cable network instead: a Conduit and a Dynamo both
+    /// touching one cable component resolve that component
+    /// to None, like every mixed network.
     /// </summary>
     public Voltage DeliveredVoltage(int x, int y, int z)
     {
@@ -170,6 +183,7 @@ public sealed class WorldZone
             var neighbour = Chunk.Get(nx, ny, nz);
             if (neighbour == BlockType.Dynamo) direct.Add(VoltageRules.DynamoOutput);
             else if (neighbour == BlockType.Alternator) direct.Add(VoltageRules.AlternatorOutput);
+            // No Conduit branch here, by decision: see the doc above.
         }
         if (direct.Count == 1) return direct.First();
         if (direct.Count > 1) return Voltage.None;
@@ -194,7 +208,7 @@ public sealed class WorldZone
     /// every Cable cell reachable from it by face-adjacent
     /// steps, face only, no diagonals. Only Cable cells are in
     /// the component — a wall, workstation, mill, Dynamo,
-    /// Alternator, or Transformer is a boundary, never a
+    /// Alternator, Conduit, or Transformer is a boundary, never a
     /// conductor — so a non-cable block between two cables
     /// breaks the network rather than passing voltage through
     /// silently.
@@ -223,7 +237,12 @@ public sealed class WorldZone
     /// connected Cable component carries, derived from the
     /// sources touching any of its cells — a Dynamo touching
     /// any cable in the component (LV), an Alternator touching
-    /// any cable in it (HV, since Slice 10 Step 2), or a
+    /// any cable in it (HV, since Slice 10 Step 2), a Conduit
+    /// touching any cable in it (HV, since Slice 14 Step 1 —
+    /// this is the Conduit's ONLY delivery: a Conduit touching
+    /// no cable powers nothing, and a Conduit touching a cable
+    /// is a full source for that component, mixed-voltage
+    /// conflict rules included), or a
     /// Transformer output touching any cable in it (its
     /// flipped input, computed with this component excluded
     /// as that transformer's input, so a transformer cannot
@@ -257,6 +276,7 @@ public sealed class WorldZone
             var neighbour = Chunk.Get(nx, ny, nz);
             if (neighbour == BlockType.Dynamo) candidates.Add(VoltageRules.DynamoOutput);
             else if (neighbour == BlockType.Alternator) candidates.Add(VoltageRules.AlternatorOutput);
+            else if (neighbour == BlockType.Conduit) candidates.Add(VoltageRules.ConduitOutput);
             else if (neighbour == BlockType.Transformer && (nx, ny, nz) != excludedTransformer)
             {
                 var output = TransformerOutput(nx, ny, nz,
@@ -271,7 +291,11 @@ public sealed class WorldZone
     /// A transformer's output voltage: the flipped value of its
     /// input, where the input is the single voltage of a
     /// face-adjacent direct source — LV from a Dynamo, HV
-    /// from an Alternator since Slice 10 Step 2 — a direct
+    /// from an Alternator since Slice 10 Step 2, and nothing
+    /// from a Conduit since Slice 14 Step 1, because a Conduit
+    /// delivers nothing face-adjacent: a transformer standing
+    /// beside a Conduit with no other input outputs None, and
+    /// is fed by a Conduit only through a cable touching it — a direct
     /// source beats a converted one, so a transformer
     /// touching both a Dynamo and another transformer
     /// converts from the Dynamo, and a transformer touching
@@ -311,6 +335,7 @@ public sealed class WorldZone
             var neighbour = Chunk.Get(nx, ny, nz);
             if (neighbour == BlockType.Dynamo) directInputs.Add(VoltageRules.DynamoOutput);
             else if (neighbour == BlockType.Alternator) directInputs.Add(VoltageRules.AlternatorOutput);
+            // No Conduit branch here, by decision: see the doc above.
         }
         if (directInputs.Count == 1) return VoltageRules.Flipped(directInputs.First());
         if (directInputs.Count > 1) return Voltage.None;
@@ -546,11 +571,17 @@ public sealed class WorldZone
     ///   network: its output lives or dies with that component,
     ///   so a live output into a dead (conflicted) component
     ///   shows nothing, by decision.
-    /// - A lone source is one Dynamo or Alternator cell with no
-    ///   cable, transformer, or consumer face-adjacent to it —
-    ///   its power goes nowhere yet. Source-to-source adjacency
-    ///   does not disqualify: sources are not conductors, so two
-    ///   adjacent Dynamos are two lone sources, not one network.
+    /// - A lone source is one Dynamo, Alternator, or Conduit
+    ///   cell with no cable, transformer, or consumer
+    ///   face-adjacent to it — its power goes nowhere yet.
+    ///   A lone Conduit counts exactly like a lone Dynamo or
+    ///   Alternator: the count is of placed sources with no
+    ///   wiring, not of sources currently delivering, so a
+    ///   Conduit with no cable still counts, and a Conduit
+    ///   touching only a source does not count as wired.
+    ///   Source-to-source adjacency does not disqualify:
+    ///   sources are not conductors, so two adjacent Dynamos
+    ///   are two lone sources, not one network.
     /// - No voltage split: LV and HV networks count alike in the
     ///   one number. The count answers "how many live wirings
     ///   have no consumer yet", not "what voltage"; a split
@@ -603,7 +634,7 @@ public sealed class WorldZone
         for (int z = 0; z < 32; z++)
         {
             var block = Chunk.Get(x, y, z);
-            if (block is not (BlockType.Dynamo or BlockType.Alternator)) continue;
+            if (block is not (BlockType.Dynamo or BlockType.Alternator or BlockType.Conduit)) continue;
             bool lone = true;
             foreach (var (dx, dy, dz) in Neighbours)
             {
@@ -716,7 +747,7 @@ public sealed class WorldZone
 
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable or BlockType.Alternator or BlockType.ShockPylon)) return BuildResult.InvalidType;
+        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable or BlockType.Alternator or BlockType.ShockPylon or BlockType.Conduit)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
@@ -817,6 +848,27 @@ public sealed class WorldZone
             if (!Player.Inventory.Has(BlockType.Stone, 10))
                 return BuildResult.InsufficientResources;
             Player.Inventory.Remove(BlockType.Stone, 10);
+        }
+        else if (type == BlockType.Conduit)
+        {
+            // Slice 14 Step 1 Conduit: 5 Stone + 5 EmberOre.
+            // A combination no existing source charges: not
+            // the Dynamo's ore-only price, not the
+            // Alternator's stone-only price. The combination
+            // is pricing, not the distinctness — the
+            // distinctness is cable-only HV delivery — but
+            // the price keeps the source from being free in
+            // either resource: it competes with walls and
+            // mills for stone and with workstations and
+            // squads for ore, at half each machine's price,
+            // because a source that does nothing until cabled
+            // must not also be the cheapest source to stage.
+            // Same check-before-spend rule as the other
+            // machines, and the same support rule above.
+            if (!Player.Inventory.Has(BlockType.Stone, 5) || !Player.Inventory.Has(BlockType.EmberOre, 5))
+                return BuildResult.InsufficientResources;
+            Player.Inventory.Remove(BlockType.Stone, 5);
+            Player.Inventory.Remove(BlockType.EmberOre, 5);
         }
         else if (type == BlockType.ShockPylon)
         {

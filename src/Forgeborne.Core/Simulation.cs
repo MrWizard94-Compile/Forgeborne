@@ -367,6 +367,16 @@ public sealed class Simulation
     /// its stone price, not a build-time condition.</summary>
     public BuildResult BuildAlternatorAhead() => BuildAimed(BlockType.Alternator);
 
+    /// <summary>Slice 14 Step 1: a Conduit by aim (see
+    /// BuildAimed), costing 5 Stone + 5 EmberOre as in
+    /// World.Build. Placed by aim like every other block since
+    /// Slice 8 — no placement rule of its own: the aim decides
+    /// one cell and the builder builds there, and the Conduit's
+    /// distinctness is its cable-only HV delivery, not a
+    /// build-time condition. A Conduit built beside a consumer
+    /// delivers nothing until cabled, by design.</summary>
+    public BuildResult BuildConduitAhead() => BuildAimed(BlockType.Conduit);
+
     /// <summary>Slice 12 Step 2: a Shock Pylon by aim (see
     /// BuildAimed), costing 5 Stone + 10 EmberOre as in
     /// World.Build. Placed by aim like every other block since

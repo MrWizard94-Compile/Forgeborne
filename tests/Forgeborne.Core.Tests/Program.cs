@@ -4862,5 +4862,287 @@ Eq(10, s13fLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice13 step4 co
 Eq(85, s13fLoaded.World.Player.Shields, "slice13 step4 composed loaded bench regen caps shields at 85");
 Eq(0, s13fLoaded.World.Enemies.Count, "slice13 step4 composed pylon kill stays dead after load");
 
+// ---- Slice 14 Step 1: Conduit, third power source, cable-only HV ----
+// The source decided in this step: HV like the Alternator, but
+// cable-only — face-adjacency delivers nothing from it, and a
+// Cable network touching it carries HV. That delivery shape is
+// the distinctness, not the price (5 Stone + 5 EmberOre, a new
+// combination, but cost alone would be the reskin Slice 10
+// rejected). No new voltage level, no per-source state, no new
+// save field: output is derived from placement on every call,
+// exactly like the Dynamo's and Alternator's.
+Eq(13, (byte)BlockType.Conduit, "slice14 step1 conduit block type appended as 13");
+Eq(12, (byte)BlockType.ShockPylon, "slice14 step1 shock pylon value unchanged at 12");
+Eq(11, (byte)BlockType.Alternator, "slice14 step1 alternator value unchanged at 11");
+Eq(Voltage.HV, VoltageRules.ConduitOutput, "slice14 step1 conduit outputs HV, the alternator's level, not a new level");
+// Build: 5 Stone + 5 EmberOre, check-before-spend, support
+// rule, not gatherable.
+var condWorld = new WorldZone(42);
+condWorld.Player.Inventory.Add(BlockType.Stone, 5);
+condWorld.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Success, condWorld.Build(15, 4, 15, BlockType.Conduit), "slice14 step1 conduit builds with 5 stone and 5 ore");
+Eq(BlockType.Conduit, condWorld.Chunk.Get(15, 4, 15), "slice14 step1 conduit placed");
+Eq(0, condWorld.Player.Inventory.Get(BlockType.Stone), "slice14 step1 conduit consumes its stone");
+Eq(0, condWorld.Player.Inventory.Get(BlockType.EmberOre), "slice14 step1 conduit consumes its ore");
+Eq(GatherResult.NotGatherable, condWorld.Gather(15, 4, 15), "slice14 step1 conduit itself is not gatherable");
+var condPoorOre = new WorldZone(42);
+condPoorOre.Player.Inventory.Add(BlockType.Stone, 5);
+condPoorOre.Player.Inventory.Add(BlockType.EmberOre, 4);
+Eq(BuildResult.InsufficientResources, condPoorOre.Build(15, 4, 15, BlockType.Conduit), "slice14 step1 conduit one ore short fails");
+Eq(BlockType.Air, condPoorOre.Chunk.Get(15, 4, 15), "slice14 step1 refused conduit places nothing");
+Eq(4, condPoorOre.Player.Inventory.Get(BlockType.EmberOre), "slice14 step1 refused conduit spends no ore");
+var condPoorStone = new WorldZone(42);
+condPoorStone.Player.Inventory.Add(BlockType.Stone, 4);
+condPoorStone.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.InsufficientResources, condPoorStone.Build(15, 4, 15, BlockType.Conduit), "slice14 step1 conduit one stone short fails");
+var condFloat = new WorldZone(42);
+condFloat.Player.Inventory.Add(BlockType.Stone, 5);
+condFloat.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Floating, condFloat.Build(16, 20, 16, BlockType.Conduit), "slice14 step1 conduit floating in air fails like other machines");
+// Direct face-adjacency delivers NOTHING: the proof no
+// existing source can pass. A mill beside a Conduit is not
+// powered, not mismatched, not warned, and survives its tick
+// — an Alternator beside the same mill destroys it.
+var condDirectMill = new WorldZone(42);
+condDirectMill.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condDirectMill.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    condDirectMill.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.None, condDirectMill.DeliveredVoltage(16, 20, 16), "slice14 step1 direct conduit delivers nothing to its mill");
+Check(!condDirectMill.IsPowered(16, 20, 16), "slice14 step1 direct conduit mill is not powered");
+Check(!condDirectMill.IsMismatched(16, 20, 16), "slice14 step1 direct conduit mill is not mismatched");
+Eq(CellPowerState.None, condDirectMill.PowerState(16, 20, 16), "slice14 step1 direct conduit mill power state is None");
+Eq(0, HudState.FromWorld(condDirectMill, new Weapon()).WarnedMills, "slice14 step1 direct conduit mill warns nothing");
+condDirectMill.Advance();
+Eq(BlockType.KineticMill, condDirectMill.Chunk.Get(16, 20, 16), "slice14 step1 direct conduit mill survives its tick");
+Eq(0, condDirectMill.DestroyedMills, "slice14 step1 direct conduit mill destruction counter is 0");
+// Direct Conduit beside a workstation: nothing delivered, so
+// the bench is unpowered at base regen, not disabled.
+var condDirectWs = new WorldZone(42);
+condDirectWs.Player.TakeDamage(20);
+condDirectWs.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+condDirectWs.Chunk.TrySet(18, 5, 16, BlockType.Conduit);
+Eq(Voltage.None, condDirectWs.DeliveredVoltage(17, 5, 16), "slice14 step1 direct conduit delivers nothing to its workstation");
+Check(!condDirectWs.IsWorkstationPowered(17, 5, 16), "slice14 step1 direct conduit workstation is not powered");
+Check(!condDirectWs.IsWorkstationMismatched(17, 5, 16), "slice14 step1 direct conduit workstation is not mismatched");
+Eq(5, condDirectWs.EffectiveWorkstationRegen(), "slice14 step1 direct conduit workstation effective regen is base 5, not disabled 0");
+// Direct Conduit beside a pylon: nothing delivered, so the
+// pylon idles — not powered, not mismatched.
+var condDirectPylon = new WorldZone(42);
+condDirectPylon.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+condDirectPylon.Chunk.TrySet(18, 5, 16, BlockType.Conduit);
+Eq(Voltage.None, condDirectPylon.DeliveredVoltage(17, 5, 16), "slice14 step1 direct conduit delivers nothing to its pylon");
+Check(!condDirectPylon.IsPylonPowered(17, 5, 16), "slice14 step1 direct conduit pylon is not powered");
+Check(!condDirectPylon.IsPylonMismatched(17, 5, 16), "slice14 step1 direct conduit pylon is not mismatched");
+Eq(CellPowerState.None, condDirectPylon.PowerState(17, 5, 16), "slice14 step1 direct conduit pylon power state is None");
+// Direct Conduit beside a transformer: the transformer gets
+// no direct input from it, so a mill beside that transformer
+// reads nothing — the Conduit must reach it through cable.
+var condDirectTrans = new WorldZone(42);
+condDirectTrans.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condDirectTrans.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+condDirectTrans.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq(Voltage.None, condDirectTrans.DeliveredVoltage(16, 20, 16), "slice14 step1 transformer beside a conduit directly delivers nothing to its mill");
+Check(!condDirectTrans.IsPowered(16, 20, 16), "slice14 step1 direct-conduit transformer mill is not powered");
+// No direct conflict with a Conduit: a Dynamo beside the
+// same mill decides it, because the Conduit contributes
+// nothing directly — unlike Dynamo + Alternator, which is
+// a conflict. An Alternator beside the same mill decides
+// HV instead, and destroys it on the tick.
+var condDynDirect = new WorldZone(42);
+condDynDirect.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condDynDirect.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+condDynDirect.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+Eq(Voltage.LV, condDynDirect.DeliveredVoltage(16, 20, 16), "slice14 step1 dynamo plus direct conduit delivers LV, not a conflict");
+Check(condDynDirect.IsPowered(16, 20, 16), "slice14 step1 dynamo plus direct conduit mill is powered");
+var condAltDirect = new WorldZone(42);
+condAltDirect.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condAltDirect.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+condAltDirect.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+foreach (var (x, y, z) in new[] { (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    condAltDirect.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.HV, condAltDirect.DeliveredVoltage(16, 20, 16), "slice14 step1 alternator plus direct conduit delivers HV");
+Check(condAltDirect.IsMismatched(16, 20, 16), "slice14 step1 alternator plus direct conduit mill is mismatched");
+condAltDirect.Advance();
+Eq(BlockType.Air, condAltDirect.Chunk.Get(16, 20, 16), "slice14 step1 alternator plus direct conduit mill destroyed on tick 1");
+// Cable delivery, mill: Conduit -> cable -> mill destroys
+// the mill exactly like a direct Alternator would, and the
+// cable reads Energised and the mill Mismatched first.
+var condCableMill = new WorldZone(42);
+condCableMill.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condCableMill.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condCableMill.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    condCableMill.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.HV, condCableMill.DeliveredVoltage(16, 20, 16), "slice14 step1 conduit through cable delivers HV to its mill");
+Check(condCableMill.IsMismatched(16, 20, 16), "slice14 step1 conduit cable mill is mismatched");
+Eq(CellPowerState.Mismatched, condCableMill.PowerState(16, 20, 16), "slice14 step1 conduit cable mill power state is Mismatched");
+// Finding, recorded not fixed here (see DECISIONS.md): a single
+// cable cell touching a Conduit reads None in PowerState, because
+// DeliveredVoltage for a cell counts only its neighbours, and a
+// Conduit is deliberately not a direct source — so the network is
+// live (the mill at its end is destroyed) while its only cable
+// cell reads untinted. A Dynamo-fed single cable reads Energised
+// instead, because the direct branch counts the Dynamo. This is a
+// display-query remainder for the Slice 14 review, not a delivery
+// failure, and the scope forbids redesigning the query inside a
+// source step.
+Eq(CellPowerState.None, condCableMill.PowerState(17, 20, 16), "slice14 step1 single conduit cable cell power state is None, recorded finding");
+// Two-cable run: every cable cell after the first reads its
+// neighbour cable's component, so both read Energised, and the
+// mill at the end is still destroyed — the network is live, and
+// the tint agrees wherever DeliveredVoltage can see the run.
+var condCableTwo = new WorldZone(42);
+condCableTwo.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condCableTwo.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condCableTwo.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+condCableTwo.Chunk.TrySet(19, 20, 16, BlockType.Conduit);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    condCableTwo.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(CellPowerState.Energised, condCableTwo.PowerState(17, 20, 16), "slice14 step1 two-cable conduit run first cable power state is Energised");
+Eq(CellPowerState.Energised, condCableTwo.PowerState(18, 20, 16), "slice14 step1 two-cable conduit run second cable power state is Energised");
+Eq(Voltage.HV, condCableTwo.DeliveredVoltage(16, 20, 16), "slice14 step1 two-cable conduit run delivers HV to its mill");
+Eq(1, HudState.FromWorld(condCableMill, new Weapon()).WarnedMills, "slice14 step1 conduit cable mill warns one mill");
+condCableMill.Advance();
+Eq(BlockType.Air, condCableMill.Chunk.Get(16, 20, 16), "slice14 step1 conduit cable mill destroyed on tick 1");
+Eq(1, condCableMill.DestroyedMills, "slice14 step1 conduit cable mill destruction counter is 1");
+Eq(BlockType.Stone, condCableMill.Chunk.Get(15, 20, 16), "slice14 step1 conduit cable destroyed mill excavates nothing");
+Eq(BlockType.Conduit, condCableMill.Chunk.Get(18, 20, 16), "slice14 step1 destroying a mill does not destroy its conduit");
+// Cable delivery, pylon: Conduit -> cable -> pylon is the
+// Conduit's safe direct use — powered, firing 10 per tick.
+var condCablePylon = new WorldZone(42);
+condCablePylon.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+condCablePylon.Chunk.TrySet(18, 5, 16, BlockType.Cable);
+condCablePylon.Chunk.TrySet(19, 5, 16, BlockType.Conduit);
+condCablePylon.Enemies.Add(new Enemy(17, 5, 20));
+Eq(Voltage.HV, condCablePylon.DeliveredVoltage(17, 5, 16), "slice14 step1 conduit through cable delivers HV to its pylon");
+Check(condCablePylon.IsPylonPowered(17, 5, 16), "slice14 step1 conduit cable pylon is powered");
+Check(!condCablePylon.IsPylonMismatched(17, 5, 16), "slice14 step1 conduit cable pylon is not mismatched");
+Eq(CellPowerState.Powered, condCablePylon.PowerState(17, 5, 16), "slice14 step1 conduit cable pylon power state is Powered");
+condCablePylon.Advance();
+Eq(20, condCablePylon.Enemies[0].Health, "slice14 step1 conduit cable pylon fires 10 on its first tick");
+// Cable delivery, workstation: Conduit -> cable -> workstation
+// is mismatched HV — disabled, surviving, restoring nothing.
+var condCableWs = new WorldZone(42);
+condCableWs.Player.TakeDamage(20);
+condCableWs.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+condCableWs.Chunk.TrySet(18, 5, 16, BlockType.Cable);
+condCableWs.Chunk.TrySet(19, 5, 16, BlockType.Conduit);
+Eq(Voltage.HV, condCableWs.DeliveredVoltage(17, 5, 16), "slice14 step1 conduit through cable delivers HV to its workstation");
+Check(!condCableWs.IsWorkstationPowered(17, 5, 16), "slice14 step1 conduit cable workstation is not powered");
+Check(condCableWs.IsWorkstationMismatched(17, 5, 16), "slice14 step1 conduit cable workstation is mismatched");
+Eq(CellPowerState.Mismatched, condCableWs.PowerState(17, 5, 16), "slice14 step1 conduit cable workstation power state is Mismatched");
+Eq(0, condCableWs.EffectiveWorkstationRegen(), "slice14 step1 conduit cable workstation effective regen is 0: disabled");
+condCableWs.Advance();
+Eq(BlockType.Workstation, condCableWs.Chunk.Get(17, 5, 16), "slice14 step1 conduit cable workstation survives its tick");
+Eq(65, condCableWs.Player.Shields, "slice14 step1 conduit cable workstation restores nothing");
+// Cable step-down, mill: Conduit -> cable -> transformer ->
+// cable -> mill runs at LV, every tick, like an Alternator
+// stepped down — safe use needs the transformer, as before.
+var condStepMill = new WorldZone(42);
+condStepMill.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condStepMill.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condStepMill.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+condStepMill.Chunk.TrySet(19, 20, 16, BlockType.Cable);
+condStepMill.Chunk.TrySet(20, 20, 16, BlockType.Conduit);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    condStepMill.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.LV, condStepMill.DeliveredVoltage(16, 20, 16), "slice14 step1 conduit stepped down through cable and transformer delivers LV to its mill");
+Check(condStepMill.IsPowered(16, 20, 16), "slice14 step1 conduit stepped-down mill is powered");
+for (int i = 0; i < 5; i++) condStepMill.Advance();
+Eq(5, condStepMill.PoweredBlocksGathered, "slice14 step1 conduit stepped-down mill gathers 5 in 5 ticks");
+Eq(BlockType.Conduit, condStepMill.Chunk.Get(20, 20, 16), "slice14 step1 stepped-down mill never excavates its conduit");
+// Cable step-down, workstation: Conduit -> cable ->
+// transformer -> workstation runs at LV, regen 10 per tick.
+var condStepWs = new WorldZone(42);
+condStepWs.Player.TakeDamage(20);
+condStepWs.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+condStepWs.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+condStepWs.Chunk.TrySet(19, 5, 16, BlockType.Cable);
+condStepWs.Chunk.TrySet(20, 5, 16, BlockType.Conduit);
+Eq(Voltage.LV, condStepWs.DeliveredVoltage(17, 5, 16), "slice14 step1 conduit stepped down through cable and transformer delivers LV to its workstation");
+Check(condStepWs.IsWorkstationPowered(17, 5, 16), "slice14 step1 conduit stepped-down workstation is powered");
+Eq(10, condStepWs.EffectiveWorkstationRegen(), "slice14 step1 conduit stepped-down workstation effective regen is base 5 + powered 5");
+condStepWs.Advance();
+Eq(75, condStepWs.Player.Shields, "slice14 step1 conduit stepped-down workstation restores 10 shields per tick");
+// Cable conflicts, the Conduit way: Conduit + Dynamo on one
+// cable component resolve to None (mixed network), so the
+// mill at its end idles at kinetic cadence and survives;
+// Conduit + Alternator on one component agree at HV, so
+// the mill at its end is destroyed; two Conduits agree at
+// HV as well.
+var condDynCable = new WorldZone(42);
+condDynCable.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condDynCable.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condDynCable.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+condDynCable.Chunk.TrySet(17, 20, 15, BlockType.Dynamo);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    condDynCable.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.None, condDynCable.DeliveredVoltage(16, 20, 16), "slice14 step1 conduit plus dynamo on one cable delivers nothing to its mill");
+Check(!condDynCable.IsMismatched(16, 20, 16), "slice14 step1 conduit dynamo cable mill is not mismatched");
+for (int i = 0; i < 5; i++) condDynCable.Advance();
+Eq(BlockType.KineticMill, condDynCable.Chunk.Get(16, 20, 16), "slice14 step1 conduit dynamo cable mill survives 5 ticks");
+Eq(1, condDynCable.KineticBlocksGathered, "slice14 step1 conduit dynamo cable mill falls back to kinetic cadence, 1 in 5 ticks");
+var condAltCable = new WorldZone(42);
+condAltCable.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condAltCable.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condAltCable.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+condAltCable.Chunk.TrySet(17, 20, 15, BlockType.Alternator);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    condAltCable.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.HV, condAltCable.DeliveredVoltage(16, 20, 16), "slice14 step1 conduit plus alternator on one cable delivers HV to its mill");
+condAltCable.Advance();
+Eq(BlockType.Air, condAltCable.Chunk.Get(16, 20, 16), "slice14 step1 conduit alternator cable mill destroyed on tick 1");
+var condTwoCable = new WorldZone(42);
+condTwoCable.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condTwoCable.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condTwoCable.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+condTwoCable.Chunk.TrySet(17, 20, 15, BlockType.Conduit);
+Eq(Voltage.HV, condTwoCable.DeliveredVoltage(16, 20, 16), "slice14 step1 two conduits on one cable agree at HV to their mill");
+// Live-network / lone-source counts cover the Conduit with
+// no new HUD count: a lone Conduit counts, two adjacent
+// Conduits count as two (sources are not conductors), a
+// Conduit cabled to nothing counts as one live network,
+// and a Conduit cabled to a mill counts as neither again.
+var condLone = new WorldZone(42);
+condLone.Chunk.TrySet(16, 20, 16, BlockType.Conduit);
+Eq((0, 1), condLone.LivePowerCounts(), "slice14 step1 lone conduit counts 0 live networks, 1 lone source");
+var condLoneTwo = new WorldZone(42);
+condLoneTwo.Chunk.TrySet(16, 20, 16, BlockType.Conduit);
+condLoneTwo.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+Eq((0, 2), condLoneTwo.LivePowerCounts(), "slice14 step1 two adjacent conduits count 2 lone sources");
+var condLive = new WorldZone(42);
+condLive.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condLive.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((1, 0), condLive.LivePowerCounts(), "slice14 step1 conduit cabled to nothing counts 1 live network, 0 lone sources");
+var condFed = new WorldZone(42);
+condFed.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+condFed.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+condFed.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 0), condFed.LivePowerCounts(), "slice14 step1 conduit cabled to a mill counts neither live nor lone");
+// Aimed builder: same aim as the Slice 10 Step 2 alternator
+// build, with conduit inventory (5 Stone + 5 EmberOre).
+var simCond = new Simulation(42);
+simCond.Tick(0.1f, 0, 0, false);
+simCond.World.Player.Inventory.Add(BlockType.Stone, 5);
+simCond.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+simCond.ApplyLook(-18.4f, -53f);
+Eq(BuildResult.Success, simCond.BuildConduitAhead(), "slice14 step1 simulation build conduit ahead succeeds");
+Eq(BlockType.Conduit, simCond.World.Chunk.Get(15, 4, 17), "slice14 step1 simulation conduit placed by aim");
+Eq(0, simCond.World.Player.Inventory.Get(BlockType.Stone), "slice14 step1 simulation conduit spends its stone");
+Eq(0, simCond.World.Player.Inventory.Get(BlockType.EmberOre), "slice14 step1 simulation conduit spends its ore");
+// Derived, not stored: a Conduit and its cable chain survive
+// save/load as chunk bytes and re-derive HV on load, with no
+// stored voltage or source flag, and old block values load.
+var condSave = new WorldZone(42);
+condSave.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+condSave.Chunk.TrySet(18, 5, 16, BlockType.Cable);
+condSave.Chunk.TrySet(19, 5, 16, BlockType.Conduit);
+var condLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(condSave));
+Eq(BlockType.Conduit, condLoaded.Chunk.Get(19, 5, 16), "slice14 step1 conduit survives save/load as a chunk byte");
+Eq(Voltage.HV, condLoaded.DeliveredVoltage(17, 5, 16), "slice14 step1 conduit cable pylon re-derives HV after load");
+Check(condLoaded.IsPylonPowered(17, 5, 16), "slice14 step1 conduit cable pylon is powered after load");
+Eq(CellPowerState.Powered, condLoaded.PowerState(17, 5, 16), "slice14 step1 conduit cable pylon power state is Powered after load");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

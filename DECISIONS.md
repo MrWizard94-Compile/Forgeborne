@@ -4757,6 +4757,137 @@ look inevitable.
   non-output behaviour, its generalisation, its block,
   cost, and adapter line each decided and tested there.
 
+## 0.62.0 — Slice 14 Step 1: third power source, the Conduit (2026-10-30, silent scheduled run)
+
+- Source choice, and why cable-only HV beat the other
+  hypotheses: the scope's hypotheses were a condition, a
+  fuel, a cost shape, a delivery shape, and a pulsed
+  output. A fuel would have needed per-source state and a
+  save decision for a first source family member, and a
+  pulsed output would have needed DeliveredVoltage to
+  depend on tick count, which every snapshot, HUD count,
+  and warning predicate also reads — both would have made
+  one source carry a second system. A condition tied to
+  placement or inventory would have been a second rule
+  hiding inside a block. Delivery shape won because it is
+  derived from placement alone, like every existing source,
+  needs no state, no tick, and no save field, and is still
+  a behavioural difference no existing source can pass: a
+  Dynamo or Alternator beside a consumer feeds it, a
+  Conduit beside a consumer feeds nothing, and only a
+  cable changes that. Cost alone was rejected as the
+  distinctness, exactly as the scope warned: 5 Stone + 5
+  EmberOre is a new combination, but a Conduit priced
+  differently and feeding directly would have been a
+  Dynamo/Alternator reskin, so the price is recorded as
+  pricing, not as the proof.
+- Voltage choice, HV not LV: HV gives the Conduit the full
+  mismatch proof set the Alternator had — a cable-fed mill
+  destroyed, a cable-fed workstation disabled, a cable-fed
+  pylon powered — while its direct-adjacency safety is the
+  proof that separates it from the Alternator: the same mill
+  that a direct Alternator destroys survives a direct
+  Conduit untouched. An LV Conduit would have proved only
+  safe cable delivery and a disabled pylon, a thinner set,
+  and would have duplicated the Dynamo's safe uses through
+  cable without ever punishing a wrong wiring. HV also
+  keeps the transformer step-down proof meaningful: safe LV
+  use of a Conduit still costs a transformer, as it does
+  for an Alternator.
+- Non-output behaviour, decided before the tests: a Conduit
+  with no cable is unwired, not idle-on-a-timer, not
+  fuel-starved, and not broken. Consumers beside it read
+  None, so a mill falls back to kinetic cadence, a
+  workstation runs at base regen, and a pylon idles — the
+  same None behaviour every unpowered machine already has,
+  so no new idle rule was invented for this source. A
+  Conduit touching only another source is likewise unwired:
+  sources are not conductors, and the lone-source count
+  proves it (two adjacent Conduits count 2 lone sources).
+- Generalisation, and the one deliberate asymmetry: the
+  source set is three, the direct set is two. DeliveredVoltage
+  and TransformerOutput exclude the Conduit from their direct
+  branches, while CableNetworkVoltage includes it — that is
+  the whole implementation of cable-only delivery, and it is
+  why a Dynamo + Conduit mill reads LV (no direct conflict
+  exists to resolve) while a Dynamo + Conduit cable reads
+  None (a mixed network, like every mixed network). The
+  alternative — counting the Conduit as a direct source and
+  then suppressing it in consumers — would have put the
+  cable-only rule in three predicates instead of two
+  branches, and would have made direct conflicts depend on
+  which consumer was reading. Two Conduits on one cable
+  agree at HV, like two Dynamos agreeing at LV: same level
+  is one voltage, not a conflict, whichever source it is.
+- Cost rationale, first-pass, not balance: 5 Stone + 5
+  EmberOre is half a workstation's frame and half a squad's
+  ore price, so the Conduit competes for both resources
+  without being the cheapest source to stage in either —
+  a source that does nothing until cabled must not also be
+  free to scatter. The Alternator's stone-only price still
+  stages earlier with no ore at all, and the Dynamo's
+  ore-only price still feeds directly with no cable, so
+  the Conduit is not cheaper than either in the dimension
+  where that source is strong.
+- Adapter line: M builds a Conduit by aim, via
+  BuildConduitAhead, suppressed while the picker is open
+  like every other builder (a Conduit spends ore, so a key
+  while picking could break a pending Confirm's
+  affordability). M was confirmed free at step time:
+  existing keys are WASD / Space / E / Q / R / O / Return /
+  Esc / Alpha1-6 / T / Y / U / I / B / N / P / mouse click.
+  Playtest-gate checklist item 28 (Windows-only) covers it.
+  No mesher change: like the Alternator and the pylon, the
+  Conduit renders as an ordinary solid block headlessly,
+  and its distinctness is in delivery, not in a mesh.
+- Readout agreement, proved: warned counts, PowerState,
+  live-network, and lone-source counts all read Conduit
+  cable delivery correctly, with no new HUD count — the
+  scope's "prove, don't redesign" rule for displays held.
+  The one exception is recorded honestly below, not
+  papered over with a query change.
+- Finding carried, not fixed — single-cable tint: a single
+  cable cell touching a Conduit reads None in PowerState,
+  because DeliveredVoltage for a cell counts only its
+  neighbours, and a Conduit is not a direct source. The
+  network is nevertheless live: the mill at the end of
+  that single cable is destroyed on tick 1, the live-network
+  count reads 1, and a two-cable Conduit run reads
+  Energised on both cells. A Dynamo-fed single cable does
+  not share the finding, because the direct branch counts
+  the Dynamo touching the cable cell. Whether PowerState
+  for a cable cell should also count its own component's
+  voltage is a display-query question for the Slice 14
+  review to carry — changing it inside this source step
+  would have moved a display the step was supposed to be
+  proved against, and would have changed tint behaviour
+  for every existing source's cables as well. Until the
+  review decides, a lone Conduit-fed cable cell renders
+  untinted while its network is live: recorded here so no
+  later run mistakes it for a delivery failure.
+- Test notes, stated openly: the first full run after
+  implementation failed exactly one test, the single-cable
+  Energised assertion — and the failure was the finding
+  above, not a code bug, so the test was corrected to
+  assert the honest None reading plus a two-cable
+  Energised proof, and no core code changed for it. The
+  pylon cable test stages its enemy at Manhattan distance
+  4 from the pylon, which moves to 3 before the pylon
+  phase, so it proves a 10-damage tick, not a range-5
+  boundary shot — the range-5 boundary rests on the Slice
+  12 Step 2 tests, as in the Slice 12 demo note.
+- Deliberately not in this step: a condition, a fuel, a
+  pulsed output, or a fourth source; a third voltage level
+  or ladder redesign; a delivery, transformer, or cable
+  rule change beyond the source generalisation above; a
+  warning, tint, marker, or HUD-count change (including
+  the single-cable tint finding, carried not fixed); a
+  balance pass (cost and HV are first-pass, labelled as
+  such); Patrol, a fourth kind, or a second doctrine.
+- Next step: Slice 14 Step 2, composed demo scenario plus
+  documentation-only review closing Slice 14, carrying the
+  single-cable tint finding as a remainder.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
