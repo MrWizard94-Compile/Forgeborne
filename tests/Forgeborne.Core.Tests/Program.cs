@@ -3689,6 +3689,256 @@ Eq(100, snapHeavy.Health, "slice11 snapshot heavy health");
 Eq(16, snapHeavy.DamagePerTick, "slice11 snapshot heavy damage");
 Eq(SquadActivity.Holding, snapHeavy.Activity, "slice11 snapshot heavy at rally is holding");
 
+// ---- Slice 11 Step 2: third doctrine — Defend Core (chosen from Defend Core / Patrol) ----
+// Defend Core is a guard doctrine, not HoldGround at the core
+// and not Advance with a starting point: its post is the world
+// objective core (28,5,28), not the rally the picker still
+// requires; it chases a living enemy within 8 Manhattan of the
+// core, ignores one farther away, and otherwise returns to the
+// core one voxel per tick. It fires whenever an enemy is in its
+// kind's engagement range, like Advance — so a chasing or
+// returning guard shoots what it passes, but it never chases a
+// target that is not a core attacker. Patrol is deferred, not
+// rejected (see DECISIONS.md): it still needs a route the core
+// does not yet define.
+// Enum order: appended only, so old doctrines keep their values.
+Eq(0, (int)TacticalDoctrine.HoldGround, "slice11 defendcore holdground value unchanged");
+Eq(1, (int)TacticalDoctrine.Advance, "slice11 defendcore advance value unchanged");
+Eq(2, (int)TacticalDoctrine.DefendCore, "slice11 defendcore appended as 2");
+Eq(8, TacticalSquad.DefendCoreChaseRadius, "slice11 defendcore chase radius is 8");
+var dcUnknownWorld = new WorldZone(42);
+Check(dcUnknownWorld.DeploySquad(20, 5, 16, (TacticalDoctrine)99) == null, "slice11 defendcore unknown doctrine still rejected");
+// March to the core, rally ignored: rally west, core east, and
+// the squad walks east one voxel per tick on the shared
+// largest-gap rule (X on the 12/12 tie, then Z), reaching the
+// core in 24 ticks and reading Guarding there, not Holding —
+// its rally (5,5,5) was never its destination.
+var dcMarchWorld = new WorldZone(42);
+var dcMarch = dcMarchWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcMarchWorld.Advance();
+Eq(17, dcMarch.X, "slice11 defendcore march tick 1 steps east toward core");
+Eq(16, dcMarch.Z, "slice11 defendcore march tick 1 does not step toward rally");
+dcMarchWorld.Advance();
+Eq(17, dcMarch.X, "slice11 defendcore march tick 2 steps north toward core");
+Eq(17, dcMarch.Z, "slice11 defendcore march tick 2 reaches diagonal");
+for (int i = 0; i < 22; i++) dcMarchWorld.Advance();
+Eq(28, dcMarch.X, "slice11 defendcore march reaches core X after 24 ticks");
+Eq(28, dcMarch.Z, "slice11 defendcore march reaches core Z after 24 ticks");
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(dcMarchWorld)[0].Activity, "slice11 defendcore at core reads guarding not holding");
+Check(!dcMarch.AtRally, "slice11 defendcore guarding is not rally holding");
+// One-tick doctrine contrast, same rally, no enemies:
+// HoldGround walks west to its rally, Advance stands still
+// with no prey, Defend Core walks east to the core.
+var dcContrastHoldWorld = new WorldZone(42);
+var dcContrastHold = dcContrastHoldWorld.DeploySquad(5, 5, 5, TacticalDoctrine.HoldGround)!;
+dcContrastHoldWorld.Advance();
+Eq(15, dcContrastHold.X, "slice11 defendcore contrast holdground walks to rally");
+var dcContrastAdvWorld = new WorldZone(42);
+var dcContrastAdv = dcContrastAdvWorld.DeploySquad(5, 5, 5, TacticalDoctrine.Advance)!;
+dcContrastAdvWorld.Advance();
+Eq(16, dcContrastAdv.X, "slice11 defendcore contrast advance stands with no enemy");
+Eq(16, dcContrastAdv.Z, "slice11 defendcore contrast advance does not march to rally");
+var dcContrastCoreWorld = new WorldZone(42);
+var dcContrastCore = dcContrastCoreWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcContrastCoreWorld.Advance();
+Eq(17, dcContrastCore.X, "slice11 defendcore contrast defendcore walks to core not rally");
+// Chase radius, direct (no enemy phase to move the target):
+// an attacker 8 from the core is chased, one 9 away is ignored,
+// a dead attacker is ignored, ties go to the first in list order,
+// and a blocked chase step does not fall through to the core.
+var dcBoundWorld = new WorldZone(42);
+dcBoundWorld.Player.X = 28; dcBoundWorld.Player.Z = 28;
+var dcBound = dcBoundWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcBoundAttacker = new Enemy(20, 5, 28);
+Check(dcBound.MoveForDefendCore(dcBoundWorld.Chunk, new[] { dcBoundAttacker }, 28, 5, 28), "slice11 defendcore attacker at radius 8 is chased");
+Eq(27, dcBound.X, "slice11 defendcore chase step moves toward attacker");
+var dcFarDirectWorld = new WorldZone(42);
+dcFarDirectWorld.Player.X = 28; dcFarDirectWorld.Player.Z = 28;
+var dcFarDirect = dcFarDirectWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+Check(!dcFarDirect.MoveForDefendCore(dcFarDirectWorld.Chunk, new[] { new Enemy(19, 5, 28) }, 28, 5, 28), "slice11 defendcore enemy at radius 9 is not chased");
+Eq(28, dcFarDirect.X, "slice11 defendcore ignored enemy leaves guard at post");
+var dcDeadAttackerWorld = new WorldZone(42);
+dcDeadAttackerWorld.Player.X = 28; dcDeadAttackerWorld.Player.Z = 28;
+var dcDeadAttacker = dcDeadAttackerWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcDeadEnemy = new Enemy(20, 5, 28);
+dcDeadEnemy.TakeDamage(30);
+Check(!dcDeadAttacker.MoveForDefendCore(dcDeadAttackerWorld.Chunk, new[] { dcDeadEnemy }, 28, 5, 28), "slice11 defendcore dead attacker is not chased");
+var dcTieWorld = new WorldZone(42);
+dcTieWorld.Player.X = 28; dcTieWorld.Player.Z = 28;
+var dcTie = dcTieWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcTie.MoveForDefendCore(dcTieWorld.Chunk, new[] { new Enemy(24, 5, 28), new Enemy(28, 5, 24) }, 28, 5, 28);
+Eq(27, dcTie.X, "slice11 defendcore attacker tie goes to first enemy in list");
+Eq(28, dcTie.Z, "slice11 defendcore attacker tie does not step toward second enemy");
+var dcBlockedWorld = new WorldZone(42);
+dcBlockedWorld.Player.X = 27; dcBlockedWorld.Player.Z = 28;
+var dcBlocked = dcBlockedWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcBlockedWorld.Chunk.TrySet(26, 5, 28, BlockType.Stone);
+Check(!dcBlocked.MoveForDefendCore(dcBlockedWorld.Chunk, new[] { new Enemy(25, 5, 28) }, 28, 5, 28), "slice11 defendcore blocked chase step is refused");
+Eq(27, dcBlocked.X, "slice11 defendcore blocked chase does not fall through to core in same tick");
+// Chase, fire, return through WorldZone.Advance: Vanguard guard
+// at the core chases an attacker 6 from the core, kills it in
+// range, then steps back toward the core on the next ticks.
+var dcChaseWorld = new WorldZone(42);
+dcChaseWorld.Player.X = 28; dcChaseWorld.Player.Z = 28;
+var dcChase = dcChaseWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcChaseWorld.Player.X = 0; dcChaseWorld.Player.Z = 0;
+dcChaseWorld.Enemies.Add(new Enemy(28, 5, 22));
+dcChaseWorld.Advance();
+Eq(27, dcChase.Z, "slice11 defendcore chase tick 1 steps toward attacker");
+Eq(23, dcChaseWorld.Enemies[0].Z, "slice11 defendcore chase tick 1 attacker steps toward guard");
+Eq(30, dcChaseWorld.Enemies[0].Health, "slice11 defendcore chase tick 1 out of range does not fire");
+dcChaseWorld.Advance();
+Eq(26, dcChase.Z, "slice11 defendcore chase tick 2 closes to range");
+Eq(0, dcChaseWorld.Enemies.Count, "slice11 defendcore chase tick 2 kills attacker in range");
+dcChaseWorld.Advance();
+Eq(27, dcChase.Z, "slice11 defendcore return tick steps back toward core after kill");
+dcChaseWorld.Advance();
+Eq(28, dcChase.Z, "slice11 defendcore return reaches core post");
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(dcChaseWorld)[0].Activity, "slice11 defendcore returned guard reads guarding");
+// Far enemy, one tick, against Advance: the enemy starts 11
+// from the core and steps to 10, still outside the radius, so
+// the guard stays at its post while an Advance squad at the
+// same post hunts west toward that same enemy.
+var dcFarWorld = new WorldZone(42);
+dcFarWorld.Player.X = 28; dcFarWorld.Player.Z = 28;
+var dcFar = dcFarWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcFarWorld.Player.X = 0; dcFarWorld.Player.Z = 0;
+dcFarWorld.Enemies.Add(new Enemy(17, 5, 28));
+dcFarWorld.Advance();
+Eq(28, dcFar.X, "slice11 defendcore far enemy leaves guard at post");
+Eq(18, dcFarWorld.Enemies[0].X, "slice11 defendcore far enemy steps closer but stays outside radius");
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(dcFarWorld)[0].Activity, "slice11 defendcore far enemy is not a hunting target");
+var dcFarAdvWorld = new WorldZone(42);
+dcFarAdvWorld.Player.X = 28; dcFarAdvWorld.Player.Z = 28;
+var dcFarAdv = dcFarAdvWorld.DeploySquad(5, 5, 5, TacticalDoctrine.Advance)!;
+dcFarAdvWorld.Player.X = 0; dcFarAdvWorld.Player.Z = 0;
+dcFarAdvWorld.Enemies.Add(new Enemy(17, 5, 28));
+dcFarAdvWorld.Advance();
+Eq(27, dcFarAdv.X, "slice11 defendcore contrast advance hunts the far enemy defendcore ignores");
+// Returning fire: a guard marching back to the core fires at
+// an enemy in range that is NOT a core attacker (21 from the
+// core), but its step is still core-ward, not toward the enemy.
+var dcRetFireWorld = new WorldZone(42);
+var dcRetFire = dcRetFireWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcRetFire.TakeDamage(60); // 1 member, 10 damage, so the shot wounds instead of killing
+dcRetFireWorld.Enemies.Add(new Enemy(16, 5, 19));
+dcRetFireWorld.Advance();
+Eq(17, dcRetFire.X, "slice11 defendcore returning guard steps toward core not enemy");
+Eq(16, dcRetFire.Z, "slice11 defendcore returning guard does not chase its target");
+Eq(20, dcRetFireWorld.Enemies[0].Health, "slice11 defendcore returning guard fires at non-attacker in range");
+// At-post fire, Vanguard: an adjacent attacker cannot be
+// stepped onto, so the guard stays on the core cell and fires.
+var dcPostWorld = new WorldZone(42);
+dcPostWorld.Player.X = 28; dcPostWorld.Player.Z = 28;
+var dcPost = dcPostWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+dcPostWorld.Player.X = 0; dcPostWorld.Player.Z = 0;
+dcPostWorld.Enemies.Add(new Enemy(28, 5, 29));
+dcPostWorld.Advance();
+Eq(28, dcPost.X, "slice11 defendcore at-post guard stays on core cell");
+Eq(28, dcPost.Z, "slice11 defendcore at-post guard does not overlap attacker");
+Eq(0, dcPostWorld.Enemies.Count, "slice11 defendcore at-post guard kills adjacent attacker");
+// At-post fire, Heavy (the new kind under the new doctrine):
+// an attacker stepping adjacent is shot for 16, not 30.
+var dcHeavyPostWorld = new WorldZone(42);
+dcHeavyPostWorld.Player.X = 28; dcHeavyPostWorld.Player.Z = 28;
+var dcHeavyPost = dcHeavyPostWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
+dcHeavyPostWorld.Player.X = 0; dcHeavyPostWorld.Player.Z = 0;
+dcHeavyPostWorld.Enemies.Add(new Enemy(28, 5, 30));
+dcHeavyPostWorld.Advance();
+Eq(28, dcHeavyPost.X, "slice11 defendcore heavy guard stays on core cell");
+Eq(14, dcHeavyPostWorld.Enemies[0].Health, "slice11 defendcore heavy guard fires 16 at post");
+// Engagement ranges, direct: Heavy is silent at range 3,
+// Vanguard fires at range 3, Recon fires at range 5, and a
+// Defend Core squad away from its post still fires in range
+// where a HoldGround squad still marching does not.
+var dcFindHeavyWorld = new WorldZone(42);
+var dcFindHeavy = dcFindHeavyWorld.DeploySquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
+Check(dcFindHeavy.FindTarget(new[] { new Enemy(19, 5, 16) }) == null, "slice11 defendcore heavy does not fire at range 3");
+var dcFindVanWorld = new WorldZone(42);
+var dcFindVan = dcFindVanWorld.DeploySquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Vanguard)!;
+Check(dcFindVan.FindTarget(new[] { new Enemy(19, 5, 16) }) != null, "slice11 defendcore vanguard fires at range 3");
+var dcFindReconWorld = new WorldZone(42);
+var dcFindRecon = dcFindReconWorld.DeploySquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
+Check(dcFindRecon.FindTarget(new[] { new Enemy(21, 5, 16) }) != null, "slice11 defendcore recon fires at range 5");
+var dcFindHoldWorld = new WorldZone(42);
+var dcFindHold = dcFindHoldWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround)!;
+Check(dcFindHold.FindTarget(new[] { new Enemy(17, 5, 16) }) == null, "slice11 defendcore contrast holdground marching does not fire");
+// Recon under Defend Core (the third kind proved): a Recon
+// guard chases an attacker 8 from the core and stays silent
+// at range 6, beyond its range 5.
+var dcReconWorld = new WorldZone(42);
+dcReconWorld.Player.X = 28; dcReconWorld.Player.Z = 28;
+var dcRecon = dcReconWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
+dcReconWorld.Player.X = 0; dcReconWorld.Player.Z = 0;
+dcReconWorld.Enemies.Add(new Enemy(28, 5, 20));
+dcReconWorld.Advance();
+Eq(27, dcRecon.Z, "slice11 defendcore recon guard chases attacker");
+Eq(21, dcReconWorld.Enemies[0].Z, "slice11 defendcore recon attacker steps toward guard");
+Eq(30, dcReconWorld.Enemies[0].Health, "slice11 defendcore recon guard silent beyond range 5");
+// Picker and economy: Defend Core + Heavy deploy through the
+// paid path for 10 EmberOre, and an unknown doctrine is
+// rejected without changing the Defend Core selection.
+var dcPickSim = new Simulation(42);
+dcPickSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+Check(dcPickSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore), "slice11 defendcore picker doctrine accepted");
+Check(dcPickSim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice11 defendcore picker heavy kind accepted");
+Check(!dcPickSim.OrbitalCommand.SelectDoctrine((TacticalDoctrine)99), "slice11 defendcore picker unknown doctrine rejected");
+Eq(TacticalDoctrine.DefendCore, dcPickSim.OrbitalCommand.Doctrine, "slice11 defendcore picker doctrine unchanged after rejection");
+dcPickSim.BeginOrbitalPick();
+Check(dcPickSim.SetOrbitalRally(28, 5, 28), "slice11 defendcore picker rally set");
+var dcPicked = dcPickSim.ConfirmOrbitalDeploy();
+Check(dcPicked != null, "slice11 defendcore picker confirm deploys");
+Eq(TacticalDoctrine.DefendCore, dcPicked!.Doctrine, "slice11 defendcore picker deploy doctrine");
+Eq(SquadKind.Heavy, dcPicked.Kind, "slice11 defendcore picker deploy kind");
+Check(!dcPickSim.World.Player.Inventory.Has(BlockType.EmberOre, 1), "slice11 defendcore picker deploy charges 10 ore");
+// Save rule, proved, not changed: doctrine is stored as an int
+// and the loader already rejects undefined doctrines, so no new
+// save field is invented. A Defend Core Heavy at the core and a
+// Defend Core Vanguard marching both load, and the loaded
+// Vanguard marches toward the core, not its rally.
+var dcSaveWorld = new WorldZone(42);
+dcSaveWorld.Player.X = 28; dcSaveWorld.Player.Z = 28;
+dcSaveWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Heavy);
+dcSaveWorld.Player.X = 16; dcSaveWorld.Player.Z = 16;
+dcSaveWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Vanguard);
+var dcSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(dcSaveWorld));
+Eq(2, dcSaveLoaded.Squads.Count, "slice11 defendcore save loads both squads");
+Eq(TacticalDoctrine.DefendCore, dcSaveLoaded.Squads[0].Doctrine, "slice11 defendcore save heavy doctrine preserved");
+Eq(SquadKind.Heavy, dcSaveLoaded.Squads[0].Kind, "slice11 defendcore save heavy kind preserved");
+Eq(100, dcSaveLoaded.Squads[0].Health, "slice11 defendcore save heavy health preserved");
+Eq(TacticalDoctrine.DefendCore, dcSaveLoaded.Squads[1].Doctrine, "slice11 defendcore save vanguard doctrine preserved");
+dcSaveLoaded.Advance();
+Eq(17, dcSaveLoaded.Squads[1].X, "slice11 defendcore loaded vanguard marches toward core not rally");
+Eq(28, dcSaveLoaded.Squads[0].X, "slice11 defendcore loaded heavy stays at core");
+// Snapshot activities: Guarding at post with no attacker,
+// Hunting a core attacker with its cell, Marching on the
+// return with no attacker, and Guarding — not Hunting — at
+// post when the only enemy is far from the core.
+var dcSnapGuardWorld = new WorldZone(42);
+dcSnapGuardWorld.Player.X = 28; dcSnapGuardWorld.Player.Z = 28;
+dcSnapGuardWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+var dcSnapGuard = OrbitalView.Snapshot(dcSnapGuardWorld)[0];
+Eq(SquadActivity.Guarding, dcSnapGuard.Activity, "slice11 defendcore snapshot at post reads guarding");
+Check(!dcSnapGuard.HasHuntingTarget, "slice11 defendcore snapshot guarding has no hunting target");
+var dcSnapHuntWorld = new WorldZone(42);
+dcSnapHuntWorld.Player.X = 28; dcSnapHuntWorld.Player.Z = 28;
+dcSnapHuntWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+dcSnapHuntWorld.Enemies.Add(new Enemy(28, 5, 24));
+var dcSnapHunt = OrbitalView.Snapshot(dcSnapHuntWorld)[0];
+Eq(SquadActivity.Hunting, dcSnapHunt.Activity, "slice11 defendcore snapshot chasing attacker reads hunting");
+Check(dcSnapHunt.HasHuntingTarget, "slice11 defendcore snapshot hunting has a target");
+Eq(24, dcSnapHunt.HuntingTargetZ, "slice11 defendcore snapshot hunting target is the attacker cell");
+var dcSnapMarchWorld = new WorldZone(42);
+dcSnapMarchWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(dcSnapMarchWorld)[0].Activity, "slice11 defendcore snapshot returning reads marching");
+var dcSnapFarWorld = new WorldZone(42);
+dcSnapFarWorld.Player.X = 28; dcSnapFarWorld.Player.Z = 28;
+dcSnapFarWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+dcSnapFarWorld.Enemies.Add(new Enemy(17, 5, 28));
+var dcSnapFar = OrbitalView.Snapshot(dcSnapFarWorld)[0];
+Eq(SquadActivity.Guarding, dcSnapFar.Activity, "slice11 defendcore snapshot far enemy does not turn guarding into hunting");
+Check(!dcSnapFar.HasHuntingTarget, "slice11 defendcore snapshot far enemy is not a hunting target");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

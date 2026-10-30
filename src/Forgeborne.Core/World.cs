@@ -720,9 +720,12 @@ public sealed class WorldZone
     /// <summary>
     /// Orbital squad phase, in squad list order: move by doctrine
     /// (HoldGround toward its rally, Advance toward its nearest
-    /// living enemy — no rally fallback when no enemy lives),
+    /// living enemy — no rally fallback when no enemy lives,
+    /// Defend Core toward a core attacker or back to the core
+    /// cell itself — never toward its rally),
     /// then fire at the nearest enemy in range (HoldGround only
-    /// once holding; Advance whenever in range), then take 10
+    /// once holding; Advance and Defend Core whenever in range),
+    /// then take 10
     /// damage per enemy still adjacent to the squad. A squad at
     /// 0 health is removed at the end of the phase.
     /// </summary>
@@ -732,6 +735,7 @@ public sealed class WorldZone
         {
             if (squad.IsDead) continue;
             if (squad.Doctrine == TacticalDoctrine.Advance) squad.MoveTowardNearestEnemy(Chunk, Enemies);
+            else if (squad.Doctrine == TacticalDoctrine.DefendCore) squad.MoveForDefendCore(Chunk, Enemies, CoreX, CoreY, CoreZ);
             else squad.MoveTowardRally(Chunk, Enemies);
             var target = squad.FindTarget(Enemies);
             if (target != null) AttackEnemy(target, squad.DamagePerTick);

@@ -180,6 +180,20 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     marker decision. Do not claim this verified in Unity
     until it is observed there and recorded in
     DECISIONS.md.
+21. [ ] Defend Core doctrine key, added 0.50.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core Defend Core movement, chase radius, fire,
+    return, and save rules are headless-tested): press O,
+    press 6 — the prompt shows DEFENDCORE with the current
+    kind; press 3 — the prompt shows VANGUARD DEFENDCORE,
+    proving kind changed without changing doctrine; Enter
+    deploys the shown combination for 10 EmberOre; a
+    deployed Defend Core squad's text line reads its kind,
+    doctrine, members, health, damage, range, and activity
+    (Guarding at the core, Hunting a core attacker,
+    Marching on the return). Do not claim this verified
+    in Unity until it is observed there and recorded in
+    DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

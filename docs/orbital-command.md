@@ -13,8 +13,10 @@ is gone: in play, a deploy is now always a picked rally.
 `OrbitalCommand` in `src/Forgeborne.Core/Orbital.cs` is the
 menu state, in pure C# core — no rendering, no second copy of
 squad rules. It holds the selected doctrine (HoldGround by
-default, Advance since Slice 4 Step 2) and squad kind
-(Vanguard by default, Recon since Slice 7 Step 1), and a
+default, Advance since Slice 4 Step 2, Defend Core since
+Slice 11 Step 2) and squad kind
+(Vanguard by default, Recon since Slice 7 Step 1, Heavy
+since Slice 11 Step 1), and a
 pending rally while picking. Flow:
 
 1. `BeginPick()` opens the picker and clears any stale pending
@@ -64,6 +66,13 @@ no longer uses it.
 - **3** — select the Vanguard kind (doctrine unchanged).
 - **4** — select the Recon kind (doctrine unchanged).
 - **5** — select the Heavy kind (doctrine unchanged).
+- **6** — select the Defend Core doctrine (kind unchanged).
+  Since Slice 11 Step 2, the picker offers three doctrines
+  independently of kind, at the same 10-ore price
+  and 3-squad cap, so all nine doctrine-kind combinations
+  deploy through the picker. The prompt line already
+  shows the selected doctrine verbatim, so it reads e.g.
+  `VANGUARD DEFENDCORE`.
   Since Slice 11 Step 1, the picker offers three kinds
   independently of doctrine, at the same 10-ore price
   and 3-squad cap, so all six doctrine-kind combinations
@@ -288,6 +297,18 @@ words (Marching / Holding / Hunting / Idle).
     decision. Do not claim this verified in Unity until
     this item is completed there and recorded in
     DECISIONS.md.
+12. [ ] Third doctrine, added 0.50.0 (adapter code written, NOT
+    yet compiled or run in Unity on Windows; the core Defend
+    Core rules are headless-tested, the adapter binding is NOT):
+    press O, press 6 — the prompt shows DEFENDCORE with the
+    current kind; press 3 — the prompt shows VANGUARD
+    DEFENDCORE, proving kind changed without changing doctrine;
+    Enter deploys the shown combination for 10 EmberOre; the
+    deployed squad marches to the core (28,5,28), not to the
+    picked rally, chases an attacker near the core, and reads
+    Guarding at the core, Hunting while chasing, and Marching
+    on the return. Do not claim this verified in Unity until
+    this item is completed there and recorded in DECISIONS.md.
 
 Record the result of each step, with Unity version and GPU, in
 DECISIONS.md.

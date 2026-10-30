@@ -21,6 +21,20 @@ public enum TacticalDoctrine
     /// Advance from collapsing into "HoldGround at a moving
     /// rally". See MoveTowardNearestEnemy and FindTarget.</summary>
     Advance = 1,
+    /// <summary>Slice 11 Step 2: guard the world objective core
+    /// (WorldZone.CoreX/Y/Z), not the rally the picker still
+    /// requires to deploy. The guard post is the core cell
+    /// itself; the squad marches to it one voxel per tick,
+    /// chases a living enemy within DefendCoreChaseRadius of
+    /// the core, and otherwise returns to the core — it never
+    /// marches to its rally and never hunts an enemy far from
+    /// the core. It fires whenever an enemy is in its kind's
+    /// engagement range (Advance's fire rule, not HoldGround's
+    /// hold-only rule), so a chasing or returning guard still
+    /// shoots what it passes in range, but it does not chase
+    /// that target: movement stays core-bound. See
+    /// MoveForDefendCore and DECISIONS.md.</summary>
+    DefendCore = 2,
 }
 
 /// <summary>Squad types. Vanguard is the general-purpose
@@ -183,6 +197,93 @@ public sealed class TacticalSquad
     /// from there instead of overlapping it. Returns true if
     /// the squad moved.
     /// </summary>
+    /// <summary>Slice 11 Step 2 Defend Core chase radius, in
+    /// Manhattan distance from the core cell: a living enemy
+    /// at most this far from the core is an attacker the guard
+    /// chases; one farther away is ignored, however near it is
+    /// to the squad. 8 is a first-pass value, not a balance
+    /// claim: it is larger than every kind's engagement range
+    /// (Vanguard 3, Recon 5, Heavy 2), so a guard can intercept
+    /// before an attacker reaches the core, and far smaller
+    /// than the spawn-to-core distance (24), so the perimeter
+    /// is local to the core, not the whole map.</summary>
+    public const int DefendCoreChaseRadius = 8;
+
+    /// <summary>Slice 11 Step 2: one voxel per tick toward the
+    /// core cell itself, through the shared MoveTowardPosition
+    /// rule — same axis choice, tie-break, and solid /
+    /// enemy-occupied refusals as HoldGround and Advance, so
+    /// a guard whose post is blocked holds short of it rather
+    /// than stepping through a block or onto an enemy. The
+    /// rally is not consulted: a Defend Core squad's rally is
+    /// a deployment formality the picker still requires, not
+    /// a place the squad ever goes. Returns true if the squad
+    /// moved.</summary>
+    public bool MoveTowardCore(VoxelChunk chunk, IReadOnlyList<Enemy> enemies,
+        int coreX, int coreY, int coreZ) =>
+        MoveTowardPosition(coreX, coreY, coreZ, chunk, enemies);
+
+    /// <summary>Slice 11 Step 2: the nearest living enemy within
+    /// DefendCoreChaseRadius of the core, or null when no
+    /// attacker is that close. Distance is enemy-to-core, not
+    /// enemy-to-squad: an enemy standing next to a far-flung
+    /// guard is not an attacker if the core is far from it.
+    /// Ties go to the first enemy in list order, the same rule
+    /// as FindTarget, so chase, fire, and display never
+    /// disagree about which attacker is nearest.</summary>
+    public Enemy? NearestCoreAttacker(IReadOnlyList<Enemy> enemies,
+        int coreX, int coreY, int coreZ)
+    {
+        Enemy? nearest = null;
+        int best = int.MaxValue;
+        foreach (var e in enemies)
+        {
+            if (e.IsDead) continue;
+            int toCore = Math.Abs(e.X - coreX) + Math.Abs(e.Y - coreY) + Math.Abs(e.Z - coreZ);
+            if (toCore > DefendCoreChaseRadius) continue;
+            int d = Math.Abs(e.X - X) + Math.Abs(e.Y - Y) + Math.Abs(e.Z - Z);
+            if (d < best) { best = d; nearest = e; }
+        }
+        return nearest;
+    }
+
+    /// <summary>Slice 11 Step 2: one Defend Core tick's single
+    /// move, decided once so the squad can never take two
+    /// steps in one tick. With a core attacker it steps toward
+    /// that attacker (the chase); without one it steps toward
+    /// the core (the return, or standing at post when already
+    /// there). A refused step — solid block, enemy-occupied
+    /// cell, out of bounds — ends the tick's movement: the
+    /// squad does not then step toward the other target
+    /// instead, because that would be a second, different
+    /// order executed in the same tick. Returns true if the
+    /// squad moved.</summary>
+    public bool MoveForDefendCore(VoxelChunk chunk, IReadOnlyList<Enemy> enemies,
+        int coreX, int coreY, int coreZ)
+    {
+        var attacker = NearestCoreAttacker(enemies, coreX, coreY, coreZ);
+        return attacker != null
+            ? MoveTowardPosition(attacker.X, attacker.Y, attacker.Z, chunk, enemies)
+            : MoveTowardPosition(coreX, coreY, coreZ, chunk, enemies);
+    }
+
+    /// <summary>
+    /// Advance movement: one voxel per tick toward the NEAREST
+    /// living enemy, re-derived every call (Manhattan distance,
+    /// ties go to the first enemy in list order — the same rule
+    /// as FindTarget, so movement and fire never disagree about
+    /// which enemy is nearest). With no living enemy the squad
+    /// does not move at all: it does not fall back to its rally,
+    /// because a rally fallback would make Advance a HoldGround
+    /// squad whenever the battlefield is empty. The step itself
+    /// is the shared MoveTowardPosition rule, so Advance and
+    /// HoldGround cannot drift apart on axis choice, tie-break,
+    /// or blocking — only the target differs. A step onto the
+    /// target enemy's cell is refused (enemy-occupied), so an
+    /// advancing squad stops adjacent to its prey and fires
+    /// from there instead of overlapping it. Returns true if
+    /// the squad moved.
+    /// </summary>
     public bool MoveTowardNearestEnemy(VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
     {
         Enemy? nearest = null;
@@ -197,14 +298,18 @@ public sealed class TacticalSquad
         return MoveTowardPosition(nearest.X, nearest.Y, nearest.Z, chunk, enemies);
     }
 
-    /// <summary>The single squad movement rule, shared by both
+    /// <summary>The single squad movement rule, shared by all
     /// doctrines: one voxel on the largest-gap axis (ties X, then
     /// Y, then Z), refused out of bounds, into a solid block, or
-    /// onto a living enemy's cell. Callers choose the target;
+    /// onto a living enemy's cell. A call already at its target
+    /// moves nowhere and returns false (Slice 11 Step 2: a
+    /// Defend Core guard at its post must report no move, not
+    /// a phantom step to its own cell). Callers choose the target;
     /// this method owns only the step.</summary>
     private bool MoveTowardPosition(int targetX, int targetY, int targetZ,
         VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
     {
+        if (targetX == X && targetY == Y && targetZ == Z) return false;
         int dx = targetX - X, dy = targetY - Y, dz = targetZ - Z;
         int nx = X, ny = Y, nz = Z;
         if (Math.Abs(dx) >= Math.Abs(dy) && Math.Abs(dx) >= Math.Abs(dz)) nx += Math.Sign(dx);
@@ -226,8 +331,14 @@ public sealed class TacticalSquad
     /// holding point — an advancing squad that is in range but
     /// not at its rally is engaging, not relocating, so the
     /// HoldGround "do not fire while moving" rule must not
-    /// silence it. Returns null if dead, or nothing is in range
-    /// (or, for HoldGround, the squad is still moving).
+    /// silence it. Defend Core fires whenever in range too
+    /// (Slice 11 Step 2): a chasing or returning guard that
+    /// passes an enemy in range shoots it, but — movement is
+    /// a separate decision — it does not chase a target that
+    /// is not a core attacker; only MoveForDefendCore decides
+    /// where the squad walks. Returns null if dead, or nothing
+    /// is in range (or, for HoldGround, the squad is still
+    /// moving).
     /// </summary>
     public Enemy? FindTarget(IReadOnlyList<Enemy> enemies)
     {
@@ -418,7 +529,9 @@ public sealed class OrbitalCommand
 /// enemy exists (moving toward it or standing adjacent firing —
 /// the rally it ignores says nothing about that) and Idle when
 /// none does (standing still, ignoring its rally, exactly as
-/// Advance is documented to behave). The word is doctrine
+/// Advance is documented to behave). A Defend Core squad is
+/// Guarding at its post, Hunting a core attacker, or Marching
+/// back to its post. The word is doctrine
 /// truth, not rally proximity.
 /// </summary>
 public enum SquadActivity
@@ -427,6 +540,14 @@ public enum SquadActivity
     Holding = 1,
     Hunting = 2,
     Idle = 3,
+    /// <summary>Slice 11 Step 2: a Defend Core squad standing at
+    /// its guard post (the core cell) with no core attacker to
+    /// chase. A Defend Core squad away from the core with no
+    /// attacker reads Marching (the return march, not a rally
+    /// march), and one chasing a core attacker reads Hunting,
+    /// so the word still says what the squad is doing, not
+    /// merely which doctrine it holds.</summary>
+    Guarding = 4,
 }
 
 /// <summary>
@@ -506,6 +627,23 @@ public static class OrbitalView
                     if (d < best) { best = d; prey = e; }
                 }
                 activity = prey == null ? SquadActivity.Idle : SquadActivity.Hunting;
+            }
+            else if (s.Doctrine == TacticalDoctrine.DefendCore)
+            {
+                // Defend Core activity is post-and-attacker
+                // truth, not rally truth: chasing a core
+                // attacker reads Hunting with that attacker as
+                // the target; at the core with no attacker it
+                // reads Guarding; away from the core with no
+                // attacker it reads Marching, the return march.
+                // An enemy far from the core is not a prey
+                // here, even if it stands next to the guard —
+                // NearestCoreAttacker applies the chase
+                // radius, so display and movement agree.
+                prey = s.NearestCoreAttacker(world.Enemies, world.CoreX, world.CoreY, world.CoreZ);
+                bool atCore = s.X == world.CoreX && s.Y == world.CoreY && s.Z == world.CoreZ;
+                activity = prey != null ? SquadActivity.Hunting
+                    : atCore ? SquadActivity.Guarding : SquadActivity.Marching;
             }
             else
             {

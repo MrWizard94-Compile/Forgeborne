@@ -1,5 +1,106 @@
 # Forgeborne — Changelog
 
+## 0.50.0 — 2026-10-30 — Slice 11 Step 2: third doctrine — Defend Core, guard the objective core
+
+- Third doctrine, decided in this step (rationale in
+  DECISIONS.md): Defend Core, appended as
+  TacticalDoctrine = 2 only, chosen from the scope's
+  deferred pair (Defend Core / Patrol) over Patrol,
+  because the core objective already exists
+  (28,5,28, 100 HP) and no squad today orders itself
+  to it, while Patrol still needs a route definition
+  the core does not yet have. Patrol is deferred,
+  not rejected. HoldGround and Advance behaviour
+  for zones and saves that do not use Defend Core
+  is unchanged, proved by a one-tick contrast test:
+  same rally, no enemies — HoldGround walks west
+  to its rally, Advance stands still, Defend Core
+  walks east to the core.
+- Behaviour, decided in this step: the guard post is
+  the core cell itself, not the rally the picker
+  still requires to deploy — a Defend Core squad
+  never marches to its rally. It marches one voxel
+  per tick toward the core through the shared step
+  rule (same axis choice, tie-break, and solid /
+  enemy-occupied refusals, so a blocked post is held
+  short of, not stepped through). A living enemy
+  within 8 Manhattan of the core is an attacker the
+  guard chases, one voxel per tick, through a single
+  decided move per tick (a blocked chase step does
+  not fall through to the core in the same tick);
+  an enemy 9 or more from the core is ignored,
+  however near it stands to the guard, proved at
+  the 8 / 9 boundary and by a far enemy the guard
+  leaves at its post while an Advance squad hunts
+  it. With no attacker the guard returns to the
+  core, proved by a chase, a kill in range, and a
+  return step on the next ticks. The 8 radius is a
+  first-pass value, not a balance claim: larger
+  than every kind's engagement range (Vanguard 3,
+  Recon 5, Heavy 2), so a guard can intercept
+  before an attacker reaches the core, and far
+  smaller than the spawn-to-core distance (24), so
+  the perimeter is local to the core.
+- Engagement, decided in this step: Defend Core
+  fires whenever an enemy is in its kind's
+  engagement range, Advance's fire rule, not
+  HoldGround's hold-only rule. A chasing or
+  returning guard therefore shoots what it passes
+  in range — proved by a returning guard that fires
+  at an enemy 21 from the core while still stepping
+  core-ward — but it does not chase that target:
+  movement stays core-bound, so firing at a
+  non-attacker is not hunting it. At its post an
+  adjacent attacker cannot be stepped onto, so the
+  guard stays on the core cell and fires there.
+- Kinds served, decided in this step: the doctrine
+  is picked independently of kind and is proved
+  against all three kinds, not just the new one —
+  Vanguard (chase, kill, return; range-3 fire),
+  Heavy (at-post fire for 16; range-3 silence),
+  and Recon (chase from radius 8, silence beyond
+  range 5). Price stays 10 EmberOre and the cap
+  stays 3 live squads, through the paid picker
+  path, with no new price invented.
+- Display and adapter binding, decided in this
+  step: a Defend Core squad reads Guarding at its
+  post with no attacker, Hunting while chasing a
+  core attacker (with that attacker's cell), and
+  Marching on the return march — an enemy far from
+  the core reads Guarding, not Hunting, at the
+  post, so display and movement agree about the
+  chase radius. Alpha6 selects Defend Core while
+  picking, after Alpha1 HoldGround and Alpha2
+  Advance — confirmed free while picking, since
+  the picker keys were 1 / 2 / 3 / 4 / 5 plus
+  Return / Esc / O and no builder key fires while
+  picking. Playtest-gate checklist item 21
+  (Defend Core key, Windows-only) and
+  orbital-command checklist item 12 are added.
+- Shared movement fix, found by this step's tests,
+  not a behaviour change for existing doctrines:
+  the shared squad step rule now returns false
+  when already at its target, instead of reporting
+  a phantom step to its own cell. HoldGround
+  already guarded its at-rally case before calling
+  the rule and Advance cannot share a cell with its
+  prey, so no existing doctrine changes behaviour;
+  the fix is what lets a guard at its post report
+  no move. Two new tests first failed on the old
+  return value (radius-9 ignored and dead-attacker
+  ignored both reported a move at post) and pass
+  on the fixed rule, with no test changed for it.
+- Save rule, proved, not changed: doctrine is
+  stored as an int and the loader already rejects
+  undefined doctrines, so no new save field is
+  invented. A Defend Core Heavy at the core and a
+  Defend Core Vanguard marching both load, and the
+  loaded Vanguard marches toward the core, not its
+  rally.
+- Tests: 1447 passed, 0 failed (was 1370; +77, no
+  failures on the final run). Demo unchanged: Slice
+  10 Step 3 scenario save 43,974 chars.
+
 ## 0.49.0 — 2026-10-30 — Slice 11 Step 1: third squad kind — Heavy, close-range anchor
 
 - Third kind, decided in this step (rationale in

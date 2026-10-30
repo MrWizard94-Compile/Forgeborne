@@ -3387,6 +3387,170 @@ look inevitable.
   Core as the starting hypothesis, Patrol deferred,
   proved against more than one kind).
 
+## 0.50.0 — Slice 11 Step 2: third doctrine — Defend Core, guard the objective core
+- Decision, on the doctrine: Defend Core, from the
+  scope's deferred pair (Defend Core / Patrol),
+  not a third pool name and not a second doctrine
+  as a bonus. What Defend Core adds that HoldGround
+  and Advance cannot already make is an order to a
+  thing, not a place the player picks and not a
+  prey: HoldGround holds a rally the player picks,
+  Advance hunts the nearest enemy anywhere, and
+  neither answers "guard this thing". The
+  hypothesis held on examination: Defend Core does
+  not collapse into HoldGround at the core cell,
+  because its movement is attacker-bounded — it
+  leaves the post to chase and comes back, which
+  HoldGround at the core never does — and Patrol's
+  route question is not already answered by the
+  rally picker, because a rally is one point, not
+  a route, and inventing waypoints inside a
+  doctrine step would make the doctrine untestable
+  in isolation. Patrol is deferred, not rejected.
+- Decision, on what "core" means: the world
+  objective core, WorldZone.CoreX / Y / Z
+  (28,5,28, 100 HP), read from the world on every
+  tick, not a rally the player happens to pick
+  near it and not a stored post. The post is the
+  core cell itself: the squad stands on it, which
+  the chunk allows because y = 5 is open air above
+  the ground (y <= 3 stone, y = 4 sparse trees),
+  and a guard whose post cell is ever solid holds
+  short of it through the shared step refusals,
+  exactly as a HoldGround squad holds short of a
+  rally inside a solid block. The doctrine needs
+  no new save field because the core coordinates
+  are world constants, not per-squad data — the
+  saved doctrine value alone re-derives the post
+  on load.
+- Decision, on the chase: a living enemy within 8
+  Manhattan of the core is an attacker; one
+  farther away is not, however near it stands to
+  the guard. Distance is enemy-to-core, not
+  enemy-to-squad, because the doctrine guards the
+  core, not the guard's neighbourhood — an enemy
+  next to a far-flung guard is not a threat to the
+  core until it walks within the radius, and then
+  it becomes one on the next tick, which is the
+  honest behaviour, not a gap. 8 is a first-pass
+  value for determinism and testability, not final
+  feel: larger than every kind's engagement range
+  (Vanguard 3, Recon 5, Heavy 2) so a guard can
+  intercept before an attacker reaches the core,
+  and far smaller than the spawn-to-core distance
+  (24) so the perimeter is local. Nearest attacker
+  wins, ties to the first enemy in list order, the
+  same rule as fire, so chase, fire, and display
+  never disagree about the attacker.
+- Decision, on movement, one decided step per tick:
+  with an attacker the guard steps toward the
+  attacker; without one it steps toward the core.
+  The choice is made once, in MoveForDefendCore,
+  and a refused step ends the tick's movement —
+  the guard does not then step toward the other
+  target instead, because that would execute a
+  second, different order in the same tick. The
+  step itself is the shared MoveTowardPosition
+  rule, so Defend Core cannot drift from HoldGround
+  and Advance on axis choice, tie-break, or
+  blocking — only the target differs. The rally is
+  never a movement target under this doctrine: a
+  Defend Core squad's rally is a deployment
+  formality the picker still requires, and the
+  contrast test (same rally, no enemies) proves
+  the three doctrines diverge in one tick.
+- Decision, on engagement: Defend Core fires
+  whenever an enemy is in its kind's engagement
+  range, Advance's rule, not HoldGround's
+  hold-only rule. A post-only fire rule was
+  considered and refused: it would let an attacker
+  walk past a chasing or returning guard unshot,
+  and would make the chase phase toothless until
+  the guard reached the attacker, which is not a
+  guard but a delayed HoldGround. The cost of the
+  chosen rule is stated openly: a returning guard
+  fires at a non-attacker in range, proved by test
+  — but firing is not chasing, and its step stays
+  core-ward, so the shot does not drag the guard
+  off its post. At the post, an adjacent attacker
+  cannot be stepped onto (enemy-occupied refusal),
+  so the guard stays on the core cell and fires
+  there, proved for Vanguard (kill) and Heavy (16).
+- Decision, on kinds served: proved against all
+  three kinds, above the scope's minimum (the new
+  kind plus one existing kind), because a doctrine
+  proved only on Vanguard in the slice that added
+  Heavy would leave the Step 1 / Step 2 pairing
+  unproved. Vanguard proves chase, kill, and
+  return; Heavy proves at-post fire and range-2
+  silence at range 3; Recon proves chase from
+  radius 8 with silence beyond range 5. Pricing is
+  settled, not reopened: Defend Core deploys
+  through the paid path at 10 EmberOre under the
+  3-live-squad cap, proved by a picker confirm
+  test, with no new price invented.
+- Decision, on display: Guarding / Hunting /
+  Marching, derived in the snapshot from post and
+  attacker, not from rally proximity. A Defend Core
+  squad at the core with no attacker reads
+  Guarding (not Holding, which is a rally word);
+  chasing a core attacker reads Hunting with that
+  attacker's cell (the same nearest-attacker rule
+  as movement); away from the core with no
+  attacker reads Marching, the return march. An
+  enemy far from the core never makes a guard at
+  post read Hunting, so the display cannot claim a
+  chase the movement rule is not making. No new
+  display line is added: kind, doctrine, members,
+  health, damage, range, and activity already print.
+- Decision, on the adapter binding: Alpha6 selects
+  Defend Core while picking, after Alpha1
+  HoldGround and Alpha2 Advance. Alpha6 is
+  confirmed free while picking: the picker keys
+  were 1 / 2 / 3 / 4 / 5 plus Return / Esc / O, and
+  no builder key fires while the picker is open,
+  so 6 collides with nothing. Step 2 cannot also
+  take Alpha6 — the next doctrine, if any, must
+  name its own non-colliding binding in its step.
+- Decision, on the shared step fix: the shared
+  squad step rule now returns false when already
+  at its target instead of reporting a step to its
+  own cell. This is a correctness fix to a return
+  value, not a behaviour change for existing
+  doctrines: HoldGround already returns false
+  before calling the rule when at its rally, and
+  an Advance squad cannot share a cell with its
+  prey (the step onto that cell is refused), so no
+  existing movement changes. The fix was found by
+  this step's own tests, not asserted in advance:
+  the radius-9 and dead-attacker tests first
+  failed because a guard at its post reported a
+  move, and they pass on the fixed rule with no
+  test changed for it.
+- Decision, on Patrol, deferred with its open
+  questions intact: what the route is and where it
+  is stored, what happens at each endpoint, whether
+  the squad fires while moving, and what it does
+  with no enemy in range. None of those is answered
+  here, and Patrol must not be claimed as designed
+  by this step.
+- Deliberately NOT in this step: a second doctrine
+  (Patrol), a fourth kind, any change to
+  HoldGround or Advance behaviour, a price or cap
+  change, a movement rule beyond the shared step's
+  return-value fix, a targeting rule (enemy
+  targeting stays kind-blind and doctrine-blind
+  except for the squad's own fire rule), a balance
+  pass, a warning / tint / refresh system, a
+  camera, a save-format change, or any claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 11 Step 3, demo scenario +
+  documentation-only review, composing the third
+  kind under the new doctrine beside an existing
+  kind under an existing doctrine in one
+  Simulation, closing Slice 11.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
