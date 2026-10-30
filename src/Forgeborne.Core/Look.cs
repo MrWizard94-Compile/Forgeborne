@@ -17,12 +17,15 @@ namespace Forgeborne.Core;
 /// adapter's MouseSensitivity stays the one sensitivity, exactly
 /// as the scope's hypothesis asked.
 ///
-/// Yaw is NOT moved into FpsController, and movement is NOT
-/// rotated by it here: FpsController stays world-aligned in this
-/// step, as the scope requires. Moving yaw into Look (rather than
-/// adding a second yaw beside the adapter's) is what avoids
-/// duplication: the adapter no longer stores its own _yaw, it
-/// reads Simulation.Look.Yaw / Forward for the camera. Look is
+/// Yaw is NOT moved into FpsController, and this class applies no
+/// movement rotation itself: FpsController stays a world-space
+/// mover (its UpdateWorld takes +X / +Z components), and the yaw
+/// rotation lives in Simulation.Tick (Slice 8 Step 1), which is
+/// the one place that knows both the raw input scalars and the
+/// current Look. Moving yaw into Look (rather than adding a
+/// second yaw beside the adapter's) is what avoids duplication:
+/// the adapter no longer stores its own _yaw, it reads
+/// Simulation.Look.Yaw / Forward for the camera. Look is
 /// session input state, like the picker selection: it is not
 /// saved, and an in-place RestoreWorld does not reset it — a
 /// fresh Simulation starts at yaw 0, pitch 0, which is what a

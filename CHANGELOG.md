@@ -1,5 +1,82 @@
 # Forgeborne — Changelog
 
+## 0.36.0 — 2026-10-30 — Slice 8 Step 1: yaw-rotated movement
+
+- Yaw-rotated FPS movement, decided in this step
+  (rationale in DECISIONS.md): `Simulation.Tick` now
+  rotates the adapter's raw W/S and A/D scalars by the
+  core `Look` yaw before they reach the FPS controller
+  — forward (sin yaw, cos yaw) and right
+  (cos yaw, -sin yaw) in XZ, so at yaw 0 the result is
+  exactly Slice 1 (W +Z, D +X), at yaw 90 W walks +X,
+  and at yaw 180 W walks -Z. The strafe sign is decided
+  and pinned by test: facing +X, D walks -Z (the
+  player's right) and A walks +Z, not the other way.
+  Pitch is horizontal-only by construction: looking up
+  45 or down 45 at yaw 90 still walks level +X with no
+  vertical change, proved, not asserted. Diagonal speed
+  is PRESERVED, not normalised: W+D at yaw 0 is
+  (0.6, 0.6), at yaw 90 is (0.6, -0.6), and at yaw 45 is
+  (0.849, 0) — same magnitude, rotated — so this
+  direction step smuggles in no speed change. To make
+  the rotation readable instead of a swapped-argument
+  trick, `FpsController` gains `UpdateWorld` (world +X /
+  +Z components, X-then-Z axis-separated sliding, same
+  vertical code) and the old `Update` (forward +Z,
+  strafe +X) delegates to it, so direct-controller
+  callers keep exactly their Slice 1 behaviour and
+  there is still one movement implementation.
+- What does NOT change in this step, proved by test:
+  base speed 6, gravity -20, jump velocity 8, the AABB
+  (half-width 0.3, height 1.8), axis-separated sliding,
+  grounded logic, and the skill speed multiplier (Swift
+  Feet +5% walks 0.63 in +X at yaw 90); squad movement,
+  enemy movement, and enemy targeting; and — deliberately
+  for exactly this step, per the scope — gather, build,
+  and fire, which at yaw 90 still use their fixed +Z
+  cells and nearest-enemy rule, so a movement failure
+  and a targeting failure stay distinguishable until
+  Step 2. The Unity adapter changes only in comments:
+  it still passes raw scalars, and no adapter logic
+  changes, so the new behaviour is checklist item 13 in
+  `docs/slice-01-playtest-gate.md`, not a Unity claim.
+  One pre-existing test changed for the intended
+  behaviour change, not for a bug: the 0.28.0 test that
+  asserted yaw-90 movement stays world-aligned +Z is
+  replaced by the new yaw tests, and its comment now
+  says so. One test-authoring error was caught by the
+  suite, not by review: a diagonal sliding test used a
+  single wall cell, which a diagonal walk legitimately
+  slides around; it now uses a full wall plane, plus a
+  pure-X blocked check. No save-format field is added:
+  `Look` stays session state, not saved.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: this step adds no adapter logic change, and
+  its adapter claim (mouse turn + W/D feel) is covered
+  by the new checklist item 13 above. The test count
+  below covers the core rotation only; it does not
+  cover adapter keys or rendering, and this entry does
+  not claim otherwise. What must NOT change in this step
+  is unchanged: weapon, squad, Dynamo, mill, loot,
+  skill, and core health rules; the gather / build /
+  survive loop; and the save format, which gains no
+  field in this step. No third kind, no new doctrine,
+  no voltage ladder, no balance pass, and no licence /
+  monetisation / release change rides along.
+- Tests: **889 passed, 0 failed** (was 862; +27 net:
+  29 new yaw-rotation tests, minus the 2 checks of the
+  replaced 0.28.0 world-aligned expectation). Demo
+  unchanged, as the scope predicted for a movement-only
+  step at neutral yaw: Slice 1 gathered 1, built 1,
+  killed 2, save 43,881 chars; Slice 2 save 43,908 chars;
+  Step 1 scenario save 44,016 chars; Step 3 scenario save
+  44,103 chars; Slice 4 scenario save 44,026 chars;
+  Slice 5 Step 2 scenario save 43,974 chars; Slice 6
+  Step 4 scenario save 44,024 chars; Slice 7 Step 2
+  scenario save 44,013 chars.
+  Next in order: Slice 8 Step 2, aim-based gather /
+  build / fire.
+
 ## 0.35.0 — 2026-10-30 — Slice 8 scope: aim-based interaction
 
 - New `docs/slice-08-scope.md` (documentation only,

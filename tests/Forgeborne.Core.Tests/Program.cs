@@ -1677,8 +1677,12 @@ Eq(30f, simLookRestore.Look.Yaw, "look yaw survives in-place restore");
 Eq(-20f, simLookRestore.Look.Pitch, "look pitch survives in-place restore");
 // What pitch does NOT change in this step, proved, not asserted:
 // gather, build, and fire keep their Slice 1 cells/rules while
-// pitched up 45 degrees, and movement stays world-aligned even
-// while yawed 90 degrees (yaw-rotated movement is a later step).
+// pitched up 45 degrees. Movement is NOT part of that list any
+// more: Slice 8 Step 1 rotates it by yaw (see the Slice 8 section
+// at the end of this file), so the old yaw-90 world-aligned
+// expectation below was replaced, not kept, by that step — the
+// behaviour change is the step, and keeping the old test would
+// have asserted the bug the step closes.
 var simPitch = new Simulation(42);
 simPitch.Tick(0.1f, 0, 0, false);
 simPitch.ApplyLook(0f, 45f);
@@ -1688,13 +1692,6 @@ Check(simPitch.BuildWallAhead() == BuildResult.Success, "pitched look does not c
 simPitch.World.SpawnWave(1);
 for (int i = 0; i < 3; i++) simPitch.FireAtNearestEnemy();
 Eq(1, simPitch.EnemiesKilled, "pitched look does not change fire at nearest enemy rule");
-var simYawMove = new Simulation(42);
-simYawMove.Tick(0.1f, 0, 0, false);
-float moveStartX = simYawMove.Fps.X, moveStartZ = simYawMove.Fps.Z;
-simYawMove.ApplyLook(90f, 0f);
-simYawMove.Tick(0.1f, 1f, 0f, false);
-Check(Math.Abs(simYawMove.Fps.X - moveStartX) < 0.001f, $"yaw 90 does not rotate movement into +X (X moved {simYawMove.Fps.X - moveStartX})");
-Check(simYawMove.Fps.Z > moveStartZ, $"yaw 90 movement stays world-aligned +Z (Z moved {simYawMove.Fps.Z - moveStartZ})");
 
 // ---- Slice 6 Step 2: squad activity word + hunting target (0.29.0) ----
 // HoldGround reads by its rally: marching while away, holding at it, no prey ever.
@@ -2201,6 +2198,115 @@ Eq(SquadActivity.Idle, demoS7LoadedSnap[1].Activity, "slice7 demo loaded recon s
 var demoS7WorldSave = SaveSystem.SaveZone(demoS7.World);
 var demoS7OldJson = demoS7WorldSave[..demoS7WorldSave.LastIndexOf(",\"Squads\":", StringComparison.Ordinal)] + "}";
 Eq(0, SaveSystem.LoadZone(demoS7OldJson).Squads.Count, "slice7 demo old save without squads loads with no squads");
+
+// ---- Slice 8 Step 1: yaw-rotated movement (0.36.0) ----
+// Rotation lives in Simulation.Tick, yaw only, horizontal only.
+// Helper: settle a fresh sim, yaw it, walk one tick, return deltas.
+(float dX, float dZ, float dY) WalkYaw(float yaw, float pitch, float forward, float strafe)
+{
+    var s = new Simulation(42);
+    s.Tick(0.1f, 0, 0, false);
+    float sx = s.Fps.X, sz = s.Fps.Z, sy = s.Fps.Y;
+    s.ApplyLook(yaw, pitch);
+    s.Tick(0.1f, forward, strafe, false);
+    return (s.Fps.X - sx, s.Fps.Z - sz, s.Fps.Y - sy);
+}
+bool Near(float got, float want) => Math.Abs(got - want) < 0.02f;
+var w0 = WalkYaw(0f, 0f, 1f, 0f);
+Check(Near(w0.dX, 0f) && Near(w0.dZ, 0.6f), $"slice8 yaw 0 W walks +Z (dX={w0.dX}, dZ={w0.dZ})");
+var d0 = WalkYaw(0f, 0f, 0f, 1f);
+Check(Near(d0.dX, 0.6f) && Near(d0.dZ, 0f), $"slice8 yaw 0 D walks +X (dX={d0.dX}, dZ={d0.dZ})");
+var s0 = WalkYaw(0f, 0f, -1f, 0f);
+Check(Near(s0.dZ, -0.6f), $"slice8 yaw 0 S walks -Z (dZ={s0.dZ})");
+var a0 = WalkYaw(0f, 0f, 0f, -1f);
+Check(Near(a0.dX, -0.6f), $"slice8 yaw 0 A walks -X (dX={a0.dX})");
+// Yaw 90: W walks +X. Strafe sign, decided and pinned here: D walks
+// -Z, the player's right when facing +X (right = (cos yaw, -sin yaw)
+// in XZ), and A walks +Z, the mirror of it — not the other way.
+var w90 = WalkYaw(90f, 0f, 1f, 0f);
+Check(Near(w90.dX, 0.6f) && Near(w90.dZ, 0f), $"slice8 yaw 90 W walks +X (dX={w90.dX}, dZ={w90.dZ})");
+var d90 = WalkYaw(90f, 0f, 0f, 1f);
+Check(Near(d90.dX, 0f) && Near(d90.dZ, -0.6f), $"slice8 yaw 90 D walks -Z, right of +X facing (dX={d90.dX}, dZ={d90.dZ})");
+var a90 = WalkYaw(90f, 0f, 0f, -1f);
+Check(Near(a90.dZ, 0.6f), $"slice8 yaw 90 A walks +Z (dZ={a90.dZ})");
+var s90 = WalkYaw(90f, 0f, -1f, 0f);
+Check(Near(s90.dX, -0.6f), $"slice8 yaw 90 S walks -X (dX={s90.dX})");
+var w180 = WalkYaw(180f, 0f, 1f, 0f);
+Check(Near(w180.dZ, -0.6f), $"slice8 yaw 180 W walks -Z (dZ={w180.dZ})");
+var d180 = WalkYaw(180f, 0f, 0f, 1f);
+Check(Near(d180.dX, -0.6f), $"slice8 yaw 180 D walks -X (dX={d180.dX})");
+var wNeg90 = WalkYaw(-90f, 0f, 1f, 0f);
+Check(Near(wNeg90.dX, -0.6f), $"slice8 yaw -90 W walks -X (dX={wNeg90.dX})");
+var w45 = WalkYaw(45f, 0f, 1f, 0f);
+Check(Near(w45.dX, 0.4243f) && Near(w45.dZ, 0.4243f), $"slice8 yaw 45 W walks diagonal +X+Z (dX={w45.dX}, dZ={w45.dZ})");
+var w360 = WalkYaw(360f, 0f, 1f, 0f);
+Check(Near(w360.dZ, 0.6f), $"slice8 yaw 360 W walks +Z again (dZ={w360.dZ})");
+// Pitch must NOT move the player vertically, at yaw 0 or yaw 90.
+var p0 = WalkYaw(0f, 45f, 1f, 0f);
+Check(Near(p0.dZ, 0.6f) && Near(p0.dY, 0f), $"slice8 pitch 45 yaw 0 W still walks level +Z (dZ={p0.dZ}, dY={p0.dY})");
+var p90 = WalkYaw(90f, 45f, 1f, 0f);
+Check(Near(p90.dX, 0.6f) && Near(p90.dY, 0f), $"slice8 pitch 45 yaw 90 W still walks level +X (dX={p90.dX}, dY={p90.dY})");
+var pDown = WalkYaw(90f, -45f, 1f, 0f);
+Check(Near(pDown.dX, 0.6f) && Near(pDown.dY, 0f), $"slice8 pitch -45 yaw 90 W does not dive (dX={pDown.dX}, dY={pDown.dY})");
+// Diagonal speed: PRESERVED, not normalised — decided in this step
+// so a direction fix does not smuggle in a speed change. W+D at
+// yaw 0 is (0.6, 0.6), magnitude 0.849, faster than a straight 0.6;
+// at yaw 90 the same pair is (0.6, -0.6), same magnitude, rotated;
+// at yaw 45 it collapses to (0.849, 0), same magnitude again.
+var diag0 = WalkYaw(0f, 0f, 1f, 1f);
+Check(Near(diag0.dX, 0.6f) && Near(diag0.dZ, 0.6f), $"slice8 diagonal yaw 0 preserved (dX={diag0.dX}, dZ={diag0.dZ})");
+var diag90 = WalkYaw(90f, 0f, 1f, 1f);
+Check(Near(diag90.dX, 0.6f) && Near(diag90.dZ, -0.6f), $"slice8 diagonal yaw 90 preserved and rotated (dX={diag90.dX}, dZ={diag90.dZ})");
+var diag45 = WalkYaw(45f, 0f, 1f, 1f);
+Check(Near(diag45.dX, 0.8485f) && Near(diag45.dZ, 0f), $"slice8 diagonal yaw 45 preserved (dX={diag45.dX}, dZ={diag45.dZ})");
+// Skill speed still scales rotated movement: Swift Feet (+5%)
+// at yaw 90 walks 0.63 in +X, not the base 0.6.
+var s8SwiftSim = new Simulation(42);
+s8SwiftSim.Tick(0.1f, 0, 0, false);
+var s8SwiftBuild = new SkillBuild();
+Check(s8SwiftBuild.Allocate("S3"), "slice8 swift feet allocates");
+Check(s8SwiftSim.ApplySkills(s8SwiftBuild), "slice8 swift feet applies");
+float s8SwiftSX = s8SwiftSim.Fps.X;
+s8SwiftSim.ApplyLook(90f, 0f);
+s8SwiftSim.Tick(0.1f, 1f, 0f, false);
+Check(Near(s8SwiftSim.Fps.X - s8SwiftSX, 0.63f), $"slice8 skill speed scales yaw-rotated movement (dX={s8SwiftSim.Fps.X - s8SwiftSX})");
+// Axis-separated sliding in world space, through the new entry
+// point the rotation uses: X blocked by a wall, Z still moves.
+var slideChunk = new VoxelChunk();
+for (int x = 0; x < 32; x++) for (int z = 0; z < 32; z++) for (int y = 1; y <= 3; y++) slideChunk.TrySet(x, y, z, BlockType.Stone);
+// A full wall plane at x=18 (feet and head height, all z), not a
+// single cell: a diagonal walk past a single cell would legitimately
+// slide around its corner, which is not a blocked-X proof.
+for (int z = 0; z < 32; z++) { slideChunk.TrySet(18, 4, z, BlockType.Stone); slideChunk.TrySet(18, 5, z, BlockType.Stone); }
+var slideFpsX = new FpsController(16f, 4f, 16f);
+slideFpsX.UpdateWorld(0.1f, 0, 0, false, slideChunk);
+for (int i = 0; i < 20; i++) slideFpsX.UpdateWorld(0.1f, 1f, 0f, false, slideChunk);
+Check(slideFpsX.X < 18f - FpsController.HalfWidth, $"slice8 world-space wall plane blocks X (X={slideFpsX.X})");
+var slideFps = new FpsController(16f, 4f, 16f);
+slideFps.UpdateWorld(0.1f, 0, 0, false, slideChunk);
+for (int i = 0; i < 20; i++) slideFps.UpdateWorld(0.1f, 1f, 1f, false, slideChunk);
+Check(slideFps.X < 18f - FpsController.HalfWidth, $"slice8 world-space wall blocks X on diagonal (X={slideFps.X})");
+Check(slideFps.Z > 20f, $"slice8 world-space sliding still moves Z past blocked X (Z={slideFps.Z})");
+// Deliberate asymmetry for exactly this step, proved not assumed:
+// at yaw 90, gather / build / fire still use their fixed +Z /
+// nearest-enemy rules — Step 2 is where they learn to aim.
+var asymSim = new Simulation(42);
+asymSim.Tick(0.1f, 0, 0, false);
+asymSim.ApplyLook(90f, 0f);
+Check(asymSim.GatherAhead() == GatherResult.Success, "slice8 step 1 yaw 90 gather still uses fixed +Z cell");
+asymSim.World.Player.Inventory.Add(BlockType.Stone, 10);
+Check(asymSim.BuildWallAhead() == BuildResult.Success, "slice8 step 1 yaw 90 build still uses fixed +Z cell");
+asymSim.World.SpawnWave(1);
+for (int i = 0; i < 3; i++) asymSim.FireAtNearestEnemy();
+Eq(1, asymSim.EnemiesKilled, "slice8 step 1 yaw 90 fire still uses nearest-enemy rule");
+// Direct FpsController.Update keeps its Slice 1 meaning (forward
+// is +Z, strafe is +X) even now that Simulation rotates above it:
+// the rotation is a Simulation-Tick rule, not a second rule inside
+// the controller, and a controller with no Look cannot rotate.
+var directFps = new FpsController(16f, 4f, 16f);
+directFps.Update(0.1f, 0, 0, false, new WorldZone(42).Chunk);
+directFps.Update(0.1f, 1f, 0f, false, new WorldZone(42).Chunk);
+Check(directFps.Z > 16f && Math.Abs(directFps.X - 16f) < 0.001f, "slice8 direct fps update stays world-aligned forward +Z");
 
 // ---- Silence instruction (recorded, not a test) ----
 

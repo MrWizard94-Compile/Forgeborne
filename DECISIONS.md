@@ -2035,6 +2035,100 @@ look inevitable.
   gate.
 - Next, in order: Slice 8 Step 1, yaw-rotated movement.
 
+## 0.36.0 — 2026-10-30 — Slice 8 Step 1: yaw-rotated movement
+
+- Decision, on where the rotation lives: in core, in
+  `Simulation.Tick`, following the scope's starting
+  hypothesis — because Tick is the one place that already
+  knows both the raw input scalars and the current Look,
+  and a rotation there is headless-testable, while an
+  adapter-side rotation would be a second, untestable
+  movement rule beside the core one. The scope allowed
+  putting it inside FpsController instead with a reason;
+  that was refused, not because it could not work, but
+  because a controller that takes a yaw would need a Look
+  (or a yaw parameter every caller must supply), and
+  every direct-controller test would then be testing a
+  rotation it never asked for. Instead the controller
+  gains a world-space entry point, `UpdateWorld`
+  (+X / +Z components), and the old `Update` delegates
+  to it — so there is still one movement implementation,
+  the controller stays a pure world-space mover with no
+  Look, and the rotation is exactly one formula in Tick.
+  The adapter passes raw scalars, unchanged in logic.
+- Decision, on the rotation itself: yaw only, horizontal
+  only. Forward is (sin yaw, cos yaw) and right is
+  (cos yaw, -sin yaw) in XZ, derived from the same
+  convention Look already uses (yaw 0 faces +Z, yaw
+  increases toward +X). Pitch contributes nothing: the
+  formula never reads `Look.Pitch` or `ForwardY`, so
+  looking up cannot climb and looking down cannot dive,
+  and a pitched yaw-90 walk is proved level. A full-3D
+  forward vector would have made pitch a movement input
+  by accident, and a movement mode (climb, flight) is
+  explicitly not in Slice 8.
+- Decision, on the strafe sign at yaw 90: D walks -Z.
+  This is the right-hand side of facing +X under the
+  game's axes (right = up × forward = (cos yaw, -sin
+  yaw)), and it is pinned by tests in both directions
+  (D -Z, A +Z) rather than left to a reader to infer
+  from a sign in the formula. The opposite sign would
+  have made D walk to the player's left, which no
+  FPS player would accept, and a test that only checked
+  W would have let that error hide until play.
+- Decision, on diagonal speed: PRESERVED, not
+  normalised. Today forward and strafe are applied at
+  full speed each, so a diagonal is sqrt(2) times a
+  straight walk; normalising it would have been a feel
+  and balance change disguised as a direction fix, and
+  Slice 8 is explicitly not a balance pass. Preserving
+  it keeps Slice 1 feel, and the tests prove the
+  magnitude is preserved under rotation (yaw 0, 90,
+  and 45 diagonals all measure the same speed), so a
+  later balance step, if any, starts from a known
+  number rather than an accidental one.
+- Decision, on what does NOT change, and the deliberate
+  asymmetry: speed, gravity, jump, AABB, sliding,
+  grounded logic, and the skill multiplier are unchanged
+  (the first five by sharing the one UpdateWorld code
+  path, the last proved by a Swift Feet rotated walk);
+  squad and enemy movement and targeting are untouched,
+  since a yawed player is the same target at the same
+  position; and gather, build, and fire deliberately
+  keep their fixed +Z / nearest-enemy rules for exactly
+  this step, per the scope, so a movement failure and
+  a targeting failure stay distinguishable. The tests
+  prove that asymmetry openly (yaw-90 gather, build,
+  and fire all still behave Slice-1), rather than
+  letting a reader mistake it for a missed update —
+  Step 2 is where those rules learn to aim.
+- Decision, on the changed pre-existing test: the 0.28.0
+  test asserting yaw-90 movement stays world-aligned
+  is replaced, not kept alongside the new tests, because
+  it asserted the exact behaviour this step closes. Its
+  replacement comment says so, and the pitched-gather /
+  build / fire non-change tests from the same block are
+  kept unchanged. A test-authoring error in this step's
+  own new tests is recorded the same way: a diagonal
+  sliding test first used a single wall cell, which the
+  suite failed because a diagonal walk legitimately
+  slides around a corner cell; the test now uses a full
+  wall plane plus a pure-X blocked check, and no core
+  code changed for it.
+- Deliberately NOT in this step: aim-based gather /
+  build / fire (Step 2); any adapter logic change (only
+  adapter comments changed, to stop claiming
+  world-aligned movement); any movement mode, vertical
+  movement by pitch, sprint, or crouch; any speed,
+  gravity, or jump change; any squad, doctrine, kind,
+  weapon, Dynamo, mill, loot, skill, or save change;
+  any save-format field; a balance pass; any claim
+  about Windows Unity verification (new checklist item
+  13 in `docs/slice-01-playtest-gate.md` only) or the
+  pending Slice 1 director playtest gate.
+- Next, in order: Slice 8 Step 2, aim-based gather /
+  build / fire.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

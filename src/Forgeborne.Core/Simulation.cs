@@ -136,9 +136,28 @@ public sealed class Simulation
         return true;
     }
 
+    /// <summary>
+    /// Slice 8 Step 1 — yaw-rotated movement: the adapter passes raw
+    /// W/S (forward) and A/D (strafe) scalars, and this method rotates
+    /// them by Look.Yaw before they reach the FPS controller. Yaw only,
+    /// horizontal only: the forward used is (sin yaw, cos yaw) in XZ
+    /// and the right used is (cos yaw, -sin yaw), so at yaw 0 the
+    /// result is exactly the Slice 1 behaviour (W +Z, D +X), at yaw 90
+    /// W walks +X and D walks -Z (the player's right when facing +X),
+    /// and pitch never moves the player vertically — looking up does
+    /// not make W climb, looking down does not make W dive. The two
+    /// scalars are combined at full value each (no diagonal
+    /// normalisation), preserving the Slice 1 diagonal-speed quirk;
+    /// see DECISIONS.md 0.36.0. Gather, build, and fire keep their
+    /// fixed +Z / nearest-enemy rules until Slice 8 Step 2.
+    /// </summary>
     public void Tick(float dt, float forward, float strafe, bool jump)
     {
-        Fps.Update(dt, forward, strafe, jump, World.Chunk);
+        float yawRad = Look.Yaw * (float)Math.PI / 180f;
+        float sin = (float)Math.Sin(yawRad), cos = (float)Math.Cos(yawRad);
+        float worldX = forward * sin + strafe * cos;
+        float worldZ = forward * cos - strafe * sin;
+        Fps.UpdateWorld(dt, worldX, worldZ, jump, World.Chunk);
         World.Player.X = (int)Math.Floor(Fps.X);
         World.Player.Y = (int)Math.Floor(Fps.Y);
         World.Player.Z = (int)Math.Floor(Fps.Z);
@@ -222,14 +241,14 @@ public sealed class Simulation
     /// it holds no rendering and no second copy of squad rules.
     /// </summary>
     /// <summary>
-    /// FPS view direction (Slice 6 Step 1): yaw + clamped pitch, with
-    /// a derived forward vector. The Unity adapter feeds mouse deltas
-    /// here and renders the camera from it; it holds no yaw of its
-    /// own any more. Session input state, not saved: a fresh
-    /// Simulation starts at yaw 0, pitch 0, and RestoreWorld does
-    /// not reset it. Camera + picker only in this step — GatherAhead,
-    /// the builders, and FireAtNearestEnemy keep their Slice 1 rules,
-    /// and movement stays world-aligned (see Look.cs).
+    /// FPS view direction (Slice 6 Step 1, movement rotated by it in
+    /// Slice 8 Step 1): yaw + clamped pitch, with a derived forward
+    /// vector. The Unity adapter feeds mouse deltas here and renders
+    /// the camera from it; it holds no yaw of its own any more.
+    /// Session input state, not saved: a fresh Simulation starts at
+    /// yaw 0, pitch 0, and RestoreWorld does not reset it. GatherAhead,
+    /// the builders, and FireAtNearestEnemy keep their Slice 1 rules
+    /// until Slice 8 Step 2 — only movement reads yaw, in Tick.
     /// </summary>
     public Look Look { get; } = new();
 

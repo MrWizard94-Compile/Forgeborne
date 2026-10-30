@@ -12,8 +12,10 @@ public class FpsInputAdapter : MonoBehaviour
     void Update()
     {
         if (Simulation == null) return;
-        // WASD / arrows, world-aligned in Slice 1 (no yaw rotation of movement yet;
-        // movement rotation is a later Slice 1 step, not bundled into pitch).
+        // WASD / arrows, raw scalars: Slice 8 Step 1 rotates them by
+        // the core Look yaw inside Simulation.Tick (W walks the yaw
+        // direction, D the yaw right), so no rotation lives here and
+        // this adapter needs no change for yaw-rotated movement.
         float forward = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
         float strafe = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
         bool jump = Input.GetKeyDown(KeyCode.Space);
@@ -28,8 +30,8 @@ public class FpsInputAdapter : MonoBehaviour
         // immediately lets a rally be picked by looking down at flat
         // ground — the concrete picker failure pitch exists to fix.
         // Gather (E), build (Q), and fire (click) keep their Slice 1
-        // cells/rules in this step; pitch changes camera + picker
-        // only, and movement stays world-aligned.
+        // cells/rules until Slice 8 Step 2; pitch changes camera +
+        // picker only, and movement is yaw-rotated in core (Step 1).
         Simulation.ApplyLook(
             Input.GetAxis("Mouse X") * MouseSensitivity,
             Input.GetAxis("Mouse Y") * MouseSensitivity);

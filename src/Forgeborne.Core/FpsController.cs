@@ -53,12 +53,32 @@ public sealed class FpsController
         return false;
     }
 
-    public void Update(float dt, float forward, float strafe, bool jump, VoxelChunk chunk)
+    /// <summary>
+    /// World-aligned move: forward is the +Z component, strafe the
+    /// +X component. This is the Slice 1 entry point, kept so direct
+    /// FpsController tests and callers that have no Look keep exactly
+    /// the old behaviour. It delegates to UpdateWorld, so there is
+    /// still one movement implementation, not two.
+    /// </summary>
+    public void Update(float dt, float forward, float strafe, bool jump, VoxelChunk chunk) =>
+        UpdateWorld(dt, strafe, forward, jump, chunk);
+
+    /// <summary>
+    /// World-space move (Slice 8 Step 1): dx is the +X component and
+    /// dz the +Z component of the intended walk, already rotated by
+    /// the caller (Simulation.Tick rotates by Look yaw; this class
+    /// holds no Look and applies no rotation of its own). The two
+    /// components are applied at full speed each, exactly as the
+    /// Slice 1 forward/strafe pair was, so a diagonal keeps its
+    /// Slice 1 speed quirk — see DECISIONS.md 0.36.0.
+    /// </summary>
+    public void UpdateWorld(float dt, float dx, float dz, bool jump, VoxelChunk chunk)
     {
-        // Horizontal X, then Z, separately.
-        float nx = X + strafe * EffectiveSpeed * dt;
+        // Horizontal X, then Z, separately, so sliding along a wall
+        // still works: a blocked X component does not cancel Z.
+        float nx = X + dx * EffectiveSpeed * dt;
         if (!Collides(chunk, nx, Y, Z)) X = nx;
-        float nz = Z + forward * EffectiveSpeed * dt;
+        float nz = Z + dz * EffectiveSpeed * dt;
         if (!Collides(chunk, X, Y, nz)) Z = nz;
 
         // Vertical.

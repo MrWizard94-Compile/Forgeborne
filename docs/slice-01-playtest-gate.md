@@ -78,6 +78,15 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     `docs/powered-presence.md`. Do not claim this verified
     in Unity until that checklist is completed there and
     recorded in DECISIONS.md.
+13. [ ] Yaw-rotated movement, added 0.36.0 (adapter logic
+    unchanged — the adapter still passes raw WASD scalars
+    and Simulation.Tick rotates them in core, headless-
+    tested): turn with the mouse to face +X, then W walks
+    +X and D walks -Z; looking up or down does not lift
+    or dive the player; a diagonal still feels faster
+    than a straight walk, as in Slice 1. Do not claim
+    this verified in Unity until it is observed there
+    and recorded in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
