@@ -1642,6 +1642,91 @@ look inevitable.
   step, from the ranked candidates carried in
   docs/slice-06-review.md.
 
+## 0.32.0 — 2026-10-30 — Slice 7 scope: second squad type
+
+- Decision, on the Slice 7 theme: the second squad type,
+  taken from the Slice 6 review's top-ranked candidate
+  in unchanged order, because the Step 4 evidence gives
+  no reason to reorder and Slice 6 removes the deferral
+  reason itself. In 0.27.0 the second type was deferred
+  because pricing a unit before the picker that deploys
+  it could be aimed and read in the scene would repeat
+  the 0.15.0 mistake; Slice 6 gives the picker pitch
+  aiming, markers, activity words, and a text kind word,
+  so a second kind can now be deployed and read, not
+  just spawned headlessly. The aim candidate is not
+  promoted above it, because aim changes the ground
+  every squad stands on — a second shape proved first
+  gives that later step two kinds to prove its
+  interaction against, not just Vanguard.
+- Decision, on scope shape: two steps, not four — one
+  system step plus demo + review, like Slice 5, rather
+  than Slice 6's four-step presentation sequence. A
+  second kind is one system with several decisions
+  inside it (role, shape, price, cap, binding, save,
+  targeting, display), and splitting it into separate
+  stats / price / binding steps would let each step
+  claim a kind that cannot yet be deployed, priced, or
+  read as a whole. The scope therefore keeps the step
+  whole and forces its decisions to be recorded
+  together, with the demo + review step as the
+  composition proof — the same discipline that kept
+  Slice 5's loop whole.
+- Decision, on what is left to step 1 and what is
+  fixed here: only the theme, the order, the
+  deliberately-not-in list, and the Vanguard-unchanged
+  constraint are decisions of this scope. The kind
+  choice, its numbers, its price, its cap shape, its
+  picker binding, its doctrine interaction, its save
+  clamp, and its targeting and marker rules are all
+  explicitly left to step 1, with starting hypotheses
+  (recon / heavy / flyer pool, shared movement rule,
+  per-kind stats table, total cap 3, independent kind
+  selection, both doctrines, kind-blind targeting, same
+  cyan marker) stated as hypotheses, not decisions.
+  The hypotheses are there so step 1 starts from a
+  falsifiable position — if it finds, for example, that
+  a flyer needs a movement rule or a heavy needs a
+  per-kind cap, it must prove that with tests and say
+  so, not quietly accept or reject the hypothesis.
+  A hypothesis that step 1 overturns with evidence is
+  a successful scope, not a broken one.
+- Decision, on the hard facts the scope names rather
+  than smooths over: the scope document records, with
+  file-level grounding, that stats are shared constants
+  (not a table), that kind is already saved at index 8
+  but the load clamp is Vanguard-shaped at 0..90, that
+  adapter keys 1/2 both force Vanguard, and that the
+  picker prompt hardcodes COST 10 and MAX 3. Naming
+  those four facts in the scope is deliberate: a scope
+  that said "add a kind" without them would let step 1
+  discover the clamp bug, the missing binding, or the
+  lying prompt as a surprise, and a surprise in step 1
+  is how a small step grows into a rewrite. The scope
+  also records that the text display already renders
+  kind verbatim, so step 1 owes no text change unless
+  its price or cap decision changes the prompt facts.
+- Decision, on Slice 8 ranking: aim-based interaction
+  plus yaw movement first, rest of tier 2 second, and
+  a third kind plus Defend Core / Patrol third — the
+  third entry is new, not carried, and is there because
+  Slice 7's evidence is what will judge whether a third
+  kind or a new doctrine is the next widening worth
+  doing. Ranking them third is not a rejection of
+  either; it is a refusal to promise a third widening
+  before the second one has been proved.
+- Deliberately NOT in this step: any new core system,
+  kind, doctrine, power tier, or consumer; any change
+  to Vanguard's stats or behaviour; any change to
+  squad price, cap, or picker bindings; any save-format
+  field; any adapter file change; a mesh tint or a
+  mesh-refresh hook (both remain named gaps from
+  0.30.0); a balance pass; any claim about Windows
+  Unity verification or the pending Slice 1 director
+  playtest gate.
+- Next, in order: Slice 7 Step 1, exactly one second
+  squad type, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

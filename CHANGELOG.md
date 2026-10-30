@@ -1,5 +1,49 @@
 # Forgeborne — Changelog
 
+## 0.32.0 — 2026-10-30 — Slice 7 scope: second squad type
+
+- Scoped Slice 7, plus `docs/slice-07-scope.md`
+  (documentation only, no new system, by design). Slice 7
+  theme is exactly one second squad type, taken from the
+  Slice 6 review's top-ranked candidate in unchanged
+  order: (1) one second kind, decided in that step —
+  its role chosen from the recon / heavy / flyer pool
+  the code already names (or another original role only
+  with a recorded reason none of the three fits), its
+  shape, per-kind stats representation, price under the
+  Slice 3 economy, total-vs-per-kind cap, independent
+  picker binding, doctrine interaction, save-clamp, and
+  targeting rules all decided in that step, not here,
+  with Vanguard's numbers (3 members, 30 HP each,
+  10 damage each, range 3) unchanged by it; then (2) a
+  Slice 7 demo scenario plus documentation-only review
+  proving both kinds together through a save/load
+  round-trip. The scope states up front why the second
+  type was deferred until now and is actionable now:
+  Slice 6's pitched picker and readable markers remove
+  the 0.15.0-style reason for waiting, while the facts
+  that make step 1 non-trivial are named honestly —
+  stats are shared Vanguard constants, not a per-kind
+  table; kind is already saved (index 8) but the load
+  clamp 0..90 is Vanguard-shaped; adapter keys 1/2 both
+  force Vanguard, so Unity cannot select a second kind
+  today; and the picker prompt hardcodes COST 10 and
+  MAX 3, so a different price or cap must update it or
+  it lies. Ranked Slice 8 candidates recorded, not
+  promised: aim-based interaction plus yaw-rotated
+  movement first, then the rest of automation tier 2,
+  then a third kind and the deferred doctrines.
+- Tests: **746 passed, 0 failed** (unchanged,
+  documentation-only step; re-run this run, see below).
+  Demo unchanged: Slice 1 gathered 1, built 1, killed 2,
+  save 43,881 chars; Slice 2 save 43,908 chars; Step 1
+  scenario save 44,016 chars; Step 3 scenario save
+  44,103 chars; Slice 4 scenario save 44,026 chars;
+  Slice 5 Step 2 scenario save 43,974 chars; Slice 6
+  Step 4 scenario save 44,024 chars.
+  Next in order: Slice 7 Step 1, exactly one second
+  squad type.
+
 ## 0.31.0 — 2026-10-30 — Slice 6 Step 4: demo scenario + review
 
 - Slice 6 demo scenario + review, decided in this step
