@@ -2257,6 +2257,72 @@ look inevitable.
 - Next, in order: Slice 8 Step 3, demo scenario +
   documentation-only review.
 
+## 0.38.0 — 2026-10-30 — Slice 8 Step 3: demo scenario + review
+
+- Decision, on composition order: the demo faces +X
+  throughout — yaw 90 walk, pitch -45 gather, same-aim
+  build, level fire — rather than walking yawed and then
+  turning back to +Z to interact. Turning back would
+  still exercise both systems in one run, but it would
+  leave the composed claim as "movement in one direction,
+  interaction in another", which is exactly the Step 1
+  asymmetry the slice was built to close. Facing +X for
+  every action proves the two steps compose, not just
+  coexist, and the one direction change in the run is
+  the loaded fresh view walking +Z, which is itself a
+  rule being proved, not a fallback.
+- Decision, on the gather cell: (18,3,16) is reported,
+  not corrected to the Step 2 cell (17,3,16). The walk
+  moves the eye east before the ray is traced, so the
+  descending ray's ground strike moves east with it;
+  "correcting" the demo to (17,3,16) would mean moving
+  the player back, aiming differently, or editing the
+  cell by hand — any of which would falsify the run.
+  The review names this geometry explicitly so a future
+  reader does not treat the Step 2 cell as the composed
+  cell.
+- Decision, on the loaded view: the review states the
+  fresh-view rule from the demo's construction (a fresh
+  Simulation loads the save), and keeps it distinct from
+  the in-place-restore rule (RestoreWorld keeps the
+  current view). Conflating the two would claim either
+  that loads reset views (false for in-place restore)
+  or that loads preserve views (false for a fresh load).
+  Both rules are true, for different load paths, and
+  the demo proves the fresh-load one while the 0.28.0
+  tests prove the in-place one.
+- Decision, on session counters: the loaded counters
+  resetting to 0 is reported as the rule, not as a loss
+  of the kill. What survives a save is the world — wall
+  present, enemy absent — not the pre-load counts, which
+  describe the pre-load session by definition (0.14.0).
+  Reporting "killed 1" for the loaded run would have
+  been a category error, so the demo reports the loaded
+  world state and the reset counters side by side.
+- Decision, on no new checklist item: the demo adds
+  none, following the Slice 7 review's rule. A checklist
+  item is for an adapter binding or feel claim; the demo
+  exercises no binding that items 13 (mouse turn + W/D
+  feel) and 14 (aimed gather / build / fire feel) do not
+  already cover, so adding one would inflate the
+  checklist without adding a check. The review says this
+  explicitly rather than leaving the absence unexplained.
+- Decision, on the save-length coincidence: the Slice 8
+  save (43,974 chars) equals the Slice 5 scenario's save
+  length, and the changelog says so rather than letting
+  a reader mistake equal length for equal content. Save
+  length is a composition fingerprint within one scenario
+  across runs, not an identity check across scenarios.
+- Deliberately NOT in this step: any core system, any
+  weapon / squad / Dynamo / mill / loot / skill / save
+  change, any balance pass, any new checklist item, any
+  claim about Windows Unity verification or the pending
+  Slice 1 director playtest gate, and any Slice 9 scope.
+- Next, in order: scoping Slice 9 as its own decision
+  step, from the ranked candidates carried in the review
+  (rest of automation tier 2 first, third kind and
+  deferred doctrines second).
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

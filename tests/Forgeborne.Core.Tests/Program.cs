@@ -2408,6 +2408,49 @@ directFps.Update(0.1f, 0, 0, false, new WorldZone(42).Chunk);
 directFps.Update(0.1f, 1f, 0f, false, new WorldZone(42).Chunk);
 Check(directFps.Z > 16f && Math.Abs(directFps.X - 16f) < 0.001f, "slice8 direct fps update stays world-aligned forward +Z");
 
+// ---- Slice 8 Step 3: composed demo scenario (0.38.0) ----
+// Mirrors the Slice 8 demo scenario step for step: one
+// Simulation faces +X throughout — yaw 90 walk, pitch -45
+// gather, same-aim build, level fire — then a save/load
+// round-trip. The gather cell is (18,3,16), not the
+// feet-level yaw-90 cell (17,3,16): after the 0.6 m walk
+// the eye is 0.6 m east, and the descending ray strikes
+// the ground one cell further east, which is why the
+// demo prints the cell instead of assuming it.
+var s8Demo = new Simulation(42);
+s8Demo.Tick(0.1f, 0, 0, false);
+Check(Near(s8Demo.Fps.X, 16f) && Near(s8Demo.Fps.Z, 16f) && Near(s8Demo.Fps.Y, 4f), $"slice8 step 3 demo starts at feet (16,4,16) (got {s8Demo.Fps.X},{s8Demo.Fps.Y},{s8Demo.Fps.Z})");
+s8Demo.ApplyLook(90f, 0f);
+s8Demo.Tick(0.1f, 1f, 0f, false);
+Check(Near(s8Demo.Fps.X, 16.6f) && Near(s8Demo.Fps.Z, 16f), $"slice8 step 3 yaw 90 walk moves +X only (got {s8Demo.Fps.X},{s8Demo.Fps.Z})");
+s8Demo.ApplyLook(0f, -45f);
+Check(s8Demo.GatherAhead() == GatherResult.Success, "slice8 step 3 composed gather succeeds at yaw 90 pitch -45");
+Eq(BlockType.Air, s8Demo.World.Chunk.Get(18, 3, 16), "slice8 step 3 composed gather empties (18,3,16)");
+Eq(1, s8Demo.BlocksGathered, "slice8 step 3 composed gather counts 1");
+s8Demo.World.Player.Inventory.Add(BlockType.Stone, 10);
+Check(s8Demo.BuildWallAhead() == BuildResult.Success, "slice8 step 3 composed build succeeds at the same aim");
+Eq(BlockType.Wall, s8Demo.World.Chunk.Get(18, 3, 16), "slice8 step 3 composed build fills (18,3,16) with a wall");
+Eq(1, s8Demo.BlocksBuilt, "slice8 step 3 composed build counts 1");
+Eq(9, s8Demo.World.Player.Inventory.Get(BlockType.Stone), "slice8 step 3 stone: 10 funded + 1 gathered - 2 wall = 9");
+s8Demo.World.Enemies.Add(new Enemy(22, 5, 16));
+s8Demo.ApplyLook(0f, 45f);
+for (int i = 0; i < 3; i++) s8Demo.FireAimed();
+Eq(1, s8Demo.EnemiesKilled, "slice8 step 3 composed fire kills the +X enemy in 3 shots");
+Eq(0, s8Demo.World.Enemies.Count, "slice8 step 3 composed fire leaves no enemies");
+Eq(39, s8Demo.Weapon.Mag, "slice8 step 3 composed fire leaves 39 rounds in the mag");
+var s8DemoSave = s8Demo.SaveToJson();
+var s8DemoLoaded = new Simulation(99);
+Check(s8DemoLoaded.LoadFromJson(s8DemoSave), "slice8 step 3 composed save loads");
+Eq(BlockType.Wall, s8DemoLoaded.World.Chunk.Get(18, 3, 16), "slice8 step 3 wall survives save/load");
+Eq(0, s8DemoLoaded.World.Enemies.Count, "slice8 step 3 kill survives save/load as an empty enemy list");
+Eq(16f, s8DemoLoaded.Fps.X, "slice8 step 3 fractional walk is not saved: loaded feet restart at the cell corner");
+Eq(0f, s8DemoLoaded.Look.Yaw, "slice8 step 3 loaded view is fresh yaw 0, not the pre-save yaw 90");
+Eq(0f, s8DemoLoaded.Look.Pitch, "slice8 step 3 loaded view is fresh pitch 0");
+Eq(0, s8DemoLoaded.BlocksGathered, "slice8 step 3 session gather counter resets on load");
+Eq(0, s8DemoLoaded.EnemiesKilled, "slice8 step 3 session kill counter resets on load");
+s8DemoLoaded.Tick(0.1f, 1f, 0f, false);
+Check(Near(s8DemoLoaded.Fps.X, 16f) && Near(s8DemoLoaded.Fps.Z, 16.6f), $"slice8 step 3 loaded fresh-view walk goes +Z (got {s8DemoLoaded.Fps.X},{s8DemoLoaded.Fps.Z})");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

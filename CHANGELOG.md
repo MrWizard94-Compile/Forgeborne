@@ -1,5 +1,68 @@
 # Forgeborne — Changelog
 
+## 0.38.0 — 2026-10-30 — Slice 8 Step 3: demo scenario + review
+
+- Slice 8 composed demo, decided in this step (rationale in
+  DECISIONS.md): the demo gains a Slice 8 Step 3 scenario
+  after the Slice 7 scenario — one Simulation, facing +X
+  throughout, that yaws 90 degrees, walks one tick (W walks
+  +X, feet 16.0 -> 16.6, Z unchanged), pitches down 45
+  degrees, gathers the +X ground cell (18,3,16), builds a
+  wall back into that same cell, pitches level, and fires
+  the +X enemy dead in 3 shots, then saves and loads.
+  Numbers: gathered 1, built 1, killed 1, ammo 39/120,
+  stone left 9 (10 funded + 1 gathered - 2 wall), save
+  43,974 chars. The gather cell is (18,3,16), not the
+  feet-level yaw-90 cell (17,3,16) from Step 2, because
+  the walk moves the eye 0.6 m east before the
+  pitch-down ray is traced and the descending ray strikes
+  the ground one cell further east — printed and tested,
+  not assumed. No new core system rides along with this
+  step, by design.
+- Save/load view rule, stated not smuggled: the loaded
+  run is a fresh Simulation, so its Look restarts at yaw 0
+  / pitch 0 (not the pre-save yaw 90), its feet restart at
+  the cell corner (16, 4, 16 — the fractional 0.6 m walk is
+  not saved), and its session counters reset to 0, while
+  the world survives (wall at (18,3,16), enemies left 0).
+  One loaded W tick then walks +Z to (16, 4, 16.6),
+  proving the fresh-view rule in the same run. In-place
+  restore keeping the current view (0.28.0 / 0.14.0) is
+  unchanged; the demo loads into a fresh Simulation, so
+  its view is fresh by construction, and the review says
+  so rather than claiming a load preserves a view.
+- Review: new `docs/slice-08-review.md` checks Slice 8
+  against its scope gate (every step pushed with passing
+  tests; yaw 0 unchanged and yaw 90 W +X, strafe sign and
+  diagonal question decided and tested; gather, build,
+  and fire each reading the core Look by the stated ray
+  with per-action no-target refusals and no +Z fallback;
+  neutral-aim compatibility proved as a split; builders
+  distinct by block type; weapon, squad, Dynamo, mill,
+  loot, skill, and save rules unchanged; composed demo
+  through a save/load round-trip) and closes Slice 8 as
+  tested aim interaction plus written (or unchanged)
+  adapters — not playtested, balanced, or Unity-verified.
+  No new playtest-gate checklist item is added for the
+  demo itself, because it exercises no adapter binding
+  the checklist does not already cover (items 13 and 14).
+  Slice 9 is NOT scoped by this review; its ranked
+  candidates are carried unchanged from the 0.35.0 scope
+  (rest of automation tier 2 first, third kind and
+  deferred doctrines second).
+- All earlier demo numbers unchanged in this run: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars; Slice 2
+  built 1, killed 1, kinetic gathered 1, squad intact,
+  save 43,921 chars; Step 1 scenario save 44,016 chars;
+  Step 3 scenario save 44,103 chars; Slice 4 scenario save
+  44,026 chars; Slice 5 Step 2 scenario save 43,974 chars
+  (same length as the new Slice 8 save by coincidence of
+  format, not the same save); Slice 6 Step 4 scenario save
+  44,024 chars; Slice 7 Step 2 scenario save 44,013 chars.
+- Tests: 929 passed, 0 failed (was 908; +21 composed-
+  integration tests mirroring the demo, no failures
+  during the run).
+
 ## 0.37.0 — 2026-10-30 — Slice 8 Step 2: aim-based gather / build / fire
 
 - Aim-based interaction, decided in this step (rationale in

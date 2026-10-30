@@ -389,3 +389,52 @@ var oldSaveS7 = worldSaveS7[..worldSaveS7.LastIndexOf(",\"Squads\":", StringComp
 var oldLoadedS7 = SaveSystem.LoadZone(oldSaveS7);
 Console.WriteLine($"Old save (Squads field stripped) loads: {oldLoadedS7.Squads.Count} squads, no crash, ore {simS7Loaded.World.Player.Inventory.Get(BlockType.EmberOre)}, can deploy more: {simS7Loaded.CanDeployOrbitalSquad()}");
 Console.WriteLine($"Slice 7 done: Vanguard {simS7Loaded.World.Squads[0].Kind} {simS7Loaded.World.Squads[0].Health} HP, Recon {simS7Loaded.World.Squads[1].Kind} {simS7Loaded.World.Squads[1].Health} HP, enemies left {simS7Loaded.World.Enemies.Count}, save JSON length: {saveS7.Length} chars");
+
+// Slice 8 Step 3 scenario: Slice 8 composed in one run —
+// yaw-rotated movement and aim-based interaction together,
+// not separately. The whole run faces +X: the player yaws
+// 90 degrees, walks one tick (W now walks +X, not +Z),
+// pitches down 45 degrees, gathers the +X ground cell
+// (18,3,16) — one cell further east than the feet-level
+// yaw-90 cell (17,3,16), because the eye is 0.6 m east
+// after the walk and the ray descends as it travels —
+// then builds a wall back into that same cell, pitches
+// level, and fires the +X enemy dead in 3 shots. The
+// game then saves and loads: the wall, the empty enemy
+// list, and the world survive, while the view rule is
+// stated, not smuggled — a fresh Simulation starts at
+// yaw 0, so the loaded run's W walks +Z, not +X, and
+// the fractional 0.6 m of the pre-save walk is not
+// saved (the player restarts at the cell corner). The
+// session counters reset on load, as in every slice:
+// what survives is the world (wall present, enemy
+// gone), not the pre-load counts. What this demo cannot
+// show, by construction, is any adapter feel: no mouse
+// turn, crosshair, or key press appears in a headless
+// run, so those claims stay in their Windows checklist,
+// not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 8 Step 3 scenario — yaw walk, aimed gather, aimed build, aimed fire, save/load round-trip");
+var simS8 = new Simulation(42);
+simS8.Tick(0.1f, 0, 0, false);
+Console.WriteLine($"Slice 8 start: player feet ({simS8.Fps.X:F1}, {simS8.Fps.Y:F1}, {simS8.Fps.Z:F1}), Look yaw {simS8.Look.Yaw}, pitch {simS8.Look.Pitch}");
+simS8.ApplyLook(90f, 0f);
+simS8.Tick(0.1f, 1f, 0f, false);
+Console.WriteLine($"Slice 8 yaw 90 walk: W walks +X, feet now ({simS8.Fps.X:F1}, {simS8.Fps.Y:F1}, {simS8.Fps.Z:F1})");
+simS8.ApplyLook(0f, -45f);
+var s8Gather = simS8.GatherAhead();
+Console.WriteLine($"Slice 8 aimed gather -> {s8Gather} (gathered {simS8.BlocksGathered}), cell (18,3,16) now {simS8.World.Chunk.Get(18, 3, 16)}");
+simS8.World.Player.Inventory.Add(BlockType.Stone, 10);
+var s8Build = simS8.BuildWallAhead();
+Console.WriteLine($"Slice 8 aimed build -> {s8Build} (built {simS8.BlocksBuilt}), cell (18,3,16) now {simS8.World.Chunk.Get(18, 3, 16)}, stone left {simS8.World.Player.Inventory.Get(BlockType.Stone)}");
+simS8.World.Enemies.Add(new Enemy(22, 5, 16));
+simS8.ApplyLook(0f, 45f);
+for (int i = 0; i < 3; i++) simS8.FireAimed();
+Console.WriteLine($"Slice 8 aimed fire x3: killed {simS8.EnemiesKilled}, enemies left {simS8.World.Enemies.Count}, ammo {simS8.Weapon.Mag}/{simS8.Weapon.Reserve}");
+var saveS8 = simS8.SaveToJson();
+var simS8Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS8Loaded.LoadFromJson(saveS8)}");
+Console.WriteLine($"After load: wall at (18,3,16): {simS8Loaded.World.Chunk.Get(18, 3, 16)}, enemies left {simS8Loaded.World.Enemies.Count}, player feet ({simS8Loaded.Fps.X:F1}, {simS8Loaded.Fps.Y:F1}, {simS8Loaded.Fps.Z:F1}) (fractional walk not saved), Look yaw {simS8Loaded.Look.Yaw}, pitch {simS8Loaded.Look.Pitch} (fresh view, not the pre-save yaw 90), session counters reset: gathered {simS8Loaded.BlocksGathered}, built {simS8Loaded.BlocksBuilt}, killed {simS8Loaded.EnemiesKilled}");
+simS8Loaded.Tick(0.1f, 1f, 0f, false);
+Console.WriteLine($"Loaded walk: fresh-view W walks +Z, feet now ({simS8Loaded.Fps.X:F1}, {simS8Loaded.Fps.Y:F1}, {simS8Loaded.Fps.Z:F1})");
+Console.WriteLine($"Slice 8 done: gathered {simS8.BlocksGathered}, built {simS8.BlocksBuilt}, killed {simS8.EnemiesKilled}, save JSON length: {saveS8.Length} chars");
