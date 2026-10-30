@@ -1192,6 +1192,104 @@ look inevitable.
   playtest gate remain open, untouched by this headless step.
 - Next, in order: scoping Slice 6 as its own decision step.
 
+## 2026-10-30 — Slice 6 scope (0.27.0, under delegation)
+
+- Decision: Slice 6 is scoped as "FPS presentation",
+  taking the top-ranked candidate from the 0.24.0 scope and
+  the 0.26.0 review in the same order, with no reordering:
+  pitch + markers first, then a second squad type. The
+  order is the decision, not just the list — the picker
+  that deploys a squad cannot yet be aimed down at flat
+  ground, a squad cannot yet be seen or read in the scene,
+  and the powered loop Slice 5 proved cannot yet be built
+  by hand, while a second squad type would widen combat
+  through a picker that is still text-only. Widening before
+  the presentation of the existing systems is usable would
+  repeat the 0.15.0 mistake in a new form.
+- Decision, on folding powered presence into Slice 6 as its
+  own step (step 3) rather than leaving it as a footnote:
+  the Slice 5 review attached the powered absence to this
+  candidate, not to a separate candidate, so a Slice 6 that
+  closed pitch and markers and still left no Dynamo key
+  would claim its candidate done while its newest note was
+  untouched. A separate step, rather than a fold into the
+  markers step, keeps each step to one presentation system:
+  markers render squads, the powered step wires keys and an
+  indicator, and neither step's review has to excuse the
+  other's size. The step is small only because core already
+  answers the hard questions — builders exist, `IsPowered`
+  exists — and the scope forbids it from extending power
+  (no voltage, no second source or consumer) precisely so
+  it stays that small.
+- Decision, on what this scope deliberately leaves open:
+  pitch's home (core Look versus adapter-only), what pitch
+  changes first, the clamp and sensitivity, yaw-rotated
+  movement, the snapshot activity word and marker set, the
+  build keys, and the power indicator form are hypotheses
+  here, not decisions. The hypotheses are: a minimal core
+  Look with a direction vector, because a pitch that exists
+  only as a camera angle is a rendering fact, not an aim
+  fact, and the picker raycast is what actually consumes a
+  direction; camera plus picker only in step 1, because
+  switching gather, build, and fire to aim in the same step
+  would change the proven Slice 1 loop while pitch is still
+  unproved; a clamp that prevents flipping past vertical,
+  reusing the existing sensitivity, with no invert option
+  claimed; yaw movement left out of step 1, because pitch
+  is vertical aim and the movement rewrite is already a
+  flagged later step, not part of pitch; a core-derived
+  activity word (marching / holding / hunting / idle) with
+  the hunting target re-derived each tick, not saved, so
+  movement, fire, and display can never disagree about the
+  prey; one marker per squad, one per rally, one pending
+  rally marker, in original primitives coloured cyan for
+  squads and orange for rallies per the art direction, with
+  no through-wall markers unless step 2 proves occlusion
+  makes them useless; and a HUD / display power line derived
+  from `IsPowered`, with a mesh tint only if step 3 proves
+  it small. Each may be overturned in its step with
+  evidence, and the step must record that reasoning rather
+  than defending the hypothesis.
+- Decision, on the honesty constraint: Slice 6 is the first
+  slice whose main value is adapter code that cannot be
+  compiled headlessly, and its gate says so in words. Prior
+  slices could lean on the test count because their systems
+  lived in core; Slice 6 steps lean on it only for their
+  core pieces (Look math, activity word, indicator
+  derivation), and their adapter pieces are Windows
+  checklist items, full stop. A Slice 6 review that reported
+  "633 tests passing" as if it covered a marker rendering
+  would be the same mislabelling the 0.24.0 scope warned
+  against for the playtest gate, in a smaller font. The
+  scope therefore requires each step to add its own
+  checklist items to the orbital / playtest docs, rather
+  than letting the checklist stay at its Slice 4 size while
+  the adapter code grows.
+- Decision, on the gaps this scope does NOT claim to close:
+  Unity verification and the director playtest are higher
+  in the Slice 5 review's priority order, and this scope
+  does not reorder them away — it records that neither is
+  closable by a headless step (one is blocked on Unity 6000
+  on Windows, the other on the director), so Slice 6 starts
+  at the first actionable presentation gap and shrinks the
+  verification checklist honestly, instead of pretending a
+  scope document verifies anything. Balance remains a later
+  pass, and the free-deploy gap remains documentation.
+- Decision, on Slice 7 ranking: a second squad type first,
+  then aim-based gather / build / fire plus yaw-rotated
+  movement as one candidate (they are one question — does
+  the player's aim, not a fixed +Z cell, decide what the
+  player touches?), then the rest of tier 2. The review may
+  reorder on Slice 6 evidence; this scope does not
+  pre-order the remainder first.
+- Deliberately NOT in this step: any Slice 6 system, any
+  balance change, any enforcement of the free-path rule
+  beyond its existing documentation, and any claim about
+  Windows Unity verification or the pending Slice 1 director
+  playtest gate — both remain open, and Slice 6 scoping
+  does not close either.
+- Next, in order: Slice 6 Step 1, FPS pitch aiming.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

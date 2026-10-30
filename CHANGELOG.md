@@ -1,5 +1,42 @@
 # Forgeborne — Changelog
 
+## 0.27.0 — 2026-10-30 — Slice 6 scope: FPS presentation
+
+- Scoped Slice 6, plus `docs/slice-06-scope.md`
+  (documentation only, no new system, by design). Slice 6
+  theme is FPS presentation, taken from the Slice 5 review's
+  top-ranked candidate in unchanged order: (1) FPS pitch
+  aiming, decided in that step (core Look versus
+  adapter-only pitch, camera plus picker first, gather /
+  build / fire and yaw-rotated movement explicitly NOT
+  bundled into the pitch step); (2) 3D squad / rally
+  markers, including the Advance display fix (a core-derived
+  activity word — marching / holding / hunting / idle —
+  replacing the rally-relative MOVING / HOLDING word, with
+  the hunting target re-derived each tick, not saved);
+  (3) powered Unity presence, folded in as its own step
+  because the Slice 5 review attached the powered absence
+  to this candidate (mill and Dynamo build keys, plus a
+  power indicator derived from the existing `IsPowered`
+  rule, with no change to Dynamo cost, distribution, or
+  cadence); then (4) a Slice 6 demo scenario plus
+  documentation-only review. The scope states up front that
+  Slice 6 is the first slice whose main value is adapter
+  code that cannot be compiled headlessly, so its review
+  must separate headless-tested core claims from
+  Windows-checklist adapter claims, and must not let either
+  borrow the other's evidence. A second squad type is the
+  first ranked Slice 7 candidate, followed by aim-based
+  interaction plus yaw-rotated movement, then the rest of
+  automation tier 2.
+- Tests: **633 passed, 0 failed** (unchanged,
+  documentation-only step). Demo unchanged: Slice 1 gathered
+  1, built 1, killed 2, save 43,881 chars; Slice 2 save
+  43,908 chars; Step 1 scenario save 44,016 chars; Step 3
+  scenario save 44,103 chars; Slice 4 scenario save 44,026
+  chars; Slice 5 Step 2 scenario save 43,974 chars.
+  Next in order: Slice 6 Step 1, FPS pitch aiming.
+
 ## 0.26.0 — 2026-10-30 — Slice 5 Step 2: demo scenario + review
 
 - Composed Slice 5 demo scenario, plus `docs/slice-05-review.md`
