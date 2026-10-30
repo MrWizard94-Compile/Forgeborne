@@ -77,6 +77,16 @@ public sealed class HudState
     /// meaning is the rated-voltage rule above.</summary>
     public int PoweredMills { get; set; }
     public int TotalMills { get; set; }
+    /// <summary>Slice 10 Step 1 power indicator, second consumer:
+    /// how many Workstations exist, and how many are powered
+    /// (delivered their rated LV, per IsWorkstationPowered).
+    /// An HV-fed workstation counts as NOT powered, because it
+    /// is disabled that tick, not boosted — counting it as
+    /// powered would be a display lie, the same lie the mill
+    /// count avoids. An unpowered workstation counts as NOT
+    /// powered, even though it still regens at base rate.</summary>
+    public int PoweredWorkstations { get; set; }
+    public int TotalWorkstations { get; set; }
     /// <summary>Mini-map: top-down solid / enemy presence, 32x32, for Slice 1 placeholder rendering.</summary>
     public bool[,] MiniMapSolid { get; set; } = new bool[32, 32];
 
@@ -112,9 +122,17 @@ public sealed class HudState
         for (int y = 0; y < 32; y++)
         for (int z = 0; z < 32; z++)
         {
-            if (world.Chunk.Get(x, y, z) != BlockType.KineticMill) continue;
-            hud.TotalMills++;
-            if (world.IsPowered(x, y, z)) hud.PoweredMills++;
+            var block = world.Chunk.Get(x, y, z);
+            if (block == BlockType.KineticMill)
+            {
+                hud.TotalMills++;
+                if (world.IsPowered(x, y, z)) hud.PoweredMills++;
+            }
+            else if (block == BlockType.Workstation)
+            {
+                hud.TotalWorkstations++;
+                if (world.IsWorkstationPowered(x, y, z)) hud.PoweredWorkstations++;
+            }
         }
         return hud;
     }

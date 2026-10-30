@@ -2934,6 +2934,66 @@ look inevitable.
 - Next, in order: Slice 10 Step 1, one second powered
   consumer, decided in that step.
 
+## 0.45.0 — Slice 10 Step 1: powered Workstation
+- Decision, on the consumer: the existing Workstation
+  block is the second powered consumer, not a new block
+  type. A new machine would have needed a new cost, a
+  new effect, and a new save question; the workstation
+  already has a real, distinct, player-centred effect
+  (shield regen within Manhattan 3), so power can
+  strengthen an existing decision (build and defend a
+  bench) instead of inventing a second one.
+- Decision, on the rating: LV, as its own
+  `WorkstationRated` constant. Same value as the mill
+  by decision, not by inheritance, so a future rating
+  change for one consumer cannot silently change the
+  other, and the workstation's power checks state
+  their own rating.
+- Decision, on mismatch: HV disables, it does not
+  destroy. A repair bench tripping offline on
+  overvoltage is a recoverable wiring mistake; destroying
+  the player's shield bench for the same mistake that
+  destroys a mill would double-punish a support
+  structure and remove the counterplay (regen) a player
+  needs to survive the mistake. The workstation works
+  again as soon as it is rewired to LV or left
+  unpowered, with no rebuild and no salvage question.
+  `IsMismatched` stays mill-only, so this rule cannot
+  be confused with mill destruction.
+- Decision, on the powered effect: base regen + 5 per
+  tick, additive with the skill bonus, in the existing
+  workstation phase. Power strengthens the rate, it does
+  not replace it and does not stack with a second
+  phase: a powered workstation regens once per tick,
+  at the higher rate, not twice. It produces nothing,
+  so no per-machine inventory is justified here.
+- Decision, on placement and display: aimed builder
+  (`BuildWorkstationAhead`, B adapter key) closes the
+  workstation's missing aim rule, at the Slice 1 cost;
+  the HUD gains a powered/total workstation count, with
+  HV counting as NOT powered, so a disabled workstation
+  cannot be displayed as powered.
+- Collision, stated openly: while this step was being
+  implemented directly, a scheduled run implementing
+  the same step in the same shared working copy
+  appeared, with the opposite mismatch decision (HV
+  destroys the workstation, doubled regen). That run
+  stood down and reverted all of its own edits, and
+  its design was NOT adopted or merged — the two
+  mismatch rules contradict each other, and only one
+  may land. This step is the disable design, proved by
+  22 new tests; the destruction design is recorded
+  here as rejected for this consumer, not lost.
+- Deliberately NOT in this step: a new block type, a
+  new voltage level, a second source, a per-machine
+  inventory, a balance pass, a pre-destruction warning
+  for workstations (there is no destruction to warn
+  about), mesh tint or refresh, or any claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 10 Step 2, one distinct power
+  source, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

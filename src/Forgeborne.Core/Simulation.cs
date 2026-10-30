@@ -265,6 +265,15 @@ public sealed class Simulation
 
     public BuildResult BuildWallAhead() => BuildAimed(BlockType.Wall);
 
+    /// <summary>Slice 10 Step 1: a Workstation by aim (see
+    /// BuildAimed), costing 10 Stone + 5 EmberOre as in Slice 1.
+    /// This closes the workstation's missing aimed builder: before
+    /// this step a workstation could only be placed by direct
+    /// World.Build, with no adapter key and no aim rule, while
+    /// every other machine had one. No new block type, no new
+    /// cost — the same workstation, now placeable by aim.</summary>
+    public BuildResult BuildWorkstationAhead() => BuildAimed(BlockType.Workstation);
+
     /// <summary>
     /// Orbital Tactical command from the headless loop: deploy a
     /// Vanguard squad under the HoldGround doctrine. The squad

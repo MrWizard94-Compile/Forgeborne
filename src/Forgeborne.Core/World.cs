@@ -353,6 +353,68 @@ public sealed class WorldZone
         return delivered != Voltage.None && delivered != VoltageRules.MillRated;
     }
 
+    /// <summary>Slice 10 Step 1, second powered consumer: a Workstation
+    /// is powered exactly when it is delivered its own rated
+    /// voltage (LV, VoltageRules.WorkstationRated). This is NOT
+    /// IsPowered reused: IsPowered is mill-only by construction,
+    /// and a workstation's power must be decided, not inherited.</summary>
+    public bool IsWorkstationPowered(int x, int y, int z) =>
+        Chunk.Get(x, y, z) == BlockType.Workstation && DeliveredVoltage(x, y, z) == VoltageRules.WorkstationRated;
+
+    /// <summary>Slice 10 Step 1 mismatch, decided here, not inherited
+    /// from the mill: a Workstation delivered a voltage that is
+    /// neither nothing nor its rating (on this ladder, HV) is
+    /// mismatched. Unlike a mill, a mismatched workstation is
+    /// NOT destroyed: it is disabled for that tick (see
+    /// EffectiveWorkstationRegen), and it works again as soon as
+    /// it is rewired to LV or left unpowered. Rationale: a repair
+    /// bench tripping offline on overvoltage is a recoverable
+    /// wiring mistake; destroying the player's shield bench for
+    /// the same mistake that destroys a mill would double-punish
+    /// a support structure, and a destroyed bench would also
+    /// remove the very counterplay (regen) a player needs to
+    /// survive the mistake. No voltage (None) is not a mismatch:
+    /// an unpowered workstation runs at its base rate.</summary>
+    public bool IsWorkstationMismatched(int x, int y, int z)
+    {
+        if (Chunk.Get(x, y, z) != BlockType.Workstation) return false;
+        var delivered = DeliveredVoltage(x, y, z);
+        return delivered != Voltage.None && delivered != VoltageRules.WorkstationRated;
+    }
+
+    /// <summary>Slice 10 Step 1 effective regen, decided here: scan
+    /// workstations within Manhattan distance 3 of the player.
+    /// If any is powered (LV), regen is base + 5 (the powered
+    /// bonus, additive with the skill bonus already in
+    /// WorkstationRegenPerTick, not replacing it). If none is
+    /// powered but any is unpowered, regen is base. If every near
+    /// workstation is mismatched (HV), regen is 0 — disabled, not
+    /// destroyed. If there is no near workstation, regen is 0.
+    /// This runs in the existing workstation phase in Advance
+    /// (after the enemy phase, before the squad phase), not in
+    /// the powered-automation phase, because it is a player
+    /// effect, not an excavation — and it produces nothing, so
+    /// no per-machine inventory is needed or built.</summary>
+    public int EffectiveWorkstationRegen()
+    {
+        bool any = false, powered = false, unpowered = false;
+        for (int dx = -3; dx <= 3; dx++)
+        for (int dy = -3; dy <= 3; dy++)
+        for (int dz = -3; dz <= 3; dz++)
+        {
+            if (Math.Abs(dx) + Math.Abs(dy) + Math.Abs(dz) > 3) continue;
+            int x = Player.X + dx, y = Player.Y + dy, z = Player.Z + dz;
+            if (!VoxelChunk.InBounds(x, y, z) || Chunk.Get(x, y, z) != BlockType.Workstation) continue;
+            any = true;
+            if (IsWorkstationPowered(x, y, z)) powered = true;
+            else if (DeliveredVoltage(x, y, z) == Voltage.None) unpowered = true;
+        }
+        if (!any) return 0;
+        if (powered) return WorkstationRegenPerTick + 5;
+        if (unpowered) return WorkstationRegenPerTick;
+        return 0;
+    }
+
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
         if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable)) return BuildResult.InvalidType;
@@ -586,7 +648,8 @@ public sealed class WorldZone
             if (e.IsAdjacentTo(Player)) Player.TakeDamage(Enemy.Damage);
         }
         Enemies.RemoveAll(e => e.IsDead);
-        if (IsNearWorkstation()) Player.RestoreShields(WorkstationRegenPerTick);
+        int workstationRegen = EffectiveWorkstationRegen();
+        if (workstationRegen > 0) Player.RestoreShields(workstationRegen);
         RunSquads();
         RunMismatchedDestruction();
         if (Tick % KineticIntervalTicks == 0) RunKineticAutomation();

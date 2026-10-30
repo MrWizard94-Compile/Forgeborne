@@ -33,6 +33,14 @@ public static class VoltageRules
     /// cadence, because no delivery is not a mismatch.</summary>
     public const Voltage MillRated = Voltage.LV;
 
+    /// <summary>Slice 10 Step 1: the Workstation's rated voltage.
+    /// Same value as MillRated (LV) by decision, not by inheritance:
+    /// a separate constant so a future rating change for one
+    /// consumer cannot silently change the other, and so
+    /// IsWorkstationPowered / IsWorkstationMismatched state their
+    /// own rating instead of borrowing the mill's.</summary>
+    public const Voltage WorkstationRated = Voltage.LV;
+
     /// <summary>Transformer conversion on a two-level ladder: each
     /// level converts to the other, so there is no "nowhere higher
     /// / nowhere lower" edge left undefined — LV in gives HV out

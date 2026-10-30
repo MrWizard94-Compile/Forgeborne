@@ -100,6 +100,11 @@ public class FpsInputAdapter : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Y)) Simulation.BuildDynamoAhead();
             if (Input.GetKeyDown(KeyCode.U)) Simulation.BuildTransformerAhead();
             if (Input.GetKeyDown(KeyCode.I)) Simulation.BuildCableAhead();
+            // Slice 10 Step 1: B builds a workstation by aim, closing
+            // the workstation's missing adapter key. B is free: see
+            // the key list above. Same picker guard as the other
+            // builders, for the same ore reason.
+            if (Input.GetKeyDown(KeyCode.B)) Simulation.BuildWorkstationAhead();
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's

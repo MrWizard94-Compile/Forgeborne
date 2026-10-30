@@ -1,5 +1,39 @@
 # Forgeborne — Changelog
 
+## 0.45.0 — 2026-10-30 — Slice 10 Step 1: powered Workstation, second powered consumer
+
+- Powered Workstation, decided in this step (rationale in
+  DECISIONS.md): the existing Workstation block, not a new
+  block type, is the second powered consumer. Its rating
+  is LV, stated as its own `VoltageRules.WorkstationRated`
+  constant, not borrowed from the mill's rating.
+  `IsWorkstationPowered` / `IsWorkstationMismatched`
+  are new, consumer-specific checks — `IsPowered` /
+  `IsMismatched` stay mill-only, and a mismatched
+  workstation is disabled (no regen that tick), not
+  destroyed, and works again when rewired to LV or left
+  unpowered. Powered effect: base regen + 5 per tick,
+  additive with the skill bonus already in
+  `WorkstationRegenPerTick`, in the existing workstation
+  phase (after the enemy phase, before the squad phase),
+  not in the powered-automation phase, because it is a
+  player effect, not an excavation — and it produces
+  nothing, so no per-machine inventory is built.
+  Unpowered behaviour is unchanged (base regen).
+  New `Simulation.BuildWorkstationAhead` closes the
+  workstation's missing aimed builder (10 Stone + 5
+  EmberOre, same cost as Slice 1), plus a B adapter key
+  and a `HudState` powered/total workstation count (HV
+  counts as NOT powered, as with mills). No save-format
+  change: the workstation is an existing block type and
+  power is derived from placement, so old saves load
+  unchanged.
+- Tests: 1157 passed, 0 failed (was 1135; +22, no
+  failures). Demo unchanged: Slice 9 Step 4 scenario
+  save 43,975 chars, voltages LV/LV/HV/None, HUD 2/4
+  mills before and 2/3 after tick 1, powered 10 +
+  kinetic 1 + destroyed 1 in 5 ticks, stone 11.
+
 ## 0.44.0 — 2026-10-30 — Slice 10 scope: electrical widening (second consumer, second source)
 
 - Slice 10 scoped as its own decision step (rationale in

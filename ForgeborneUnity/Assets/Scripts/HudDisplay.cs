@@ -20,6 +20,12 @@ public class HudDisplay : MonoBehaviour
     // HudState only — the powered/total mill counts are derived in
     // core, so this adapter holds no power rule of its own.
     public Text? PowerText;
+    // Slice 10 Step 1: wire this Text in the Inspector to render
+    // the second-consumer power line, if a line is wanted. Optional
+    // like PowerText: unwired, nothing changes. It renders
+    // HudState only — powered/total workstation counts are derived
+    // in core, so this adapter holds no power rule of its own.
+    public Text? WorkstationPowerText;
 
     void Update()
     {
@@ -30,5 +36,6 @@ public class HudDisplay : MonoBehaviour
         if (ObjectiveText != null) ObjectiveText.text = $"{hud.ObjectiveName} - {hud.ObjectiveDistanceMetres}m\n{hud.ObjectivePercentCompleted}% COMPLETED";
         if (AmmoText != null) AmmoText.text = $"{hud.WeaponName}\n{hud.AmmoMag}/{hud.AmmoReserve}";
         if (PowerText != null) PowerText.text = $"POWER: {hud.PoweredMills}/{hud.TotalMills} MILLS POWERED";
+        if (WorkstationPowerText != null) WorkstationPowerText.text = $"POWER: {hud.PoweredWorkstations}/{hud.TotalWorkstations} WORKSTATIONS POWERED";
     }
 }

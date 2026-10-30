@@ -3085,6 +3085,82 @@ Eq(1, s9DemoLoaded.World.KineticBlocksGathered, "slice9 step4 composed loaded ki
 Eq(0, s9DemoLoaded.World.DestroyedMills, "slice9 step4 composed loaded world destroys nothing new");
 Eq(22, s9DemoLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice9 step4 composed loaded stone reaches 11 + 11");
 
+// ---- Slice 10 Step 1: powered Workstation, second powered consumer ----
+// Rating decided, not inherited: LV via a face-adjacent Dynamo powers
+// a workstation; the same workstation with no source is unpowered.
+var pwWorld = new WorldZone(42);
+pwWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+pwWorld.Chunk.TrySet(18, 5, 16, BlockType.Dynamo);
+Check(pwWorld.IsWorkstationPowered(17, 5, 16), "slice10 LV-fed workstation is powered at its own rating");
+Check(!pwWorld.IsWorkstationMismatched(17, 5, 16), "slice10 LV-fed workstation is not mismatched");
+var unpowWorld = new WorldZone(42);
+unpowWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+Check(!unpowWorld.IsWorkstationPowered(17, 5, 16), "slice10 unpowered workstation is not powered");
+Check(!unpowWorld.IsWorkstationMismatched(17, 5, 16), "slice10 unpowered workstation is not mismatched");
+// HV via one transformer step: Dynamo -> transformer -> workstation
+// delivers HV, so it is mismatched, not powered — and, unlike a mill,
+// it is NOT destroyed on its tick, it is disabled instead.
+var hvWsWorld = new WorldZone(42);
+hvWsWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+hvWsWorld.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+hvWsWorld.Chunk.TrySet(19, 5, 16, BlockType.Dynamo);
+Eq(Voltage.HV, hvWsWorld.DeliveredVoltage(17, 5, 16), "slice10 transformer steps dynamo LV up to HV for its workstation");
+Check(!hvWsWorld.IsWorkstationPowered(17, 5, 16), "slice10 HV-fed workstation is not powered");
+Check(hvWsWorld.IsWorkstationMismatched(17, 5, 16), "slice10 HV-fed workstation is mismatched before its tick");
+hvWsWorld.Player.TakeDamage(20);
+hvWsWorld.Advance();
+Eq(BlockType.Workstation, hvWsWorld.Chunk.Get(17, 5, 16), "slice10 HV-fed workstation survives its tick, unlike a mill");
+Eq(65, hvWsWorld.Player.Shields, "slice10 HV-fed workstation restores nothing: disabled, not boosted, not destroyed");
+// Regen: unpowered = base 5 (existing rule, unchanged); powered =
+// base + 5 powered bonus; powered + skill bonus stacks additively.
+var pwRegenWorld = new WorldZone(42);
+pwRegenWorld.Player.TakeDamage(20);
+pwRegenWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+pwRegenWorld.Chunk.TrySet(18, 5, 16, BlockType.Dynamo);
+Eq(10, pwRegenWorld.EffectiveWorkstationRegen(), "slice10 powered workstation effective regen is base 5 + powered 5");
+pwRegenWorld.Advance();
+Eq(75, pwRegenWorld.Player.Shields, "slice10 powered workstation restores 10 shields per tick");
+var pwSkillWorld = new WorldZone(42);
+pwSkillWorld.WorkstationRegenPerTick = 10; // skill bonus, as ApplySkills sets it
+pwSkillWorld.Player.TakeDamage(30);
+pwSkillWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+pwSkillWorld.Chunk.TrySet(18, 5, 16, BlockType.Dynamo);
+Eq(15, pwSkillWorld.EffectiveWorkstationRegen(), "slice10 powered + skill regen stacks: 10 skill rate + 5 powered");
+pwSkillWorld.Advance();
+Eq(70, pwSkillWorld.Player.Shields, "slice10 powered + skill workstation restores 15 shields per tick");
+// Powered workstation recovers when rewired: HV (disabled) -> LV
+// (powered) on the same cell, with no rebuild and no salvage.
+hvWsWorld.Chunk.TrySet(18, 5, 16, BlockType.Dynamo);
+hvWsWorld.Chunk.TrySet(19, 5, 16, BlockType.Air);
+Check(hvWsWorld.IsWorkstationPowered(17, 5, 16), "slice10 rewired workstation is powered again after HV source removed");
+hvWsWorld.Advance();
+Eq(75, hvWsWorld.Player.Shields, "slice10 rewired workstation restores 10 shields per tick again");
+// Aimed builder: same aim as the Slice 5 demo mill build, with
+// workstation inventory (10 Stone + 5 EmberOre), places a workstation.
+var simWs = new Simulation(42);
+simWs.Tick(0.1f, 0, 0, false);
+simWs.World.Player.Inventory.Add(BlockType.Stone, 10);
+simWs.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+simWs.ApplyLook(-18.4f, -53f);
+Eq(BuildResult.Success, simWs.BuildWorkstationAhead(), "slice10 simulation build workstation ahead succeeds");
+Eq(BlockType.Workstation, simWs.World.Chunk.Get(15, 4, 17), "slice10 simulation workstation placed by aim");
+Eq(0, simWs.World.Player.Inventory.Get(BlockType.EmberOre), "slice10 simulation workstation spends its ore");
+// HUD second-consumer count: powered = LV only; HV counts as not
+// powered; unpowered counts as not powered.
+var hudPw = new Simulation(42);
+hudPw.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+hudPw.World.Chunk.TrySet(18, 5, 16, BlockType.Dynamo);
+var hudPwState = hudPw.Hud();
+Eq(1, hudPwState.TotalWorkstations, "slice10 HUD counts 1 workstation");
+Eq(1, hudPwState.PoweredWorkstations, "slice10 HUD counts LV workstation as powered");
+var hudHv = new Simulation(42);
+hudHv.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+hudHv.World.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+hudHv.World.Chunk.TrySet(19, 5, 16, BlockType.Dynamo);
+var hudHvState = hudHv.Hud();
+Eq(1, hudHvState.TotalWorkstations, "slice10 HUD counts HV workstation in total");
+Eq(0, hudHvState.PoweredWorkstations, "slice10 HUD counts HV workstation as NOT powered");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
