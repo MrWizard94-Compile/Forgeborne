@@ -1,5 +1,71 @@
 # Forgeborne — Changelog
 
+## 0.31.0 — 2026-10-30 — Slice 6 Step 4: demo scenario + review
+
+- Slice 6 demo scenario + review, decided in this step
+  (rationale in DECISIONS.md): no new core system, by
+  design — this step composes steps 1–3 in one demo run
+  and writes `docs/slice-06-review.md`. The demo proves,
+  headlessly, the core presentation pieces only: a clamped
+  Look and its forward vector (start (0, 0, 1), 90 yaw /
+  45 pitch giving (0.707, 0.707, 0), +100 pitch more
+  clamping at 89 with forward almost straight up); a
+  HoldGround squad reading Marching at spawn and Holding
+  at its rally after exactly 4 ticks, with no enemy present
+  so the march is a clean reading; an Advance squad
+  reading Hunting with a live prey and Idle after its
+  full-strength squad kills the 30-HP prey in one
+  engagement tick, at (16,5,17) rather than marching to
+  its ignored rally (24,5,16); and a powered pair built
+  through the real Simulation builders reading 1/1 on the
+  power indicator, gathering 5 in 5 ticks from a seeded
+  stone pocket, then gathering 5 again in the loaded game
+  after a save/load round-trip that also preserves both
+  squads (still Holding and Idle by derivation) while the
+  Look correctly resets to a fresh view, because Look is
+  session input state and is not saved. Save JSON 44,024
+  chars. The demo cannot prove adapter rendering — no
+  headless run can show a marker in a scene, a key press
+  building a Dynamo, or a HUD text line — so the review's
+  verdict separates the two claims in words: the core
+  presentation pieces are tested, the adapter pieces are
+  written and checklist-listed, and neither claim borrows
+  the other's evidence. The review closes Slice 6 as
+  tested presentation core plus written adapters, not as
+  playtested, balanced, or Unity-verified, and it adds no
+  new playtest-gate checklist item because its adapter
+  claims are already covered by gate items 11–12 and the
+  orbital / powered checklists. Slice 7 is NOT scoped by
+  this review; its scope is the next run's decision, from
+  the ranked candidates the review carries unchanged.
+  What must NOT change in this step is unchanged: squad
+  movement, fire, targeting, price, and cap; Dynamo cost,
+  distribution, and cadence; kinetic mill behaviour; loot,
+  skills, and core health; and the save format, which
+  gains no field in this step.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: nothing in this step changes an adapter file,
+  and this entry does not claim otherwise. The test count
+  below covers the composed core pieces only; it does not
+  cover adapter keys, markers, camera rendering, or HUD
+  text, and the review states that split explicitly.
+- Tests: **746 passed, 0 failed** (was 709; +37, with no
+  test failures during the run: Look forward values and
+  clamp, HoldGround Marching then Holding at its rally,
+  Advance Hunting then Idle with its prey cell, both paid
+  deploys spending 20 ore, powered builders and 1/1
+  indicator, powered rate 5 in 5 ticks before and after
+  load, both squads and both blocks surviving load with
+  their derived readings, Look resetting on a fresh load,
+  and the demo save length 44,024 chars as a composition
+  fingerprint). Demo unchanged except for the new
+  scenario: Slice 1 gathered 1, built 1, killed 2, save
+  43,881 chars; Slice 2 save 43,908 chars; Step 1 scenario
+  save 44,016 chars; Step 3 scenario save 44,103 chars;
+  Slice 4 scenario save 44,026 chars; Slice 5 Step 2
+  scenario save 43,974 chars; new Step 4 scenario save
+  44,024 chars.
+
 ## 0.30.0 — 2026-10-30 — Slice 6 Step 3: powered Unity presence
 
 - Powered Unity presence, decided in this step (rationale

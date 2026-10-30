@@ -213,3 +213,81 @@ foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4,
     simS5Loaded.World.Chunk.TrySet(x, y, z, BlockType.Stone);
 for (int i = 0; i < 5; i++) simS5Loaded.World.Advance();
 Console.WriteLine($"Slice 5 done: loaded powered gathered {simS5Loaded.World.PoweredBlocksGathered}, loaded kinetic gathered {simS5Loaded.World.KineticBlocksGathered}, stone now {simS5Loaded.World.Player.Inventory.Get(BlockType.Stone)}, save JSON length: {saveS5.Length} chars");
+
+// Slice 6 Step 4 scenario: Slice 6 composed in one run — the core
+// presentation pieces of steps 1-3, in scope order, through a
+// save/load round-trip. Pitch first: the Look starts facing +Z,
+// turns 90 yaw / 45 pitch, then is driven 100 further up and
+// clamps at 89, so the forward vector is almost straight up.
+// Then squads, one at a time so their readings stay readable:
+// a HoldGround squad marches to its rally and then holds, and
+// an Advance squad hunts a living enemy and then idles once
+// its prey is dead — the rally the Advance squad was deployed
+// with is ignored throughout, which is the documented Advance
+// behaviour, not a bug. Then the powered pair, built through
+// the real Simulation builders (mill front-left, Dynamo
+// front-centre, no move between builds), with its neighbours
+// seeded as stone so the powered rate is controlled. After a
+// save/load round-trip the pair, the squads, and their derived
+// readings all survive — while the Look does not, by design:
+// it is session input state, and a fresh Simulation starts
+// facing +Z. What this demo cannot show, by construction, is
+// any adapter rendering: no marker, key press, or HUD text
+// line appears in a headless run, so those claims stay in
+// their Windows checklists, not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 6 Step 4 scenario — pitch, squad activity words, powered count, save/load round-trip");
+var simS6 = new Simulation(42);
+var f0 = simS6.Look.Forward();
+Console.WriteLine($"Look start: yaw {simS6.Look.Yaw}, pitch {simS6.Look.Pitch}, forward ({f0.X:F3}, {f0.Y:F3}, {f0.Z:F3})");
+simS6.ApplyLook(90f, 45f);
+var f1 = simS6.Look.Forward();
+Console.WriteLine($"Look after 90 yaw / 45 pitch: forward ({f1.X:F3}, {f1.Y:F3}, {f1.Z:F3})");
+simS6.ApplyLook(0f, 100f);
+var f2 = simS6.Look.Forward();
+Console.WriteLine($"Look after +100 pitch more: pitch {simS6.Look.Pitch} (clamped at 89), forward ({f2.X:F3}, {f2.Y:F3}, {f2.Z:F3})");
+simS6.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+simS6.BeginOrbitalPick();
+simS6.SetOrbitalRally(20, 5, 16);
+var s6Hold = simS6.ConfirmOrbitalDeploy();
+void PrintS6(string label, Simulation s)
+{
+    var snap = OrbitalView.Snapshot(s.World);
+    foreach (var sq in snap)
+        Console.WriteLine($"{label}: {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}{(sq.HasHuntingTarget ? $" hunting ({sq.HuntingTargetX},5,{sq.HuntingTargetZ})" : "")} HP {sq.Health}");
+}
+PrintS6("Slice 6 HoldGround deployed", simS6);
+for (int tick = 1; tick <= 4; tick++) simS6.World.Advance();
+PrintS6("Slice 6 HoldGround after 4 ticks", simS6);
+simS6.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+simS6.BeginOrbitalPick();
+simS6.SetOrbitalRally(24, 5, 16);
+var s6Adv = simS6.ConfirmOrbitalDeploy();
+simS6.World.Enemies.Add(new Enemy(16, 5, 20));
+Console.WriteLine($"Paid squads deployed: HoldGround {(s6Hold == null ? "REJECTED" : "ok")}, Advance {(s6Adv == null ? "REJECTED" : "ok")}, ore left {simS6.World.Player.Inventory.Get(BlockType.EmberOre)}");
+PrintS6("Slice 6 Advance with live prey", simS6);
+simS6.World.Advance();
+PrintS6("Slice 6 Advance after prey dies", simS6);
+Console.WriteLine($"Enemies left: {simS6.World.Enemies.Count}");
+simS6.World.Player.Inventory.Add(BlockType.Stone, 10);
+simS6.World.Player.Inventory.Add(BlockType.Wood, 5);
+simS6.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+Console.WriteLine($"Mill build -> {simS6.BuildKineticMillAhead()}, Dynamo build -> {simS6.BuildDynamoAhead()}, ore left {simS6.World.Player.Inventory.Get(BlockType.EmberOre)}");
+var s6Hud = simS6.Hud();
+Console.WriteLine($"Power indicator: {s6Hud.PoweredMills}/{s6Hud.TotalMills} MILLS POWERED (mill powered: {simS6.World.IsPowered(15, 4, 17)})");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS6.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) simS6.World.Advance();
+Console.WriteLine($"After 5 ticks: powered gathered {simS6.World.PoweredBlocksGathered}, stone {simS6.World.Player.Inventory.Get(BlockType.Stone)}");
+var saveS6 = simS6.SaveToJson();
+var simS6Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS6Loaded.LoadFromJson(saveS6)}");
+var s6LoadedHud = simS6Loaded.Hud();
+Console.WriteLine($"After load: mill {simS6Loaded.World.Chunk.Get(15, 4, 17)}, Dynamo {simS6Loaded.World.Chunk.Get(16, 4, 17)}, power {s6LoadedHud.PoweredMills}/{s6LoadedHud.TotalMills}, session counters reset: powered {simS6Loaded.World.PoweredBlocksGathered}");
+PrintS6("Slice 6 after load", simS6Loaded);
+var fLoaded = simS6Loaded.Look.Forward();
+Console.WriteLine($"Loaded Look (not saved, fresh view): yaw {simS6Loaded.Look.Yaw}, pitch {simS6Loaded.Look.Pitch}, forward ({fLoaded.X:F3}, {fLoaded.Y:F3}, {fLoaded.Z:F3})");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS6Loaded.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) simS6Loaded.World.Advance();
+Console.WriteLine($"Slice 6 done: loaded powered gathered {simS6Loaded.World.PoweredBlocksGathered}, save JSON length: {saveS6.Length} chars");

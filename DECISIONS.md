@@ -1579,6 +1579,69 @@ look inevitable.
 - Next, in order: Slice 6 Step 4, demo scenario +
   documentation-only review.
 
+## 0.31.0 — 2026-10-30 — Slice 6 Step 4: demo scenario + review
+
+- Decision, on composition order: the demo runs the core
+  pieces in scope order — Look, then squads one at a time,
+  then the powered pair — rather than all at once, because
+  a simultaneous run would let combat crossfire muddy the
+  activity readings the demo exists to prove. The
+  HoldGround march runs with no enemy at all, so
+  Marching -> Holding is a clean reading; the Advance
+  engagement runs with the HoldGround squad already at
+  its rally, 8 cells from the prey, so it cannot fire or
+  be targeted into the reading. Sequential composition
+  is still composition: one Simulation, one save, and
+  the loaded game re-proves every piece together.
+- Decision, on the Advance kill: the demo uses a
+  full-strength Advance squad against a 30-HP enemy, so
+  the prey dies in one engagement tick and Hunting ->
+  Idle is proved in a single tick, with the squad still
+  at 90 HP because the prey dies from squad fire before
+  any adjacent damage. A weakened squad would have made
+  the same transition take three ticks and added damage
+  numbers the activity question does not need; the
+  Slice 4 demo already proved weakened-squad combat in
+  detail, so this demo does not re-prove it.
+- Decision, on the loaded Look: the demo loads into a
+  fresh Simulation, so its Look is the default view
+  (yaw 0, pitch 0, forward +Z), and the tests assert
+  exactly that. This is the session-state rule from
+  0.28.0, not a save bug: Look is not saved, a fresh
+  game starts facing +Z, and an in-place restore into
+  an existing Simulation keeps the current view. The
+  review states both halves, so the fresh-view number
+  is not misread as a lost view.
+- Decision, on the review's claim split: the review
+  closes Slice 6 as tested presentation core plus
+  written adapters, and it adds no new playtest-gate
+  checklist item, because steps 1–3 already added theirs
+  (gate items 11–12, plus the orbital and powered
+  checklists). Adding a review-step checklist item would
+  have implied the review itself added something to
+  verify in Unity, when it adds only a verdict about
+  steps already listed.
+- Decision, on Slice 7 candidates: carried unchanged
+  from the 0.27.0 scope — second squad type first,
+  aim-based interaction + yaw movement second, rest of
+  tier 2 third — because the Step 4 evidence gives no
+  reason to reorder them. The review does not scope
+  Slice 7: scoping is the next run's decision, made with
+  this composition evidence in hand.
+- Deliberately NOT in this step: any new core system,
+  squad, doctrine, kind, power tier, or consumer; any
+  change to squad rules, price, or cap; Dynamo cost,
+  distribution, or cadence; kinetic mill behaviour;
+  loot, skills, or core health; any save-format field;
+  any adapter file change; a mesh tint or a mesh-refresh
+  hook (both remain named gaps from 0.30.0, not fixed by
+  a composition step); a balance pass; any claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: scoping Slice 7 as its own decision
+  step, from the ranked candidates carried in
+  docs/slice-06-review.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

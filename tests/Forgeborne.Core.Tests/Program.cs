@@ -1868,6 +1868,88 @@ Eq(BuildResult.Success, powSimSolo.BuildKineticMillAhead(), "slice6 simulation m
 Eq(1, powSimSolo.Hud().TotalMills, "slice6 simulation mill alone counts as one mill in Hud()");
 Eq(0, powSimSolo.Hud().PoweredMills, "slice6 simulation mill alone counts as zero powered in Hud()");
 
+// ---- Slice 6 Step 4: demo scenario + review (composition only) ----
+// Mirrors the Slice 6 demo scenario step for step: a clamped Look
+// and its forward vector; a HoldGround squad reading Marching
+// then Holding; an Advance squad reading Hunting then Idle as
+// its prey lives and dies; and a powered pair built through the
+// Simulation builders, through a save/load round-trip, with
+// the loaded loop running again at the powered rate. No new
+// core system rides along — every piece below was proved in
+// steps 1-3, and this section proves only that they compose.
+var simS6 = new Simulation(42);
+var s6f0 = simS6.Look.Forward();
+Check(Math.Abs(s6f0.X) < 0.001f && Math.Abs(s6f0.Y) < 0.001f && Math.Abs(s6f0.Z - 1f) < 0.001f, "slice 6 demo look starts facing +Z");
+simS6.ApplyLook(90f, 45f);
+var s6f1 = simS6.Look.Forward();
+Check(Math.Abs(s6f1.X - 0.7071f) < 0.001f && Math.Abs(s6f1.Y - 0.7071f) < 0.001f && Math.Abs(s6f1.Z) < 0.001f, "slice 6 demo look at 90 yaw / 45 pitch faces diagonally up");
+simS6.ApplyLook(0f, 100f);
+Eq(89f, simS6.Look.Pitch, "slice 6 demo look pitch clamps at 89 after +100 more");
+var s6f2 = simS6.Look.Forward();
+Check(s6f2.Y > 0.999f && Math.Abs(s6f2.X - 0.0175f) < 0.001f, "slice 6 demo clamped look faces almost straight up");
+simS6.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+simS6.BeginOrbitalPick();
+simS6.SetOrbitalRally(20, 5, 16);
+var s6Hold = simS6.ConfirmOrbitalDeploy();
+Check(s6Hold != null, "slice 6 demo HoldGround squad deploys through the paid picker");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(simS6.World)[0].Activity, "slice 6 demo HoldGround squad reads MARCHING before marching");
+for (int i = 0; i < 4; i++) simS6.World.Advance();
+var s6HoldSnap = OrbitalView.Snapshot(simS6.World)[0];
+Eq(SquadActivity.Holding, s6HoldSnap.Activity, "slice 6 demo HoldGround squad reads HOLDING at its rally after 4 ticks");
+Eq(20, s6HoldSnap.X, "slice 6 demo HoldGround squad reaches its rally x after 4 ticks");
+Eq(90, s6HoldSnap.Health, "slice 6 demo HoldGround squad takes no damage marching with no enemy");
+simS6.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+simS6.BeginOrbitalPick();
+simS6.SetOrbitalRally(24, 5, 16);
+var s6Adv = simS6.ConfirmOrbitalDeploy();
+Check(s6Adv != null, "slice 6 demo Advance squad deploys through the paid picker");
+Eq(0, simS6.World.Player.Inventory.Get(BlockType.EmberOre), "slice 6 demo two paid squads spend both 10-ore deploys");
+simS6.World.Enemies.Add(new Enemy(16, 5, 20));
+var s6AdvSnap = OrbitalView.Snapshot(simS6.World)[1];
+Eq(SquadActivity.Hunting, s6AdvSnap.Activity, "slice 6 demo Advance squad reads HUNTING with a live prey");
+Eq(20, s6AdvSnap.HuntingTargetZ, "slice 6 demo Advance hunting target is the live prey cell");
+simS6.World.Advance();
+Eq(0, simS6.World.Enemies.Count, "slice 6 demo full-strength Advance squad kills its 30-HP prey in one engagement tick");
+var s6AdvAfter = OrbitalView.Snapshot(simS6.World)[1];
+Eq(SquadActivity.Idle, s6AdvAfter.Activity, "slice 6 demo Advance squad reads IDLE once its prey is dead");
+Eq(16, s6AdvAfter.X, "slice 6 demo Advance squad does not march to its ignored rally after the kill");
+Check(s6AdvAfter.Z != 16 || s6AdvAfter.X != 16, "slice 6 demo Advance squad moved toward its prey before killing it");
+Eq(90, s6AdvAfter.Health, "slice 6 demo Advance squad takes no damage: its prey dies from squad fire before adjacent damage");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(simS6.World)[0].Activity, "slice 6 demo HoldGround squad still reads HOLDING after the Advance engagement");
+simS6.World.Player.Inventory.Add(BlockType.Stone, 10);
+simS6.World.Player.Inventory.Add(BlockType.Wood, 5);
+simS6.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Success, simS6.BuildKineticMillAhead(), "slice 6 demo mill builds through simulation builder");
+Eq(BuildResult.Success, simS6.BuildDynamoAhead(), "slice 6 demo dynamo builds through simulation builder");
+var s6Hud = simS6.Hud();
+Eq(1, s6Hud.TotalMills, "slice 6 demo power indicator counts one mill");
+Eq(1, s6Hud.PoweredMills, "slice 6 demo power indicator counts one powered mill");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS6.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) simS6.World.Advance();
+Eq(5, simS6.World.PoweredBlocksGathered, "slice 6 demo powered mill gathers 5 in 5 ticks");
+Eq(5, simS6.World.Player.Inventory.Get(BlockType.Stone), "slice 6 demo powered output reaches player inventory");
+var saveS6 = simS6.SaveToJson();
+var simS6Loaded = new Simulation(99);
+Check(simS6Loaded.LoadFromJson(saveS6), "slice 6 demo save loads");
+Eq(BlockType.KineticMill, simS6Loaded.World.Chunk.Get(15, 4, 17), "slice 6 demo mill survives save/load");
+Eq(BlockType.Dynamo, simS6Loaded.World.Chunk.Get(16, 4, 17), "slice 6 demo dynamo survives save/load");
+Eq(1, simS6Loaded.Hud().PoweredMills, "slice 6 demo loaded power indicator still counts one powered mill");
+Eq(0, simS6Loaded.World.PoweredBlocksGathered, "slice 6 demo session powered counter resets on load");
+Eq(2, OrbitalView.Snapshot(simS6Loaded.World).Count, "slice 6 demo both squads survive save/load");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(simS6Loaded.World)[0].Activity, "slice 6 demo loaded HoldGround squad still reads HOLDING by derivation");
+Eq(SquadActivity.Idle, OrbitalView.Snapshot(simS6Loaded.World)[1].Activity, "slice 6 demo loaded Advance squad still reads IDLE by derivation");
+Eq(0f, simS6Loaded.Look.Pitch, "slice 6 demo Look is not saved: a fresh loaded simulation starts at pitch 0");
+var s6LoadedF = simS6Loaded.Look.Forward();
+Check(Math.Abs(s6LoadedF.Z - 1f) < 0.001f, "slice 6 demo loaded Look faces +Z, not the pre-save view");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS6Loaded.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) simS6Loaded.World.Advance();
+Eq(5, simS6Loaded.World.PoweredBlocksGathered, "slice 6 demo loaded powered mill gathers 5 in 5 ticks");
+// The demo's own save length, as a composition fingerprint: the
+// Slice 6 save carries two squads, a mill, and a Dynamo.
+Eq(44024, saveS6.Length, "slice 6 demo save JSON length matches the demo run");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
