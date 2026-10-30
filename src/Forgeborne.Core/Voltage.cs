@@ -26,9 +26,11 @@ public static class VoltageRules
 
     /// <summary>The Kinetic Mill's rated voltage: the only voltage
     /// that runs it at the every-tick powered cadence. Any other
-    /// delivered voltage is unmatched — in this step it falls back
-    /// to kinetic cadence (Step 3 replaces that fallback for
-    /// overvoltage with destruction, as a recorded change).</summary>
+    /// delivered voltage is unmatched — since Slice 9 Step 3,
+    /// overvoltage (HV) destroys the mill on its delivery tick
+    /// instead of falling back to kinetic cadence, and no
+    /// delivered voltage (None) still falls back to kinetic
+    /// cadence, because no delivery is not a mismatch.</summary>
     public const Voltage MillRated = Voltage.LV;
 
     /// <summary>Transformer conversion on a two-level ladder: each

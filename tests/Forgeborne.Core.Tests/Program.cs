@@ -2456,10 +2456,12 @@ Check(Near(s8DemoLoaded.Fps.X, 16f) && Near(s8DemoLoaded.Fps.Z, 16.6f), $"slice8
 // HV) because two suffice; the existing Dynamo outputs LV so
 // old worlds keep working; the transformer is one new block
 // type that flips its input voltage, face-adjacency only;
-// a mill is powered only at its rated LV, and an HV-fed mill
-// falls back to kinetic cadence in this step — destruction is
-// Step 3's decision, and these tests pin the interim fallback
-// openly so Step 3 changing it is a recorded change.
+// a mill is powered only at its rated LV. In this step an
+// HV-fed mill fell back to kinetic cadence as an interim rule,
+// and Step 3 replaced that fallback with destruction as a
+// recorded behaviour change: the HV delivery assertions below
+// still stand, while the cadence assertions for HV mills were
+// rewritten in Step 3 and are named there.
 Eq(Voltage.LV, VoltageRules.DynamoOutput, "slice9 dynamo outputs LV");
 Eq(Voltage.LV, VoltageRules.MillRated, "slice9 mill is rated LV");
 Eq(Voltage.HV, VoltageRules.Flipped(Voltage.LV), "slice9 transformer steps LV up to HV");
@@ -2494,19 +2496,26 @@ lvDiagWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
 lvDiagWorld.Chunk.TrySet(17, 21, 16, BlockType.Dynamo);
 Eq(Voltage.None, lvDiagWorld.DeliveredVoltage(16, 20, 16), "slice9 diagonally adjacent dynamo delivers nothing");
 // One transformer step: Dynamo -> transformer -> mill delivers HV,
-// and the mill is NOT powered, so it falls back to kinetic cadence.
+// and the mill is NOT powered. Step 3 changed what that means:
+// the Step 1 interim kinetic fallback is replaced here by
+// destruction, so this test now pins destruction on the first
+// tick instead of 1 kinetic gather in 5 ticks.
 var hvWorld = new WorldZone(42);
 hvWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
 hvWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
 hvWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
 Eq(Voltage.HV, hvWorld.DeliveredVoltage(16, 20, 16), "slice9 transformer steps dynamo LV up to HV for its mill");
 Check(!hvWorld.IsPowered(16, 20, 16), "slice9 HV-fed mill is not powered at rated voltage");
+Check(hvWorld.IsMismatched(16, 20, 16), "slice9 step3 HV-fed mill is mismatched before its destruction tick");
 foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
     hvWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
-for (int i = 0; i < 5; i++) hvWorld.Advance();
-Eq(1, hvWorld.KineticBlocksGathered, "slice9 HV-fed mill falls back to kinetic cadence, 1 in 5 ticks");
-Eq(0, hvWorld.PoweredBlocksGathered, "slice9 HV-fed mill counts nothing powered");
-Eq(BlockType.Transformer, hvWorld.Chunk.Get(17, 20, 16), "slice9 kinetic fallback never excavates the transformer");
+hvWorld.Advance();
+Eq(BlockType.Air, hvWorld.Chunk.Get(16, 20, 16), "slice9 step3 HV-fed mill is destroyed on its first tick");
+Eq(1, hvWorld.DestroyedMills, "slice9 step3 one mill destroyed");
+Eq(0, hvWorld.KineticBlocksGathered, "slice9 step3 destroyed mill gathers nothing kinetic");
+Eq(0, hvWorld.PoweredBlocksGathered, "slice9 step3 destroyed mill counts nothing powered");
+Eq(BlockType.Stone, hvWorld.Chunk.Get(15, 20, 16), "slice9 step3 destroyed mill excavates nothing on its destruction tick");
+Eq(BlockType.Transformer, hvWorld.Chunk.Get(17, 20, 16), "slice9 step3 destruction never excavates the transformer");
 // Two transformer steps: Dynamo -> T -> T -> mill delivers LV again,
 // so indirect power through a conversion round-trip runs every tick.
 var roundWorld = new WorldZone(42);
@@ -2586,7 +2595,7 @@ trHudWorld.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
 trHudWorld.Chunk.TrySet(12, 20, 10, BlockType.Dynamo);
 var trHud = HudState.FromWorld(trHudWorld, new Weapon());
 Eq(2, trHud.TotalMills, "slice9 HUD counts both LV and HV mills");
-Eq(1, trHud.PoweredMills, "slice9 HUD counts only the LV mill as powered, HV mill is kinetic");
+Eq(1, trHud.PoweredMills, "slice9 HUD counts only the LV mill as powered, HV mill is not powered (step3: it would be destroyed on a tick, not left kinetic)");
 // Simulation aimed builder: same aim as the Dynamo test, same cell.
 var simTr = new Simulation(42);
 simTr.Tick(0.1f, 0, 0, false);
@@ -2604,6 +2613,8 @@ Eq(0, simTr.World.Player.Inventory.Get(BlockType.EmberOre), "slice9 simulation t
 // The interim unmatched-voltage fallback from Step 1 is
 // unchanged here: an HV-fed mill falls back to kinetic
 // cadence, and destruction is still Step 3's decision.
+// (Step 3 later replaced that HV fallback with destruction;
+// the Step 2 assertions it changed are rewritten there.)
 Eq(10, (byte)BlockType.Cable, "slice9 step2 cable block type appended as 10");
 Eq(9, (byte)BlockType.Transformer, "slice9 step2 transformer value unchanged at 9");
 Eq(8, (byte)BlockType.Dynamo, "slice9 step2 dynamo value unchanged at 8");
@@ -2685,7 +2696,10 @@ diagCableWorld.Chunk.TrySet(19, 21, 16, BlockType.Dynamo);
 Eq(Voltage.None, diagCableWorld.DeliveredVoltage(17, 20, 16), "slice9 step2 diagonally adjacent dynamo delivers nothing through a cable");
 // Transformer in a cable run: the source-side mill still
 // runs at LV, while the mill beyond the transformer runs
-// at the converted HV and falls back to kinetic cadence.
+// at the converted HV. Step 3 changed that mill's fate:
+// it no longer falls back to kinetic cadence, it is
+// destroyed on its first tick, while the source-side mill
+// keeps its powered cadence untouched.
 var runTrWorld = new WorldZone(42);
 runTrWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
 runTrWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
@@ -2702,7 +2716,10 @@ foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16,
     runTrWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
 for (int i = 0; i < 5; i++) runTrWorld.Advance();
 Eq(5, runTrWorld.PoweredBlocksGathered, "slice9 step2 source-side mill gathers 5 in 5 ticks at powered cadence");
-Eq(1, runTrWorld.KineticBlocksGathered, "slice9 step2 converted cable mill gathers 1 in 5 ticks at kinetic cadence");
+Eq(0, runTrWorld.KineticBlocksGathered, "slice9 step3 converted cable mill gathers nothing kinetic, it is destroyed first");
+Eq(BlockType.Air, runTrWorld.Chunk.Get(16, 20, 16), "slice9 step3 converted cable mill is destroyed, not left at kinetic cadence");
+Eq(1, runTrWorld.DestroyedMills, "slice9 step3 one converted cable mill destroyed");
+Eq(BlockType.KineticMill, runTrWorld.Chunk.Get(19, 21, 16), "slice9 step3 source-side mill survives while the converted mill is destroyed");
 // Mixed-voltage network: a cable touched by both a Dynamo
 // (LV) and a transformer output (HV) carries nothing, and
 // removing one source resolves it to LV on the next check.
@@ -2765,6 +2782,223 @@ simCable.ApplyLook(0f, -45f);
 Eq(BuildResult.Success, simCable.BuildCableAhead(), "slice9 step2 simulation build cable ahead succeeds");
 Eq(BlockType.Cable, simCable.World.Chunk.Get(16, 4, 17), "slice9 step2 simulation cable placed by aim");
 Eq(0, simCable.World.Player.Inventory.Get(BlockType.EmberOre), "slice9 step2 simulation cable spends its ore");
+
+// ---- Slice 9 Step 3: mismatched-voltage destruction ----
+// Decides the scope's open questions in core: the mill is
+// rated LV only, so HV delivered through a transformer or a
+// cable is a mismatch and destroys the mill on the tick it
+// is delivered, in scan order, before either automation
+// phase; no voltage delivered (None) is NOT a mismatch, so
+// a starved or conflicted mill idles at kinetic cadence
+// instead of breaking — on this two-level ladder there is
+// no delivered voltage below LV, so undervoltage and no
+// delivery are the same observable state, None. Salvage is
+// none and cascade is none: the destroyed cell becomes Air,
+// nothing is refunded, and its cable, transformer, Dynamo,
+// and neighbouring mills survive, each judged on its own
+// voltage. Transformers are not destroyed by HV input —
+// they convert both levels — and cables are voltage-blind
+// carriers that never break. No new adapter binding: this
+// is a core rule on a tick, not a key press.
+// Cable-run destruction: Dynamo -> transformer -> cable
+// -> mill, with a stone pocket the mill would have
+// gathered from under the old fallback, and an inventory
+// snapshot proving no salvage.
+var hvCableWorld = new WorldZone(42);
+hvCableWorld.Player.Inventory.Add(BlockType.Stone, 3);
+hvCableWorld.Player.Inventory.Add(BlockType.Wood, 2);
+hvCableWorld.Player.Inventory.Add(BlockType.EmberOre, 7);
+hvCableWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+hvCableWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+hvCableWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+hvCableWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Eq(Voltage.HV, hvCableWorld.DeliveredVoltage(16, 20, 16), "slice9 step3 cable-run mill receives HV");
+Check(hvCableWorld.IsMismatched(16, 20, 16), "slice9 step3 cable-run mill is mismatched");
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    hvCableWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+hvCableWorld.Advance();
+Eq(BlockType.Air, hvCableWorld.Chunk.Get(16, 20, 16), "slice9 step3 cable-run mill is destroyed on its first tick");
+Eq(1, hvCableWorld.DestroyedMills, "slice9 step3 one cable-run mill destroyed");
+Eq(0, hvCableWorld.KineticBlocksGathered, "slice9 step3 cable-run mill gathers nothing before destruction");
+Eq(0, hvCableWorld.PoweredBlocksGathered, "slice9 step3 cable-run mill counts nothing powered");
+Eq(BlockType.Stone, hvCableWorld.Chunk.Get(15, 20, 16), "slice9 step3 cable-run mill excavates nothing on its destruction tick");
+Eq(3, hvCableWorld.Player.Inventory.Get(BlockType.Stone), "slice9 step3 destruction refunds no stone");
+Eq(2, hvCableWorld.Player.Inventory.Get(BlockType.Wood), "slice9 step3 destruction refunds no wood");
+Eq(7, hvCableWorld.Player.Inventory.Get(BlockType.EmberOre), "slice9 step3 destruction refunds no ore");
+Eq(BlockType.Cable, hvCableWorld.Chunk.Get(17, 20, 16), "slice9 step3 cable survives its mill's destruction");
+Eq(BlockType.Transformer, hvCableWorld.Chunk.Get(18, 20, 16), "slice9 step3 transformer survives its mill's destruction");
+Eq(BlockType.Dynamo, hvCableWorld.Chunk.Get(19, 20, 16), "slice9 step3 dynamo survives its mill's destruction");
+// Destruction on a 5th tick: destruction runs before the
+// kinetic phase, so a mill that would have gathered
+// kinetically on tick 5 is destroyed instead, gathering
+// nothing. RestoreTick puts the world at tick 4, so the
+// next Advance is tick 5.
+var fifthWorld = new WorldZone(42);
+fifthWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+fifthWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+fifthWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    fifthWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+fifthWorld.RestoreTick(4);
+fifthWorld.Advance();
+Eq(5, fifthWorld.Tick, "slice9 step3 fifth-tick world is on tick 5");
+Eq(BlockType.Air, fifthWorld.Chunk.Get(16, 20, 16), "slice9 step3 mill is destroyed on the 5th tick, not gathered kinetically");
+Eq(0, fifthWorld.KineticBlocksGathered, "slice9 step3 5th-tick destruction gathers nothing kinetic");
+// An LV mill beside an HV mill in the same world: the LV
+// mill keeps its powered cadence for the full 5 ticks while
+// the HV mill is gone after tick 1.
+var sideWorld = new WorldZone(42);
+sideWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+sideWorld.Chunk.TrySet(11, 20, 10, BlockType.Dynamo);
+sideWorld.Chunk.TrySet(20, 20, 20, BlockType.KineticMill);
+sideWorld.Chunk.TrySet(21, 20, 20, BlockType.Transformer);
+sideWorld.Chunk.TrySet(22, 20, 20, BlockType.Dynamo);
+foreach (var (x, y, z) in new[] { (9, 20, 10), (10, 21, 10), (10, 19, 10), (10, 20, 11), (10, 20, 9),
+    (19, 20, 20), (20, 21, 20), (20, 19, 20), (20, 20, 21), (20, 20, 19) })
+    sideWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) sideWorld.Advance();
+Eq(BlockType.KineticMill, sideWorld.Chunk.Get(10, 20, 10), "slice9 step3 LV mill survives beside a destroyed HV mill");
+Eq(BlockType.Air, sideWorld.Chunk.Get(20, 20, 20), "slice9 step3 HV mill is destroyed beside a surviving LV mill");
+Eq(5, sideWorld.PoweredBlocksGathered, "slice9 step3 LV mill gathers 5 in 5 ticks beside a destroyed mill");
+Eq(0, sideWorld.KineticBlocksGathered, "slice9 step3 no kinetic gathers beside the destroyed mill");
+Eq(1, sideWorld.DestroyedMills, "slice9 step3 exactly one mill destroyed beside the LV mill");
+// Branch, no cascade: one Dynamo feeds a west LV branch
+// and, through a transformer, an east HV branch. The east
+// mill is destroyed, the west mill keeps gathering, and
+// every cable, the transformer, and the Dynamo survive.
+var branch3World = new WorldZone(42);
+branch3World.Chunk.TrySet(18, 20, 16, BlockType.KineticMill);
+branch3World.Chunk.TrySet(19, 20, 16, BlockType.Cable);
+branch3World.Chunk.TrySet(20, 20, 16, BlockType.Dynamo);
+branch3World.Chunk.TrySet(21, 20, 16, BlockType.Cable);
+branch3World.Chunk.TrySet(22, 20, 16, BlockType.Transformer);
+branch3World.Chunk.TrySet(23, 20, 16, BlockType.Cable);
+branch3World.Chunk.TrySet(24, 20, 16, BlockType.KineticMill);
+Eq(Voltage.LV, branch3World.DeliveredVoltage(18, 20, 16), "slice9 step3 branch west mill receives LV");
+Eq(Voltage.HV, branch3World.DeliveredVoltage(24, 20, 16), "slice9 step3 branch east mill receives HV");
+foreach (var (x, y, z) in new[] { (17, 20, 16), (18, 21, 16), (18, 19, 16), (18, 20, 17), (18, 20, 15),
+    (25, 20, 16), (24, 21, 16), (24, 19, 16), (24, 20, 17), (24, 20, 15) })
+    branch3World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) branch3World.Advance();
+Eq(BlockType.KineticMill, branch3World.Chunk.Get(18, 20, 16), "slice9 step3 branch west mill survives");
+Eq(BlockType.Air, branch3World.Chunk.Get(24, 20, 16), "slice9 step3 branch east mill is destroyed");
+Eq(5, branch3World.PoweredBlocksGathered, "slice9 step3 branch west mill gathers 5 in 5 ticks after its branch is destroyed");
+Eq(1, branch3World.DestroyedMills, "slice9 step3 branch destruction counts exactly one mill");
+Eq(BlockType.Cable, branch3World.Chunk.Get(19, 20, 16), "slice9 step3 branch west cable survives");
+Eq(BlockType.Cable, branch3World.Chunk.Get(21, 20, 16), "slice9 step3 branch east cable survives");
+Eq(BlockType.Cable, branch3World.Chunk.Get(23, 20, 16), "slice9 step3 branch beyond-transformer cable survives");
+Eq(BlockType.Transformer, branch3World.Chunk.Get(22, 20, 16), "slice9 step3 branch transformer survives");
+Eq(BlockType.Dynamo, branch3World.Chunk.Get(20, 20, 16), "slice9 step3 branch dynamo survives");
+// None is not a mismatch: a conflicted mill and an
+// unpowered mill both idle at kinetic cadence and are
+// never destroyed, proved over the same 5 ticks.
+var noneWorld = new WorldZone(42);
+noneWorld.Chunk.TrySet(18, 21, 16, BlockType.KineticMill);
+noneWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+noneWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+noneWorld.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+noneWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Eq(Voltage.None, noneWorld.DeliveredVoltage(18, 21, 16), "slice9 step3 conflicted mill receives no voltage");
+Check(!noneWorld.IsMismatched(18, 21, 16), "slice9 step3 conflicted mill is not mismatched");
+foreach (var (x, y, z) in new[] { (17, 21, 16), (19, 21, 16), (18, 22, 16), (18, 21, 17), (18, 21, 15) })
+    noneWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) noneWorld.Advance();
+Eq(BlockType.KineticMill, noneWorld.Chunk.Get(18, 21, 16), "slice9 step3 conflicted mill survives 5 ticks");
+Eq(1, noneWorld.KineticBlocksGathered, "slice9 step3 conflicted mill gathers 1 in 5 ticks at kinetic cadence");
+Eq(0, noneWorld.DestroyedMills, "slice9 step3 conflicted mill is never destroyed");
+var idleWorld = new WorldZone(42);
+idleWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+Check(!idleWorld.IsMismatched(10, 20, 10), "slice9 step3 unpowered mill is not mismatched");
+foreach (var (x, y, z) in new[] { (9, 20, 10), (10, 21, 10), (10, 19, 10), (10, 20, 11), (10, 20, 9) })
+    idleWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) idleWorld.Advance();
+Eq(BlockType.KineticMill, idleWorld.Chunk.Get(10, 20, 10), "slice9 step3 unpowered mill survives 5 ticks");
+Eq(1, idleWorld.KineticBlocksGathered, "slice9 step3 unpowered mill gathers 1 in 5 ticks at kinetic cadence");
+Eq(0, idleWorld.DestroyedMills, "slice9 step3 unpowered mill is never destroyed");
+// Direct-Dynamo precedence still saves a mill: a mill
+// touching both a Dynamo (LV) and an HV transformer
+// receives LV, is powered, and is never destroyed.
+var prec3World = new WorldZone(42);
+prec3World.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+prec3World.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+prec3World.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+prec3World.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, prec3World.DeliveredVoltage(16, 20, 16), "slice9 step3 direct dynamo still beats HV for its mill");
+Check(!prec3World.IsMismatched(16, 20, 16), "slice9 step3 direct-dynamo mill is not mismatched");
+foreach (var (x, y, z) in new[] { (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    prec3World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) prec3World.Advance();
+Eq(BlockType.KineticMill, prec3World.Chunk.Get(16, 20, 16), "slice9 step3 direct-dynamo mill survives 5 ticks");
+Eq(4, prec3World.PoweredBlocksGathered, "slice9 step3 direct-dynamo mill gathers its four stone neighbours at powered cadence, nothing on tick 5 (its other two faces are the dynamo and transformer)");
+Eq(0, prec3World.DestroyedMills, "slice9 step3 direct-dynamo mill is never destroyed");
+// A transformer fed HV is not destroyed: in a round-trip
+// Dynamo -> T -> T -> mill, the second transformer is fed
+// HV, converts it back to LV, and survives with its mill.
+var trSurviveWorld = new WorldZone(42);
+trSurviveWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+trSurviveWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+trSurviveWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+trSurviveWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Check(!trSurviveWorld.IsMismatched(17, 20, 16), "slice9 step3 a transformer cell is never mismatched");
+Check(!trSurviveWorld.IsMismatched(18, 20, 16), "slice9 step3 the HV-fed transformer is never mismatched");
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    trSurviveWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) trSurviveWorld.Advance();
+Eq(BlockType.KineticMill, trSurviveWorld.Chunk.Get(16, 20, 16), "slice9 step3 round-trip mill survives");
+Eq(BlockType.Transformer, trSurviveWorld.Chunk.Get(17, 20, 16), "slice9 step3 first transformer survives");
+Eq(BlockType.Transformer, trSurviveWorld.Chunk.Get(18, 20, 16), "slice9 step3 HV-fed transformer survives");
+Eq(5, trSurviveWorld.PoweredBlocksGathered, "slice9 step3 round-trip mill gathers 5 in 5 ticks");
+Eq(0, trSurviveWorld.DestroyedMills, "slice9 step3 round-trip destroys nothing");
+// Save/load: a destroyed mill stays destroyed, with no
+// resurrection and no refund on load, while the surviving
+// LV mill and all wiring survive; only the session
+// counter resets, like the gather counters.
+var save3World = new WorldZone(42);
+save3World.Player.Inventory.Add(BlockType.Stone, 3);
+save3World.Player.Inventory.Add(BlockType.Wood, 2);
+save3World.Player.Inventory.Add(BlockType.EmberOre, 7);
+save3World.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+save3World.Chunk.TrySet(16, 4, 15, BlockType.Cable);
+save3World.Chunk.TrySet(17, 4, 15, BlockType.Transformer);
+save3World.Chunk.TrySet(18, 4, 15, BlockType.Dynamo);
+save3World.Chunk.TrySet(10, 4, 10, BlockType.KineticMill);
+save3World.Chunk.TrySet(11, 4, 10, BlockType.Cable);
+save3World.Chunk.TrySet(12, 4, 10, BlockType.Dynamo);
+// Clear the surviving mill's other neighbours to Air, so its
+// powered tick before the save gathers nothing and the stone
+// count below proves no refund, not a gather minus a refund.
+foreach (var (x, y, z) in new[] { (9, 4, 10), (10, 5, 10), (10, 3, 10), (10, 4, 11), (10, 4, 9) })
+    save3World.Chunk.TrySet(x, y, z, BlockType.Air);
+save3World.Advance();
+Eq(1, save3World.DestroyedMills, "slice9 step3 mill destroyed before save");
+var save3Loaded = SaveSystem.LoadZone(SaveSystem.SaveZone(save3World));
+Eq(BlockType.Air, save3Loaded.Chunk.Get(15, 4, 15), "slice9 step3 destroyed mill stays destroyed after load");
+Eq(BlockType.KineticMill, save3Loaded.Chunk.Get(10, 4, 10), "slice9 step3 surviving LV mill survives load");
+Eq(BlockType.Cable, save3Loaded.Chunk.Get(16, 4, 15), "slice9 step3 destroyed mill's cable survives load");
+Eq(BlockType.Transformer, save3Loaded.Chunk.Get(17, 4, 15), "slice9 step3 destroyed mill's transformer survives load");
+Eq(BlockType.Dynamo, save3Loaded.Chunk.Get(18, 4, 15), "slice9 step3 destroyed mill's dynamo survives load");
+Eq(3, save3Loaded.Player.Inventory.Get(BlockType.Stone), "slice9 step3 load gives no stone refund for the destroyed mill");
+Eq(2, save3Loaded.Player.Inventory.Get(BlockType.Wood), "slice9 step3 load gives no wood refund for the destroyed mill");
+Eq(7, save3Loaded.Player.Inventory.Get(BlockType.EmberOre), "slice9 step3 load gives no ore refund for the destroyed mill");
+Eq(0, save3Loaded.DestroyedMills, "slice9 step3 destruction counter resets on load like the gather counters");
+Eq(Voltage.LV, save3Loaded.DeliveredVoltage(10, 4, 10), "slice9 step3 surviving LV mill still receives LV after load");
+Check(save3Loaded.IsPowered(10, 4, 10), "slice9 step3 surviving LV mill is still powered after load");
+// HUD after destruction: TotalMills drops with the mill,
+// so the power line already reflects the loss without a
+// new HUD line in this step.
+var hud3World = new WorldZone(42);
+hud3World.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+hud3World.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+hud3World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+hud3World.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+hud3World.Chunk.TrySet(12, 20, 10, BlockType.Dynamo);
+var hud3Before = HudState.FromWorld(hud3World, new Weapon());
+Eq(2, hud3Before.TotalMills, "slice9 step3 HUD counts both mills before destruction");
+Eq(1, hud3Before.PoweredMills, "slice9 step3 HUD counts only the LV mill as powered before destruction");
+hud3World.Advance();
+var hud3After = HudState.FromWorld(hud3World, new Weapon());
+Eq(1, hud3After.TotalMills, "slice9 step3 HUD total drops to one mill after destruction");
+Eq(1, hud3After.PoweredMills, "slice9 step3 HUD powered count is unchanged after destruction");
 
 // ---- Silence instruction (recorded, not a test) ----
 

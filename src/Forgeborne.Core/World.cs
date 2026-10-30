@@ -84,6 +84,8 @@ public sealed class WorldZone
     public int KineticBlocksGathered { get; private set; }
     /// <summary>Blocks gathered by powered Kinetic Mills this session (not saved, same session-counter rule as KineticBlocksGathered). A powered mill's output counts here, never in KineticBlocksGathered, so the two rates stay separable in tests.</summary>
     public int PoweredBlocksGathered { get; private set; }
+    /// <summary>Kinetic Mills destroyed by mismatched voltage this session (Slice 9 Step 3; not saved, same session-counter rule as the gather counters: a loaded world starts at 0 even though a destroyed mill stays destroyed, because destruction is world state in the chunk bytes, not a counter). No HUD line is added for this counter in this step — the HUD power line already drops, because a destroyed mill is no longer counted in TotalMills — and the scene-visibility question is checklist item 17, not a headless claim.</summary>
+    public int DestroyedMills { get; private set; }
     /// <summary>Kinetic automation interval: mills act once every 5 ticks, so automation is real-time pressure relief, not instant or turn-based.</summary>
     public const int KineticIntervalTicks = 5;
     // Slice 1 objective core, from the reference image: DESTROY CORE.
@@ -304,19 +306,52 @@ public sealed class WorldZone
     /// Slice 5 Step 1 power rule, redefined in Slice 9 Step 1
     /// around the ladder: a cell is powered exactly when its
     /// delivered voltage is the mill's rated voltage (LV). A
-    /// mill fed HV is therefore NOT powered in this step — it
-    /// falls back to kinetic cadence, per the scope's interim
-    /// rule, and Step 3 replaces that fallback for overvoltage
-    /// with destruction as a recorded behaviour change. Step 2
-    /// widens delivery without changing this definition: a mill
-    /// fed LV through a cable run is powered, exactly like a
-    /// mill fed LV face-adjacent to a Dynamo, and a mill fed
-    /// nothing through a broken or conflicted cable run is not.
+    /// mill fed HV is therefore NOT powered — and, since Slice 9
+    /// Step 3, it does not fall back to kinetic cadence either:
+    /// it is destroyed by RunMismatchedDestruction on the tick
+    /// the HV is delivered, so "not powered" for an HV mill is
+    /// a transient state visible only before that tick's
+    /// destruction phase, never a cadence. Step 2 widens
+    /// delivery without changing this definition: a mill fed LV
+    /// through a cable run is powered, exactly like a mill fed
+    /// LV face-adjacent to a Dynamo, and a mill fed nothing
+    /// through a broken or conflicted cable run is not — and,
+    /// crucially, is not destroyed either, because no voltage
+    /// delivered is not a mismatched voltage (see IsMismatched).
     /// The old face-adjacency facts still hold: a mill diagonally
     /// adjacent to a Dynamo is not powered, and a mill two cells
     /// from a Dynamo through another mill is not powered.
     /// </summary>
     public bool IsPowered(int x, int y, int z) => DeliveredVoltage(x, y, z) == VoltageRules.MillRated;
+
+    /// <summary>
+    /// Slice 9 Step 3 mismatch rule: a Kinetic Mill is mismatched
+    /// exactly when it is delivered a voltage that is neither
+    /// nothing nor its rated voltage. On the two-level ladder
+    /// that is exactly HV — the overvoltage the blueprint's
+    /// failure rule punishes — and it is the only delivered
+    /// voltage that destroys. No voltage delivered (None: no
+    /// source, a broken cable, or a mixed-voltage conflict)
+    /// is not a mismatch: a starved or conflicted mill idles
+    /// at kinetic cadence, it does not break, because the
+    /// scope's undervoltage hypothesis is that a machine fed
+    /// too little is a machine not running, not a machine
+    /// breaking — and on this ladder there is no delivered
+    /// voltage below LV at all, so "undervoltage" and "no
+    /// delivery" are the same observable state, None. A mill
+    /// fed LV directly, even while an HV source also touches
+    /// it, is not mismatched either: direct-Dynamo precedence
+    /// from Step 1 delivers LV, so DeliveredVoltage is LV,
+    /// not HV. Non-mill cells are never mismatched, whatever
+    /// voltage touches them: cables are voltage-blind carriers
+    /// and transformers convert both levels (see DECISIONS.md).
+    /// </summary>
+    public bool IsMismatched(int x, int y, int z)
+    {
+        if (Chunk.Get(x, y, z) != BlockType.KineticMill) return false;
+        var delivered = DeliveredVoltage(x, y, z);
+        return delivered != Voltage.None && delivered != VoltageRules.MillRated;
+    }
 
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
@@ -520,7 +555,9 @@ public sealed class WorldZone
     /// damage the player, then the workstation effect applies, then
     /// squads move / engage / take adjacent-enemy damage (in that
     /// order, so a squad that kills its attacker that tick is not
-    /// hit by it), then — every 5th tick — Kinetic Mills act, then
+    /// hit by it), then — every tick, before either automation
+    /// phase — mismatched mills are destroyed (Slice 9 Step 3),
+    /// then — every 5th tick — Kinetic Mills act, then
     /// — every tick — powered mills act (Slice 5 Step 1). A powered
     /// mill is handled ONLY by the powered phase, never by both:
     /// power replaces the 5-tick cadence, it does not stack with
@@ -551,6 +588,7 @@ public sealed class WorldZone
         Enemies.RemoveAll(e => e.IsDead);
         if (IsNearWorkstation()) Player.RestoreShields(WorkstationRegenPerTick);
         RunSquads();
+        RunMismatchedDestruction();
         if (Tick % KineticIntervalTicks == 0) RunKineticAutomation();
         RunPoweredAutomation();
     }
@@ -595,6 +633,49 @@ public sealed class WorldZone
     /// behaviour keeps that rule rather than gaining a buffer.
     /// </summary>
     /// <summary>
+    /// Slice 9 Step 3 mismatched-voltage destruction: every tick,
+    /// each Kinetic Mill delivered a mismatched voltage (see
+    /// IsMismatched — on this ladder, HV) is removed from the
+    /// world, its cell becoming Air, in chunk-index scan order
+    /// (y, then z, then x, the same order as the automation
+    /// phases, so two mismatched mills resolve deterministically).
+    /// A destroyed mill excavates nothing on that tick and never
+    /// again, and its session counters stop advancing — it is
+    /// simply gone before either automation phase runs, so it
+    /// cannot gather powered, kinetic, or at all. Salvage is
+    /// none: nothing of the mill's 10 Stone + 5 Wood is refunded
+    /// to the player inventory, so a wiring mistake costs a whole
+    /// mill and a rebuild costs a whole mill again; a refund would
+    /// make destruction a tax the player can ignore, and a partial
+    /// refund would be a second economy rule smuggled into a
+    /// failure rule. Cascade is none: the mill's neighbours —
+    /// its cable, its transformer, its Dynamo, and any other mill
+    /// — are untouched by this mill's destruction, and each other
+    /// mill is judged on its own delivered voltage on the same
+    /// tick, so a destroyed branch mill does not take its
+    /// surviving branch with it and a failure never eats the
+    /// source the player built correctly. Destruction is world
+    /// state, not a flag: the cell is Air in the chunk bytes, so
+    /// a destroyed mill stays destroyed across save/load, with
+    /// no resurrection and no refund on load that was not given
+    /// on destruction — only the DestroyedMills session counter
+    /// resets on load, like the gather counters. No adapter
+    /// binding fires destruction: it is a core rule on a tick,
+    /// not a key press.
+    /// </summary>
+    private void RunMismatchedDestruction()
+    {
+        for (int y = 0; y < VoxelChunk.Size; y++)
+        for (int z = 0; z < VoxelChunk.Size; z++)
+        for (int x = 0; x < VoxelChunk.Size; x++)
+        {
+            if (!IsMismatched(x, y, z)) continue;
+            Chunk.TrySet(x, y, z, BlockType.Air);
+            DestroyedMills++;
+        }
+    }
+
+    /// <summary>
     /// Slice 5 Step 1 powered automation: every tick, each powered
     /// Kinetic Mill (receiving its rated voltage, per IsPowered —
     /// LV from a Dynamo or converted back through transformers)
@@ -610,10 +691,10 @@ public sealed class WorldZone
     /// of every 5th tick, which is exactly what makes power visible
     /// against the proven kinetic baseline. A mill that loses its
     /// Dynamo falls back to the kinetic phase on the next tick,
-    /// because power is derived, not stored. One voltage, always on
-    /// while placed: no fuel, no mismatch, no destruction in this
-    /// first loop — a first loop must prove power on / off changes
-    /// gameplay before failure modes punish wiring it wrong.
+    /// because power is derived, not stored. Since Slice 9 Step 3
+    /// a mismatched (HV-fed) mill never reaches this phase: it is
+    /// destroyed by RunMismatchedDestruction first, so the only
+    /// mills this phase sees are rated-voltage mills.
     /// </summary>
     private void RunPoweredAutomation()
     {
@@ -644,6 +725,10 @@ public sealed class WorldZone
             // Powered mills are handled by RunPoweredAutomation every
             // tick; running them here too would excavate twice on a
             // 5th tick. Power replaces the kinetic cadence.
+            // Mismatched mills never reach this check: they were
+            // destroyed by RunMismatchedDestruction earlier in
+            // the same tick, so this phase only ever sees mills
+            // delivered LV, or nothing at all.
             if (IsPowered(x, y, z)) continue;
             foreach (var (dx, dy, dz) in Neighbours)
             {

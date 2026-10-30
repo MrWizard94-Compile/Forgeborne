@@ -1,5 +1,73 @@
 # Forgeborne — Changelog
 
+## 0.42.0 — 2026-10-30 — Slice 9 Step 3: mismatched-voltage destruction
+
+- Mismatched-voltage destruction, decided in this step
+  (rationale in DECISIONS.md), following the 0.41.0 decision
+  that named Slice 9 Step 3 as next. A Kinetic Mill is rated
+  LV only, so a mill delivered HV — through a transformer,
+  through a cable run, or both — is destroyed on the tick
+  its mismatched voltage is delivered: its cell becomes Air
+  during a new destruction phase that runs every tick, in
+  chunk-index scan order, before either automation phase,
+  so a destroyed mill excavates nothing on that tick and
+  never again, not even on a 5th tick when the kinetic
+  phase would otherwise have run it. This replaces, as a
+  recorded behaviour change, the Step 1 / Step 2 interim
+  rule under which an HV-fed mill fell back to kinetic
+  cadence: the two Step 1 / Step 2 tests that pinned that
+  fallback (the direct HV mill, and the converted cable
+  mill in the transformer-in-run test) are rewritten in
+  this step for destruction, and the HV delivery, precedence,
+  and save/load assertions around them stand unchanged —
+  delivery is still HV, a direct Dynamo still beats it, and
+  a loaded HV mill still re-derives HV before its first
+  tick destroys it. No voltage delivered (None: no source,
+  a broken cable, or a mixed-voltage conflict) is NOT a
+  mismatch, so a starved or conflicted mill still idles at
+  kinetic cadence and is never destroyed; on this two-level
+  ladder there is no delivered voltage below LV, so
+  undervoltage and no delivery are the same observable
+  state, None, and undervoltage therefore destroys nothing.
+  Salvage is none — no Stone, Wood, or EmberOre is refunded
+  on destruction or on load, so a wiring mistake costs a
+  whole mill — and cascade is none: a destroyed mill's
+  cable, transformer, Dynamo, and neighbouring mills all
+  survive, each judged on its own delivered voltage, so a
+  destroyed branch mill does not take its surviving branch
+  with it. Transformers are not destroyed by HV input —
+  they convert both levels, so a round-trip Dynamo ->
+  transformer -> transformer -> mill survives intact — and
+  cables are voltage-blind carriers that never break.
+  Destruction is world state, not a flag: a destroyed mill
+  stays destroyed across save/load, while only the new
+  session counter `DestroyedMills` resets on load, like the
+  gather counters. No new adapter binding: destruction is a
+  core rule on a tick, not a key press, and no new HUD line
+  is added — the HUD power line already drops, because a
+  destroyed mill leaves TotalMills — but playtest-gate
+  checklist item 17 covers a destroyed mill's disappearance
+  in the scene, Windows-only, not claimed verified, because
+  the mesh-refresh gap means a counted destruction may
+  precede its visible disappearance. The ladder, conversion,
+  cable distribution, kinetic behaviour, matched-voltage
+  every-tick cadence, Dynamo cost, and squad, loot, skill,
+  and core health rules are unchanged.
+- Tests: 1099 passed, 0 failed (was 1023; +76, including
+  the two rewritten fallback tests and one test-setup fix
+  during the run: a save/load salvage test first failed
+  because its surviving LV mill legitimately gathered a
+  terrain stone before the save, so its other neighbours
+  were cleared to Air to isolate the no-refund proof — no
+  core code changed for it). Demo unchanged: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars; Slice 2
+  save 43,921 chars; Step 1 scenario save 44,016 chars;
+  Step 3 scenario save 44,103 chars; Slice 4 scenario save
+  44,026 chars; Slice 5 Step 2 scenario save 43,974 chars;
+  Slice 6 Step 4 scenario save 44,024 chars; Slice 7 Step 2
+  scenario save 44,013 chars; Slice 8 Step 3 scenario save
+  43,974 chars.
+
 ## 0.41.0 — 2026-10-30 — Slice 9 Step 2: cable distribution
 
 - Cable distribution, decided in this step (rationale

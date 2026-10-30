@@ -2629,6 +2629,137 @@ look inevitable.
 - Next, in order: Slice 9 Step 3, mismatched-voltage
   destruction, decided in that step.
 
+## 2026-10-30 — Slice 9 Step 3 (0.42.0): mismatched-voltage destruction
+
+- Decision, on the rating and what counts as a mismatch:
+  the Kinetic Mill is rated LV only, and a mismatch is a
+  delivered voltage that is neither None nor LV — on this
+  two-level ladder, exactly HV. The scope's starting
+  hypothesis is kept: overvoltage destroys, undervoltage
+  does not, because a machine fed too much breaks and a
+  machine fed too little idles. The ladder collapses the
+  undervoltage question further: there is no delivered
+  voltage below LV, so undervoltage is not a separate
+  delivered level to decide, it is the None state — no
+  source, a broken cable, or a mixed-voltage conflict —
+  and None mills keep the kinetic cadence they always had,
+  proved for both a conflicted mill and an unpowered mill
+  over 5 ticks. A rating that every delivered voltage
+  violates would not be a game, and a rating no voltage
+  can violate would not be a rating; LV-only with HV as
+  the one violator is the smallest rating that is both.
+- Decision, on destruction semantics: a mismatched mill is
+  removed on the tick its mismatched voltage is delivered
+  — its cell becomes Air — in a destruction phase that
+  runs every tick, in chunk-index scan order, before
+  either automation phase. Before, not after, is the
+  deliberate part: destruction after the kinetic phase
+  would let a mismatched mill gather once on every 5th
+  tick before dying, which would be a failure rule that
+  still pays the player for wiring wrong one tick in
+  five; destruction first means the mill excavates
+  nothing on its destruction tick, proved on an ordinary
+  first tick and on a 5th tick set up with RestoreTick(4).
+  Scan order is the same y, then z, then x order as the
+  automation phases, so two mismatched mills resolve
+  deterministically and a reader can reproduce which
+  went first. IsPowered is unchanged — an HV mill is
+  still "not powered" — but that state is now transient:
+  the mill is destroyed later in the same tick, so no
+  test or HUD line should ever treat "HV, not powered"
+  as a cadence, and the two Step 1 / Step 2 tests that
+  did are rewritten here and named in the changelog.
+- Decision, on salvage: none. Nothing of the mill's
+  10 Stone + 5 Wood returns to the inventory on
+  destruction, and nothing returns on load either, proved
+  in both cases with an inventory snapshot. A refund
+  would make destruction a tax the player can ignore by
+  rebuilding for free, and a partial refund would be a
+  second economy rule smuggled into a failure rule; the
+  honest first-pass cost of a wiring mistake is a whole
+  mill, and a rebuild costs a whole mill again. This is
+  labelled first-pass, not final balance, like every
+  other price in this slice — a later balance pass may
+  revisit it, but only as its own decision with its own
+  tests, not by quietly softening this rule.
+- Decision, on cascade: none. A destroyed mill's cable,
+  transformer, Dynamo, and neighbouring mills all survive,
+  proved in a single-branch, a two-branch, and a
+  side-by-side world. The scope's starting hypothesis is
+  kept: a failure rule that eats its own source would
+  punish the player for building the source correctly,
+  and a destroyed consumer is not a conductor, so its
+  removal cannot break the network that fed it — the
+  surviving branch in the branch test keeps gathering
+  at powered cadence after its sibling is destroyed.
+  Each mill is judged on its own delivered voltage on
+  the same tick, so a branch can lose one mill and keep
+  the other without any special "branch survives" rule.
+- Decision, on the transformer's own rating: a transformer
+  has none to violate, because it converts both levels —
+  LV in gives HV out and HV in gives LV out, so both
+  delivered voltages are valid inputs to it, not
+  overvoltages. A transformer fed HV therefore survives
+  and converts, proved by the round-trip world, where
+  the second transformer is fed HV and still delivers
+  LV to its mill. Giving the transformer a single rated
+  voltage would contradict the Step 1 decision that made
+  it one bidirectional block, and inventing a rating for
+  it here would be a second failure rule in a step that
+  exists to prove one. Cables likewise have no rating:
+  they are voltage-blind carriers, proved by every cable
+  surviving its mill's destruction, including the cable
+  beyond the transformer in the branch test.
+- Decision, on save and display: destruction is world
+  state in the chunk bytes, so a destroyed mill stays
+  destroyed across save/load with no resurrection and no
+  refund on load, proved, while only the new
+  DestroyedMills session counter resets on load, like the
+  gather counters — a loaded world starts its destruction
+  count at 0 even though its destroyed mills stay gone,
+  and that split is stated, not hidden, because a counter
+  that survived load would double-count a destruction
+  that already happened. No HUD destruction line is added
+  in this step: the existing power line already drops,
+  because a destroyed mill leaves TotalMills, proved
+  (2 mills / 1 powered before, 1 mill / 1 powered after),
+  and a line that merely repeated the session counter
+  would be a second display for one fact. The scene
+  question is not claimed: the mesh-refresh gap from
+  0.30.0 means a counted destruction may precede its
+  visible disappearance in Unity, so playtest-gate
+  checklist item 17 covers that disappearance,
+  Windows-only, not claimed verified, and no review may
+  claim the scene shows destruction until that item is
+  completed there.
+- Decision, on the adapter: no new binding at all, by the
+  scope's starting hypothesis. Destruction fires on a
+  tick, not on a key press, so there is nothing to bind,
+  and a warning flash, sound, or marker before
+  destruction would be a second feature — fairness
+  signalling — not part of this core rule; if a later
+  step finds destruction unfair without warning, it must
+  name that work as its own adapter step with its own
+  checklist item, not retrofit it here. The electrical
+  key row therefore stays T / Y / U / I, and checklist
+  item 17 is a scene-observation item, not a key item.
+- Deliberately NOT in this step: a HUD destruction line
+  or counter display; a pre-destruction warning; a
+  partial or full salvage refund; any cascade to cables,
+  transformers, Dynamos, or other mills; a rating for
+  transformers or cables; a third voltage level to make
+  undervoltage a delivered level rather than None; any
+  change to the ladder, conversion, or cable rules from
+  Steps 1 and 2 except the acceptance change this step
+  itself justifies (the HV kinetic fallback is replaced
+  by destruction, with the changed tests named openly);
+  any change to kinetic behaviour, matched-voltage
+  cadence, Dynamo cost, or squad, loot, skill, or core
+  health; and any claim about Windows Unity verification
+  or the pending Slice 1 director playtest gate.
+- Next, in order: Slice 9 Step 4, demo scenario +
+  documentation-only review, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

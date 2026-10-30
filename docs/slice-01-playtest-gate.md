@@ -124,6 +124,20 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     as unpowered. Do not claim this verified in Unity
     until it is observed there and recorded
     in DECISIONS.md.
+17. [ ] Mismatched-voltage destruction, added 0.42.0 (no
+    adapter code — destruction is a core rule on a tick,
+    headless-tested, not a key press): feed a mill HV
+    through a transformer or a cable run, and observe
+    that the mill disappears from the scene on that tick,
+    that its cable, transformer, and Dynamo remain, that
+    the HUD power line's mill total drops by one, and
+    that a mill fed LV beside it keeps working; note
+    explicitly whether the disappearance is visible on
+    the destruction tick or only after a mesh refresh,
+    because the mesh-refresh gap from 0.30.0 may make a
+    counted destruction precede its visible disappearance.
+    Do not claim this verified in Unity until it is
+    observed there and recorded in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
