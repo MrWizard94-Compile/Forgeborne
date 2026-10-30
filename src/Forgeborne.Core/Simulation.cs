@@ -342,6 +342,13 @@ public sealed class Simulation
     /// builds there.</summary>
     public BuildResult BuildTransformerAhead() => BuildAimed(BlockType.Transformer);
 
+    /// <summary>Slice 9 Step 2: a Cable by aim (see
+    /// BuildAimed), costing 1 EmberOre per cell. Placed one
+    /// cell at a time by aim like every other block since
+    /// Slice 8 — no drag-to-lay or multi-cell placement mode
+    /// rides along with the cable rule, per the scope.</summary>
+    public BuildResult BuildCableAhead() => BuildAimed(BlockType.Cable);
+
     /// <summary>
     /// Slice 8 Step 2 — fire by aim, replacing BOTH the old
     /// FireAtNearestEnemy (Manhattan-nearest, aim-blind) and

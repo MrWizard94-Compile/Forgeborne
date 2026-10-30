@@ -2596,6 +2596,176 @@ Eq(BuildResult.Success, simTr.BuildTransformerAhead(), "slice9 simulation build 
 Eq(BlockType.Transformer, simTr.World.Chunk.Get(16, 4, 17), "slice9 simulation transformer placed by aim");
 Eq(0, simTr.World.Player.Inventory.Get(BlockType.EmberOre), "slice9 simulation transformer spends its ore");
 
+// Slice 9 Step 2 — cable distribution. Cable carries a voltage
+// beyond face-adjacency, face only, with no loss and no length
+// limit in this step; only Cable cells conduct, and a
+// mixed-voltage network (or a mill touching two voltages)
+// carries nothing, rather than resolving by scan order.
+// The interim unmatched-voltage fallback from Step 1 is
+// unchanged here: an HV-fed mill falls back to kinetic
+// cadence, and destruction is still Step 3's decision.
+Eq(10, (byte)BlockType.Cable, "slice9 step2 cable block type appended as 10");
+Eq(9, (byte)BlockType.Transformer, "slice9 step2 transformer value unchanged at 9");
+Eq(8, (byte)BlockType.Dynamo, "slice9 step2 dynamo value unchanged at 8");
+// Build: 1 EmberOre per cell, check-before-spend, support
+// rule, not gatherable.
+var cableWorld = new WorldZone(42);
+cableWorld.Player.Inventory.Add(BlockType.EmberOre, 1);
+Eq(BuildResult.Success, cableWorld.Build(15, 4, 15, BlockType.Cable), "slice9 step2 cable builds with 1 ember ore");
+Eq(BlockType.Cable, cableWorld.Chunk.Get(15, 4, 15), "slice9 step2 cable placed");
+Eq(0, cableWorld.Player.Inventory.Get(BlockType.EmberOre), "slice9 step2 cable consumes 1 ember ore");
+Eq(GatherResult.NotGatherable, cableWorld.Gather(15, 4, 15), "slice9 step2 cable itself is not gatherable");
+var poorCableWorld = new WorldZone(42);
+Eq(BuildResult.InsufficientResources, poorCableWorld.Build(15, 4, 15, BlockType.Cable), "slice9 step2 cable without ore fails");
+Eq(BlockType.Air, poorCableWorld.Chunk.Get(15, 4, 15), "slice9 step2 failed cable leaves air");
+var floatCableWorld = new WorldZone(42);
+floatCableWorld.Player.Inventory.Add(BlockType.EmberOre, 1);
+Eq(BuildResult.Floating, floatCableWorld.Build(16, 20, 16, BlockType.Cable), "slice9 step2 cable floating in air fails like other machines");
+// LV cable run: Dynamo -> cable -> cable -> mill runs at
+// the every-tick powered cadence, and no mill excavates
+// its own wiring.
+var lvCableWorld = new WorldZone(42);
+lvCableWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+lvCableWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+lvCableWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+lvCableWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, lvCableWorld.DeliveredVoltage(16, 20, 16), "slice9 step2 cable run delivers LV to its mill");
+Check(lvCableWorld.IsPowered(16, 20, 16), "slice9 step2 cable-fed mill is powered at rated voltage");
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    lvCableWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) lvCableWorld.Advance();
+Eq(5, lvCableWorld.PoweredBlocksGathered, "slice9 step2 cable-fed mill gathers 5 in 5 ticks at powered cadence");
+Eq(0, lvCableWorld.KineticBlocksGathered, "slice9 step2 cable-fed mill counts nothing kinetic");
+Eq(BlockType.Cable, lvCableWorld.Chunk.Get(17, 20, 16), "slice9 step2 powered mill never excavates its cable");
+// No length limit in this step: a ten-cable run carries LV.
+var longCableWorld = new WorldZone(42);
+longCableWorld.Chunk.TrySet(17, 20, 16, BlockType.KineticMill);
+for (int x = 18; x <= 27; x++) longCableWorld.Chunk.TrySet(x, 20, 16, BlockType.Cable);
+longCableWorld.Chunk.TrySet(28, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, longCableWorld.DeliveredVoltage(17, 20, 16), "slice9 step2 ten-cable run still delivers LV, no length limit");
+Check(longCableWorld.IsPowered(17, 20, 16), "slice9 step2 ten-cable mill is powered");
+// Branch: one cable network feeds two mills at the same voltage.
+var branchWorld = new WorldZone(42);
+branchWorld.Chunk.TrySet(17, 20, 16, BlockType.KineticMill);
+branchWorld.Chunk.TrySet(18, 20, 18, BlockType.KineticMill);
+branchWorld.Chunk.TrySet(19, 20, 16, BlockType.Cable);
+branchWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+branchWorld.Chunk.TrySet(18, 20, 17, BlockType.Cable);
+branchWorld.Chunk.TrySet(20, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, branchWorld.DeliveredVoltage(17, 20, 16), "slice9 step2 branch trunk mill receives LV");
+Eq(Voltage.LV, branchWorld.DeliveredVoltage(18, 20, 18), "slice9 step2 branch leaf mill receives LV");
+foreach (var (x, y, z) in new[] { (16, 20, 16), (17, 21, 16), (17, 19, 16), (17, 20, 17), (17, 20, 15),
+    (17, 20, 18), (19, 20, 18), (18, 21, 18), (18, 19, 18), (18, 20, 19) })
+    branchWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) branchWorld.Advance();
+Eq(10, branchWorld.PoweredBlocksGathered, "slice9 step2 branched mills gather 10 in 5 ticks, 5 each");
+Eq(0, branchWorld.KineticBlocksGathered, "slice9 step2 branched mills count nothing kinetic");
+// A non-conducting block breaks the network: a wall between
+// cables leaves the far cable unpowered, and the mill falls
+// back to kinetic cadence.
+var breakWorld = new WorldZone(42);
+breakWorld.Chunk.TrySet(15, 20, 16, BlockType.KineticMill);
+breakWorld.Chunk.TrySet(16, 20, 16, BlockType.Cable);
+breakWorld.Chunk.TrySet(17, 20, 16, BlockType.Wall);
+breakWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+breakWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Eq(Voltage.None, breakWorld.DeliveredVoltage(15, 20, 16), "slice9 step2 wall between cables delivers nothing");
+Check(!breakWorld.IsPowered(15, 20, 16), "slice9 step2 wall-broken mill is not powered");
+foreach (var (x, y, z) in new[] { (14, 20, 16), (15, 21, 16), (15, 19, 16), (15, 20, 17), (15, 20, 15) })
+    breakWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) breakWorld.Advance();
+Eq(1, breakWorld.KineticBlocksGathered, "slice9 step2 wall-broken mill falls back to kinetic cadence, 1 in 5 ticks");
+Eq(0, breakWorld.PoweredBlocksGathered, "slice9 step2 wall-broken mill counts nothing powered");
+Eq(BlockType.Wall, breakWorld.Chunk.Get(17, 20, 16), "slice9 step2 wall still stands between the cables");
+// Diagonal adjacency does not conduct, for cables as for Dynamos.
+var diagCableWorld = new WorldZone(42);
+diagCableWorld.Chunk.TrySet(17, 20, 16, BlockType.KineticMill);
+diagCableWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+diagCableWorld.Chunk.TrySet(19, 21, 16, BlockType.Dynamo);
+Eq(Voltage.None, diagCableWorld.DeliveredVoltage(17, 20, 16), "slice9 step2 diagonally adjacent dynamo delivers nothing through a cable");
+// Transformer in a cable run: the source-side mill still
+// runs at LV, while the mill beyond the transformer runs
+// at the converted HV and falls back to kinetic cadence.
+var runTrWorld = new WorldZone(42);
+runTrWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+runTrWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+runTrWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+runTrWorld.Chunk.TrySet(19, 20, 16, BlockType.Cable);
+runTrWorld.Chunk.TrySet(20, 20, 16, BlockType.Dynamo);
+runTrWorld.Chunk.TrySet(19, 21, 16, BlockType.KineticMill);
+Eq(Voltage.HV, runTrWorld.DeliveredVoltage(16, 20, 16), "slice9 step2 mill beyond a transformer in a cable run receives HV");
+Check(!runTrWorld.IsPowered(16, 20, 16), "slice9 step2 converted cable mill is not powered at rated voltage");
+Eq(Voltage.LV, runTrWorld.DeliveredVoltage(19, 21, 16), "slice9 step2 source-side mill still receives LV");
+Check(runTrWorld.IsPowered(19, 21, 16), "slice9 step2 source-side mill is powered, transformer does not overwrite its side");
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15),
+    (18, 21, 16), (20, 21, 16), (19, 22, 16), (19, 21, 17), (19, 21, 15) })
+    runTrWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) runTrWorld.Advance();
+Eq(5, runTrWorld.PoweredBlocksGathered, "slice9 step2 source-side mill gathers 5 in 5 ticks at powered cadence");
+Eq(1, runTrWorld.KineticBlocksGathered, "slice9 step2 converted cable mill gathers 1 in 5 ticks at kinetic cadence");
+// Mixed-voltage network: a cable touched by both a Dynamo
+// (LV) and a transformer output (HV) carries nothing, and
+// removing one source resolves it to LV on the next check.
+var mixedWorld = new WorldZone(42);
+mixedWorld.Chunk.TrySet(18, 21, 16, BlockType.KineticMill);
+mixedWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+mixedWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+mixedWorld.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+mixedWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Eq(Voltage.None, mixedWorld.DeliveredVoltage(18, 21, 16), "slice9 step2 mixed-voltage cable network delivers nothing");
+Check(!mixedWorld.IsPowered(18, 21, 16), "slice9 step2 mixed-voltage mill is not powered");
+mixedWorld.Chunk.TrySet(16, 20, 16, BlockType.Air);
+Eq(Voltage.LV, mixedWorld.DeliveredVoltage(18, 21, 16), "slice9 step2 mixed network resolves to LV when one source is removed");
+// Mill-level conflict: a mill touching an LV cable and an
+// HV transformer output at once receives nothing, not the
+// first voltage the neighbour scan reaches.
+var millMixedWorld = new WorldZone(42);
+millMixedWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+millMixedWorld.Chunk.TrySet(15, 20, 16, BlockType.Cable);
+millMixedWorld.Chunk.TrySet(14, 20, 16, BlockType.Dynamo);
+millMixedWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+millMixedWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+Eq(Voltage.None, millMixedWorld.DeliveredVoltage(16, 20, 16), "slice9 step2 mill touching LV cable and HV transformer receives nothing");
+Check(!millMixedWorld.IsPowered(16, 20, 16), "slice9 step2 mill-level conflict mill is not powered");
+// Derived, not stored: a cable run survives save/load as
+// chunk bytes and re-derives LV and HV on load.
+var saveCableWorld = new WorldZone(42);
+saveCableWorld.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+saveCableWorld.Chunk.TrySet(16, 4, 15, BlockType.Cable);
+saveCableWorld.Chunk.TrySet(17, 4, 15, BlockType.Dynamo);
+saveCableWorld.Chunk.TrySet(10, 4, 10, BlockType.KineticMill);
+saveCableWorld.Chunk.TrySet(11, 4, 10, BlockType.Cable);
+saveCableWorld.Chunk.TrySet(12, 4, 10, BlockType.Transformer);
+saveCableWorld.Chunk.TrySet(13, 4, 10, BlockType.Dynamo);
+var saveCableLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveCableWorld));
+Eq(BlockType.Cable, saveCableLoaded.Chunk.Get(16, 4, 15), "slice9 step2 cable survives save/load as a chunk byte");
+Eq(Voltage.LV, saveCableLoaded.DeliveredVoltage(15, 4, 15), "slice9 step2 loaded LV cable mill re-derives LV from placement");
+Eq(Voltage.HV, saveCableLoaded.DeliveredVoltage(10, 4, 10), "slice9 step2 loaded HV cable mill re-derives HV from placement");
+Check(saveCableLoaded.IsPowered(15, 4, 15), "slice9 step2 loaded LV cable mill is powered");
+Check(!saveCableLoaded.IsPowered(10, 4, 10), "slice9 step2 loaded HV cable mill is not powered");
+// HUD: the power count is still rated-voltage only — a
+// cable-fed LV mill counts as powered, a cable-fed HV mill
+// counts as not, exactly as face-adjacent mills did.
+var cableHudWorld = new WorldZone(42);
+cableHudWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+cableHudWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+cableHudWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+cableHudWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+cableHudWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+cableHudWorld.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+cableHudWorld.Chunk.TrySet(13, 20, 10, BlockType.Dynamo);
+var cableHud = HudState.FromWorld(cableHudWorld, new Weapon());
+Eq(2, cableHud.TotalMills, "slice9 step2 HUD counts both cable-fed mills");
+Eq(1, cableHud.PoweredMills, "slice9 step2 HUD counts only the LV cable mill as powered");
+// Simulation aimed builder: same aim as the transformer test.
+var simCable = new Simulation(42);
+simCable.Tick(0.1f, 0, 0, false);
+simCable.World.Player.Inventory.Add(BlockType.EmberOre, 1);
+simCable.ApplyLook(0f, -45f);
+Eq(BuildResult.Success, simCable.BuildCableAhead(), "slice9 step2 simulation build cable ahead succeeds");
+Eq(BlockType.Cable, simCable.World.Chunk.Get(16, 4, 17), "slice9 step2 simulation cable placed by aim");
+Eq(0, simCable.World.Player.Inventory.Get(BlockType.EmberOre), "slice9 step2 simulation cable spends its ore");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

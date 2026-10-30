@@ -111,6 +111,19 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     cadence) until Step 3. Do not claim this verified in
     Unity until it is observed there and recorded in
     DECISIONS.md.
+16. [ ] Cable key, added 0.41.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core cable, network, branch, transformer-in-run,
+    and conflict rules are headless-tested): press I with
+    1 EmberOre to build one Cable cell in the cell before
+    the aimed surface, like T / Y / U, one cell per press
+    with no drag-to-lay; I is suppressed while the rally
+    picker is open, like T / Y / U; a mill fed LV through
+    a cable run reads as powered on the HUD power line,
+    and a mill on a broken or conflicted cable run reads
+    as unpowered. Do not claim this verified in Unity
+    until it is observed there and recorded
+    in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

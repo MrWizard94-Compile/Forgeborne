@@ -120,23 +120,29 @@ public sealed class WorldZone
         { (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1) };
 
     /// <summary>
-    /// Slice 9 Step 1 voltage delivery, derived every tick, never
-    /// persisted — the Slice 5 rule widened to a ladder, not
-    /// replaced: a cell's delivered voltage is LV when at least
-    /// one face-adjacent cell (not diagonal) holds a Dynamo, and
-    /// otherwise the output of a face-adjacent Transformer, if
-    /// any. A direct Dynamo beats a converted voltage: a mill
-    /// touching both a Dynamo and an HV-outputting transformer
-    /// receives LV, so adding a transformer next to an existing
-    /// powered pair never unpowers it. There is still no cable
-    /// and no network walk in this step — only face-adjacency,
-    /// plus one transformer hop per face step, resolved through
-    /// TransformerOutput. Voltage is recomputed from the blocks
+    /// Slice 9 Step 2 voltage delivery, derived every tick, never
+    /// persisted — the Step 1 rule widened by cable distribution,
+    /// not replaced: a cell's delivered voltage is LV when at
+    /// least one face-adjacent cell (not diagonal) holds a
+    /// Dynamo, and otherwise the single voltage its
+    /// face-adjacent neighbours agree on, whether that voltage
+    /// arrives from a Transformer output or from a Cable
+    /// network. A direct Dynamo beats any converted or cabled
+    /// voltage, as in Step 1: a mill touching both a Dynamo and
+    /// an HV-outputting transformer (or an HV cable) still
+    /// receives LV, so adding a transformer or a cable next to
+    /// an existing powered pair never unpowers it. Where no
+    /// direct Dynamo decides the cell, distinct voltages
+    /// disagreeing at one cell resolve to None, not to the
+    /// first in scan order: a mill touching an LV cable and an
+    /// HV cable at once receives nothing, so a wiring conflict
+    /// is visible as a dead mill, not hidden by an accident of
+    /// neighbour order. Voltage is recomputed from the blocks
     /// on every tick, so removing a Dynamo drops a mill to
     /// kinetic cadence on the next tick, and the save format
-    /// needs no voltage flag: Dynamo and Transformer blocks are
-    /// saved as chunk bytes like every block, and an old save's
-    /// Dynamo loads at LV by the DynamoOutput rule.
+    /// needs no voltage flag: Dynamo, Transformer, and Cable
+    /// blocks are saved as chunk bytes like every block, and an
+    /// old save's Dynamo loads at LV by the DynamoOutput rule.
     /// </summary>
     public Voltage DeliveredVoltage(int x, int y, int z)
     {
@@ -146,15 +152,94 @@ public sealed class WorldZone
             if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo)
                 return VoltageRules.DynamoOutput;
         }
-        var visited = new HashSet<(int, int, int)> { (x, y, z) };
+        var candidates = new HashSet<Voltage>();
         foreach (var (dx, dy, dz) in Neighbours)
         {
             int nx = x + dx, ny = y + dy, nz = z + dz;
-            if (!VoxelChunk.InBounds(nx, ny, nz) || Chunk.Get(nx, ny, nz) != BlockType.Transformer) continue;
-            var output = TransformerOutput(nx, ny, nz, visited);
-            if (output != Voltage.None) return output;
+            if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
+            var neighbour = Chunk.Get(nx, ny, nz);
+            Voltage v = Voltage.None;
+            if (neighbour == BlockType.Transformer)
+                v = TransformerOutput(nx, ny, nz, new HashSet<(int, int, int)>(), null);
+            else if (neighbour == BlockType.Cable)
+                v = CableNetworkVoltage(CableComponent(nx, ny, nz), null);
+            if (v != Voltage.None) candidates.Add(v);
         }
-        return Voltage.None;
+        return candidates.Count == 1 ? candidates.First() : Voltage.None;
+    }
+
+    /// <summary>
+    /// The connected Cable component containing one cable cell:
+    /// every Cable cell reachable from it by face-adjacent
+    /// steps, face only, no diagonals. Only Cable cells are in
+    /// the component — a wall, workstation, mill, Dynamo, or
+    /// Transformer is a boundary, never a conductor — so a
+    /// non-cable block between two cables breaks the network
+    /// rather than passing voltage through silently.
+    /// </summary>
+    private HashSet<(int, int, int)> CableComponent(int startX, int startY, int startZ)
+    {
+        var component = new HashSet<(int, int, int)>();
+        var stack = new Stack<(int, int, int)>();
+        stack.Push((startX, startY, startZ));
+        while (stack.Count > 0)
+        {
+            var (x, y, z) = stack.Pop();
+            if (!component.Add((x, y, z))) continue;
+            foreach (var (dx, dy, dz) in Neighbours)
+            {
+                int nx = x + dx, ny = y + dy, nz = z + dz;
+                if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Cable)
+                    stack.Push((nx, ny, nz));
+            }
+        }
+        return component;
+    }
+
+    /// <summary>
+    /// Slice 9 Step 2 network voltage: the single voltage a
+    /// connected Cable component carries, derived from the
+    /// sources touching any of its cells — a Dynamo touching
+    /// any cable in the component (LV), or a Transformer output
+    /// touching any cable in it (its flipped input, computed
+    /// with this component excluded as that transformer's
+    /// input, so a transformer cannot feed the component it
+    /// is itself fed by). No loss per hop and no length limit
+    /// in this step: a cable ten cells long carries the same
+    /// voltage as a cable one cell long, proved by test, so a
+    /// failed delivery in this step means unconnected or
+    /// conflicted, never "too far" or "too lossy". A component
+    /// touched by two distinct voltages carries None — a
+    /// mixed-voltage network is dead until the player separates
+    /// it, rather than silently carrying the higher voltage or
+    /// the first voltage the scan happened to reach. A
+    /// component with no source carries None, and a component
+    /// whose only source is an unpowered transformer likewise.
+    /// <paramref name="excludedTransformer"/> is a transformer
+    /// cell whose output must not count as a source for this
+    /// component: it is the transformer whose input is being
+    /// computed from this component, and counting it would let
+    /// a transformer feed itself through the cable.
+    /// </summary>
+    private Voltage CableNetworkVoltage(HashSet<(int, int, int)> component,
+        (int, int, int)? excludedTransformer)
+    {
+        var candidates = new HashSet<Voltage>();
+        foreach (var (cx, cy, cz) in component)
+        foreach (var (dx, dy, dz) in Neighbours)
+        {
+            int nx = cx + dx, ny = cy + dy, nz = cz + dz;
+            if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
+            var neighbour = Chunk.Get(nx, ny, nz);
+            if (neighbour == BlockType.Dynamo) candidates.Add(VoltageRules.DynamoOutput);
+            else if (neighbour == BlockType.Transformer && (nx, ny, nz) != excludedTransformer)
+            {
+                var output = TransformerOutput(nx, ny, nz,
+                    new HashSet<(int, int, int)>(), component);
+                if (output != Voltage.None) candidates.Add(output);
+            }
+        }
+        return candidates.Count == 1 ? candidates.First() : Voltage.None;
     }
 
     /// <summary>
@@ -162,40 +247,57 @@ public sealed class WorldZone
     /// input, where the input is LV when a face-adjacent cell
     /// holds a Dynamo — a direct source beats a converted one,
     /// so a transformer touching both a Dynamo and another
-    /// transformer converts from the Dynamo — and otherwise the
-    /// output of the first face-adjacent transformer (in fixed
-    /// neighbour order) that itself has an input. The visited
-    /// set stops a ring of transformers with no Dynamo from
-    /// recursing forever: every transformer in the ring reports
-    /// None, because no input ever reaches a Dynamo. A
-    /// transformer with no powered neighbour outputs None, not
-    /// a guessed level, so an unpowered transformer converts
-    /// nothing and powers nothing.
+    /// transformer converts from the Dynamo — and otherwise
+    /// the single voltage its other face-adjacent inputs agree
+    /// on: another transformer's output, or a Cable component
+    /// touching it (computed with this transformer excluded as
+    /// that component's source, so a transformer cannot be fed
+    /// by the cable it feeds). Distinct non-Dynamo inputs
+    /// resolve to None, not to the first in neighbour order,
+    /// for the same reason a mixed cable network resolves to
+    /// None: a conflict must be visible, not scan-order luck.
+    /// The visited set stops a ring of transformers with no
+    /// Dynamo from recursing forever: every transformer in the
+    /// ring reports None, because no input ever reaches a
+    /// Dynamo. A transformer with no powered neighbour outputs
+    /// None, not a guessed level, so an unpowered transformer
+    /// converts nothing and powers nothing.
+    /// <paramref name="excludedComponent"/> is a Cable component
+    /// that must not count as this transformer's input: it is
+    /// the component whose voltage is being computed from this
+    /// transformer's output, and counting it would let the
+    /// transformer be fed by the cable it feeds.
     /// </summary>
-    private Voltage TransformerOutput(int x, int y, int z, HashSet<(int, int, int)> visited)
+    private Voltage TransformerOutput(int x, int y, int z,
+        HashSet<(int, int, int)> visited, HashSet<(int, int, int)>? excludedComponent)
     {
         if (!visited.Add((x, y, z))) return Voltage.None;
-        Voltage input = Voltage.None;
         foreach (var (dx, dy, dz) in Neighbours)
         {
             int nx = x + dx, ny = y + dy, nz = z + dz;
             if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo)
-            {
-                input = VoltageRules.DynamoOutput;
-                break;
-            }
+                return VoltageRules.Flipped(VoltageRules.DynamoOutput);
         }
-        if (input == Voltage.None)
+        var candidates = new HashSet<Voltage>();
+        foreach (var (dx, dy, dz) in Neighbours)
         {
-            foreach (var (dx, dy, dz) in Neighbours)
+            int nx = x + dx, ny = y + dy, nz = z + dz;
+            if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
+            var neighbour = Chunk.Get(nx, ny, nz);
+            if (neighbour == BlockType.Transformer)
             {
-                int nx = x + dx, ny = y + dy, nz = z + dz;
-                if (!VoxelChunk.InBounds(nx, ny, nz) || Chunk.Get(nx, ny, nz) != BlockType.Transformer) continue;
-                var output = TransformerOutput(nx, ny, nz, visited);
-                if (output != Voltage.None) { input = output; break; }
+                var output = TransformerOutput(nx, ny, nz, visited, excludedComponent);
+                if (output != Voltage.None) candidates.Add(output);
+            }
+            else if (neighbour == BlockType.Cable)
+            {
+                if (excludedComponent != null && excludedComponent.Contains((nx, ny, nz))) continue;
+                var v = CableNetworkVoltage(CableComponent(nx, ny, nz), (x, y, z));
+                if (v != Voltage.None) candidates.Add(v);
             }
         }
-        return VoltageRules.Flipped(input);
+        if (candidates.Count != 1) return Voltage.None;
+        return VoltageRules.Flipped(candidates.First());
     }
 
     /// <summary>
@@ -205,8 +307,12 @@ public sealed class WorldZone
     /// mill fed HV is therefore NOT powered in this step — it
     /// falls back to kinetic cadence, per the scope's interim
     /// rule, and Step 3 replaces that fallback for overvoltage
-    /// with destruction as a recorded behaviour change. The old
-    /// face-adjacency facts still hold: a mill diagonally
+    /// with destruction as a recorded behaviour change. Step 2
+    /// widens delivery without changing this definition: a mill
+    /// fed LV through a cable run is powered, exactly like a
+    /// mill fed LV face-adjacent to a Dynamo, and a mill fed
+    /// nothing through a broken or conflicted cable run is not.
+    /// The old face-adjacency facts still hold: a mill diagonally
     /// adjacent to a Dynamo is not powered, and a mill two cells
     /// from a Dynamo through another mill is not powered.
     /// </summary>
@@ -214,7 +320,7 @@ public sealed class WorldZone
 
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer)) return BuildResult.InvalidType;
+        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
@@ -272,6 +378,26 @@ public sealed class WorldZone
             if (!Player.Inventory.Has(BlockType.EmberOre, 5))
                 return BuildResult.InsufficientResources;
             Player.Inventory.Remove(BlockType.EmberOre, 5);
+        }
+        else if (type == BlockType.Cable)
+        {
+            // Slice 9 Step 2 Cable: 1 EmberOre per cell, so a run
+            // is priced by its length and competes with Dynamos,
+            // transformers, workstations, and squads for ore, not
+            // with walls and mills for Stone and Wood — the same
+            // electrical pricing rationale as Step 1, scaled to
+            // a per-cell block rather than a single machine. A
+            // cable that cost nothing and occupied nothing would
+            // not be distribution, it would be a longer
+            // face-adjacency rule wearing a name; a cable priced
+            // at a full Dynamo's 5 ore per cell would make even
+            // a short run cost more than its source, so 1 ore is
+            // the first-pass per-cell value, labelled as such,
+            // not a balance claim. Same check-before-spend rule
+            // as the other machines.
+            if (!Player.Inventory.Has(BlockType.EmberOre, 1))
+                return BuildResult.InsufficientResources;
+            Player.Inventory.Remove(BlockType.EmberOre, 1);
         }
         else // Workstation: 10 Stone + 5 EmberOre
         {

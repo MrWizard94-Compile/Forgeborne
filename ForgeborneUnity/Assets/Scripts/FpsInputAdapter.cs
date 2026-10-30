@@ -84,11 +84,22 @@ public class FpsInputAdapter : MonoBehaviour
         // spend the ore a pending Confirm needs. Since Slice 8
         // all three builders place by aim, so U builds in the
         // cell before the aimed surface, like T and Y.
+        // Slice 9 Step 2: I builds a Cable (via
+        // BuildCableAhead, 1 EmberOre per cell), next to U so
+        // the electrical row runs T / Y / U / I, and suppressed
+        // while the picker is open for the same ore reason —
+        // a cable key while picking could spend the ore a
+        // pending Confirm needs, one cell at a time. I is free:
+        // existing keys are WASD / Space / E / Q / R / O /
+        // Return / Esc / 1 / 2 / 3 / 4 / T / Y / U / mouse
+        // click. No drag-to-lay mode: one key press lays one
+        // cable cell, by aim, like every other builder.
         if (!Simulation.OrbitalCommand.IsPicking)
         {
             if (Input.GetKeyDown(KeyCode.T)) Simulation.BuildKineticMillAhead();
             if (Input.GetKeyDown(KeyCode.Y)) Simulation.BuildDynamoAhead();
             if (Input.GetKeyDown(KeyCode.U)) Simulation.BuildTransformerAhead();
+            if (Input.GetKeyDown(KeyCode.I)) Simulation.BuildCableAhead();
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's

@@ -16,6 +16,8 @@ public enum BlockType : byte
     Dynamo = 8,
     /// <summary>Slice 9 Step 1 (Electrical tier 2, ladder + conversion): converts the voltage it is fed to the other level of the two-level ladder (LV to HV, HV to LV — see VoltageRules.Flipped), face-adjacency only in this step; cables arrive in Step 2. Appended in 0.40.0; earlier values unchanged, so old saves still load.</summary>
     Transformer = 9,
+    /// <summary>Slice 9 Step 2 (Electrical tier 2, distribution): carries a voltage beyond face-adjacency over a face-adjacent network of Cable cells, with no loss and no length limit in this step. Only Cable cells conduct: a wall, workstation, or mill between cables breaks the network. Appended in 0.41.0; earlier values unchanged, so old saves still load.</summary>
+    Cable = 10,
 }
 
 public static class BlockInfo

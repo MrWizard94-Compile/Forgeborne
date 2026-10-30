@@ -2508,6 +2508,127 @@ look inevitable.
 - Next, in order: Slice 9 Step 2, cable distribution,
   decided in that step.
 
+## 0.41.0 — 2026-10-30 — Slice 9 Step 2: cable distribution
+
+- Decision, on the cable: one new block type, Cable =
+  10, appended only, solid and not gatherable like a
+  Dynamo, so no mill ever excavates its own wiring, and
+  placed by the existing aimed builder one cell at a
+  time, with no drag-to-lay mode — a multi-cell placement
+  mode is a new interaction, not a cable rule, per the
+  scope. A radius around a Dynamo or a property of
+  existing blocks was refused: distribution that costs
+  nothing and occupies nothing is a longer face-adjacency
+  rule wearing a name, not a wiring system.
+- Decision, on cable cost: 1 EmberOre per cell, so a run
+  is priced by its length and electrical builds keep
+  competing with workstations and squads for ore, not
+  with walls and mills for Stone and Wood, per the Step
+  1 pricing rationale scaled to a per-cell block. 5 ore
+  per cell was refused: a short run would then cost more
+  than the Dynamo that sources it. 1 ore is a first-pass
+  value for determinism and testability, not a balance
+  claim, and the run that proves it is priced in the
+  tests, not assumed.
+- Decision, on how voltage travels: a deterministic
+  network walk over face-adjacent Cable cells, face only,
+  no diagonals, with no loss per hop and no length limit
+  in this step. A loss or limit in the same step as the
+  network itself would have made a failed delivery
+  ambiguous (too far, or too lossy, or unconnected?),
+  and the scope required a boundary test for either —
+  the ten-cable LV test is the no-limit proof in the
+  other direction. Only Cable cells conduct: a wall,
+  workstation, or mill between cables breaks the network,
+  proved, rather than passing voltage through silently.
+  Chaining through another mill was therefore refused
+  again, as in Slice 5: a mill is a consumer, not a wire.
+- Decision, on what direct face-adjacency still means:
+  Dynamo-against-mill still powers exactly as in Slice 5,
+  and cables extend that rule, not replace it — proved
+  by the existing direct tests passing unchanged and by
+  a cable-fed mill running at the same every-tick
+  cadence. A mill face-adjacent to an energised cable
+  runs at the cable's voltage, through the same powered
+  phase, with the same session counters.
+- Decision, on network voltage resolution: one voltage
+  per connected network, and a network touched by two
+  distinct voltages carries None — not the higher voltage,
+  and not the first voltage the scan reaches. Higher-wins
+  was refused because it would silently discard one source
+  and let a mismatched mill be destroyed in Step 3 for a
+  wiring error the player could not see as a conflict;
+  first-in-scan-order was refused because determinism
+  without a stated rule is still an accident with a test
+  around it. None is visible: the mills on a conflicted
+  network fall back to kinetic cadence in this step, and
+  removing one source resolves the network on the next
+  check, proved, because voltage is derived, never stored.
+  The same rule applies at a single mill: a mill touching
+  an LV cable and an HV transformer output at once
+  receives None, not the first neighbour's voltage.
+- Decision, on the deliberate precedence exception:
+  direct-cell precedence from Step 1 survives unchanged
+  alongside the conflict rule, and the difference is
+  stated, not hidden. A single mill or transformer touching
+  a Dynamo directly still takes the Dynamo's LV before
+  any converted or cabled voltage, because that is the
+  Step 1 rule every powered demo depends on and changing
+  it would unpower existing pairs. A shared cable network
+  is different from a single consumer: it has no single
+  cell for a direct source to decide, so its two sources
+  conflict instead of one winning. Both rules are proved
+  by tests in this step, so a reader can see where each
+  applies.
+- Decision, on transformer placement in a network: a
+  transformer sits in a cable run as a boundary between
+  two cable components, not as a conductor joining them.
+  Its output is computed with the component it feeds
+  excluded as its input, and a component's voltage is
+  computed with the transformer it is fed by excluded as
+  its source — the two exclusions are what stop a
+  transformer feeding itself through a cable and what
+  stop it overwriting its source side. Proved in one run:
+  the source-side mill still runs at LV while the mill
+  beyond the transformer runs at HV. Step 1's
+  face-adjacency transformer rule needed no extension
+  for this: the same flipped-output rule, applied through
+  cable components, is what places it in the run.
+- Decision, on save and display: cable networks are
+  derived at load from the blocks themselves, so no
+  network field is saved and a loaded cable run powers on
+  its first tick exactly as a loaded Dynamo pair does,
+  proved for both LV and HV runs. HudState gains no cable
+  or energised-network count in this step: the existing
+  rated-voltage powered-mill count is enough to prove a
+  cable-fed mill, and an energised cable feeding no mill
+  shows nothing — carried as a named gap, not claimed as
+  visible, because a display that showed nothing for an
+  energised run would otherwise be an untestable claim.
+- Decision, on placement and adapter: cable is placed by
+  the existing aimed builder (new BuildCableAhead),
+  distinct by block type, with no revived offset and no
+  placement rule of its own. Adapter key I, next to U so
+  the electrical row runs T / Y / U / I, suppressed while
+  the picker is open for the same ore reason as Y and U
+  (a cable key while picking could spend the ore a pending
+  Confirm needs). Playtest-gate checklist item 16 covers
+  its key feel, Windows-only, not claimed verified.
+- Deliberately NOT in this step: mismatched-voltage
+  destruction (Step 3 — an HV-fed mill still falls back
+  to kinetic cadence under the Step 1 interim rule, and
+  a conflicted network's mills do the same); a per-hop
+  loss, a length limit, or a drag-to-lay mode; additional
+  powered consumers or sources; a HUD cable count; a mesh
+  tint or refresh hook; any change to the ladder and
+  conversion rules from Step 1, to kinetic behaviour, to
+  matched-voltage cadence, to Dynamo cost, or to squad,
+  loot, skill, or core health; and any claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 9 Step 3, mismatched-voltage
+  destruction, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

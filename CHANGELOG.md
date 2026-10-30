@@ -1,5 +1,71 @@
 # Forgeborne — Changelog
 
+## 0.41.0 — 2026-10-30 — Slice 9 Step 2: cable distribution
+
+- Cable distribution, decided in this step (rationale
+  in DECISIONS.md), following the 0.40.0 decision that
+  named Slice 9 Step 2 as next. New block type Cable =
+  10, appended only, costing 1 EmberOre per cell: a cable
+  that cost nothing and occupied nothing would not be
+  distribution, it would be a longer face-adjacency rule
+  wearing a name, and a cable priced at a full Dynamo's
+  5 ore per cell would make even a short run cost more
+  than its source, so 1 ore is the first-pass per-cell
+  value, not a balance claim. `WorldZone.DeliveredVoltage`
+  is widened, not replaced: direct Dynamo-against-mill
+  still delivers LV exactly as in Slice 5, and a mill
+  face-adjacent to an energised cable runs at the cable's
+  voltage through the same powered phase and the same
+  every-tick cadence. Voltage travels by a deterministic
+  network walk over face-adjacent Cable cells, face only,
+  no diagonals, with no loss per hop and no length limit
+  in this step — a ten-cable run carries LV, proved by
+  test, so a failed delivery here means unconnected or
+  conflicted, never "too far" or "too lossy". Only Cable
+  cells conduct: a wall, workstation, or mill between
+  cables breaks the network, proved, and a mill never
+  excavates its own wiring. Branching is proved: one
+  cable network feeds two mills at the same voltage, 5
+  gathers each in 5 ticks. A transformer sits in a cable
+  run: the source-side mill still runs at LV, while the
+  mill beyond the transformer runs at the converted HV
+  and falls back to kinetic cadence under the Step 1
+  interim rule — the transformer does not overwrite its
+  source side. Network voltage resolution is decided
+  openly, not left to scan order: a cable network touched
+  by two distinct voltages carries None, and a mill
+  touching two distinct voltages receives None, so a
+  wiring conflict is visible as a dead mill; removing one
+  source resolves the network to the remaining voltage
+  on the next check, proved, because voltage is derived
+  every tick, never stored. The one deliberate
+  precedence that survives from Step 1 is direct-cell
+  precedence: a mill or transformer touching a Dynamo
+  directly still converts from / receives the Dynamo
+  before any converted or cabled voltage, so adding a
+  cable or transformer next to an existing powered pair
+  never unpowers it. Simulation gains `BuildCableAhead`
+  through the existing aimed builder, one cell per press,
+  with no drag-to-lay mode; the Unity adapter gains the
+  I key, next to U, suppressed while the picker is open
+  like T / Y / U; HudState keeps its one rated-voltage
+  power count, so a cable-fed LV mill counts as powered
+  and a cable-fed HV mill counts as not; playtest-gate
+  checklist item 16 covers the I key, Windows-only, not
+  claimed verified. No new HUD cable or energised-network
+  count is added in this step: an energised cable feeding
+  no mill shows nothing in the HUD, carried as a named
+  gap, not claimed.
+- Tests: 1023 passed, 0 failed (was 975; +48, no failures
+  during the run). Demo unchanged: Slice 1 gathered 1,
+  built 1, killed 2, save 43,881 chars; Slice 2 save
+  43,921 chars; Step 1 scenario save 44,016 chars; Step 3
+  scenario save 44,103 chars; Slice 4 scenario save
+  44,026 chars; Slice 5 Step 2 scenario save 43,974
+  chars; Slice 6 Step 4 scenario save 44,024 chars; Slice 7
+  Step 2 scenario save 44,013 chars; Slice 8 Step 3
+  scenario save 43,974 chars.
+
 ## 0.40.0 — 2026-10-30 — Slice 9 Step 1: voltage ladder and transformer
 
 - Voltage ladder and transformer, decided in this step
