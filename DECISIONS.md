@@ -1877,6 +1877,92 @@ look inevitable.
 - Next, in order: Slice 7 Step 2, demo scenario +
   documentation-only review.
 
+## 0.34.0 — 2026-10-30 — Slice 7 Step 2: demo scenario + review
+
+- Decision, on composition order: the demo runs two
+  parallel lanes, not sequential squads, because the
+  Slice 7 question is comparative — what Recon does that
+  Vanguard cannot — and a sequential run would prove
+  each kind alone, which Step 1 already did. The lanes
+  close at the same rate (both enemies start at 27,
+  both squads step east once per tick), so the range
+  contrast is a controlled comparison: the Recon's first
+  shot lands at exactly range 5 on tick 3 while the
+  Vanguard, still marching, is silent, and the Vanguard's
+  kill lands at exactly range 3 on tick 4. A simultaneous
+  run risks crossfire muddying the readings, and the
+  lanes are the control against that: each enemy is
+  pursued by its own lane's squad, and the player is
+  parked far away so no enemy step is player chasing.
+- Decision, on the lane setup: the player walks to
+  z=20 between deploys, because a squad spawns at the
+  player's feet and deploying both squads from one spot
+  stacks them. This is recorded as a scenario-scripting
+  fact, not a core rule: the first draft of this
+  scenario deployed both from (16,5,16), and its output
+  showed the Recon hunting the Vanguard-lane enemy
+  instead of its own. The fix was the player move, and
+  the test pins the Recon's spawn lane (Z = 20) so the
+  mistake cannot silently return. No deployment rule
+  changed for this.
+- Decision, on the demo's scope reading: the demo
+  exercises both doctrines across the two kinds
+  (Vanguard HoldGround, Recon Advance), not all four
+  combinations in one run, and the review says so
+  plainly. The other two combinations are proved in the
+  Step 1 tests. Claiming all four from a two-squad demo
+  would have been an over-claim, and deploying all four
+  would have needed a fourth squad slot at a cap of 3
+  or a second run — neither is justified for a review
+  step, whose job is composition, not re-proof.
+- Decision, on the affordability refusal: the demo
+  spends exactly 20 ore on two deploys and then refuses
+  a third picker deploy for affordability, with the
+  picker staying open and nothing charged. The cap
+  refusal was already proved in the Slice 3 demo, so
+  this demo proves the other refusal path instead of
+  re-proving the cap — and it proves it in the mixed-
+  kind context, where a reader might otherwise wonder
+  whether a second kind escapes the economy. It does
+  not: price, cap, and refusal are kind-blind except
+  for the per-kind price lookup, which returns 10 for
+  both.
+- Decision, on the review's claim split: the review
+  closes Slice 7 as tested second-kind core plus
+  written adapters, and it adds no new playtest-gate
+  checklist item, because Step 1 already added the
+  adapter claims to checklist item 10 in
+  docs/orbital-command.md (kind keys 3 / 4,
+  doctrine-kind independence, prompt kind word, Recon
+  text line, same cyan marker). Adding a review-step
+  checklist item would have implied the review itself
+  added something to verify in Unity, when it adds
+  only a verdict about steps already listed.
+- Decision, on Slice 8 candidates: carried unchanged
+  from the 0.32.0 scope — aim-based interaction + yaw
+  movement first, rest of tier 2 second, third kind and
+  deferred doctrines third — because the Step 2 evidence
+  gives no reason to reorder them. The range contrast
+  proves two kinds differ, not that interaction should
+  move before or after power work, and the review does
+  not scope Slice 8: scoping is the next run's decision,
+  made with this composition evidence in hand.
+- Deliberately NOT in this step: any new core system,
+  squad, doctrine, kind, power tier, or consumer; any
+  change to squad rules, price, or cap; Dynamo cost,
+  distribution, or cadence; kinetic mill behaviour;
+  loot, skills, or core health; any save-format field;
+  any adapter file change; a distinct Recon marker (kept
+  at the shared cyan cube per Step 1, pending a
+  play-observed confusion); a mesh tint or a mesh-refresh
+  hook (both remain named gaps from 0.30.0, not fixed by
+  a composition step); a balance pass; any claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: scoping Slice 8 as its own decision
+  step, from the ranked candidates carried in
+  docs/slice-07-review.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

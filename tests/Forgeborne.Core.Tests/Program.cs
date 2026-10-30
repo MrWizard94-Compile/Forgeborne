@@ -2111,6 +2111,97 @@ Eq(40, snapRecon.Health, "slice7 snapshot recon health");
 Eq(12, snapRecon.DamagePerTick, "slice7 snapshot recon damage");
 Eq(SquadActivity.Holding, snapRecon.Activity, "slice7 snapshot recon at rally is holding");
 
+// ---- Slice 7 Step 2: demo scenario, mirrored as composed tests ----
+// The same run the demo prints: Vanguard HoldGround on z=16 and
+// Recon Advance on z=20, both through the paid picker, one enemy
+// per lane at (27,5,z), player parked far at (28,5,4) so every
+// enemy step pursues a squad. The Recon spawns on its own lane
+// only because the player walks to z=20 between deploys —
+// deploying both from one spot would stack them, as a first
+// draft of this scenario did, and the Recon would then hunt
+// the Vanguard-lane enemy instead of its own.
+var demoS7 = new Simulation(42);
+demoS7.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+demoS7.BeginOrbitalPick();
+demoS7.SetOrbitalRally(20, 5, 16);
+var demoS7Van = demoS7.ConfirmOrbitalDeploy()!;
+Eq(SquadKind.Vanguard, demoS7Van.Kind, "slice7 demo vanguard kind");
+Eq(TacticalDoctrine.HoldGround, demoS7Van.Doctrine, "slice7 demo vanguard doctrine");
+Eq(3, demoS7Van.AliveMembers, "slice7 demo vanguard members");
+Eq(90, demoS7Van.Health, "slice7 demo vanguard health");
+Eq(30, demoS7Van.DamagePerTick, "slice7 demo vanguard damage");
+Eq(3, demoS7Van.EngagementRange, "slice7 demo vanguard range");
+demoS7.World.Player.Z = 20;
+demoS7.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+demoS7.OrbitalCommand.SelectKind(SquadKind.Recon);
+demoS7.BeginOrbitalPick();
+demoS7.SetOrbitalRally(24, 5, 20);
+var demoS7Rec = demoS7.ConfirmOrbitalDeploy()!;
+Eq(SquadKind.Recon, demoS7Rec.Kind, "slice7 demo recon kind");
+Eq(TacticalDoctrine.Advance, demoS7Rec.Doctrine, "slice7 demo recon doctrine");
+Eq(2, demoS7Rec.AliveMembers, "slice7 demo recon members");
+Eq(40, demoS7Rec.Health, "slice7 demo recon health");
+Eq(12, demoS7Rec.DamagePerTick, "slice7 demo recon damage");
+Eq(5, demoS7Rec.EngagementRange, "slice7 demo recon range");
+Eq(0, demoS7.World.Player.Inventory.Get(BlockType.EmberOre), "slice7 demo two deploys spend all 20 ore");
+Eq(16, demoS7Van.X, "slice7 demo vanguard spawns at player lane");
+Eq(20, demoS7Rec.Z, "slice7 demo recon spawns on second lane after player move");
+demoS7.BeginOrbitalPick();
+demoS7.SetOrbitalRally(20, 5, 20);
+Check(demoS7.ConfirmOrbitalDeploy() == null, "slice7 demo third picker deploy refused unaffordable");
+Check(demoS7.OrbitalCommand.IsPicking, "slice7 demo failed confirm keeps picker open");
+Eq(0, demoS7.World.Player.Inventory.Get(BlockType.EmberOre), "slice7 demo refused deploy charges nothing");
+demoS7.OrbitalCommand.CancelPick();
+demoS7.World.Player.X = 28; demoS7.World.Player.Z = 4;
+demoS7.World.Enemies.Add(new Enemy(27, 5, 16));
+demoS7.World.Enemies.Add(new Enemy(27, 5, 20));
+demoS7.World.Advance();
+Eq(17, demoS7Van.X, "slice7 demo tick 1 vanguard marches");
+Eq(17, demoS7Rec.X, "slice7 demo tick 1 recon hunts");
+Eq(26, demoS7.World.Enemies[0].X, "slice7 demo tick 1 vanguard-lane enemy steps west");
+Eq(26, demoS7.World.Enemies[1].X, "slice7 demo tick 1 recon-lane enemy steps west");
+demoS7.World.Advance();
+Eq(18, demoS7Van.X, "slice7 demo tick 2 vanguard marches");
+Eq(18, demoS7Rec.X, "slice7 demo tick 2 recon hunts");
+Eq(30, demoS7.World.Enemies[1].Health, "slice7 demo tick 2 recon still out of range");
+demoS7.World.Advance();
+Eq(19, demoS7Van.X, "slice7 demo tick 3 vanguard still marching");
+Eq(30, demoS7.World.Enemies[0].Health, "slice7 demo tick 3 marching vanguard does not fire");
+Eq(18, demoS7.World.Enemies[1].Health, "slice7 demo tick 3 recon fires at range 5 for 12");
+demoS7.World.Advance();
+Eq(20, demoS7Van.X, "slice7 demo tick 4 vanguard reaches rally");
+Check(demoS7Van.AtRally, "slice7 demo tick 4 vanguard at rally");
+Eq(1, demoS7.World.Enemies.Count, "slice7 demo tick 4 vanguard kills its lane enemy at range 3");
+Eq(6, demoS7.World.Enemies[0].Health, "slice7 demo tick 4 recon fires its lane enemy to 6");
+demoS7.World.Advance();
+Eq(0, demoS7.World.Enemies.Count, "slice7 demo tick 5 recon kills its lane enemy");
+Eq(90, demoS7Van.Health, "slice7 demo both squads finish intact vanguard");
+Eq(40, demoS7Rec.Health, "slice7 demo both squads finish intact recon");
+var demoS7Snap = OrbitalView.Snapshot(demoS7.World);
+Eq(SquadActivity.Holding, demoS7Snap[0].Activity, "slice7 demo vanguard reads holding");
+Eq(SquadActivity.Idle, demoS7Snap[1].Activity, "slice7 demo recon reads idle with no prey");
+var demoS7Save = demoS7.SaveToJson();
+var demoS7Loaded = new Simulation(99);
+Check(demoS7Loaded.LoadFromJson(demoS7Save), "slice7 demo save loads");
+Eq(2, demoS7Loaded.World.Squads.Count, "slice7 demo loaded squad count");
+Eq(SquadKind.Vanguard, demoS7Loaded.World.Squads[0].Kind, "slice7 demo loaded vanguard kind");
+Eq(TacticalDoctrine.HoldGround, demoS7Loaded.World.Squads[0].Doctrine, "slice7 demo loaded vanguard doctrine");
+Eq(20, demoS7Loaded.World.Squads[0].X, "slice7 demo loaded vanguard position");
+Eq(90, demoS7Loaded.World.Squads[0].Health, "slice7 demo loaded vanguard health");
+Eq(SquadKind.Recon, demoS7Loaded.World.Squads[1].Kind, "slice7 demo loaded recon kind");
+Eq(TacticalDoctrine.Advance, demoS7Loaded.World.Squads[1].Doctrine, "slice7 demo loaded recon doctrine");
+Eq(21, demoS7Loaded.World.Squads[1].X, "slice7 demo loaded recon position");
+Eq(40, demoS7Loaded.World.Squads[1].Health, "slice7 demo loaded recon health");
+Eq(0, demoS7Loaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice7 demo loaded ore still spent");
+Check(!demoS7Loaded.CanDeployOrbitalSquad(), "slice7 demo loaded sim cannot deploy unfunded");
+demoS7Loaded.World.Advance();
+var demoS7LoadedSnap = OrbitalView.Snapshot(demoS7Loaded.World);
+Eq(SquadActivity.Holding, demoS7LoadedSnap[0].Activity, "slice7 demo loaded vanguard still holding");
+Eq(SquadActivity.Idle, demoS7LoadedSnap[1].Activity, "slice7 demo loaded recon still idle");
+var demoS7WorldSave = SaveSystem.SaveZone(demoS7.World);
+var demoS7OldJson = demoS7WorldSave[..demoS7WorldSave.LastIndexOf(",\"Squads\":", StringComparison.Ordinal)] + "}";
+Eq(0, SaveSystem.LoadZone(demoS7OldJson).Squads.Count, "slice7 demo old save without squads loads with no squads");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

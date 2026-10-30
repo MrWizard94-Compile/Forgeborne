@@ -291,3 +291,75 @@ foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4,
     simS6Loaded.World.Chunk.TrySet(x, y, z, BlockType.Stone);
 for (int i = 0; i < 5; i++) simS6Loaded.World.Advance();
 Console.WriteLine($"Slice 6 done: loaded powered gathered {simS6Loaded.World.PoweredBlocksGathered}, save JSON length: {saveS6.Length} chars");
+
+// Slice 7 Step 2 scenario: Slice 7 composed in one run — the Step 1
+// second kind together with Vanguard, not separately. Both squads
+// deploy through the paid picker (10 EmberOre each, as in play):
+// a Vanguard HoldGround squad on the z=16 lane and a Recon
+// Advance squad on the z=20 lane, each with an enemy approaching
+// from the east at (27,5,z). The player is parked far away at
+// (28,5,4) after deployment, so every enemy step is a squad
+// pursuit, not player chasing. The two lanes close at the same
+// rate, which makes the range contrast readable in one run: the
+// Recon fires first, at exactly range 5 on tick 3 — a distance
+// Vanguard's range 3 cannot reach — while the Vanguard, still
+// marching that tick, cannot fire at all; on tick 4 the Vanguard
+// reaches its rally and kills its enemy at exactly range 3,
+// and the Recon fires its lane enemy down to 6 HP. On tick 5
+// the Recon closes to its prey and kills it, so both squads
+// finish intact at full health. A third picker deploy is then
+// refused for affordability (20 ore spent, 0 left, picker stays
+// open, nothing charged), the game saves and loads with both
+// kinds, doctrines, positions, and health intact, and an old
+// Vanguard-era save (Squads field stripped, as in the tests)
+// still loads with no squads instead of crashing.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 7 Step 2 scenario — Vanguard + Recon together, paid picker, range contrast, save/load round-trip");
+var simS7 = new Simulation(42);
+simS7.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+simS7.BeginOrbitalPick();
+simS7.SetOrbitalRally(20, 5, 16);
+var s7Van = simS7.ConfirmOrbitalDeploy();
+// The second squad spawns at the player's feet, so the player
+// walks to the second lane first: the Recon then starts on
+// z=20, not stacked on the Vanguard's z=16 lane.
+simS7.World.Player.Z = 20;
+simS7.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+simS7.OrbitalCommand.SelectKind(SquadKind.Recon);
+simS7.BeginOrbitalPick();
+simS7.SetOrbitalRally(24, 5, 20);
+var s7Rec = simS7.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Vanguard HoldGround {(s7Van == null ? "REJECTED" : $"{s7Van.AliveMembers} members, {s7Van.Health} HP, {s7Van.DamagePerTick} dmg, range {s7Van.EngagementRange}")}, Recon Advance {(s7Rec == null ? "REJECTED" : $"{s7Rec.AliveMembers} members, {s7Rec.Health} HP, {s7Rec.DamagePerTick} dmg, range {s7Rec.EngagementRange}")}, price {SquadEconomy.CostForKind(SquadKind.Vanguard)}/{SquadEconomy.CostForKind(SquadKind.Recon)} EmberOre each, ore left {simS7.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS7.BeginOrbitalPick();
+simS7.SetOrbitalRally(20, 5, 20);
+var s7Third = simS7.ConfirmOrbitalDeploy();
+Console.WriteLine($"3rd picker deploy: {(s7Third == null ? "REFUSED unaffordable" : "DEPLOYED (unexpected)")}, picker still open: {simS7.OrbitalCommand.IsPicking}, ore left {simS7.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS7.OrbitalCommand.CancelPick();
+simS7.World.Player.X = 28; simS7.World.Player.Z = 4;
+simS7.World.Enemies.Add(new Enemy(27, 5, 16));
+simS7.World.Enemies.Add(new Enemy(27, 5, 20));
+void PrintS7(string label, Simulation s)
+{
+    var snap = OrbitalView.Snapshot(s.World);
+    foreach (var sq in snap)
+        Console.WriteLine($"{label}: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}{(sq.HasHuntingTarget ? $" hunting ({sq.HuntingTargetX},5,{sq.HuntingTargetZ})" : "")} {sq.AliveMembers} members, {sq.Health} HP, {sq.DamagePerTick} dmg, range {(sq.Kind == SquadKind.Recon ? 5 : 3)}");
+    var enemies = string.Join(", ", s.World.Enemies.Select(e => $"({e.X},5,{e.Z}) {e.Health} HP"));
+    Console.WriteLine($"{label}: enemies [{enemies}]");
+}
+PrintS7("Slice 7 start", simS7);
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS7.World.Advance();
+    PrintS7($"Slice 7 tick {tick}", simS7);
+}
+var saveS7 = simS7.SaveToJson();
+var simS7Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS7Loaded.LoadFromJson(saveS7)}");
+PrintS7("Slice 7 after load", simS7Loaded);
+simS7Loaded.World.Advance();
+PrintS7("Slice 7 loaded tick 1 (no enemies: Holding / Idle)", simS7Loaded);
+var worldSaveS7 = SaveSystem.SaveZone(simS7.World);
+var oldSaveS7 = worldSaveS7[..worldSaveS7.LastIndexOf(",\"Squads\":", StringComparison.Ordinal)] + "}";
+var oldLoadedS7 = SaveSystem.LoadZone(oldSaveS7);
+Console.WriteLine($"Old save (Squads field stripped) loads: {oldLoadedS7.Squads.Count} squads, no crash, ore {simS7Loaded.World.Player.Inventory.Get(BlockType.EmberOre)}, can deploy more: {simS7Loaded.CanDeployOrbitalSquad()}");
+Console.WriteLine($"Slice 7 done: Vanguard {simS7Loaded.World.Squads[0].Kind} {simS7Loaded.World.Squads[0].Health} HP, Recon {simS7Loaded.World.Squads[1].Kind} {simS7Loaded.World.Squads[1].Health} HP, enemies left {simS7Loaded.World.Enemies.Count}, save JSON length: {saveS7.Length} chars");

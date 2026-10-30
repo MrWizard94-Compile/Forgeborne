@@ -1,5 +1,83 @@
 # Forgeborne — Changelog
 
+## 0.34.0 — 2026-10-30 — Slice 7 Step 2: demo scenario + review
+
+- Composed Slice 7 demo scenario (demo/Forgeborne.Demo),
+  plus `docs/slice-07-review.md` (documentation only,
+  no new core system, by design). One Simulation proves
+  Vanguard and Recon together, not separately: both
+  deploy through the paid picker (10 EmberOre each,
+  20 spent, 0 left), Vanguard HoldGround on the z=16
+  lane (3 members, 90 HP, 30 damage, range 3) and Recon
+  Advance on the z=20 lane (2 members, 40 HP, 12 damage,
+  range 5) — the Recon spawns on its own lane only
+  because the player walks to z=20 between deploys,
+  since a squad spawns at the player's feet. One enemy
+  per lane starts at (27,5,z) with the player parked far
+  at (28,5,4), so every enemy step pursues a squad.
+  Tick 3: the marching Vanguard is silent while the
+  Recon fires its lane enemy at exactly range 5 for 12
+  (30 -> 18), a distance Vanguard's range 3 cannot
+  reach. Tick 4: the Vanguard reaches its rally and
+  kills its lane enemy at exactly range 3 for 30, while
+  the Recon fires its lane enemy to 6 HP. Tick 5: the
+  Recon kills its lane enemy, both squads finish intact
+  at full health (90 and 40), no enemies left. A third
+  picker deploy is then REFUSED unaffordable, picker
+  stays open, nothing charged. Save/load round-trip
+  keeps both kinds, doctrines, positions, and health
+  intact, ore still 0, a further unfunded deploy still
+  refused; one loaded tick with no enemies leaves the
+  Vanguard Holding and the Recon Idle, by derivation.
+  An old save with its Squads field stripped loads with
+  0 squads and no crash. The demo exercises both
+  doctrines across the two kinds (Vanguard HoldGround,
+  Recon Advance); the other two combinations are proved
+  in the Step 1 tests, not in this demo, and the review
+  says so plainly.
+- Review verdict (docs/slice-07-review.md): Slice 7
+  reviewed and closed as tested second-kind core plus
+  written adapters — not playtested, balanced, or
+  Unity-verified. Slice 8 NOT scoped by this review;
+  candidates carried in scope order: aim-based gather /
+  build / fire + yaw-rotated movement first, rest of
+  automation tier 2 second, third kind and deferred
+  doctrines third. Gaps named in priority order: no
+  Unity verification, no director playtest, no balance
+  pass, two kinds sharing one marker (decided, pending
+  a play-observed confusion), mesh tint / mesh refresh
+  (from 0.30.0), free-deploy primitive documented not
+  enforced.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: this step adds no adapter change, and its
+  adapter claims are already covered by checklist item 10
+  in docs/orbital-command.md (kind keys 3 / 4,
+  doctrine-kind independence, prompt kind word, Recon text
+  line, same cyan marker). The test count below covers
+  the core demo composition only; it does not cover
+  adapter keys or rendering, and this entry does not claim
+  otherwise. What must NOT change in this step is
+  unchanged: Vanguard's stats, movement, fire, targeting,
+  and save behaviour; the two doctrines and their rules;
+  Dynamo cost, distribution, and cadence; kinetic mill
+  behaviour; loot, skills, and core health; the gather /
+  build / survive loop; and the save format, which gains
+  no field in this step. No third kind, no new doctrine,
+  no voltage ladder, no balance pass, and no licence /
+  monetisation / release change rides along.
+- Tests: **862 passed, 0 failed** (was 810; +52, with one
+  test-authoring error caught on re-read before the first
+  run, not a code fix: a lane assertion first read the
+  Recon's X where its Z was meant and was corrected to
+  Z = 20 before running). Demo unchanged except the new
+  scenario: Slice 1 gathered 1, built 1, killed 2, save
+  43,881 chars; Slice 2 save 43,908 chars; Step 1 scenario
+  save 44,016 chars; Step 3 scenario save 44,103 chars;
+  Slice 4 scenario save 44,026 chars; Slice 5 Step 2
+  scenario save 43,974 chars; Slice 6 Step 4 scenario
+  save 44,024 chars; new Step 2 scenario save 44,013 chars.
+  Next in order: scoping Slice 8 as its own decision step.
+
 ## 0.33.0 — 2026-10-30 — Slice 7 Step 1: second squad type, Recon
 
 - Exactly one second squad type, decided in this step
