@@ -14,6 +14,8 @@ public enum BlockType : byte
     KineticMill = 7,
     /// <summary>Slice 5 automation tier 2 (Electrical, first loop only): the single power source. A Dynamo generates power for face-adjacent Kinetic Mills only — no cables, no network propagation, no voltage tiers yet. Appended in 0.25.0; earlier values unchanged, so old saves still load.</summary>
     Dynamo = 8,
+    /// <summary>Slice 9 Step 1 (Electrical tier 2, ladder + conversion): converts the voltage it is fed to the other level of the two-level ladder (LV to HV, HV to LV — see VoltageRules.Flipped), face-adjacency only in this step; cables arrive in Step 2. Appended in 0.40.0; earlier values unchanged, so old saves still load.</summary>
+    Transformer = 9,
 }
 
 public static class BlockInfo

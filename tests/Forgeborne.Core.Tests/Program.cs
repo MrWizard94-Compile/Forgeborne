@@ -2451,6 +2451,151 @@ Eq(0, s8DemoLoaded.EnemiesKilled, "slice8 step 3 session kill counter resets on 
 s8DemoLoaded.Tick(0.1f, 1f, 0f, false);
 Check(Near(s8DemoLoaded.Fps.X, 16f) && Near(s8DemoLoaded.Fps.Z, 16.6f), $"slice8 step 3 loaded fresh-view walk goes +Z (got {s8DemoLoaded.Fps.X},{s8DemoLoaded.Fps.Z})");
 
+// ---- Slice 9 Step 1: voltage ladder and transformer ----
+// Decides the scope's open questions in core: two levels (LV,
+// HV) because two suffice; the existing Dynamo outputs LV so
+// old worlds keep working; the transformer is one new block
+// type that flips its input voltage, face-adjacency only;
+// a mill is powered only at its rated LV, and an HV-fed mill
+// falls back to kinetic cadence in this step — destruction is
+// Step 3's decision, and these tests pin the interim fallback
+// openly so Step 3 changing it is a recorded change.
+Eq(Voltage.LV, VoltageRules.DynamoOutput, "slice9 dynamo outputs LV");
+Eq(Voltage.LV, VoltageRules.MillRated, "slice9 mill is rated LV");
+Eq(Voltage.HV, VoltageRules.Flipped(Voltage.LV), "slice9 transformer steps LV up to HV");
+Eq(Voltage.LV, VoltageRules.Flipped(Voltage.HV), "slice9 transformer steps HV down to LV");
+Eq(Voltage.None, VoltageRules.Flipped(Voltage.None), "slice9 unpowered transformer converts nothing");
+Eq(9, (byte)BlockType.Transformer, "slice9 transformer block type appended as 9");
+Eq(8, (byte)BlockType.Dynamo, "slice9 dynamo value unchanged at 8");
+Eq(7, (byte)BlockType.KineticMill, "slice9 mill value unchanged at 7");
+// Build: 5 EmberOre, check-before-spend, support rule, not gatherable.
+var trWorld = new WorldZone(42);
+trWorld.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Success, trWorld.Build(15, 4, 15, BlockType.Transformer), "slice9 transformer builds with 5 ember ore");
+Eq(BlockType.Transformer, trWorld.Chunk.Get(15, 4, 15), "slice9 transformer placed");
+Eq(0, trWorld.Player.Inventory.Get(BlockType.EmberOre), "slice9 transformer consumes 5 ember ore");
+Eq(GatherResult.NotGatherable, trWorld.Gather(15, 4, 15), "slice9 transformer itself is not gatherable");
+var poorTrWorld = new WorldZone(42);
+poorTrWorld.Player.Inventory.Add(BlockType.EmberOre, 4);
+Eq(BuildResult.InsufficientResources, poorTrWorld.Build(15, 4, 15, BlockType.Transformer), "slice9 transformer without 5 ore fails");
+Eq(BlockType.Air, poorTrWorld.Chunk.Get(15, 4, 15), "slice9 failed transformer leaves air");
+Eq(4, poorTrWorld.Player.Inventory.Get(BlockType.EmberOre), "slice9 failed transformer does not spend ore");
+var floatTrWorld = new WorldZone(42);
+floatTrWorld.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Floating, floatTrWorld.Build(16, 20, 16, BlockType.Transformer), "slice9 transformer floating in air fails like other machines");
+// Delivery: Dynamo face-adjacent gives LV; diagonal gives nothing.
+var lvWorld = new WorldZone(42);
+lvWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+lvWorld.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, lvWorld.DeliveredVoltage(16, 20, 16), "slice9 dynamo-adjacent mill receives LV");
+Check(lvWorld.IsPowered(16, 20, 16), "slice9 dynamo-adjacent mill is powered at rated voltage");
+var lvDiagWorld = new WorldZone(42);
+lvDiagWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+lvDiagWorld.Chunk.TrySet(17, 21, 16, BlockType.Dynamo);
+Eq(Voltage.None, lvDiagWorld.DeliveredVoltage(16, 20, 16), "slice9 diagonally adjacent dynamo delivers nothing");
+// One transformer step: Dynamo -> transformer -> mill delivers HV,
+// and the mill is NOT powered, so it falls back to kinetic cadence.
+var hvWorld = new WorldZone(42);
+hvWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+hvWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+hvWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+Eq(Voltage.HV, hvWorld.DeliveredVoltage(16, 20, 16), "slice9 transformer steps dynamo LV up to HV for its mill");
+Check(!hvWorld.IsPowered(16, 20, 16), "slice9 HV-fed mill is not powered at rated voltage");
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    hvWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) hvWorld.Advance();
+Eq(1, hvWorld.KineticBlocksGathered, "slice9 HV-fed mill falls back to kinetic cadence, 1 in 5 ticks");
+Eq(0, hvWorld.PoweredBlocksGathered, "slice9 HV-fed mill counts nothing powered");
+Eq(BlockType.Transformer, hvWorld.Chunk.Get(17, 20, 16), "slice9 kinetic fallback never excavates the transformer");
+// Two transformer steps: Dynamo -> T -> T -> mill delivers LV again,
+// so indirect power through a conversion round-trip runs every tick.
+var roundWorld = new WorldZone(42);
+roundWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+roundWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+roundWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+roundWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, roundWorld.DeliveredVoltage(16, 20, 16), "slice9 two transformers convert LV back to LV for the mill");
+Check(roundWorld.IsPowered(16, 20, 16), "slice9 round-trip mill is powered at rated voltage");
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    roundWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) roundWorld.Advance();
+Eq(5, roundWorld.PoweredBlocksGathered, "slice9 round-trip mill gathers 5 in 5 ticks at powered cadence");
+Eq(0, roundWorld.KineticBlocksGathered, "slice9 round-trip mill counts nothing kinetic");
+// Precedence: a direct Dynamo beats a converted voltage, both for
+// the mill and for a transformer fed by both a Dynamo and a
+// transformer output.
+var precWorld = new WorldZone(42);
+precWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+precWorld.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+precWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+precWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, precWorld.DeliveredVoltage(16, 20, 16), "slice9 direct dynamo beats converted HV for the mill");
+Check(precWorld.IsPowered(16, 20, 16), "slice9 precedence mill stays powered when a transformer is added");
+var precTrWorld = new WorldZone(42);
+precTrWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+precTrWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+precTrWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+precTrWorld.Chunk.TrySet(17, 21, 16, BlockType.Transformer);
+precTrWorld.Chunk.TrySet(17, 22, 16, BlockType.Dynamo);
+Eq(Voltage.HV, precTrWorld.DeliveredVoltage(16, 20, 16), "slice9 transformer fed by a dynamo converts from the dynamo, not from a neighbouring transformer");
+// Unpowered transformer converts nothing; a ring with no Dynamo
+// reports None instead of recursing forever.
+var deadTrWorld = new WorldZone(42);
+deadTrWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+deadTrWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+Eq(Voltage.None, deadTrWorld.DeliveredVoltage(16, 20, 16), "slice9 unpowered transformer delivers nothing");
+Check(!deadTrWorld.IsPowered(16, 20, 16), "slice9 unpowered transformer powers nothing");
+var ringWorld = new WorldZone(42);
+ringWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+ringWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+ringWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+ringWorld.Chunk.TrySet(18, 20, 17, BlockType.Transformer);
+ringWorld.Chunk.TrySet(17, 20, 17, BlockType.Transformer);
+Eq(Voltage.None, ringWorld.DeliveredVoltage(16, 20, 16), "slice9 transformer ring with no dynamo delivers nothing");
+// Derived, not stored: removing the Dynamo drops the converted
+// voltage on the next tick, and a loaded transformer chain
+// re-derives its voltage from placement alone.
+var dropTrWorld = new WorldZone(42);
+dropTrWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+dropTrWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+dropTrWorld.Chunk.TrySet(18, 20, 16, BlockType.Dynamo);
+Eq(Voltage.HV, dropTrWorld.DeliveredVoltage(16, 20, 16), "slice9 converted HV present before dynamo removal");
+dropTrWorld.Chunk.TrySet(18, 20, 16, BlockType.Air);
+Eq(Voltage.None, dropTrWorld.DeliveredVoltage(16, 20, 16), "slice9 converted voltage drops when its dynamo is removed");
+var saveTrWorld = new WorldZone(42);
+saveTrWorld.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+saveTrWorld.Chunk.TrySet(16, 4, 15, BlockType.Transformer);
+saveTrWorld.Chunk.TrySet(17, 4, 15, BlockType.Dynamo);
+saveTrWorld.Chunk.TrySet(10, 4, 10, BlockType.KineticMill);
+saveTrWorld.Chunk.TrySet(11, 4, 10, BlockType.Transformer);
+saveTrWorld.Chunk.TrySet(12, 4, 10, BlockType.Transformer);
+saveTrWorld.Chunk.TrySet(13, 4, 10, BlockType.Dynamo);
+var saveTrLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveTrWorld));
+Eq(BlockType.Transformer, saveTrLoaded.Chunk.Get(16, 4, 15), "slice9 transformer survives save/load as a chunk byte");
+Eq(Voltage.HV, saveTrLoaded.DeliveredVoltage(15, 4, 15), "slice9 loaded HV mill re-derives HV from placement, no flag needed");
+Eq(Voltage.LV, saveTrLoaded.DeliveredVoltage(10, 4, 10), "slice9 loaded round-trip mill re-derives LV from placement");
+Check(!saveTrLoaded.IsPowered(15, 4, 15), "slice9 loaded HV mill is not powered");
+Check(saveTrLoaded.IsPowered(10, 4, 10), "slice9 loaded round-trip mill is powered");
+// HUD: the power count is rated-voltage only — one LV mill and one
+// HV mill count as two mills, one powered.
+var trHudWorld = new WorldZone(42);
+trHudWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+trHudWorld.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+trHudWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+trHudWorld.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+trHudWorld.Chunk.TrySet(12, 20, 10, BlockType.Dynamo);
+var trHud = HudState.FromWorld(trHudWorld, new Weapon());
+Eq(2, trHud.TotalMills, "slice9 HUD counts both LV and HV mills");
+Eq(1, trHud.PoweredMills, "slice9 HUD counts only the LV mill as powered, HV mill is kinetic");
+// Simulation aimed builder: same aim as the Dynamo test, same cell.
+var simTr = new Simulation(42);
+simTr.Tick(0.1f, 0, 0, false);
+simTr.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+simTr.ApplyLook(0f, -45f);
+Eq(BuildResult.Success, simTr.BuildTransformerAhead(), "slice9 simulation build transformer ahead succeeds");
+Eq(BlockType.Transformer, simTr.World.Chunk.Get(16, 4, 17), "slice9 simulation transformer placed by aim");
+Eq(0, simTr.World.Player.Inventory.Get(BlockType.EmberOre), "slice9 simulation transformer spends its ore");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

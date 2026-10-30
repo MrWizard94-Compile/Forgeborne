@@ -334,6 +334,14 @@ public sealed class Simulation
     /// costing 5 EmberOre as in Slice 5 Step 1.</summary>
     public BuildResult BuildDynamoAhead() => BuildAimed(BlockType.Dynamo);
 
+    /// <summary>Slice 9 Step 1: a Transformer by aim (see
+    /// BuildAimed), costing 5 EmberOre like a Dynamo. Placed by
+    /// aim like every other block since Slice 8 — no revived
+    /// front-left / front-centre offset, and no placement rule
+    /// of its own: the aim decides one cell and the builder
+    /// builds there.</summary>
+    public BuildResult BuildTransformerAhead() => BuildAimed(BlockType.Transformer);
+
     /// <summary>
     /// Slice 8 Step 2 — fire by aim, replacing BOTH the old
     /// FireAtNearestEnemy (Manhattan-nearest, aim-blind) and

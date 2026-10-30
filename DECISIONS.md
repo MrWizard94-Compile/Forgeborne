@@ -2410,6 +2410,104 @@ look inevitable.
 - Next, in order: Slice 9 Step 1, voltage ladder and
   transformer, decided in that step.
 
+## 0.40.0 — 2026-10-30 — Slice 9 Step 1: voltage ladder and transformer
+
+- Decision, on the ladder: two levels, LV and HV, because
+  two suffice and more would be unused names — the scope
+  said to build two if two suffice, not four for the
+  blueprint's initials. LV is the Dynamo's output and the
+  mill's rating; HV exists only because a transformer can
+  produce it, so Step 2 has a second voltage to carry and
+  Step 3 has a voltage to punish. None is not a third
+  level: it means no voltage is delivered.
+- Decision, on the existing Dynamo: it outputs LV, stated
+  in VoltageRules.DynamoOutput, so a world built in Slice
+  5 keeps working and an old save's Dynamo — which carries
+  no voltage field — loads at LV by rule, not by guess.
+  Re-rating existing Dynamos would have changed every
+  powered demo number for no system gain, and the scope's
+  hypothesis was to keep them working; this step keeps it.
+- Decision, on the transformer: one new block type,
+  Transformer = 9, appended only, that flips its input
+  voltage — LV in gives HV out, HV in gives LV out. A
+  single bidirectional block, not a pair of one-way blocks
+  and not a Dynamo mode, because direction from input
+  needs no stored state: no new save field, no direction
+  setting to load, malformed, or desync, and the same
+  block proves both conversions. The ladder-ends question
+  therefore has no undefined edge: each level converts to
+  the other, and None in gives None out, so an unpowered
+  transformer converts nothing and powers nothing.
+- Decision, on transformer input precedence: a direct
+  Dynamo beats a converted voltage, for the mill and for
+  the transformer itself. A mill touching both a Dynamo
+  and an HV-outputting transformer receives LV, so adding
+  a transformer next to an existing powered pair never
+  unpowers it; a transformer touching both a Dynamo and
+  another transformer's output converts from the Dynamo.
+  Without that rule, placement order would decide the
+  voltage by scan accident. A ring of transformers with no
+  Dynamo reports None, proved by a test that also proves
+  the recursion terminates, via a visited set.
+- Decision, on mill voltage acceptance in this step: LV
+  powers at the every-tick cadence, anything else does
+  not power. IsPowered is therefore redefined, not
+  replaced: it now means "delivered voltage equals the
+  mill's rated LV", and the powered and kinetic phases
+  keep their old split through it, so an HV-fed mill
+  falls back to kinetic cadence (1 in 5 ticks, proved)
+  exactly as the scope's interim rule requires, and a
+  Dynamo-against-mill pair behaves exactly as before.
+  Destruction is NOT decided here: Step 3 replaces this
+  fallback for overvoltage and must name these tests as
+  the changed behaviour, in the Slice 8 Step 2 manner.
+- Decision, on what the transformer buys: 5 EmberOre, the
+  same order as a Dynamo, so electrical builds keep
+  competing with workstations and squads for ore, not
+  with walls and mills for Stone and Wood. The double
+  cost is stated openly: a transformer alone powers
+  nothing, and what the second 5 ore buys is the second
+  voltage itself — the only way to produce HV, which a
+  second Dynamo cannot give — plus, already in this step,
+  indirect LV one cell further out, through a Dynamo ->
+  transformer -> transformer -> mill round-trip that runs
+  the mill at the every-tick cadence, proved by test.
+- Decision, on save and display: voltage is derived at
+  load from the blocks and their neighbours, like powered
+  state before it, so no new saved flag exists and a
+  loaded transformer chain re-derives HV or LV on its
+  first tick, proved by test. HudState keeps one power
+  count and no voltage split: PoweredMills now counts
+  mills receiving rated LV, and an HV-fed mill counts as
+  NOT powered, because it runs at kinetic cadence — a
+  count that called it powered would be a display lie
+  about the cadence the count describes, and Step 3 will
+  destroy it. The count's meaning is stated in code, not
+  left for a reader to guess from the old wording.
+- Decision, on placement and adapter: the transformer is
+  placed by the existing aimed builder (new
+  BuildTransformerAhead), distinct by block type, with no
+  revived offset and no placement rule of its own — the
+  Slice 8 reason for retiring offsets applies unchanged.
+  Adapter key U, next to T and Y so the electrical trio
+  sits together, suppressed while the picker is open for
+  the same ore reason as Y (a transformer key while
+  picking could spend the ore a pending Confirm needs).
+  Playtest-gate checklist item 15 covers its key feel,
+  Windows-only, not claimed verified.
+- Deliberately NOT in this step: cable distribution
+  (Step 2 — power still travels by face-adjacency only,
+  plus transformer hops, with no network walk); any
+  destruction rule (Step 3); a second consumer or source;
+  a per-hop loss or length limit; a HUD voltage line; a
+  mesh tint or refresh hook; any change to kinetic
+  behaviour, matched-voltage cadence, Dynamo cost, squad,
+  loot, skill, or core health; and any claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 9 Step 2, cable distribution,
+  decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

@@ -65,10 +65,16 @@ public sealed class HudState
     public int EnemyCount { get; set; }
     /// <summary>Slice 6 Step 3 power indicator, derived from placement
     /// on every snapshot, never saved: how many Kinetic Mills exist,
-    /// and how many of them are powered (face-adjacent to a Dynamo,
-    /// per WorldZone.IsPowered). A Dynamo on its own counts as
-    /// neither, and a wall or workstation next to a Dynamo counts
-    /// as neither — only mills are consumers in this loop.</summary>
+    /// and how many of them are powered (receiving their rated
+    /// voltage, per WorldZone.IsPowered). Slice 9 Step 1 meaning,
+    /// stated so the count cannot lie: a mill fed HV counts as
+    /// NOT powered, because it runs at kinetic cadence in this
+    /// step, not at the every-tick cadence the count describes.
+    /// A Dynamo on its own counts as neither, and a wall or
+    /// workstation next to a Dynamo counts as neither — only
+    /// mills are consumers in this loop. No voltage split is
+    /// added in this step: the count stays one number, and its
+    /// meaning is the rated-voltage rule above.</summary>
     public int PoweredMills { get; set; }
     public int TotalMills { get; set; }
     /// <summary>Mini-map: top-down solid / enemy presence, 32x32, for Slice 1 placeholder rendering.</summary>

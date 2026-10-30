@@ -1,5 +1,46 @@
 # Forgeborne — Changelog
 
+## 0.40.0 — 2026-10-30 — Slice 9 Step 1: voltage ladder and transformer
+
+- Voltage ladder and transformer, decided in this step
+  (rationale in DECISIONS.md), following the 0.39.0
+  decision that named Slice 9 Step 1 as next. New
+  `src/Forgeborne.Core/Voltage.cs`: exactly two levels,
+  LV and HV, because two suffice — LV is the Dynamo's
+  output and the Kinetic Mill's rating, HV exists only
+  because a transformer can produce it. New block type
+  Transformer = 9, appended only, costing 5 EmberOre:
+  one bidirectional block that flips its input voltage
+  (LV to HV, HV to LV), face-adjacency only, with a
+  direct Dynamo beating a converted voltage and a
+  transformer ring with no Dynamo delivering None.
+  `WorldZone.DeliveredVoltage` derives voltage every
+  tick from placement, so no new save field exists and
+  old saves load with their Dynamos at LV; `IsPowered`
+  now means delivered voltage equals the mill's rated
+  LV, so a Dynamo-against-mill pair behaves exactly as
+  before, a Dynamo -> transformer -> transformer -> mill
+  round-trip runs the mill at the every-tick cadence,
+  and an HV-fed mill falls back to kinetic cadence in
+  this step (destruction is Step 3's decision, and
+  these tests pin the interim fallback openly).
+  Simulation gains `BuildTransformerAhead` through the
+  existing aimed builder; the Unity adapter gains the U
+  key, suppressed while the picker is open like T and Y;
+  HudState keeps one power count, now stated as
+  rated-voltage only, so an HV-fed mill counts as not
+  powered; playtest-gate checklist item 15 covers the U
+  key, Windows-only, not claimed verified.
+- Tests: 975 passed, 0 failed (was 929; +46, no failures
+  during the run). Demo unchanged: Slice 1 gathered 1,
+  built 1, killed 2, save 43,881 chars; Slice 2 save
+  43,921 chars; Step 1 scenario save 44,016 chars; Step 3
+  scenario save 44,103 chars; Slice 4 scenario save
+  44,026 chars; Slice 5 Step 2 scenario save 43,974
+  chars; Slice 6 Step 4 scenario save 44,024 chars;
+  Slice 7 Step 2 scenario save 44,013 chars; Slice 8
+  Step 3 scenario save 43,974 chars.
+
 ## 0.39.0 — 2026-10-30 — Slice 9 scope: electrical tier 2 (voltage, cable, destruction)
 
 - Slice 9 scoped as its own decision step (rationale in

@@ -120,30 +120,101 @@ public sealed class WorldZone
         { (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1) };
 
     /// <summary>
-    /// Slice 5 Step 1 power rule, derived every tick, never persisted:
-    /// a cell is powered exactly when at least one face-adjacent
-    /// cell (not diagonal) holds a Dynamo. There is no cable, no
-    /// network walk, and no chaining: a mill next to another mill
-    /// next to a Dynamo is NOT powered, and a Dynamo powers only
-    /// its six direct neighbours. Power is therefore recomputed
-    /// from the blocks on every tick — remove the Dynamo and the
-    /// mill falls back to kinetic cadence on the next tick — and
-    /// the save format needs no powered flag, because the Dynamo
-    /// block itself is saved as a chunk byte like every block.
+    /// Slice 9 Step 1 voltage delivery, derived every tick, never
+    /// persisted — the Slice 5 rule widened to a ladder, not
+    /// replaced: a cell's delivered voltage is LV when at least
+    /// one face-adjacent cell (not diagonal) holds a Dynamo, and
+    /// otherwise the output of a face-adjacent Transformer, if
+    /// any. A direct Dynamo beats a converted voltage: a mill
+    /// touching both a Dynamo and an HV-outputting transformer
+    /// receives LV, so adding a transformer next to an existing
+    /// powered pair never unpowers it. There is still no cable
+    /// and no network walk in this step — only face-adjacency,
+    /// plus one transformer hop per face step, resolved through
+    /// TransformerOutput. Voltage is recomputed from the blocks
+    /// on every tick, so removing a Dynamo drops a mill to
+    /// kinetic cadence on the next tick, and the save format
+    /// needs no voltage flag: Dynamo and Transformer blocks are
+    /// saved as chunk bytes like every block, and an old save's
+    /// Dynamo loads at LV by the DynamoOutput rule.
     /// </summary>
-    public bool IsPowered(int x, int y, int z)
+    public Voltage DeliveredVoltage(int x, int y, int z)
     {
         foreach (var (dx, dy, dz) in Neighbours)
         {
             int nx = x + dx, ny = y + dy, nz = z + dz;
-            if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo) return true;
+            if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo)
+                return VoltageRules.DynamoOutput;
         }
-        return false;
+        var visited = new HashSet<(int, int, int)> { (x, y, z) };
+        foreach (var (dx, dy, dz) in Neighbours)
+        {
+            int nx = x + dx, ny = y + dy, nz = z + dz;
+            if (!VoxelChunk.InBounds(nx, ny, nz) || Chunk.Get(nx, ny, nz) != BlockType.Transformer) continue;
+            var output = TransformerOutput(nx, ny, nz, visited);
+            if (output != Voltage.None) return output;
+        }
+        return Voltage.None;
     }
+
+    /// <summary>
+    /// A transformer's output voltage: the flipped value of its
+    /// input, where the input is LV when a face-adjacent cell
+    /// holds a Dynamo — a direct source beats a converted one,
+    /// so a transformer touching both a Dynamo and another
+    /// transformer converts from the Dynamo — and otherwise the
+    /// output of the first face-adjacent transformer (in fixed
+    /// neighbour order) that itself has an input. The visited
+    /// set stops a ring of transformers with no Dynamo from
+    /// recursing forever: every transformer in the ring reports
+    /// None, because no input ever reaches a Dynamo. A
+    /// transformer with no powered neighbour outputs None, not
+    /// a guessed level, so an unpowered transformer converts
+    /// nothing and powers nothing.
+    /// </summary>
+    private Voltage TransformerOutput(int x, int y, int z, HashSet<(int, int, int)> visited)
+    {
+        if (!visited.Add((x, y, z))) return Voltage.None;
+        Voltage input = Voltage.None;
+        foreach (var (dx, dy, dz) in Neighbours)
+        {
+            int nx = x + dx, ny = y + dy, nz = z + dz;
+            if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo)
+            {
+                input = VoltageRules.DynamoOutput;
+                break;
+            }
+        }
+        if (input == Voltage.None)
+        {
+            foreach (var (dx, dy, dz) in Neighbours)
+            {
+                int nx = x + dx, ny = y + dy, nz = z + dz;
+                if (!VoxelChunk.InBounds(nx, ny, nz) || Chunk.Get(nx, ny, nz) != BlockType.Transformer) continue;
+                var output = TransformerOutput(nx, ny, nz, visited);
+                if (output != Voltage.None) { input = output; break; }
+            }
+        }
+        return VoltageRules.Flipped(input);
+    }
+
+    /// <summary>
+    /// Slice 5 Step 1 power rule, redefined in Slice 9 Step 1
+    /// around the ladder: a cell is powered exactly when its
+    /// delivered voltage is the mill's rated voltage (LV). A
+    /// mill fed HV is therefore NOT powered in this step — it
+    /// falls back to kinetic cadence, per the scope's interim
+    /// rule, and Step 3 replaces that fallback for overvoltage
+    /// with destruction as a recorded behaviour change. The old
+    /// face-adjacency facts still hold: a mill diagonally
+    /// adjacent to a Dynamo is not powered, and a mill two cells
+    /// from a Dynamo through another mill is not powered.
+    /// </summary>
+    public bool IsPowered(int x, int y, int z) => DeliveredVoltage(x, y, z) == VoltageRules.MillRated;
 
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo)) return BuildResult.InvalidType;
+        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
@@ -178,6 +249,26 @@ public sealed class WorldZone
             // to a mill the player already owns. The failed-build rule
             // matches the other machines: check before spending, so a
             // refused build spends nothing.
+            if (!Player.Inventory.Has(BlockType.EmberOre, 5))
+                return BuildResult.InsufficientResources;
+            Player.Inventory.Remove(BlockType.EmberOre, 5);
+        }
+        else if (type == BlockType.Transformer)
+        {
+            // Slice 9 Step 1 Transformer: 5 EmberOre, the same order
+            // as a Dynamo, so electrical builds keep competing with
+            // workstations and squads for ore, not with walls and
+            // mills for Stone and Wood. The double cost is honest:
+            // a transformer on its own powers nothing — it only
+            // converts a voltage that already exists — so what the
+            // second 5 ore buys is the second voltage itself: the
+            // only way to produce HV in this step, which a second
+            // Dynamo cannot give, and which Step 2 cables will
+            // carry and Step 3 will punish when mismatched. In
+            // this step alone a transformer also buys indirect LV:
+            // Dynamo -> transformer -> transformer -> mill runs
+            // the mill at LV one cell further from its Dynamo.
+            // Same check-before-spend rule as the other machines.
             if (!Player.Inventory.Has(BlockType.EmberOre, 5))
                 return BuildResult.InsufficientResources;
             Player.Inventory.Remove(BlockType.EmberOre, 5);
@@ -379,7 +470,8 @@ public sealed class WorldZone
     /// </summary>
     /// <summary>
     /// Slice 5 Step 1 powered automation: every tick, each powered
-    /// Kinetic Mill (face-adjacent to a Dynamo, per IsPowered)
+    /// Kinetic Mill (receiving its rated voltage, per IsPowered —
+    /// LV from a Dynamo or converted back through transformers)
     /// excavates at most one adjacent gatherable block, in the same
     /// fixed neighbour order and through the same reused
     /// <see cref="Gather(int, int, int)"/> as kinetic mills, into the

@@ -76,10 +76,19 @@ public class FpsInputAdapter : MonoBehaviour
         // this step adds no refresh hook, and the live HUD power
         // line (HudDisplay) is the presence proof that updates
         // every frame regardless of mesh refresh.
+        // Slice 9 Step 1: U builds a Transformer (via
+        // BuildTransformerAhead, 5 EmberOre), next to Y on the
+        // keyboard so the electrical trio sits together, and
+        // suppressed while the picker is open for the same ore
+        // reason as Y — a transformer key while picking could
+        // spend the ore a pending Confirm needs. Since Slice 8
+        // all three builders place by aim, so U builds in the
+        // cell before the aimed surface, like T and Y.
         if (!Simulation.OrbitalCommand.IsPicking)
         {
             if (Input.GetKeyDown(KeyCode.T)) Simulation.BuildKineticMillAhead();
             if (Input.GetKeyDown(KeyCode.Y)) Simulation.BuildDynamoAhead();
+            if (Input.GetKeyDown(KeyCode.U)) Simulation.BuildTransformerAhead();
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's

@@ -99,6 +99,18 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     round; a wall between crosshair and enemy blocks the
     shot. Do not claim this verified in Unity until it
     is observed there and recorded in DECISIONS.md.
+15. [ ] Transformer key, added 0.40.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core ladder, conversion, and rated-voltage rules
+    are headless-tested): press U with 5 EmberOre to build
+    a Transformer in the cell before the aimed surface,
+    like T and Y; U is suppressed while the rally picker
+    is open, like T and Y; the HUD power line still counts
+    only mills receiving rated LV, so a mill fed HV
+    through a transformer reads as unpowered (kinetic
+    cadence) until Step 3. Do not claim this verified in
+    Unity until it is observed there and recorded in
+    DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
