@@ -26,7 +26,10 @@ public enum TacticalDoctrine
 /// <summary>Squad types. Vanguard is the general-purpose
 /// 3-member squad; Recon (Slice 7 Step 1) is the second kind —
 /// a fragile long-range screen, not a second generalist.
-/// Further types (heavy, flyer) are later steps, not claimed
+/// Heavy (Slice 11 Step 1) is the third kind — a close-range
+/// anchor, not a tougher Vanguard in every dimension: it
+/// trades range and firepower for survivability (see
+/// SquadShapes). A flyer is a later step, not claimed
 /// here.</summary>
 public enum SquadKind
 {
@@ -36,19 +39,26 @@ public enum SquadKind
     /// less than half Vanguard's health and DPS — see
     /// SquadShapes and DECISIONS.md.</summary>
     Recon = 1,
+    /// <summary>Slice 11 Step 1: 2 members, 50 HP each, 8 damage
+    /// each, range 2. The anchor Vanguard cannot be: it survives
+    /// a hit that kills Vanguard outright, but it fires only
+    /// at range 2 and deals barely half Vanguard's damage —
+    /// see SquadShapes and DECISIONS.md.</summary>
+    Heavy = 2,
 }
 
 /// <summary>
 /// One squad kind's shape: the numbers every squad rule reads.
 /// Vanguard's shape is unchanged since 0.9.0 (3 members, 30 HP
 /// each, 10 damage each, range 3); Recon's shape is decided in
-/// Slice 7 Step 1 and lives here, not as a second set of shared
-/// constants or a branch in every rule. A kind's squad reads
-/// its shape from its Kind, so movement, fire, snapshot, and
-/// load all agree about what a kind is without duplicating
-/// its numbers. Unknown kinds are rejected at the boundaries
-/// (deploy, picker selection, load), so For throws for them
-/// rather than silently returning a Vanguard shape.</summary>
+/// Slice 7 Step 1 and Heavy's in Slice 11 Step 1, and both live
+/// here, not as a second set of shared constants or a branch
+/// in every rule. A kind's squad reads its shape from its Kind,
+/// so movement, fire, snapshot, and load all agree about what
+/// a kind is without duplicating its numbers. Unknown kinds
+/// are rejected at the boundaries (deploy, picker selection,
+/// load), so For throws for them rather than silently
+/// returning a Vanguard shape.</summary>
 public readonly record struct SquadShape(int Members, int MemberHealth, int MemberDamage, int EngagementRange);
 
 public static class SquadShapes
@@ -57,6 +67,7 @@ public static class SquadShapes
     {
         SquadKind.Vanguard => new SquadShape(Members: 3, MemberHealth: 30, MemberDamage: 10, EngagementRange: 3),
         SquadKind.Recon => new SquadShape(Members: 2, MemberHealth: 20, MemberDamage: 6, EngagementRange: 5),
+        SquadKind.Heavy => new SquadShape(Members: 2, MemberHealth: 50, MemberDamage: 8, EngagementRange: 2),
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown squad kind has no shape."),
     };
 }
@@ -71,7 +82,8 @@ public sealed class TacticalSquad
 {
     /// <summary>The kind's shape, read from Kind — never a
     /// second copy of the numbers. Vanguard: 3 x 30 HP, 10
-    /// damage, range 3. Recon: 2 x 20 HP, 6 damage, range 5.</summary>
+    /// damage, range 3. Recon: 2 x 20 HP, 6 damage, range 5.
+    /// Heavy: 2 x 50 HP, 8 damage, range 2.</summary>
     public SquadShape Shape => SquadShapes.For(Kind);
     /// <summary>Health per member, from the kind's shape.</summary>
     public int MemberHealth => Shape.MemberHealth;
@@ -81,7 +93,7 @@ public sealed class TacticalSquad
     public int EngagementRange => Shape.EngagementRange;
     /// <summary>Starting members, from the kind's shape.</summary>
     public int StartingMembers => Shape.Members;
-    /// <summary>Full-strength health: members x HP per member (Vanguard 90, Recon 40).</summary>
+    /// <summary>Full-strength health: members x HP per member (Vanguard 90, Recon 40, Heavy 100).</summary>
     public int MaxHealth => Shape.Members * Shape.MemberHealth;
 
     public int X { get; private set; }
@@ -98,7 +110,8 @@ public sealed class TacticalSquad
     /// <summary>
     /// Living members, from total health in steps of one
     /// member's HP: e.g. Vanguard 61-90 = 3, 31-60 = 2, 1-30 = 1,
-    /// 0 = 0; Recon 21-40 = 2, 1-20 = 1, 0 = 0. A wounded member
+    /// 0 = 0; Recon 21-40 = 2, 1-20 = 1, 0 = 0; Heavy 51-100 = 2,
+    /// 1-50 = 1, 0 = 0. A wounded member
     /// keeps firing until its HP are gone, so firepower drops
     /// in steps, not per hit.
     /// </summary>
@@ -116,11 +129,12 @@ public sealed class TacticalSquad
     /// <summary>
     /// Load path: same squad, but with restored health (e.g. a wounded
     /// Vanguard squad at 30 HP still has 1 living member). Health is
-    /// clamped to 0..the kind's own maximum (Vanguard 90, Recon 40),
-    /// so a corrupt save cannot create a super-squad and a kind is
-    /// never silently trimmed to another kind's health on load; a
-    /// 0-health squad is dead and is skipped by the loader. Kind is
-    /// assigned before the clamp because the clamp is per-kind.
+    /// clamped to 0..the kind's own maximum (Vanguard 90, Recon 40,
+    /// Heavy 100), so a corrupt save cannot create a super-squad
+    /// and a kind is never silently trimmed to another kind's
+    /// health on load; a 0-health squad is dead and is skipped
+    /// by the loader. Kind is assigned before the clamp because
+    /// the clamp is per-kind.
     /// </summary>
     public TacticalSquad(int spawnX, int spawnY, int spawnZ, int rallyX, int rallyY, int rallyZ,
         int health, TacticalDoctrine doctrine, SquadKind kind)
@@ -262,22 +276,25 @@ public static class SquadEconomy
     /// <summary>Maximum concurrent live squads. Dead squads do not count.</summary>
     public const int MaxConcurrentSquads = 3;
     /// <summary>Deployment price, in EmberOre, for one squad of
-    /// either kind. Slice 7 Step 1 keeps one price for both
-    /// kinds (see CostForKind): the kinds trade role for role,
+    /// any kind. Slice 7 Step 1 keeps one price for both kinds
+    /// then existing, and Slice 11 Step 1 keeps it for Heavy
+    /// too (see CostForKind): the kinds trade role for role,
     /// not price for power, so a price difference would invent
     /// an economy distinction no balance evidence supports yet.</summary>
     public const int EmberOreCost = 10;
 
     /// <summary>Deployment price for a kind, decided in Slice 7
-    /// Step 1: 10 EmberOre for Vanguard and for Recon alike, so
-    /// the picker prompt's COST 10 line stays true for both
-    /// kinds and the cap question stays separate from price.
+    /// Step 1 and kept in Slice 11 Step 1: 10 EmberOre for
+    /// Vanguard, for Recon, and for Heavy alike, so the picker
+    /// prompt's COST 10 line stays true for all three kinds
+    /// and the cap question stays separate from price.
     /// Unknown kinds have no price; callers must reject them
     /// before charging, as TryDeployPaidSquad does.</summary>
     public static int CostForKind(SquadKind kind) => kind switch
     {
         SquadKind.Vanguard => EmberOreCost,
         SquadKind.Recon => EmberOreCost,
+        SquadKind.Heavy => EmberOreCost,
         _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown squad kind has no price."),
     };
 

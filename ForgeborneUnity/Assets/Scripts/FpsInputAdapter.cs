@@ -131,12 +131,16 @@ public class FpsInputAdapter : MonoBehaviour
         // doctrine and 2 selects Advance (Slice 4 Step 2; an
         // Advance squad ignores its rally after deployment and
         // hunts the nearest enemy — see docs/orbital-command.md),
-        // and 3 / 4 select the squad kind independently of
-        // doctrine (Slice 7 Step 1: 3 Vanguard, 4 Recon), so all
-        // four doctrine-kind combinations are reachable and no
-        // key couples a doctrine to a kind. Before Slice 7, 1 and
-        // 2 forced Vanguard as well as a doctrine; they no longer
-        // do, so changing doctrine keeps the selected kind.
+        // and 3 / 4 / 5 select the squad kind independently of
+        // doctrine (Slice 7 Step 1: 3 Vanguard, 4 Recon; Slice 11
+        // Step 1: 5 Heavy), so all doctrine-kind combinations are
+        // reachable and no key couples a doctrine to a kind.
+        // Before Slice 7, 1 and 2 forced Vanguard as well as a
+        // doctrine; they no longer do, so changing doctrine
+        // keeps the selected kind. 5 is free while picking: the
+        // picker keys are 1 / 2 / 3 / 4 plus Return / Esc / O,
+        // and no builder key fires while picking, so 5 cannot
+        // collide with a builder or with another picker key.
         // While picking, the mouse does not fire: Enter is the
         // confirm, so a click cannot shoot while the player is
         // aiming a rally.
@@ -144,7 +148,9 @@ public class FpsInputAdapter : MonoBehaviour
         // most 3 live squads may be fielded, enforced in core by
         // Confirm — see docs/orbital-command.md. Since Slice 7
         // Step 1 the 10-ore price and 3-squad cap hold for both
-        // kinds, so the prompt's COST 10 / MAX 3 line stays true.
+        // kinds then existing, and since Slice 11 Step 1 they
+        // hold for Heavy too, so the prompt's COST 10 / MAX 3
+        // line stays true.
         if (Input.GetKeyDown(KeyCode.O))
         {
             if (Simulation.OrbitalCommand.IsPicking) Simulation.CancelOrbitalPick();
@@ -169,6 +175,10 @@ public class FpsInputAdapter : MonoBehaviour
             else if (Input.GetKeyDown(KeyCode.Alpha4))
             {
                 Simulation.OrbitalCommand.SelectKind(SquadKind.Recon);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha5))
+            {
+                Simulation.OrbitalCommand.SelectKind(SquadKind.Heavy);
             }
             else
             {

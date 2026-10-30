@@ -1,5 +1,77 @@
 # Forgeborne — Changelog
 
+## 0.49.0 — 2026-10-30 — Slice 11 Step 1: third squad kind — Heavy, close-range anchor
+
+- Third kind, decided in this step (rationale in
+  DECISIONS.md): Heavy, appended as SquadKind = 2
+  only, with shape 2 members, 50 HP each, 8 damage
+  each, engagement range 2 — full health 100, full
+  damage 16 per tick. It is the anchor the other
+  kinds cannot be: a 95-damage hit kills a Vanguard
+  (90 HP) outright and leaves a Heavy at 5 HP with
+  1 member, but a Heavy is silent at range 3 where
+  a Vanguard fires for 30, and deals barely half a
+  Vanguard's damage where it does fire, so it is a
+  trade, not a replacement. Flyer was not chosen:
+  it would need a movement rule with targeting and
+  occupancy consequences, which would make the kind
+  untestable in isolation — the scope's own warning,
+  carried from Slice 7. Movement stays the shared
+  one-voxel-per-tick rule for all three kinds.
+- Shape, price, and cap, decided in this step:
+  Vanguard's numbers (3 x 30, 10 damage, range 3)
+  and Recon's numbers (2 x 20, 6 damage, range 5)
+  are unchanged; Heavy reads its shape from
+  `SquadShapes.For`, like the other kinds, not from
+  a branch in every rule. Price stays 10 EmberOre
+  and the cap stays 3 live squads in total, not per
+  kind, so the picker's COST 10 / MAX 3 line stays
+  true for all three kinds. No new doctrine rides
+  along: Heavy deploys under HoldGround and Advance
+  exactly as the existing kinds do, and a third
+  doctrine is Step 2 work.
+- Adapter binding and display, decided in this
+  step: Alpha5 selects Heavy while picking, after
+  Alpha3 Vanguard and Alpha4 Recon — confirmed
+  free while picking, since no builder key fires
+  while the picker is open and the picker keys were
+  1 / 2 / 3 / 4 plus Return / Esc / O. Playtest-gate
+  checklist item 20 (Heavy key, Windows-only) and
+  orbital-command checklist item 11 are added. The
+  headless display already prints kind, doctrine,
+  members, health, damage, range, and activity, so
+  no new display line is added. Scene marker,
+  decided in this step (Slice 10 review gap 8):
+  Heavy keeps the shared cyan cube marker, stated
+  openly in SquadMarkerDisplay.cs, not inherited by
+  accident — a per-kind marker distinction is a
+  display system for Slice 12 scoping to decide as
+  one visibility question, and until then kind is
+  read from the text display line, not the marker.
+- Gate-doc gap closed, as assigned by the 0.48.0
+  scope: Slice 10 review gap 7 is closed by this
+  step, because Step 1 touches the gate doc for its
+  own checklist item — playtest-gate checklist item
+  19 (workstation B key, added 0.45.0) is added
+  alongside item 20, named here so the repair is a
+  stated part of this step and not a quiet extra.
+- Save rule, proved, not changed: kind is stored as
+  an int and the loader already rejects undefined
+  kinds, so no new save field is invented. A 999-HP
+  Heavy loads clamped to 100, a 999-HP Vanguard
+  still loads at 90, and a mixed Vanguard + Recon +
+  Heavy save round-trips all three kinds with their
+  own health and member counts.
+- Tests: 1370 passed, 0 failed (was 1300; +70, no
+  failures on the final run). Demo unchanged: Slice
+  10 Step 3 scenario save 43,974 chars.
+- Test fix during the run, not a code fix: the
+  Vanguard range-3 comparison first asserted
+  Enemies[0].Health after a killing 30-damage hit,
+  but Advance removes dead enemies from the list,
+  so the assertion is now Enemies.Count == 0; no
+  core code was changed for it.
+
 ## 0.48.0 — 2026-10-30 — Slice 11 scope: squad widening — third kind, then one deferred doctrine, then demo + review
 
 - Scoping Slice 11 as its own decision step, decided in

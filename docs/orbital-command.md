@@ -63,6 +63,13 @@ no longer uses it.
 - **2** — select the Advance doctrine (kind unchanged).
 - **3** — select the Vanguard kind (doctrine unchanged).
 - **4** — select the Recon kind (doctrine unchanged).
+- **5** — select the Heavy kind (doctrine unchanged).
+  Since Slice 11 Step 1, the picker offers three kinds
+  independently of doctrine, at the same 10-ore price
+  and 3-squad cap, so all six doctrine-kind combinations
+  deploy through the picker. The prompt line already
+  shows the selected kind verbatim, so it reads e.g.
+  `HEAVY ADVANCE`.
   Since Slice 7 Step 1, doctrine and kind are two
   independent choices: before it, 1 and 2 also forced
   Vanguard, so the fourth combinations were unreachable;
@@ -266,6 +273,21 @@ words (Marching / Holding / Hunting / Idle).
     marker is the same cyan cube as a Vanguard's. Do not
     claim this verified in Unity until this item is
     completed there and recorded in DECISIONS.md.
+11. [ ] Third kind, added 0.49.0 (adapter code written, NOT
+    yet compiled or run in Unity on Windows; the core kind
+    rules are headless-tested, the adapter binding is NOT):
+    press O, press 5 — the prompt shows HEAVY with the
+    current doctrine; press 1 — the prompt shows HEAVY
+    HOLDGROUND, proving doctrine changed without changing
+    kind; press 2, then 4 — the prompt shows RECON
+    ADVANCE; Enter deploys the shown combination for 10
+    EmberOre; a deployed Heavy squad's text line reads its
+    kind, members, health, and damage, and its scene
+    marker is the same cyan cube as a Vanguard's or a
+    Recon's, by the stated Slice 11 Step 1 marker
+    decision. Do not claim this verified in Unity until
+    this item is completed there and recorded in
+    DECISIONS.md.
 
 Record the result of each step, with Unity version and GPU, in
 DECISIONS.md.

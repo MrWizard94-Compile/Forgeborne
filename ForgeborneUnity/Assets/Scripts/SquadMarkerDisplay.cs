@@ -24,6 +24,14 @@
 // proves occlusion makes markers useless at FPS distance, that
 // is a later step's evidence to revisit, not a silent shader
 // change here.
+// Slice 11 Step 1 marker decision, stated, not inherited by
+// accident: a Heavy squad renders with the same cyan cube as
+// Vanguard and Recon, because the shared marker is the pool
+// this step keeps and a kind distinction is a display system
+// (tint / shape per kind) that Slice 12 scoping must decide
+// as one visibility question — see docs/slice-11-scope.md,
+// gap 8. Until then, kind is read from the text display line,
+// not from the marker, and that limit is stated openly here.
 // Markers are pooled, not rebuilt per frame: the pool grows to
 // the largest squad count seen (at most 3 live squads, so at
 // most 3 squad markers, 3 rally markers, and 1 pending marker)

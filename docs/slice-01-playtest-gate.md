@@ -154,6 +154,32 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     nothing on the HUD, by decision. Do not claim this
     verified in Unity until it is observed there and
     recorded in DECISIONS.md.
+19. [ ] Workstation key, added 0.45.0, checklist item
+    added 0.49.0 closing Slice 10 review gap 7 (adapter
+    code written, NOT yet compiled or run in Unity on
+    Windows; the core workstation build, cost, and regen
+    rules are headless-tested): press B with 10 Stone
+    and 5 EmberOre to build a workstation in the cell
+    before the aimed surface, like T / Y / U / I / N; B
+    is suppressed while the rally picker is open, like
+    the other builders; stand near the built workstation
+    and shields restore 5/tick, capped at 85. Do not
+    claim this verified in Unity until it is observed
+    there and recorded in DECISIONS.md.
+20. [ ] Heavy kind key, added 0.49.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core Heavy shape, price, cap, and save rules are
+    headless-tested): press O, press 5 — the prompt shows
+    HEAVY with the current doctrine; press 1 — the prompt
+    shows HEAVY HOLDGROUND, proving doctrine changed
+    without changing kind; Enter deploys the shown
+    combination for 10 EmberOre; a deployed Heavy squad's
+    text line reads its kind, members, health, and damage,
+    and its scene marker is the same cyan cube as a
+    Vanguard's or Recon's, by the stated Slice 11 Step 1
+    marker decision. Do not claim this verified in Unity
+    until it is observed there and recorded in
+    DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

@@ -3506,6 +3506,189 @@ Eq(0, s10DemoLoaded.World.DestroyedMills, "slice10 step3 composed loaded world d
 Eq(12, s10DemoLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice10 step3 composed loaded stone reaches 6 + 6");
 Eq(85, s10DemoLoaded.World.Player.Shields, "slice10 step3 composed loaded powered bench caps shields at 85");
 
+// ---- Slice 11 Step 1: third squad type — Heavy (chosen from heavy / flyer) ----
+// Heavy is the close-range anchor the other kinds cannot be: it
+// survives a hit that kills Vanguard outright (2 x 50 HP = 100,
+// against Vanguard's 90), but it pays in exactly the two
+// dimensions Recon's proof used — range and firepower. It fires
+// only at range 2 (Vanguard 3, Recon 5) and deals 2 x 8 = 16 per
+// tick (Vanguard 30, Recon 12), so it is better than Vanguard in
+// exactly one dimension (survivability) and worse in two, and it
+// is a choice, not a replacement. Flyer was not chosen: it would
+// need a movement rule (ignoring solids / air) with targeting
+// and occupancy consequences, which would make the kind
+// untestable in isolation — the scope's own warning, carried
+// from Slice 7. Movement stays the shared one-voxel rule for
+// all three kinds. Slice 7's heavy rejection is answered, not
+// ignored: then the gap was a screen and a tougher anchor was
+// Vanguard with more HP; now the gap is the anchor itself, and
+// the range-2 / 16-DPS costs are what keep Heavy from being
+// Vanguard with more HP — a Vanguard fires at range 3 where a
+// Heavy is silent, and a Heavy deals barely half a Vanguard's
+// damage where it does fire.
+// Per-kind shape table: Vanguard's and Recon's numbers are unchanged.
+Eq(3, SquadShapes.For(SquadKind.Vanguard).Members, "slice11 vanguard shape members unchanged");
+Eq(30, SquadShapes.For(SquadKind.Vanguard).MemberHealth, "slice11 vanguard shape member health unchanged");
+Eq(10, SquadShapes.For(SquadKind.Vanguard).MemberDamage, "slice11 vanguard shape member damage unchanged");
+Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice11 vanguard shape range unchanged");
+Eq(2, SquadShapes.For(SquadKind.Recon).Members, "slice11 recon shape members unchanged");
+Eq(20, SquadShapes.For(SquadKind.Recon).MemberHealth, "slice11 recon shape member health unchanged");
+Eq(6, SquadShapes.For(SquadKind.Recon).MemberDamage, "slice11 recon shape member damage unchanged");
+Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice11 recon shape range unchanged");
+Eq(2, SquadShapes.For(SquadKind.Heavy).Members, "slice11 heavy shape members");
+Eq(50, SquadShapes.For(SquadKind.Heavy).MemberHealth, "slice11 heavy shape member health");
+Eq(8, SquadShapes.For(SquadKind.Heavy).MemberDamage, "slice11 heavy shape member damage");
+Eq(2, SquadShapes.For(SquadKind.Heavy).EngagementRange, "slice11 heavy shape range");
+bool heavyShapeThrows = false;
+try { SquadShapes.For((SquadKind)99); } catch (ArgumentOutOfRangeException) { heavyShapeThrows = true; }
+Check(heavyShapeThrows, "slice11 unknown kind still has no shape, throws rather than falling back to Vanguard");
+// A deployed Heavy squad reads its own shape, not Vanguard's.
+var heavyWorld = new WorldZone(42);
+var heavy = heavyWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+Eq(SquadKind.Heavy, heavy.Kind, "slice11 heavy deploy kind");
+Eq(100, heavy.Health, "slice11 heavy full health is 100, not 90");
+Eq(100, heavy.MaxHealth, "slice11 heavy max health is 100");
+Eq(2, heavy.AliveMembers, "slice11 heavy full members");
+Eq(16, heavy.DamagePerTick, "slice11 heavy full damage per tick is 16, below vanguard 30");
+// Firepower drops in member steps, per kind: Heavy 100 -> 50 HP
+// is 1 member dealing 8, and 100 damage kills it outright.
+heavy.TakeDamage(50);
+Eq(50, heavy.Health, "slice11 heavy wounded health");
+Eq(1, heavy.AliveMembers, "slice11 heavy wounded has 1 member");
+Eq(8, heavy.DamagePerTick, "slice11 heavy wounded damage per tick");
+heavy.TakeDamage(50);
+Check(heavy.IsDead, "slice11 heavy at 0 health is dead");
+Eq(0, heavy.DamagePerTick, "slice11 dead heavy deals nothing");
+// The anchor proof, stated exactly: 95 damage kills a Vanguard
+// (90 HP) outright and leaves a Heavy at 5 HP with 1 member.
+var anchorVanWorld = new WorldZone(42);
+var anchorVan = anchorVanWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+anchorVan.TakeDamage(95);
+Check(anchorVan.IsDead, "slice11 anchor hit kills vanguard outright");
+var anchorHeavyWorld = new WorldZone(42);
+var anchorHeavy = anchorHeavyWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+anchorHeavy.TakeDamage(95);
+Eq(5, anchorHeavy.Health, "slice11 anchor hit leaves heavy at 5 hp");
+Eq(1, anchorHeavy.AliveMembers, "slice11 anchor hit leaves heavy with 1 member");
+Check(!anchorHeavy.IsDead, "slice11 anchor hit does not kill heavy");
+// Heavy fires at range 2, not at range 3: enemy starts 4 away,
+// steps to 3 in the enemy phase, and the holding Heavy stays
+// silent; a Vanguard at the same geometry fires for 30.
+var heavyFarWorld = new WorldZone(42);
+heavyFarWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+heavyFarWorld.Player.X = 28; heavyFarWorld.Player.Z = 28;
+heavyFarWorld.Enemies.Add(new Enemy(20, 5, 16));
+heavyFarWorld.Advance();
+Eq(19, heavyFarWorld.Enemies[0].X, "slice11 heavy range-3 enemy steps to distance 3");
+Eq(30, heavyFarWorld.Enemies[0].Health, "slice11 heavy does not fire at range 3");
+var vanFarWorld = new WorldZone(42);
+vanFarWorld.DeploySquad(16, 5, 16);
+vanFarWorld.Player.X = 28; vanFarWorld.Player.Z = 28;
+vanFarWorld.Enemies.Add(new Enemy(20, 5, 16));
+vanFarWorld.Advance();
+Eq(0, vanFarWorld.Enemies.Count, "slice11 vanguard at same geometry fires for 30 at range 3 and kills the 30 hp enemy");
+// Heavy fires at range 2 for 16: enemy starts 3 away, steps to 2,
+// then the holding Heavy fires.
+var heavyRangeWorld = new WorldZone(42);
+heavyRangeWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+heavyRangeWorld.Player.X = 28; heavyRangeWorld.Player.Z = 28;
+heavyRangeWorld.Enemies.Add(new Enemy(19, 5, 16));
+heavyRangeWorld.Advance();
+Eq(18, heavyRangeWorld.Enemies[0].X, "slice11 heavy range enemy steps to distance 2");
+Eq(14, heavyRangeWorld.Enemies[0].Health, "slice11 heavy fires at range 2 for 16");
+// Movement is the shared rule: a Heavy HoldGround squad marches
+// one voxel per tick toward its rally, exactly like Vanguard.
+var heavyMarchWorld = new WorldZone(42);
+var heavyMarch = heavyMarchWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+heavyMarchWorld.Advance();
+Eq(17, heavyMarch.X, "slice11 heavy marches one voxel toward rally");
+// Both doctrines work for Heavy: an Advance Heavy hunts west
+// toward its enemy, not east toward its rally, and fires 16
+// once in range 2.
+var heavyAdvWorld = new WorldZone(42);
+var heavyAdv = heavyAdvWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance, SquadKind.Heavy)!;
+heavyAdvWorld.Player.X = 28; heavyAdvWorld.Player.Z = 28;
+heavyAdvWorld.Enemies.Add(new Enemy(12, 5, 16));
+heavyAdvWorld.Advance();
+Eq(15, heavyAdv.X, "slice11 advance heavy moves toward enemy, not rally");
+Eq(13, heavyAdvWorld.Enemies[0].X, "slice11 advance heavy enemy pursues squad");
+Eq(14, heavyAdvWorld.Enemies[0].Health, "slice11 advance heavy fires 16 in range");
+// Economy: one price, total cap. CostForKind is 10 for all three
+// kinds, so the prompt's COST 10 line stays true; the cap is
+// 3 live squads in total, not 3 per kind.
+Eq(10, SquadEconomy.CostForKind(SquadKind.Vanguard), "slice11 vanguard price still 10");
+Eq(10, SquadEconomy.CostForKind(SquadKind.Recon), "slice11 recon price still 10");
+Eq(10, SquadEconomy.CostForKind(SquadKind.Heavy), "slice11 heavy price is 10");
+var econHeavyWorld = new WorldZone(42);
+econHeavyWorld.Player.Inventory.Add(BlockType.EmberOre, 40);
+var econHeavy = econHeavyWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+Eq(SquadKind.Heavy, econHeavy.Kind, "slice11 paid heavy deploy kind");
+Eq(100, econHeavy.Health, "slice11 paid heavy deploy health");
+Eq(30, econHeavyWorld.Player.Inventory.Get(BlockType.EmberOre), "slice11 paid heavy deploy charges exactly 10");
+econHeavyWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+econHeavyWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+Eq(3, SquadEconomy.LiveSquadCount(econHeavyWorld), "slice11 mixed kinds count toward one total cap");
+Check(econHeavyWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy) == null, "slice11 fourth squad refused at total cap, not per-kind cap");
+Eq(10, econHeavyWorld.Player.Inventory.Get(BlockType.EmberOre), "slice11 refused over-cap deploy charges nothing");
+var econPoorHeavyWorld = new WorldZone(42);
+Check(econPoorHeavyWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy) == null, "slice11 unfunded heavy deploy refused");
+Eq(0, econPoorHeavyWorld.Squads.Count, "slice11 unfunded heavy deploy adds no squad");
+// Picker: doctrine and kind are independent choices. A Heavy
+// selection survives a doctrine change, an unknown kind is
+// rejected, and a Confirm deploys the selected combination.
+var heavyPickSim = new Simulation(42);
+heavyPickSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+heavyPickSim.BeginOrbitalPick();
+Check(heavyPickSim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice11 picker selects heavy kind");
+Check(heavyPickSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround), "slice11 picker selects doctrine after kind");
+Eq(SquadKind.Heavy, heavyPickSim.OrbitalCommand.Kind, "slice11 doctrine change keeps selected kind");
+Check(!heavyPickSim.OrbitalCommand.SelectKind((SquadKind)99), "slice11 picker rejects unknown kind");
+Eq(SquadKind.Heavy, heavyPickSim.OrbitalCommand.Kind, "slice11 rejected kind leaves selection unchanged");
+heavyPickSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+heavyPickSim.SetOrbitalRally(20, 5, 16);
+var heavyPicked = heavyPickSim.ConfirmOrbitalDeploy()!;
+Eq(SquadKind.Heavy, heavyPicked.Kind, "slice11 picker confirm deploys heavy");
+Eq(TacticalDoctrine.Advance, heavyPicked.Doctrine, "slice11 picker confirm deploys advance");
+Eq(0, heavyPickSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice11 picker heavy deploy charges 10");
+// Save/load: the load clamp is per-kind, not Vanguard-shaped.
+// A 999-HP Heavy loads at 100, a 999-HP Vanguard at 90, and a
+// mixed save round-trips all three kinds with their own health.
+var clampHeavy = new TacticalSquad(16, 5, 16, 20, 5, 16, 999, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+Eq(100, clampHeavy.Health, "slice11 heavy load clamp is 100, not vanguard 90");
+var clampVan2 = new TacticalSquad(16, 5, 16, 20, 5, 16, 999, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+Eq(90, clampVan2.Health, "slice11 vanguard load clamp still 90");
+var saveMixed3World = new WorldZone(42);
+saveMixed3World.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+saveMixed3World.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+var saveHeavy = saveMixed3World.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+saveHeavy.TakeDamage(10); // 100 -> 90, still 2 members
+var saveMixed3Loaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveMixed3World));
+Eq(3, saveMixed3Loaded.Squads.Count, "slice11 mixed save loads all three squads");
+Eq(SquadKind.Vanguard, saveMixed3Loaded.Squads[0].Kind, "slice11 mixed save vanguard kind preserved");
+Eq(90, saveMixed3Loaded.Squads[0].Health, "slice11 mixed save vanguard health preserved");
+Eq(SquadKind.Recon, saveMixed3Loaded.Squads[1].Kind, "slice11 mixed save recon kind preserved");
+Eq(SquadKind.Heavy, saveMixed3Loaded.Squads[2].Kind, "slice11 mixed save heavy kind preserved");
+Eq(90, saveMixed3Loaded.Squads[2].Health, "slice11 mixed save heavy health preserved");
+Eq(2, saveMixed3Loaded.Squads[2].AliveMembers, "slice11 mixed save heavy members preserved");
+// Targeting stays kind-blind: an enemy pursues the nearer Heavy
+// squad, not the farther player, with no kind priority in the rule.
+var heavyTargetWorld = new WorldZone(42);
+heavyTargetWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+heavyTargetWorld.Player.X = 28; heavyTargetWorld.Player.Z = 28;
+heavyTargetWorld.Enemies.Add(new Enemy(20, 5, 16));
+heavyTargetWorld.Advance();
+Eq(19, heavyTargetWorld.Enemies[0].X, "slice11 enemy pursues nearer heavy squad over farther player");
+// Snapshot carries the kind and its shape: a holding Heavy
+// reads Holding with 2 members, 100 HP, 16 damage.
+var heavySnapWorld = new WorldZone(42);
+heavySnapWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+var snapHeavy = OrbitalView.Snapshot(heavySnapWorld)[0];
+Eq(SquadKind.Heavy, snapHeavy.Kind, "slice11 snapshot heavy kind");
+Eq(2, snapHeavy.AliveMembers, "slice11 snapshot heavy members");
+Eq(100, snapHeavy.Health, "slice11 snapshot heavy health");
+Eq(16, snapHeavy.DamagePerTick, "slice11 snapshot heavy damage");
+Eq(SquadActivity.Holding, snapHeavy.Activity, "slice11 snapshot heavy at rally is holding");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

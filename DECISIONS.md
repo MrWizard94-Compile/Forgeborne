@@ -3266,6 +3266,127 @@ look inevitable.
 - Next, in order: Slice 11 Step 1, exactly one third
   squad kind, decided in that step.
 
+## 0.49.0 — Slice 11 Step 1: third squad kind — Heavy, close-range anchor
+- Decision, on the kind: Heavy, from the scope's
+  heavy / flyer pool, not a fourth pool name and not
+  a second kind as a bonus. What Heavy adds that
+  Vanguard and Recon cannot already make is a squad
+  that survives contact: 100 total HP against
+  Vanguard's 90 and Recon's 40, proved by a
+  95-damage hit that kills Vanguard outright and
+  leaves Heavy at 5 HP with 1 member. Slice 7's
+  heavy rejection is answered, not ignored: then
+  the gap was a screen and a tougher anchor was
+  Vanguard with more HP; now the gap is the anchor
+  itself, and the costs below are what keep Heavy
+  from being Vanguard with more HP.
+- Decision, on the shape: 2 members, 50 HP each,
+  8 damage each, engagement range 2 — full health
+  100, full damage 16 per tick. Heavy is better
+  than Vanguard in exactly one dimension
+  (survivability, total and per-member) and worse
+  in two (range 2 against 3 and 5; damage 16
+  against 30 and, for a Vanguard comparison, barely
+  half), mirroring Recon's proof structure, so it
+  is a choice, not a replacement. A Heavy fires
+  only at range 2: at range 3 it is silent where a
+  Vanguard kills a 30-HP enemy, and its damage
+  drops in member steps (100 -> 50 HP is 1 member
+  dealing 8), like the other kinds. First-pass
+  values for determinism and testability, not final
+  feel, exactly as Vanguard's and Recon's numbers
+  were — no balance pass rides along.
+- Decision, on flyer, rejected again with the
+  reason: a flyer is not a stat, it is a movement
+  rule (ignoring solids, or moving in the air)
+  with targeting and occupancy consequences — a
+  flyer inside a wall cell, for example, is a
+  position an enemy cannot step into — and proving
+  those consequences inside a kind step would make
+  the kind untestable in isolation. Flyer remains
+  a later-step candidate, not a rejected idea.
+- Decision, on movement: the shared
+  one-voxel-per-tick rule, unchanged. Heavy marches
+  under HoldGround and hunts under Advance exactly
+  like the other kinds, with the same step refusals
+  (solid and enemy-occupied cells, out of bounds),
+  proved by a march test and an Advance hunt test.
+  No new movement mode rides along.
+- Decision, on shape representation: a per-kind
+  shape in `SquadShapes.For`, appended only, not a
+  second set of shared constants and not a branch
+  in every rule. Vanguard's and Recon's numbers are
+  unchanged, proved by shape-table tests. The load
+  clamp stays per-kind (Heavy 100, Vanguard 90,
+  Recon 40), so a corrupt save cannot create a
+  super-squad and a kind is never trimmed to
+  another kind's health on load.
+- Decision, on price and cap: the settled economy
+  holds — 10 EmberOre and a cap of 3 live squads
+  in total, the same for Heavy as for Vanguard and
+  Recon, so the picker's COST 10 / MAX 3 line stays
+  true. A price difference would invent an economy
+  distinction no balance evidence supports yet, and
+  a per-kind cap would change the cap question
+  without a step justifying it; both are refused
+  here. A fourth squad across mixed kinds is
+  refused at the total cap with no charge, proved
+  by test, as before.
+- Decision, on the adapter binding: Alpha5 selects
+  Heavy while picking, after Alpha3 Vanguard and
+  Alpha4 Recon. Alpha5 is confirmed free while
+  picking: the picker keys were 1 / 2 / 3 / 4 plus
+  Return / Esc / O, and no builder key fires while
+  the picker is open, so 5 collides with nothing.
+  Doctrine and kind stay independent: changing
+  doctrine keeps Heavy selected, an unknown kind
+  is rejected with the selection unchanged, and a
+  Confirm deploys the shown combination. The third
+  doctrine key in Step 2 cannot also take Alpha5;
+  that collision is Step 2's binding decision, not
+  a problem deferred silently.
+- Decision, on display and the shared marker
+  (gap 8): no new display line, because the
+  headless display already prints kind, doctrine,
+  members, health, damage, range, and activity, and
+  the snapshot carries Heavy's shape like the other
+  kinds'. The scene marker is deliberately the
+  shared cyan cube, stated in SquadMarkerDisplay.cs
+  and in the new checklist items — not inherited by
+  accident. A per-kind marker distinction (tint or
+  shape per kind) is a display system, and it stays
+  a Slice 12 scoping candidate with the other
+  visibility gaps, not a tint or refresh system
+  smuggled into a kind step. Until then, kind is
+  read from the text display line, not the marker,
+  and that limit is stated openly.
+- Decision, on the B-key gap (gap 7): closed by
+  this step, as the 0.48.0 scope assigned it. Step 1
+  touches the gate doc for its own checklist item
+  (item 20, Heavy key), so it also adds the missing
+  B-key item (item 19, workstation build, like the
+  T / Y / U / I / N items), named here so the
+  repair is a stated part of this step. No other
+  Slice 10 gap is closed here: Unity verification,
+  the director playtest, electrical balance,
+  destruction / disablement warnings, mesh tint
+  and refresh, and live-network display remain open
+  and named, not fixed by a squad step.
+- Deliberately NOT in this step: a second kind, a
+  new doctrine (Step 2 work), any change to
+  Vanguard's or Recon's numbers, a price or cap
+  change, a movement rule, a targeting rule (no
+  taunt, no kind priority — enemy targeting stays
+  kind-blind, proved by a nearer-Heavy test), a
+  balance pass, a warning / tint / refresh system,
+  a camera, a save-format change, or any claim
+  about Windows Unity verification or the pending
+  Slice 1 director playtest gate.
+- Next, in order: Slice 11 Step 2, exactly one
+  deferred doctrine, decided in that step (Defend
+  Core as the starting hypothesis, Patrol deferred,
+  proved against more than one kind).
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
