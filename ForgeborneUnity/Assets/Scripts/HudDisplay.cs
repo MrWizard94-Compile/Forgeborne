@@ -26,6 +26,14 @@ public class HudDisplay : MonoBehaviour
     // HudState only — powered/total workstation counts are derived
     // in core, so this adapter holds no power rule of its own.
     public Text? WorkstationPowerText;
+    // Slice 12 Step 1: wire this Text in the Inspector to render
+    // the live-power line, if a line is wanted. Optional like
+    // PowerText: unwired, nothing changes. It renders HudState
+    // only — live-network and lone-source counts are derived in
+    // core, so this adapter holds no power rule of its own. A
+    // HUD line is not a mesh tint and not a mesh refresh: a
+    // counted network is not thereby visible in the scene.
+    public Text? LivePowerText;
 
     void Update()
     {
@@ -37,5 +45,6 @@ public class HudDisplay : MonoBehaviour
         if (AmmoText != null) AmmoText.text = $"{hud.WeaponName}\n{hud.AmmoMag}/{hud.AmmoReserve}";
         if (PowerText != null) PowerText.text = $"POWER: {hud.PoweredMills}/{hud.TotalMills} MILLS POWERED";
         if (WorkstationPowerText != null) WorkstationPowerText.text = $"POWER: {hud.PoweredWorkstations}/{hud.TotalWorkstations} WORKSTATIONS POWERED";
+        if (LivePowerText != null) LivePowerText.text = $"POWER: {hud.LiveNetworks} LIVE NETWORKS, {hud.LoneSources} LONE SOURCES";
     }
 }

@@ -195,6 +195,26 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     in Unity until it is observed there and recorded in
     DECISIONS.md.
 
+22. [ ] Live-power display, added 0.53.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core live-network and lone-source counts are
+    headless-tested): wire LivePowerText in the Inspector
+    to a HUD line; lay a live cable network feeding no
+    consumer and observe the line read 1 LIVE NETWORK, 0
+    LONE SOURCES; place a lone Dynamo or Alternator and
+    observe the lone-source count rise with no network
+    counted; wire the network to a mill and observe the
+    live-network count drop to 0 while the mill power
+    line reads powered, proving one delivery is not
+    counted twice. Note explicitly that the line is a
+    count, not a scene tint and not a warning: an HV
+    network counted here is live, not safe. This item
+    supersedes item 18's statement that a lone Alternator
+    feeding no consumer shows nothing on the HUD — that
+    was the decided behaviour before this display existed.
+    Do not claim this verified in Unity until it is
+    observed there and recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

@@ -1,5 +1,71 @@
 # Forgeborne — Changelog
 
+## 0.53.0 — 2026-10-30 — Slice 12 Step 1: live-network and lone-source display
+
+- Display, decided in this step (rationale in
+  DECISIONS.md): WorldZone.LivePowerCounts, derived
+  on every snapshot, never saved — LiveNetworks
+  counts live electrical structures that no
+  consumer count already shows, LoneSources counts
+  lone Dynamo / Alternator cells. Live means
+  carrying a voltage that is not None, never merely
+  placed; the count is of networks, not cells (a
+  ten-cable LV run is one network); a network
+  feeding a consumer is not counted again, so one
+  delivery is never two live things; LV and HV
+  count alike, with no voltage split. No delivery,
+  precedence, conflict, rating, cost, or phase rule
+  moves in this step, and no save-format change:
+  counts re-derive after load.
+- Counting path, decided in this step: the existing
+  CableComponent / CableNetworkVoltage walk is
+  reused through a new public WorldZone method, not
+  re-walked in the HUD; a standalone transformer
+  group (connected transformers with no cable
+  neighbour, one network per group, not per stage)
+  covers live outputs feeding nothing. Stated
+  approximations, not hidden: "feeds" is direct
+  adjacency or one transformer hop, so a cable,
+  transformer, transformer, mill chain still reads
+  as a live network; a transformer touching a cable
+  is never standalone, so a live output into a
+  dead (conflicted) component shows nothing.
+- Adapter, decided in this step: HudDisplay gains
+  a third Text field, LivePowerText, rendering its
+  own line ("POWER: n LIVE NETWORKS, m LONE
+  SOURCES"), not folded into an existing line,
+  because the two counts answer a different player
+  question than powered/total consumers; unwired,
+  nothing changes. Playtest-gate checklist item 22
+  (Windows-only) added, and it supersedes item
+  18's statement that a lone Alternator shows
+  nothing on the HUD — that was the decided
+  behaviour before this display existed. A HUD
+  line is not a mesh tint, not a mesh refresh, and
+  not a warning: an HV network counted here is
+  live, not safe, and gaps 4 and 5 stay open.
+- Behaviour proofs: empty world 0/0; lone Dynamo
+  and lone Alternator each (0,1); adjacent Dynamos
+  (0,2); Dynamo beside a wall still lone; live
+  cable network (1,0); ten-cable LV run still one
+  network; sourceless cable (0,0); mixed-voltage
+  network dead (0,0); HV network (1,0), no split;
+  network feeding a mill, a workstation, or a mill
+  through a transformer (either direction) reads
+  (0,0) while the consumer count still shows
+  powered; one fed + one free network reads (1,0);
+  standalone transformer (1,0); transformer chain
+  one network; unpowered transformer and sourceless
+  ring (0,0); transformer feeding a mill (0,0);
+  live output into a mixed component (0,0), proved
+  by a probe mill reading None; removing the source
+  drops the count on the next snapshot; save/load
+  re-derives (1,1); HudState carries both counts.
+- Tests: 1519 passed, 0 failed (was 1485; +34, no
+  failures on the final runs). Demo unchanged:
+  Slice 11 save 44,038 chars, all earlier demo
+  saves as in the 0.52.0 entry.
+
 ## 0.52.0 — 2026-10-30 — Slice 12 scope: electrical widening, display first, then one widening
 
 - Scoping, decided in this step (rationale in

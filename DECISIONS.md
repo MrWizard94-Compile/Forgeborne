@@ -3623,6 +3623,150 @@ look inevitable.
   first, adapter visibility and fairness second),
   with Slice 11's composition evidence in hand.
 
+## 0.53.0 — Slice 12 Step 1: live-network and lone-source display
+
+- Decision, on what counts as live: the scope's
+  hypothesis is adopted, not overturned — a
+  network is live exactly when it carries a voltage
+  that is not None, and a lone source is live
+  because it is already generating with no cable
+  and no consumer. The evidence for keeping the
+  hypothesis is that every case the step staged
+  separates cleanly under it: a sourceless cable
+  reads dead, a mixed network reads dead, a lone
+  Dynamo and a lone Alternator each read as one
+  lone source, and no staged case needed a third
+  category. Counting placed blocks regardless of
+  voltage was rejected outright: a cable count is
+  not a live-network count.
+- Decision, on one count or two: two counts, not
+  one. A lone source and a cabled network are not
+  the same shape of thing — one is a generating
+  cell with nowhere to send power, the other is a
+  wired structure carrying power — and folding them
+  into one number would hide which one the player
+  built. The HUD line carries both numbers, so the
+  "one number per thing counted" rule holds per
+  thing, not per line.
+- Decision, on networks, cells, or sources: networks.
+  A ten-cable LV run reads as one network, proved
+  by test, because the player question is "how many
+  live wirings do I have", not "how many cable
+  cells did I lay". Sources, by contrast, are
+  counted per cell: each Dynamo or Alternator
+  generates independently, sources are not
+  conductors (a Dynamo does not conduct through
+  another Dynamo), so two adjacent Dynamos read as
+  two lone sources, not one network. A Dynamo
+  beside a wall is still lone — only cable,
+  transformer, or consumer adjacency disqualifies,
+  because only those give its power somewhere to go.
+- Decision, on the anti-double-count rule: a network
+  feeding a consumer is not counted, because that
+  delivery is already shown by the consumer's
+  powered count. Proved three ways: a network
+  touching a mill directly, a network touching a
+  workstation directly, and a network reaching a
+  mill through one transformer hop in either
+  direction (Alternator step-down LV and Dynamo
+  step-up HV) all read zero live networks while
+  the consumer count still reads powered (or, for
+  the HV mill, the mismatch the step does not
+  hide). A world with one fed network and one free
+  network reads exactly one, proving the exclusion
+  is per network.
+- Decision, on the transformer question: a
+  transformer output that is not None counts as a
+  live network only when it stands alone — no cable
+  neighbour, no consumer neighbour. A connected
+  group of such transformers counts as one network,
+  not one per stage, by the same networks-not-cells
+  reasoning as cables: a two-transformer chain fed
+  by one Dynamo reads one. A transformer touching a
+  cable is never standalone: its output lives or
+  dies with that component. The cost is stated, not
+  hidden: a live output driven into a conflicted
+  (dead) component shows nothing, proved by a probe
+  mill reading None beside a mixed component. That
+  is accepted because the component is the network
+  and the transformer is a stage of it — counting
+  the stage as well would count one wiring twice.
+- Decision, on the "feeds" approximation: "feeds" is
+  direct adjacency to a consumer, or adjacency to
+  a transformer that is itself adjacent to the
+  component — one transformer hop. A deeper chain
+  (cable, transformer, transformer, mill) still
+  reads as a live network, and that is a known
+  approximation, recorded here rather than fixed by
+  a full delivery trace, because a trace would
+  duplicate the delivery walk the step was told to
+  reuse, and the one-hop case is the layout every
+  earlier step actually builds.
+- Decision, on the voltage split: none — LV and HV
+  networks count alike in the one number. The count
+  answers "how many live wirings have no consumer
+  yet", not "what voltage", and a split would double
+  the HUD lines for a question the player asks
+  while wiring. The danger reading is explicitly
+  refused: this count is not a safety indicator, and
+  an HV network counted here is live, not safe.
+  Gap 4 (no warning) stays open, and Step 2's
+  HV-rated consumer, if chosen, will give HV a safe
+  use without changing what this count means.
+- Decision, on the counting path: the existing walk
+  is reused, as the scope required. `LivePowerCounts`
+  is a public `WorldZone` method that calls the
+  private `CableComponent`, `CableNetworkVoltage`,
+  and `TransformerOutput` — no cable is re-walked
+  in the HUD, and no delivery rule is touched. The
+  count is derived on every snapshot and never
+  saved: removing a source drops the count on the
+  next snapshot, and a save/load round-trip
+  re-derives (1,1) from placement alone. Every
+  existing demo save length stands, because a
+  display step that changed a save would have
+  changed the game, not the display.
+- Decision, on the adapter line: a third Text field,
+  `LivePowerText`, with its own line, not a fold-in.
+  The two existing POWER lines answer "how many
+  consumers are powered"; this line answers "what
+  live wiring has no consumer yet", and folding it
+  into either consumer line would make one line
+  answer two questions. Unwired, nothing changes,
+  like the other power lines. A HUD line is not a
+  mesh tint and not a mesh refresh, and the step
+  does not claim a counted network is visible in
+  the scene — gap 5 stays open. Playtest-gate
+  checklist item 22 (Windows-only) is added, and it
+  supersedes item 18's statement that a lone
+  Alternator shows nothing: that statement was true
+  under the pre-display decision and is now
+  superseded by a new decision, not silently edited
+  away.
+- Test fix during the run, and it was a test fix,
+  not a code fix: the dead-component edge test first
+  asserted `DeliveredVoltage` on the cable cell
+  itself, but a cable cell beside a direct Dynamo
+  receives LV by direct precedence, so the component
+  was never mixed. The test now stages a genuinely
+  mixed component (LV direct plus HV transformer
+  output) and proves it with a probe mill beside
+  the cable reading None; no core code changed for
+  it. A second fix was a name fix, not a code fix:
+  four test-local names collided with earlier
+  top-level test variables and were prefixed.
+- Deliberately NOT in this step: any delivery,
+  precedence, conflict, rating, cost, or phase rule
+  change; any save-format change; a voltage split;
+  a warning, tint, or mesh-refresh system; a
+  squad-marker distinction; Patrol; a third
+  consumer or source (that is Step 2, decided
+  there); a balance pass; a demo scenario (that is
+  Step 3, composing this display with Step 2).
+- Next step: Slice 12 Step 2, exactly one further
+  electrical widening, decided in that step, with a
+  third consumer as starting hypothesis.
+
 ## 0.52.0 — Slice 12 scope: electrical widening, display first, then one widening
 
 - Decision, on the theme: Slice 12 is further

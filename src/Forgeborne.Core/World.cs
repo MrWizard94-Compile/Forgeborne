@@ -420,6 +420,171 @@ public sealed class WorldZone
         return delivered != Voltage.None && delivered != VoltageRules.WorkstationRated;
     }
 
+    /// <summary>
+    /// Slice 12 Step 1 live-power display counts, derived on every
+    /// snapshot, never saved: how many live electrical structures
+    /// exist that no consumer count already shows, and how many
+    /// lone sources. Decided in this step, against the scope's
+    /// starting hypotheses, with the reasoning in DECISIONS.md:
+    /// - Live means carrying a voltage that is not None, never
+    ///   merely placed: a cable component with no source, and a
+    ///   mixed-voltage component resolving to None, are not live,
+    ///   however many cable cells they contain.
+    /// - The count is of networks, not cells: a ten-cable LV run
+    ///   is one network, not ten. A network is a Cable component
+    ///   (via the existing CableComponent / CableNetworkVoltage
+    ///   walk, not a new walk), or a connected group of
+    ///   Transformer cells with no cable neighbour (a transformer
+    ///   chain feeding nothing is one network, not one per stage).
+    /// - A network counts only when it feeds no consumer: a
+    ///   network feeding a mill or workstation is already shown
+    ///   by that consumer's powered count, and counting it again
+    ///   would count one delivery twice. "Feeds" is a mill or
+    ///   workstation face-adjacent to a component cell, or
+    ///   face-adjacent to a transformer that is itself
+    ///   face-adjacent to the component (one transformer hop;
+    ///   deeper chains are a stated approximation — a cable,
+    ///   transformer, transformer, mill chain still reads as a
+    ///   live network, recorded in DECISIONS.md, not hidden).
+    ///   A transformer touching a cable is never a standalone
+    ///   network: its output lives or dies with that component,
+    ///   so a live output into a dead (conflicted) component
+    ///   shows nothing, by decision.
+    /// - A lone source is one Dynamo or Alternator cell with no
+    ///   cable, transformer, or consumer face-adjacent to it —
+    ///   its power goes nowhere yet. Source-to-source adjacency
+    ///   does not disqualify: sources are not conductors, so two
+    ///   adjacent Dynamos are two lone sources, not one network.
+    /// - No voltage split: LV and HV networks count alike in the
+    ///   one number. The count answers "how many live wirings
+    ///   have no consumer yet", not "what voltage"; a split
+    ///   would double the HUD lines for a question the player
+    ///   asks while wiring, and this count is not a safety
+    ///   indicator — the no-warning gap stays open, so an HV
+    ///   network must not be read as safe because it is counted.
+    /// - No delivery rule moves in this step: voltages,
+    ///   precedence, conflicts, ratings, costs, and phases are
+    ///   exactly as before; only a derived count is added, so
+    ///   every existing demo save length stands.
+    /// </summary>
+    public (int LiveNetworks, int LoneSources) LivePowerCounts()
+    {
+        int liveNetworks = 0, loneSources = 0;
+        var seenCable = new HashSet<(int, int, int)>();
+        for (int x = 0; x < 32; x++)
+        for (int y = 0; y < 32; y++)
+        for (int z = 0; z < 32; z++)
+        {
+            if (Chunk.Get(x, y, z) != BlockType.Cable || !seenCable.Add((x, y, z))) continue;
+            var component = CableComponent(x, y, z);
+            foreach (var cell in component) seenCable.Add(cell);
+            if (CableNetworkVoltage(component, null) != Voltage.None && !ComponentFeedsConsumer(component))
+                liveNetworks++;
+        }
+        var seenTransformer = new HashSet<(int, int, int)>();
+        for (int x = 0; x < 32; x++)
+        for (int y = 0; y < 32; y++)
+        for (int z = 0; z < 32; z++)
+        {
+            if (Chunk.Get(x, y, z) != BlockType.Transformer) continue;
+            if (HasCableNeighbour(x, y, z) || !seenTransformer.Add((x, y, z))) continue;
+            var group = TransformerGroup(x, y, z);
+            foreach (var cell in group) seenTransformer.Add(cell);
+            bool live = false, feeds = false;
+            foreach (var (gx, gy, gz) in group)
+            {
+                if (TransformerOutput(gx, gy, gz, new HashSet<(int, int, int)>(), null) != Voltage.None) live = true;
+                foreach (var (dx, dy, dz) in Neighbours)
+                {
+                    int nx = gx + dx, ny = gy + dy, nz = gz + dz;
+                    if (VoxelChunk.InBounds(nx, ny, nz) && IsConsumer(Chunk.Get(nx, ny, nz))) feeds = true;
+                }
+            }
+            if (live && !feeds) liveNetworks++;
+        }
+        for (int x = 0; x < 32; x++)
+        for (int y = 0; y < 32; y++)
+        for (int z = 0; z < 32; z++)
+        {
+            var block = Chunk.Get(x, y, z);
+            if (block is not (BlockType.Dynamo or BlockType.Alternator)) continue;
+            bool lone = true;
+            foreach (var (dx, dy, dz) in Neighbours)
+            {
+                int nx = x + dx, ny = y + dy, nz = z + dz;
+                if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
+                var neighbour = Chunk.Get(nx, ny, nz);
+                if (neighbour is BlockType.Cable or BlockType.Transformer || IsConsumer(neighbour)) { lone = false; break; }
+            }
+            if (lone) loneSources++;
+        }
+        return (liveNetworks, loneSources);
+    }
+
+    private static bool IsConsumer(BlockType block) =>
+        block is BlockType.KineticMill or BlockType.Workstation;
+
+    private bool HasCableNeighbour(int x, int y, int z)
+    {
+        foreach (var (dx, dy, dz) in Neighbours)
+        {
+            int nx = x + dx, ny = y + dy, nz = z + dz;
+            if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Cable) return true;
+        }
+        return false;
+    }
+
+    /// <summary>One-transformer-hop feed rule for LivePowerCounts:
+    /// a component feeds a consumer when a consumer touches the
+    /// component directly, or touches a transformer that touches
+    /// the component. Deeper chains are outside this rule by
+    /// decision (see LivePowerCounts).</summary>
+    private bool ComponentFeedsConsumer(HashSet<(int, int, int)> component)
+    {
+        foreach (var (cx, cy, cz) in component)
+        foreach (var (dx, dy, dz) in Neighbours)
+        {
+            int nx = cx + dx, ny = cy + dy, nz = cz + dz;
+            if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
+            var neighbour = Chunk.Get(nx, ny, nz);
+            if (IsConsumer(neighbour)) return true;
+            if (neighbour == BlockType.Transformer)
+            {
+                foreach (var (tx, ty, tz) in Neighbours)
+                {
+                    int mx = nx + tx, my = ny + ty, mz = nz + tz;
+                    if (VoxelChunk.InBounds(mx, my, mz) && IsConsumer(Chunk.Get(mx, my, mz))) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /// <summary>Connected Transformer group for LivePowerCounts:
+    /// every Transformer cell reachable by face-adjacent steps
+    /// through transformers that have no cable neighbour. A
+    /// transformer touching a cable belongs to that cable
+    /// component's story, never to a standalone group.</summary>
+    private HashSet<(int, int, int)> TransformerGroup(int startX, int startY, int startZ)
+    {
+        var group = new HashSet<(int, int, int)>();
+        var stack = new Stack<(int, int, int)>();
+        stack.Push((startX, startY, startZ));
+        while (stack.Count > 0)
+        {
+            var (x, y, z) = stack.Pop();
+            if (!group.Add((x, y, z))) continue;
+            foreach (var (dx, dy, dz) in Neighbours)
+            {
+                int nx = x + dx, ny = y + dy, nz = z + dz;
+                if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Transformer
+                    && !HasCableNeighbour(nx, ny, nz))
+                    stack.Push((nx, ny, nz));
+            }
+        }
+        return group;
+    }
+
     /// <summary>Slice 10 Step 1 effective regen, decided here: scan
     /// workstations within Manhattan distance 3 of the player.
     /// If any is powered (LV), regen is base + 5 (the powered

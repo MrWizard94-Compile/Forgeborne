@@ -4020,6 +4020,144 @@ Eq(2, s11Loaded.World.Squads.Count, "slice11 step3 loaded tick keeps two squads"
 Eq(SquadActivity.Guarding, OrbitalView.Snapshot(s11Loaded.World)[0].Activity, "slice11 step3 loaded heavy still guarding");
 Eq(SquadActivity.Holding, OrbitalView.Snapshot(s11Loaded.World)[1].Activity, "slice11 step3 loaded vanguard still holding");
 
+// ---- Slice 12 Step 1: live-network and lone-source display ----
+// Staged on the y=20 plane (open air above generated terrain) via
+// Chunk.TrySet, exactly as earlier electrical tests stage theirs.
+var s12LiveWorld = new WorldZone(42);
+Eq((0, 0), s12LiveWorld.LivePowerCounts(), "slice12 step1 empty world counts nothing");
+s12LiveWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+Eq((0, 1), s12LiveWorld.LivePowerCounts(), "slice12 step1 lone dynamo is one lone source");
+s12LiveWorld.Chunk.TrySet(10, 20, 10, BlockType.Air);
+s12LiveWorld.Chunk.TrySet(10, 20, 10, BlockType.Alternator);
+Eq((0, 1), s12LiveWorld.LivePowerCounts(), "slice12 step1 lone alternator is one lone source");
+s12LiveWorld.Chunk.TrySet(11, 20, 10, BlockType.Dynamo);
+Eq((0, 2), s12LiveWorld.LivePowerCounts(), "slice12 step1 adjacent dynamos are two lone sources not one network");
+s12LiveWorld.Chunk.TrySet(10, 20, 10, BlockType.Air);
+s12LiveWorld.Chunk.TrySet(11, 20, 10, BlockType.Air);
+s12LiveWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12LiveWorld.Chunk.TrySet(11, 20, 10, BlockType.Wall);
+Eq((0, 1), s12LiveWorld.LivePowerCounts(), "slice12 step1 dynamo beside a wall is still lone");
+
+var s12CableWorld = new WorldZone(42);
+s12CableWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12CableWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12CableWorld.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+Eq((1, 0), s12CableWorld.LivePowerCounts(), "slice12 step1 live cable network counts one not cells");
+var s12TenWorld = new WorldZone(42);
+s12TenWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+for (int i = 1; i <= 10; i++) s12TenWorld.Chunk.TrySet(10 + i, 20, 10, BlockType.Cable);
+Eq((1, 0), s12TenWorld.LivePowerCounts(), "slice12 step1 ten-cable LV run is one network");
+var s12DeadCableWorld = new WorldZone(42);
+s12DeadCableWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12DeadCableWorld.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+Eq((0, 0), s12DeadCableWorld.LivePowerCounts(), "slice12 step1 cable with no source is not live");
+var s12MixedWorld = new WorldZone(42);
+s12MixedWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12MixedWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12MixedWorld.Chunk.TrySet(12, 20, 10, BlockType.Alternator);
+Eq((0, 0), s12MixedWorld.LivePowerCounts(), "slice12 step1 mixed-voltage cable network is dead not live");
+var s12HvWorld = new WorldZone(42);
+s12HvWorld.Chunk.TrySet(10, 20, 10, BlockType.Alternator);
+s12HvWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12HvWorld.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+Eq((1, 0), s12HvWorld.LivePowerCounts(), "slice12 step1 HV network counts alike no voltage split");
+
+var s12FedWorld = new WorldZone(42);
+s12FedWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12FedWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12FedWorld.Chunk.TrySet(12, 20, 10, BlockType.KineticMill);
+Eq((0, 0), s12FedWorld.LivePowerCounts(), "slice12 step1 network feeding a mill is not counted twice");
+Eq(1, HudState.FromWorld(s12FedWorld, new Weapon()).PoweredMills, "slice12 step1 fed mill still shows in the consumer count");
+var s12HopWorld = new WorldZone(42);
+s12HopWorld.Chunk.TrySet(10, 20, 10, BlockType.Alternator);
+s12HopWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12HopWorld.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+s12HopWorld.Chunk.TrySet(13, 20, 10, BlockType.KineticMill);
+Eq((0, 0), s12HopWorld.LivePowerCounts(), "slice12 step1 network feeding a mill through one transformer is not counted twice");
+Eq(Voltage.LV, s12HopWorld.DeliveredVoltage(13, 20, 10), "slice12 step1 step-down mill receives LV");
+Eq(1, HudState.FromWorld(s12HopWorld, new Weapon()).PoweredMills, "slice12 step1 step-down mill shows powered");
+var s12HopHvWorld = new WorldZone(42);
+s12HopHvWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12HopHvWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12HopHvWorld.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+s12HopHvWorld.Chunk.TrySet(13, 20, 10, BlockType.KineticMill);
+Eq((0, 0), s12HopHvWorld.LivePowerCounts(), "slice12 step1 network feeding a mill through a step-up transformer is not counted twice");
+Eq(Voltage.HV, s12HopHvWorld.DeliveredVoltage(13, 20, 10), "slice12 step1 step-up mill receives HV");
+var s12BenchWorld = new WorldZone(42);
+s12BenchWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12BenchWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12BenchWorld.Chunk.TrySet(12, 20, 10, BlockType.Workstation);
+Eq((0, 0), s12BenchWorld.LivePowerCounts(), "slice12 step1 network feeding a workstation is not counted twice");
+Eq(1, HudState.FromWorld(s12BenchWorld, new Weapon()).PoweredWorkstations, "slice12 step1 fed workstation shows powered");
+var s12TwoNetWorld = new WorldZone(42);
+s12TwoNetWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12TwoNetWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12TwoNetWorld.Chunk.TrySet(12, 20, 10, BlockType.KineticMill);
+s12TwoNetWorld.Chunk.TrySet(20, 20, 10, BlockType.Alternator);
+s12TwoNetWorld.Chunk.TrySet(21, 20, 10, BlockType.Cable);
+s12TwoNetWorld.Chunk.TrySet(22, 20, 10, BlockType.Cable);
+Eq((1, 0), s12TwoNetWorld.LivePowerCounts(), "slice12 step1 exclusion is per network one fed one free");
+
+var s12TxWorld = new WorldZone(42);
+s12TxWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12TxWorld.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+Eq((1, 0), s12TxWorld.LivePowerCounts(), "slice12 step1 standalone transformer output is one live network");
+var s12ChainWorld = new WorldZone(42);
+s12ChainWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12ChainWorld.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+s12ChainWorld.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+Eq((1, 0), s12ChainWorld.LivePowerCounts(), "slice12 step1 transformer chain is one network not one per stage");
+var s12DeadTxWorld = new WorldZone(42);
+s12DeadTxWorld.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+Eq((0, 0), s12DeadTxWorld.LivePowerCounts(), "slice12 step1 unpowered transformer is not live");
+var s12RingWorld = new WorldZone(42);
+s12RingWorld.Chunk.TrySet(10, 20, 10, BlockType.Transformer);
+s12RingWorld.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+s12RingWorld.Chunk.TrySet(11, 20, 11, BlockType.Transformer);
+s12RingWorld.Chunk.TrySet(10, 20, 11, BlockType.Transformer);
+Eq((0, 0), s12RingWorld.LivePowerCounts(), "slice12 step1 sourceless transformer ring is not live");
+var s12TxFedWorld = new WorldZone(42);
+s12TxFedWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12TxFedWorld.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+s12TxFedWorld.Chunk.TrySet(12, 20, 10, BlockType.KineticMill);
+Eq((0, 0), s12TxFedWorld.LivePowerCounts(), "slice12 step1 transformer feeding a mill is not counted twice");
+Eq(Voltage.HV, s12TxFedWorld.DeliveredVoltage(12, 20, 10), "slice12 step1 direct transformer mill receives HV");
+// Decided edge: a transformer touching a cable is never standalone,
+// so its live output into a conflicted (dead) component shows nothing.
+// The component is genuinely mixed: a Dynamo touches the cable (LV)
+// while a second Dynamo drives the neighbouring transformer, whose
+// flipped output is HV. A probe mill beside the cable proves the
+// component itself resolves to None (a direct Dynamo neighbour
+// would decide a probed cable cell to LV by precedence, so the
+// probe must sit beside the cable, not on it).
+var s12DeadEdgeWorld = new WorldZone(42);
+s12DeadEdgeWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12DeadEdgeWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12DeadEdgeWorld.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+s12DeadEdgeWorld.Chunk.TrySet(13, 20, 10, BlockType.Dynamo);
+s12DeadEdgeWorld.Chunk.TrySet(11, 20, 11, BlockType.KineticMill);
+Eq(Voltage.None, s12DeadEdgeWorld.DeliveredVoltage(11, 20, 11), "slice12 step1 mixed component resolves to none");
+Eq((0, 0), s12DeadEdgeWorld.LivePowerCounts(), "slice12 step1 live transformer output into a dead component shows nothing");
+
+var s12DropWorld = new WorldZone(42);
+s12DropWorld.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12DropWorld.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12DropWorld.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+Eq((1, 0), s12DropWorld.LivePowerCounts(), "slice12 step1 live network counted before removal");
+s12DropWorld.Chunk.TrySet(10, 20, 10, BlockType.Air);
+Eq((0, 0), s12DropWorld.LivePowerCounts(), "slice12 step1 removing the source drops the count next snapshot");
+var s12LiveSim = new Simulation(42);
+s12LiveSim.World.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s12LiveSim.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s12LiveSim.World.Chunk.TrySet(20, 20, 10, BlockType.Alternator);
+var s12LiveSave = s12LiveSim.SaveToJson();
+var s12LiveLoaded = new Simulation(99);
+Check(s12LiveLoaded.LoadFromJson(s12LiveSave), "slice12 step1 live-power save loads");
+Eq((1, 1), s12LiveLoaded.World.LivePowerCounts(), "slice12 step1 counts re-derive after load not saved");
+var s12LiveHud = HudState.FromWorld(s12LiveLoaded.World, new Weapon());
+Eq(1, s12LiveHud.LiveNetworks, "slice12 step1 hud carries live networks");
+Eq(1, s12LiveHud.LoneSources, "slice12 step1 hud carries lone sources");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

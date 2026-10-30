@@ -87,6 +87,21 @@ public sealed class HudState
     /// powered, even though it still regens at base rate.</summary>
     public int PoweredWorkstations { get; set; }
     public int TotalWorkstations { get; set; }
+    /// <summary>Slice 12 Step 1 live-power display, derived from
+    /// placement on every snapshot, never saved: how many live
+    /// electrical structures exist that no consumer count already
+    /// shows (LiveNetworks: cable components carrying a voltage
+    /// that is not None, and standalone transformer groups with a
+    /// non-None output, each feeding no consumer), and how many
+    /// lone sources (LoneSources: Dynamo / Alternator cells with
+    /// no cable, transformer, or consumer adjacent). See
+    /// WorldZone.LivePowerCounts for the decided rules: networks
+    /// not cells, no voltage split (LV and HV count alike), and
+    /// this count is not a warning — an HV network counted here
+    /// is live, not safe. Removing a source drops the count on
+    /// the next snapshot, like the consumer counts.</summary>
+    public int LiveNetworks { get; set; }
+    public int LoneSources { get; set; }
     /// <summary>Mini-map: top-down solid / enemy presence, 32x32, for Slice 1 placeholder rendering.</summary>
     public bool[,] MiniMapSolid { get; set; } = new bool[32, 32];
 
@@ -134,6 +149,11 @@ public sealed class HudState
                 if (world.IsWorkstationPowered(x, y, z)) hud.PoweredWorkstations++;
             }
         }
+        // Live-power display (Slice 12 Step 1): one counting
+        // walk over the whole zone, reusing the delivery walk —
+        // no per-consumer counting here, so a network feeding a
+        // mill is not counted twice (see LivePowerCounts).
+        (hud.LiveNetworks, hud.LoneSources) = world.LivePowerCounts();
         return hud;
     }
 }
