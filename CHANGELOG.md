@@ -1,5 +1,50 @@
 # Forgeborne — Changelog
 
+## 0.67.0 — 2026-10-30 — Slice 16 scope: graphics scene-proof layer
+
+- Scope, decided in this step (rationale in
+  DECISIONS.md): new docs/slice-16-scope.md. Slice 16
+  is the graphics slice the director ordered after
+  Slice 15 closes (Rob, 2026-10-30 09:27 EDT), ahead
+  of the previously ranked Slice 16 candidates, which
+  are carried after graphics as Slice 17 candidates
+  in their relative order. In order: (1) a
+  vertex-colour chunk material and MeshRenderer
+  wiring step, deciding the material, its assignment
+  and fallback, and whether the adapter wiring stays
+  Inspector-wired or becomes code-driven, with new
+  checklist items from 30 and items 26/27 left as the
+  Windows observations that prove them; (2) a marker
+  occlusion step, deciding whether honest depth
+  occlusion stands under the new material and light
+  or changes by a stated, non-wallhack aid; (3) a
+  lighting, sky, and fog step to docs/art-direction.md
+  rules 1 and 6, with a readability contract for
+  voxel edges, tints, markers, and HUD; (4) a first
+  FPS weapon view model script, simple and original,
+  lower-right frame, rendering core Weapon state
+  through HudState with no second ammo rule; (5) a
+  documentation-only review, with no new composed
+  demo scenario, because no graphics claim is
+  headless-provable. Adapter-only where Unity is
+  concerned, following the Slice 13 pattern.
+- Deliberately not in this scope: a display-query
+  redesign of the single-cable tint or the
+  direct-Conduit count (carried after graphics); a
+  scene file, imported asset, texture, or shader
+  claimed as a built scene from a headless run; a
+  copied asset or look from the reference image or
+  any other game; a HUD redesign; any core change;
+  or Windows Unity verification itself, which stays
+  open for Slices 1–16 alike.
+- Tests: 2130 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 15
+  scenario save 44,016 chars, all earlier demo saves
+  as in the 0.66.0 entry.
+- Next, in order: Slice 16 Step 1, the vertex-colour
+  chunk material and MeshRenderer wiring, decided in
+  that step.
+
 ## 0.66.0 — 2026-10-30 — Slice 15 Step 2: composed demo + review, closing Slice 15
 
 - Composed demo, decided in this step (rationale in

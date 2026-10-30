@@ -5295,6 +5295,88 @@ look inevitable.
   decision step, per the director queue decision
   recorded above.
 
+## 0.67.0 — Slice 16 scope: graphics scene-proof layer (2026-10-30, silent scheduled run)
+
+- Previous state verified from GitHub before work:
+  main head 7b3f01e0ccaae331f474fa7ae509ffd0db652c1c,
+  CHANGELOG 0.66.0 (Slice 15 Step 2, closing Slice 15)
+  — local working copy matched and the sync record's
+  last entry was that commit, so no step was repeated:
+  the 0.66.0 decision named scoping the graphics slice
+  as its own decision step, and this run did exactly
+  that. Tests 2130 baseline re-run passing; demo Slice
+  15 save 44,016 chars.
+- Scope decision: Slice 16 is graphics, not a
+  re-ranking of the carried remainders. The director
+  queue decision (Rob, 2026-10-30 09:27 EDT) already
+  set the order — graphics next, remainders after —
+  and this scope obeys it rather than re-deciding it;
+  the remainders keep their relative order as Slice 17
+  candidates (Slice 14 display-query questions first,
+  then any Slice 13 scene-proof observation Slice 16
+  itself leaves unmade, then the patrol limits and
+  free deploy primitive). Supporting rationale, not
+  a second authority: the remainders are questions
+  about how existing rules read, and the scene-proof
+  layer is the surface they read on, so deciding a
+  tint query before the material that renders it is
+  settled would prove a tint against an unsettled
+  renderer.
+- Step order rationale: material and wiring first,
+  because every later graphics observation reads
+  through them; occlusion second, because it is the
+  readability question the material and the light
+  jointly answer; lighting third, because it must
+  preserve the tint and marker separations the first
+  two steps establish, not re-palette them; view
+  model fourth, because it is the only new visible
+  object, and it renders core state the HUD already
+  proves; review last, documentation-only, with no
+  new demo scenario — a demo that printed ammo or
+  tint numbers would prove core numbers again, not a
+  material, a wiring, an occlusion, a light, or a
+  model, so claiming one would inflate a test claim
+  into a visual claim, against the Slice 13 Step 2
+  precedent.
+- Honesty rules carried into every Slice 16 step,
+  stated here so a step cannot soften them later:
+  writing a material script does not close item 26,
+  writing a wiring change does not close item 27,
+  and writing an occlusion answer does not close
+  item 25 — those close only by Windows observation
+  recorded in DECISIONS.md, with Unity version and
+  GPU. No headless run writes a scene file, an
+  imported asset, a texture, or a shader and calls
+  it a built scene; adapter scripts and scene-wiring
+  notes are what headless work can honestly produce,
+  and scene assembly stays Windows checklist work.
+  No step moves a MeshBuilder colour, a PowerTint
+  value, a PowerState query, the refresh event set,
+  a HUD layout or colour, or any core rule — a
+  graphics step that re-tints a cell to flatter its
+  material, or re-palettes the game to fit its
+  light, has moved the display it is proved against.
+  The next free playtest-gate checklist number is
+  30, and steps add their own items from there; this
+  scope adds none.
+- Deliberately not in this scope: a second graphics
+  system, city, planet, squad or tank model, enemy
+  silhouette, or mini-map beyond placeholder; a
+  display-query redesign; a scene file or asset
+  claimed from a headless run; any copied asset or
+  look; a HUD redesign; any core change; or Windows
+  Unity verification itself.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 16 Step 1, the vertex-colour chunk
+  material and MeshRenderer wiring, decided in that
+  step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
