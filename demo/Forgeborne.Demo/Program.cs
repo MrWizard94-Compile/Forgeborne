@@ -621,3 +621,107 @@ SeedPocketS10(simS10Loaded.World, 10, 10);
 for (int i = 0; i < 5; i++) simS10Loaded.World.Advance();
 Console.WriteLine($"Slice 10 loaded phase after 5 ticks: powered gathered {simS10Loaded.World.PoweredBlocksGathered} (5 again), kinetic gathered {simS10Loaded.World.KineticBlocksGathered}, destroyed {simS10Loaded.World.DestroyedMills} (no new destruction), stone {simS10Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS10Loaded.World.Player.Shields} (65 + 10 per tick, capped at 85)");
 Console.WriteLine($"Slice 10 done: powered {simS10.World.PoweredBlocksGathered} + loaded {simS10Loaded.World.PoweredBlocksGathered}, kinetic {simS10.World.KineticBlocksGathered} + loaded {simS10Loaded.World.KineticBlocksGathered}, destroyed {simS10.World.DestroyedMills}, save JSON length: {saveS10.Length} chars");
+
+// Slice 11 Step 3 scenario: Slice 11 composed in one run —
+// the third kind under the new doctrine beside an existing
+// kind under an existing doctrine, not two separate proofs.
+// A Heavy Defend Core squad (2 members, 50 HP each, 8 damage
+// each, range 2) deploys through the paid picker with a dummy
+// rally (20,5,20) the doctrine never holds at, and a
+// Vanguard HoldGround squad (3 members, 30 HP each, 10 damage
+// each, range 3) deploys through the same picker to a real
+// rally (20,5,8), each costing 10 EmberOre as in play. The
+// Heavy passes through its dummy rally cell at tick 8 without
+// holding there — the cell is on its core-ward path, and the
+// doctrine, not the rally, decides where it stops. The
+// player parks far away at (4,5,4) so every enemy step is a
+// squad pursuit, not player chasing. The Vanguard lane runs
+// the Slice 7 pattern: its enemy starts at (27,5,8), closes
+// two cells a tick, and dies at exactly range 3 on tick 4,
+// the tick the Vanguard reaches its rally. The Heavy marches
+// to the core itself (28,5,28) over 24 ticks — one voxel per
+// tick, 12 east + 12 south — reading Marching all the way
+// and Guarding once at its post, never visiting its dummy
+// rally. Only then is a core attacker staged, at (26,5,28),
+// two cells from the core: the guard reads Hunting, steps
+// toward the attacker but is refused its occupied cell,
+// fires 16 per tick at range 2, takes one 10-damage adjacent
+// hit, kills the attacker in two ticks, and reads Guarding
+// again — chase, kill, and return-to-post in one run, with
+// the attacker never drawing the guard away from the core.
+// A third picker squad then proves the gate's dead-squad
+// rule literally: a Vanguard HoldGround squad deployed at
+// the player's feet, weakened to 10 HP, with an enemy
+// adjacent, fires once for 10 and dies to the adjacent hit
+// in the same tick. The game then saves and loads: the
+// Heavy (Defend Core, at the core, 90 HP) and the Vanguard
+// (HoldGround, at its rally, 90 HP) survive with kind and
+// doctrine re-derived from the saved ints, the dead squad
+// stays dead (2 squads loaded, not 3), the surviving enemy
+// keeps its 20 HP, and one loaded tick proves both squads
+// still read Guarding / Holding with no resurrection and
+// no new save field. What this demo cannot show, by
+// construction, is any adapter feel: no Alpha5 / Alpha6
+// key press and no scene marker appear in a headless run,
+// so those claims stay in their Windows checklist items,
+// not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 11 Step 3 scenario — Heavy Defend Core + Vanguard HoldGround, core attacker killed, dead squad stays dead, save/load round-trip");
+var simS11 = new Simulation(42);
+simS11.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+simS11.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+simS11.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS11.BeginOrbitalPick();
+simS11.SetOrbitalRally(20, 5, 20);
+var s11Heavy = simS11.ConfirmOrbitalDeploy();
+simS11.World.Player.X = 16; simS11.World.Player.Z = 8;
+simS11.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS11.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS11.BeginOrbitalPick();
+simS11.SetOrbitalRally(20, 5, 8);
+var s11Van = simS11.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Heavy DefendCore {(s11Heavy == null ? "REJECTED" : $"{s11Heavy.AliveMembers} members, {s11Heavy.Health} HP, {s11Heavy.DamagePerTick} dmg, range {s11Heavy.EngagementRange}, dummy rally (20,5,20)")}, Vanguard HoldGround {(s11Van == null ? "REJECTED" : $"{s11Van.AliveMembers} members, {s11Van.Health} HP, {s11Van.DamagePerTick} dmg, range {s11Van.EngagementRange}")}, ore left {simS11.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS11.World.Player.X = 4; simS11.World.Player.Z = 4;
+simS11.World.Enemies.Add(new Enemy(27, 5, 8));
+void PrintS11(string label, Simulation s)
+{
+    var snap = OrbitalView.Snapshot(s.World);
+    foreach (var sq in snap)
+        Console.WriteLine($"{label}: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}{(sq.HasHuntingTarget ? $" hunting ({sq.HuntingTargetX},5,{sq.HuntingTargetZ})" : "")} {sq.AliveMembers} members, {sq.Health} HP, {sq.DamagePerTick} dmg, range {(sq.Kind == SquadKind.Heavy ? 2 : 3)}");
+    var enemies = string.Join(", ", s.World.Enemies.Select(e => $"({e.X},5,{e.Z}) {e.Health} HP"));
+    Console.WriteLine($"{label}: enemies [{enemies}], core {s.World.CoreHealth} HP at (28,5,28)");
+}
+PrintS11("Slice 11 start", simS11);
+for (int tick = 1; tick <= 24; tick++)
+{
+    simS11.World.Advance();
+    if (tick % 4 == 0) PrintS11($"Slice 11 tick {tick}", simS11);
+}
+simS11.World.Enemies.Add(new Enemy(26, 5, 28));
+Console.WriteLine($"Slice 11 core attacker staged at (26,5,28), 2 from the core, Heavy reads {OrbitalView.Snapshot(simS11.World)[0].Activity} hunting (26,5,28)");
+for (int tick = 25; tick <= 27; tick++)
+{
+    simS11.World.Advance();
+    PrintS11($"Slice 11 tick {tick} (core attacker)", simS11);
+}
+simS11.World.Player.X = 10; simS11.World.Player.Z = 10;
+simS11.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+simS11.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS11.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS11.BeginOrbitalPick();
+simS11.SetOrbitalRally(10, 5, 10);
+var s11Doomed = simS11.ConfirmOrbitalDeploy();
+s11Doomed!.TakeDamage(80);
+simS11.World.Enemies.Add(new Enemy(11, 5, 10));
+Console.WriteLine($"Slice 11 doomed squad deployed at player feet (10,5,10), weakened to {s11Doomed.Health} HP, enemy adjacent at (11,5,10), ore left {simS11.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS11.World.Advance();
+PrintS11("Slice 11 after doomed squad tick", simS11);
+Console.WriteLine($"Slice 11 doomed squad alive: {simS11.World.Squads.Count == 3} (squads now {simS11.World.Squads.Count}, the dead squad is removed, not saved)");
+var saveS11 = simS11.SaveToJson();
+var simS11Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS11Loaded.LoadFromJson(saveS11)}");
+PrintS11("Slice 11 after load", simS11Loaded);
+Console.WriteLine($"Slice 11 loaded: squads {simS11Loaded.World.Squads.Count} (dead squad stays dead), can deploy more: {simS11Loaded.CanDeployOrbitalSquad()} (cap freed by the death), ore {simS11Loaded.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS11Loaded.World.Advance();
+PrintS11("Slice 11 loaded tick 1", simS11Loaded);
+Console.WriteLine($"Slice 11 done: Heavy {simS11Loaded.World.Squads[0].Kind} {simS11Loaded.World.Squads[0].Doctrine} {simS11Loaded.World.Squads[0].Health} HP at core, Vanguard {simS11Loaded.World.Squads[1].Kind} {simS11Loaded.World.Squads[1].Doctrine} {simS11Loaded.World.Squads[1].Health} HP at rally, enemies left {simS11Loaded.World.Enemies.Count}, save JSON length: {saveS11.Length} chars");

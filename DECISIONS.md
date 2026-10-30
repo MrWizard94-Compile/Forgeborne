@@ -3551,6 +3551,78 @@ look inevitable.
   kind under an existing doctrine in one
   Simulation, closing Slice 11.
 
+## 0.51.0 — Slice 11 Step 3: demo scenario + review, closing Slice 11
+
+- Decision, on what Step 3 is: a composition proof
+  plus a documentation-only review, not a new system.
+  The demo puts the new kind under the new doctrine
+  beside an existing kind under an existing doctrine
+  in one Simulation — Heavy Defend Core beside
+  Vanguard HoldGround — so the reader sees the new
+  pairing as a choice among choices, not a
+  replacement for them. No fourth kind, no second
+  doctrine, no balance pass, and no save-format
+  change ride along, because a review step that
+  also builds would make the review untestable as
+  a review.
+- Decision, on the demo's shape: the Heavy marches
+  24 ticks to the core (12 east + 12 south from its
+  spawn) while the Vanguard kills its lane enemy at
+  its rally on tick 4, so the two doctrines run
+  simultaneously, not in sequence. The core attacker
+  is staged only after the guard is at its post, so
+  chase, kill, and return are read cleanly; the
+  radius-escape question is deliberately not
+  re-proved here, because Step 2's tests already
+  prove the 8 / 9 boundary and a demo that staged
+  it again would duplicate a test, not add evidence.
+- Decision, on the dummy-rally coincidence: the
+  Heavy's path crosses its dummy rally cell
+  (20,5,20) at tick 8, because that cell lies on the
+  diagonal from spawn to core. The demo does not
+  dodge the cell or claim the guard never visits it;
+  it proves the doctrine, not the rally, decides
+  where the squad stops, by the snapshot word:
+  Marching at (20,5,20), Guarding only at
+  (28,5,28). A review that hid the coincidence
+  would leave a reader to find it and doubt the
+  doctrine claim; stating it makes the claim
+  stronger, not weaker.
+- Decision, on the dead squad in the demo: a third
+  Vanguard squad, weakened to 10 HP by a direct
+  damage call and killed by an adjacent enemy in
+  one tick, proves the gate's dead-stays-dead rule
+  literally — 2 squads load, not 3, and the cap is
+  freed by the death. The weakening is a staging
+  device, not a balance claim: no sentence in the
+  review claims a 10-HP squad is a fair fight, and
+  the device must not be quoted later as evidence
+  about squad survivability in play.
+- Decision, on the review's verdict and gaps: Slice
+  11 is closed as tested squad widening, not as
+  playtested, balanced, or Unity-verified work.
+  The B-key checklist gap from Slice 10 is recorded
+  as closed by Step 1 (gate item 19), not carried
+  again, so a later review does not re-carry it by
+  accident. The shared marker now covers three
+  kinds, not two, and is carried as a grown gap,
+  not a new one: Step 1 already decided the shared
+  marker, so this review does not re-decide it.
+  Patrol stays deferred with its route question
+  intact, and Slice 12 is not scoped by this review.
+- Deliberately NOT in this step: a fourth kind, a
+  second doctrine, a balance pass, a marker
+  distinction, a warning / tint / refresh system,
+  a camera, a save-format change, a movement or
+  targeting rule change, or any claim about Windows
+  Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 12 scoping, as its own
+  decision step, chosen from the Slice 11 review's
+  ranked candidates (further electrical widening
+  first, adapter visibility and fairness second),
+  with Slice 11's composition evidence in hand.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

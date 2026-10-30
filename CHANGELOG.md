@@ -1,5 +1,57 @@
 # Forgeborne — Changelog
 
+## 0.51.0 — 2026-10-30 — Slice 11 Step 3: demo scenario + documentation-only review, closing Slice 11
+
+- Composed demo, decided in this step (rationale in
+  DECISIONS.md): one Simulation with a Heavy Defend
+  Core squad beside a Vanguard HoldGround squad,
+  both through the paid picker at 10 EmberOre each.
+  The Vanguard reaches its rally (20,5,8) on tick 4
+  and kills its lane enemy at exactly range 3; the
+  Heavy marches 24 ticks to the core (28,5,28),
+  passing through its dummy rally cell (20,5,20)
+  at tick 8 reading Marching — not holding there —
+  and reading Guarding only at its post. A core
+  attacker staged at (26,5,28) after the guard is
+  posted reads Hunting, steps to (27,5,28), is
+  fired on for 16 at range 2 while the guard takes
+  one 10-damage adjacent hit (100 -> 90 HP), and
+  dies on the second tick, after which the guard
+  reads Guarding again. A third picker squad,
+  weakened to 10 HP with an enemy adjacent, fires
+  once for 10 and dies in the same tick, proving
+  removal in play order, not just in a unit test.
+- Save/load round-trip, proved, not changed: the
+  Heavy (Defend Core, at the core, 90 HP) and the
+  Vanguard (HoldGround, at its rally, 90 HP) load
+  with kind and doctrine re-derived from the saved
+  ints, the dead squad stays dead (2 squads loaded,
+  not 3, cap freed by the death), the surviving
+  enemy keeps its 20 HP, ore is 10, and one loaded
+  tick still reads Guarding / Holding — with no new
+  save field. Save JSON 44,038 chars, a composition
+  fingerprint for this scenario only.
+- Review, documentation only: new
+  docs/slice-11-review.md closes Slice 11 as tested
+  squad widening — third kind, third doctrine
+  proved against all three kinds, composed demo
+  through save/load — and states honestly that it
+  is still not playtested, balanced, or
+  Unity-verified. It records the B-key checklist gap
+  as closed by Step 1 (gate item 19), carries the
+  shared marker as a grown gap (three kinds, not
+  two), keeps Patrol deferred with its route
+  question intact, and does NOT scope Slice 12.
+- Tests: 1485 passed, 0 failed (was 1447; +38
+  composed-integration tests mirroring the demo
+  step for step, no failures on the final run, and
+  the demo ran correctly on its first execution).
+  Earlier demo scenarios unchanged: Slice 1 save
+  43,881 chars, Slice 2 43,921, Slice 3 Step 1
+  44,016, Slice 3 Step 3 44,103, Slice 4 44,026,
+  Slice 5 43,974, Slice 6 44,024, Slice 7 44,013,
+  Slice 8 43,974, Slice 9 43,975, Slice 10 43,974.
+
 ## 0.50.0 — 2026-10-30 — Slice 11 Step 2: third doctrine — Defend Core, guard the objective core
 
 - Third doctrine, decided in this step (rationale in

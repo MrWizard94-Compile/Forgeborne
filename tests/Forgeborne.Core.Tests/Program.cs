@@ -3939,6 +3939,87 @@ var dcSnapFar = OrbitalView.Snapshot(dcSnapFarWorld)[0];
 Eq(SquadActivity.Guarding, dcSnapFar.Activity, "slice11 defendcore snapshot far enemy does not turn guarding into hunting");
 Check(!dcSnapFar.HasHuntingTarget, "slice11 defendcore snapshot far enemy is not a hunting target");
 
+// ---- Slice 11 Step 3: composed demo scenario (0.51.0) ----
+// Mirrors the Slice 11 demo scenario step for step: a Heavy
+// Defend Core squad beside a Vanguard HoldGround squad, both
+// through the paid picker, a lane enemy killed at the rally,
+// the Heavy marching to the core and guarding it, a staged
+// core attacker killed at the post, a weakened third squad
+// dying in one tick, and a save/load round-trip in which
+// kind and doctrine survive and the dead squad does not.
+var s11Sim = new Simulation(42);
+s11Sim.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+s11Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+s11Sim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s11Sim.BeginOrbitalPick();
+s11Sim.SetOrbitalRally(20, 5, 20);
+var s11Heavy = s11Sim.ConfirmOrbitalDeploy();
+s11Sim.World.Player.X = 16; s11Sim.World.Player.Z = 8;
+s11Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s11Sim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s11Sim.BeginOrbitalPick();
+s11Sim.SetOrbitalRally(20, 5, 8);
+var s11Van = s11Sim.ConfirmOrbitalDeploy();
+Check(s11Heavy != null, "slice11 step3 heavy defendcore deploys");
+Check(s11Van != null, "slice11 step3 vanguard holdground deploys");
+Eq(10, s11Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice11 step3 two paid squads leave 10 ore");
+s11Sim.World.Player.X = 4; s11Sim.World.Player.Z = 4;
+s11Sim.World.Enemies.Add(new Enemy(27, 5, 8));
+for (int i = 0; i < 4; i++) s11Sim.World.Advance();
+Eq(20, s11Van!.X, "slice11 step3 vanguard reaches rally in 4 ticks");
+Eq(8, s11Van.Z, "slice11 step3 vanguard rally lane");
+Check(s11Van.AtRally, "slice11 step3 vanguard at rally");
+Eq(0, s11Sim.World.Enemies.Count, "slice11 step3 lane enemy killed at range 3 on tick 4");
+Eq(18, s11Heavy!.X, "slice11 step3 heavy marches core-ward in 4 ticks");
+Eq(18, s11Heavy.Z, "slice11 step3 heavy marches diagonally to core");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s11Sim.World)[0].Activity, "slice11 step3 heavy reads marching en route");
+for (int i = 0; i < 20; i++) s11Sim.World.Advance();
+Eq(28, s11Heavy.X, "slice11 step3 heavy reaches core in 24 ticks");
+Eq(28, s11Heavy.Z, "slice11 step3 heavy post is the core cell");
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(s11Sim.World)[0].Activity, "slice11 step3 heavy reads guarding at post");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s11Sim.World)[1].Activity, "slice11 step3 vanguard still holding at rally");
+s11Sim.World.Enemies.Add(new Enemy(26, 5, 28));
+var s11Hunt = OrbitalView.Snapshot(s11Sim.World)[0];
+Eq(SquadActivity.Hunting, s11Hunt.Activity, "slice11 step3 staged core attacker reads hunting");
+Eq(26, s11Hunt.HuntingTargetX, "slice11 step3 hunting target is the attacker cell");
+s11Sim.World.Advance();
+Eq(14, s11Sim.World.Enemies[0].Health, "slice11 step3 guard fires 16 at range 2 on first attacker tick");
+Eq(90, s11Heavy.Health, "slice11 step3 guard takes one adjacent hit");
+s11Sim.World.Advance();
+Eq(0, s11Sim.World.Enemies.Count, "slice11 step3 core attacker killed in two ticks");
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(s11Sim.World)[0].Activity, "slice11 step3 guard reads guarding again after the kill");
+s11Sim.World.Player.X = 10; s11Sim.World.Player.Z = 10;
+s11Sim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+s11Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s11Sim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s11Sim.BeginOrbitalPick();
+s11Sim.SetOrbitalRally(10, 5, 10);
+var s11Doomed = s11Sim.ConfirmOrbitalDeploy();
+Check(s11Doomed != null, "slice11 step3 doomed squad deploys");
+s11Doomed!.TakeDamage(80);
+s11Sim.World.Enemies.Add(new Enemy(11, 5, 10));
+s11Sim.World.Advance();
+Eq(2, s11Sim.World.Squads.Count, "slice11 step3 dead squad removed in its tick");
+Eq(20, s11Sim.World.Enemies[0].Health, "slice11 step3 doomed squad fires once for 10 before dying");
+var s11Save = s11Sim.SaveToJson();
+var s11Loaded = new Simulation(99);
+Check(s11Loaded.LoadFromJson(s11Save), "slice11 step3 save loads");
+Eq(2, s11Loaded.World.Squads.Count, "slice11 step3 dead squad stays dead after load");
+Eq(SquadKind.Heavy, s11Loaded.World.Squads[0].Kind, "slice11 step3 loaded heavy kind preserved");
+Eq(TacticalDoctrine.DefendCore, s11Loaded.World.Squads[0].Doctrine, "slice11 step3 loaded heavy doctrine preserved");
+Eq(28, s11Loaded.World.Squads[0].X, "slice11 step3 loaded heavy still at core");
+Eq(90, s11Loaded.World.Squads[0].Health, "slice11 step3 loaded heavy health preserved");
+Eq(SquadKind.Vanguard, s11Loaded.World.Squads[1].Kind, "slice11 step3 loaded vanguard kind preserved");
+Eq(TacticalDoctrine.HoldGround, s11Loaded.World.Squads[1].Doctrine, "slice11 step3 loaded vanguard doctrine preserved");
+Eq(20, s11Loaded.World.Squads[1].X, "slice11 step3 loaded vanguard still at rally");
+Eq(1, s11Loaded.World.Enemies.Count, "slice11 step3 surviving enemy loads");
+Eq(20, s11Loaded.World.Enemies[0].Health, "slice11 step3 surviving enemy health preserved");
+Check(s11Loaded.CanDeployOrbitalSquad(), "slice11 step3 cap freed by the death after load");
+s11Loaded.World.Advance();
+Eq(2, s11Loaded.World.Squads.Count, "slice11 step3 loaded tick keeps two squads");
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(s11Loaded.World)[0].Activity, "slice11 step3 loaded heavy still guarding");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s11Loaded.World)[1].Activity, "slice11 step3 loaded vanguard still holding");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
