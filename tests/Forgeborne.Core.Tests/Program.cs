@@ -3397,6 +3397,115 @@ var altLoneHudState = altLoneHud.Hud();
 Eq(0, altLoneHudState.TotalMills, "slice10 step2 HUD counts a lone alternator as no mill");
 Eq(0, altLoneHudState.TotalWorkstations, "slice10 step2 HUD counts a lone alternator as no workstation");
 
+// ---- Slice 10 Step 3: composed demo scenario (0.47.0) ----
+// Mirrors the Slice 10 demo scenario step for step: one
+// Simulation with a cable step-down Alternator mill, a
+// direct-HV Alternator mill, and a kinetic mill on the
+// y=20 plane, plus a step-down Alternator workstation,
+// an unpowered workstation, and a direct-HV workstation
+// on the y=5 plane — then the player walking between
+// the three benches (regen is player-centred, so one
+// position cannot prove all three benches at once),
+// then a save/load round-trip and a loaded 5-tick
+// phase. The layout is staged with TrySet exactly as
+// the Step 1-2 tests stage theirs; aim placement of
+// each block type was proved in its own step's tests.
+var s10Demo = new Simulation(42);
+void SeedPocketS10Test(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+s10Demo.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s10Demo.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s10Demo.World.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+s10Demo.World.Chunk.TrySet(13, 20, 10, BlockType.Cable);
+s10Demo.World.Chunk.TrySet(14, 20, 10, BlockType.Alternator);
+s10Demo.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+s10Demo.World.Chunk.TrySet(11, 20, 14, BlockType.Alternator);
+s10Demo.World.Chunk.TrySet(10, 20, 18, BlockType.KineticMill);
+SeedPocketS10Test(s10Demo.World, 10, 10);
+SeedPocketS10Test(s10Demo.World, 10, 14);
+SeedPocketS10Test(s10Demo.World, 10, 18);
+s10Demo.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+s10Demo.World.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+s10Demo.World.Chunk.TrySet(19, 5, 16, BlockType.Alternator);
+s10Demo.World.Chunk.TrySet(17, 5, 22, BlockType.Workstation);
+s10Demo.World.Chunk.TrySet(17, 5, 28, BlockType.Workstation);
+s10Demo.World.Chunk.TrySet(18, 5, 28, BlockType.Alternator);
+s10Demo.World.Player.TakeDamage(20);
+Eq(Voltage.LV, s10Demo.World.DeliveredVoltage(10, 20, 10), "slice10 step3 composed cable step-down mill receives LV");
+Eq(Voltage.HV, s10Demo.World.DeliveredVoltage(10, 20, 14), "slice10 step3 composed direct alternator mill receives HV");
+Eq(Voltage.None, s10Demo.World.DeliveredVoltage(10, 20, 18), "slice10 step3 composed kinetic mill receives nothing");
+Eq(Voltage.LV, s10Demo.World.DeliveredVoltage(17, 5, 16), "slice10 step3 composed step-down workstation receives LV");
+Eq(Voltage.None, s10Demo.World.DeliveredVoltage(17, 5, 22), "slice10 step3 composed unpowered workstation receives nothing");
+Eq(Voltage.HV, s10Demo.World.DeliveredVoltage(17, 5, 28), "slice10 step3 composed direct alternator workstation receives HV");
+var s10DemoHudBefore = s10Demo.Hud();
+Eq(3, s10DemoHudBefore.TotalMills, "slice10 step3 composed HUD counts 3 mills before destruction");
+Eq(1, s10DemoHudBefore.PoweredMills, "slice10 step3 composed HUD counts only the LV mill as powered");
+Eq(3, s10DemoHudBefore.TotalWorkstations, "slice10 step3 composed HUD counts 3 workstations");
+Eq(1, s10DemoHudBefore.PoweredWorkstations, "slice10 step3 composed HUD counts only the LV workstation as powered");
+Eq(10, s10Demo.World.EffectiveWorkstationRegen(), "slice10 step3 composed powered bench regen is base 5 + powered 5 at spawn");
+s10Demo.World.Advance();
+Eq(BlockType.Air, s10Demo.World.Chunk.Get(10, 20, 14), "slice10 step3 composed HV mill destroyed on tick 1");
+Eq(1, s10Demo.World.DestroyedMills, "slice10 step3 composed destruction counter is 1 after tick 1");
+Eq(1, s10Demo.World.PoweredBlocksGathered, "slice10 step3 composed powered mill gathers 1 on tick 1");
+Eq(0, s10Demo.World.KineticBlocksGathered, "slice10 step3 composed kinetic mill gathers 0 on tick 1");
+Eq(BlockType.Stone, s10Demo.World.Chunk.Get(9, 20, 14), "slice10 step3 composed destroyed mill excavates nothing: its pocket stone survives");
+Eq(BlockType.Alternator, s10Demo.World.Chunk.Get(11, 20, 14), "slice10 step3 composed destroyed mill's alternator survives");
+Eq(BlockType.Workstation, s10Demo.World.Chunk.Get(17, 5, 28), "slice10 step3 composed HV workstation survives its tick, unlike a mill");
+Eq(75, s10Demo.World.Player.Shields, "slice10 step3 composed powered bench restores 10 shields on tick 1");
+var s10DemoHudAfter1 = s10Demo.Hud();
+Eq(2, s10DemoHudAfter1.TotalMills, "slice10 step3 composed HUD mill total drops to 2 after destruction");
+Eq(1, s10DemoHudAfter1.PoweredMills, "slice10 step3 composed HUD powered mill count stays 1 after destruction");
+Eq(3, s10DemoHudAfter1.TotalWorkstations, "slice10 step3 composed HUD workstation total stays 3 after tick 1");
+Eq(1, s10DemoHudAfter1.PoweredWorkstations, "slice10 step3 composed HUD powered workstation count stays 1 after tick 1");
+Check(s10Demo.World.Player.MoveTo(16, 5, 22, s10Demo.World.Chunk), "slice10 step3 composed player walks to the unpowered bench");
+Eq(5, s10Demo.World.EffectiveWorkstationRegen(), "slice10 step3 composed unpowered bench regen is base 5");
+Check(s10Demo.World.Player.MoveTo(16, 5, 28, s10Demo.World.Chunk), "slice10 step3 composed player walks to the HV bench");
+Eq(0, s10Demo.World.EffectiveWorkstationRegen(), "slice10 step3 composed HV bench regen is 0: disabled");
+Check(s10Demo.World.Player.MoveTo(16, 5, 16, s10Demo.World.Chunk), "slice10 step3 composed player walks back to the powered bench");
+Eq(10, s10Demo.World.EffectiveWorkstationRegen(), "slice10 step3 composed powered bench regen is 10 again after the walk");
+for (int i = 0; i < 4; i++) s10Demo.World.Advance();
+Eq(5, s10Demo.World.PoweredBlocksGathered, "slice10 step3 composed powered mill gathers 5 in 5 ticks");
+Eq(1, s10Demo.World.KineticBlocksGathered, "slice10 step3 composed kinetic mill gathers 1 in 5 ticks");
+Eq(1, s10Demo.World.DestroyedMills, "slice10 step3 composed destruction counter stays 1 through 5 ticks");
+Eq(6, s10Demo.World.Player.Inventory.Get(BlockType.Stone), "slice10 step3 composed stone is 5 + 1, no refund for the destroyed mill");
+Eq(85, s10Demo.World.Player.Shields, "slice10 step3 composed shields cap at 85 after powered ticks");
+var s10DemoSave = s10Demo.SaveToJson();
+var s10DemoLoaded = new Simulation(99);
+Check(s10DemoLoaded.LoadFromJson(s10DemoSave), "slice10 step3 composed save loads");
+Eq(BlockType.KineticMill, s10DemoLoaded.World.Chunk.Get(10, 20, 10), "slice10 step3 composed cable step-down mill survives load");
+Eq(BlockType.Air, s10DemoLoaded.World.Chunk.Get(10, 20, 14), "slice10 step3 composed destroyed mill stays destroyed after load");
+Eq(BlockType.KineticMill, s10DemoLoaded.World.Chunk.Get(10, 20, 18), "slice10 step3 composed kinetic mill survives load");
+Eq(BlockType.Workstation, s10DemoLoaded.World.Chunk.Get(17, 5, 16), "slice10 step3 composed powered workstation survives load");
+Eq(BlockType.Workstation, s10DemoLoaded.World.Chunk.Get(17, 5, 22), "slice10 step3 composed unpowered workstation survives load");
+Eq(BlockType.Workstation, s10DemoLoaded.World.Chunk.Get(17, 5, 28), "slice10 step3 composed HV workstation survives load");
+Eq(Voltage.LV, s10DemoLoaded.World.DeliveredVoltage(10, 20, 10), "slice10 step3 composed mill re-derives LV after load");
+Eq(Voltage.LV, s10DemoLoaded.World.DeliveredVoltage(17, 5, 16), "slice10 step3 composed powered workstation re-derives LV after load");
+Eq(Voltage.HV, s10DemoLoaded.World.DeliveredVoltage(17, 5, 28), "slice10 step3 composed HV workstation re-derives HV after load");
+Eq(0, s10DemoLoaded.World.PoweredBlocksGathered, "slice10 step3 composed powered counter resets on load");
+Eq(0, s10DemoLoaded.World.KineticBlocksGathered, "slice10 step3 composed kinetic counter resets on load");
+Eq(0, s10DemoLoaded.World.DestroyedMills, "slice10 step3 composed destruction counter resets on load");
+Eq(6, s10DemoLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice10 step3 composed load gives no stone refund for the destroyed mill");
+Eq(16, s10DemoLoaded.World.Player.X, "slice10 step3 composed loaded player returns to the powered bench X");
+Eq(5, s10DemoLoaded.World.Player.Y, "slice10 step3 composed loaded player returns to the powered bench Y");
+Eq(16, s10DemoLoaded.World.Player.Z, "slice10 step3 composed loaded player returns to the powered bench Z");
+Eq(10, s10DemoLoaded.World.EffectiveWorkstationRegen(), "slice10 step3 composed loaded powered bench regen is 10");
+var s10DemoLoadedHud = s10DemoLoaded.Hud();
+Eq(2, s10DemoLoadedHud.TotalMills, "slice10 step3 composed HUD counts 2 mills after load");
+Eq(1, s10DemoLoadedHud.PoweredMills, "slice10 step3 composed HUD counts 1 powered mill after load");
+Eq(3, s10DemoLoadedHud.TotalWorkstations, "slice10 step3 composed HUD counts 3 workstations after load");
+Eq(1, s10DemoLoadedHud.PoweredWorkstations, "slice10 step3 composed HUD counts 1 powered workstation after load");
+s10DemoLoaded.World.Player.TakeDamage(20);
+SeedPocketS10Test(s10DemoLoaded.World, 10, 10);
+for (int i = 0; i < 5; i++) s10DemoLoaded.World.Advance();
+Eq(5, s10DemoLoaded.World.PoweredBlocksGathered, "slice10 step3 composed loaded mill gathers 5 again in 5 ticks");
+Eq(1, s10DemoLoaded.World.KineticBlocksGathered, "slice10 step3 composed loaded kinetic mill gathers 1 again in 5 ticks");
+Eq(0, s10DemoLoaded.World.DestroyedMills, "slice10 step3 composed loaded world destroys nothing new");
+Eq(12, s10DemoLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice10 step3 composed loaded stone reaches 6 + 6");
+Eq(85, s10DemoLoaded.World.Player.Shields, "slice10 step3 composed loaded powered bench caps shields at 85");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

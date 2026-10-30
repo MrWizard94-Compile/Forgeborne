@@ -1,5 +1,75 @@
 # Forgeborne — Changelog
 
+## 0.47.0 — 2026-10-30 — Slice 10 Step 3: demo scenario + review, closing Slice 10
+
+- Composed Slice 10 demo, decided in this step (rationale
+  in DECISIONS.md): one Simulation proving the second
+  consumer and the second source together, not separately.
+  Three mills on the y=20 plane — a cable step-down
+  Alternator mill (Alternator -> cable -> transformer ->
+  cable -> mill, LV, every tick), a direct-HV Alternator
+  mill destroyed on tick 1, and a kinetic mill with no
+  power — plus three workstations on the y=5 plane beside
+  the player's spawn — a step-down Alternator workstation
+  (LV, base + 5 regen), an unpowered workstation (base
+  regen), and a direct-HV workstation (disabled, regen 0,
+  surviving). Voltages before any tick: mill LV / HV /
+  None, workstation LV / None / HV; HUD 1/3 mills powered
+  and 1/3 workstations powered, so neither HV consumer is
+  ever displayed as powered. Tick 1: HV mill destroyed,
+  destroyed 1, powered gathered 1, kinetic 0, stone 1, HV
+  pocket stone untouched, HV Alternator and HV workstation
+  surviving, shields 65 -> 75. The player then walks
+  between the benches with no tick passing — regen 5 at
+  the unpowered bench, 0 at the HV bench, 10 again at the
+  powered bench — because regen is player-centred and one
+  position cannot prove all three benches at once; the
+  walk is stated as a measurement procedure, not a
+  gameplay claim. After 5 ticks: powered gathered 5,
+  kinetic 1, destroyed 1, stone 6 (5 + 1, no refund),
+  shields capped at 85. Save/load keeps the surviving
+  blocks and the destroyed mill gone, re-derives mill LV,
+  powered workstation LV, and HV workstation HV with no
+  stored voltage flag, resets the session counters, keeps
+  stone 6, and returns the player to the powered bench
+  (16,5,16) with effective regen 10; the loaded phase
+  (20 damage, powered pocket re-seeded as fresh seeding)
+  gathers 5 + 1 again, destroys nothing new, reaches
+  stone 12, and caps shields at 85. Demo and
+  composed-integration tests mirror each other; the
+  layout is staged with TrySet, as the Step 1-2 tests
+  stage theirs, because aim placement of each block type
+  was proved in its own step's tests.
+- Review, decided in this step: new
+  `docs/slice-10-review.md` closes Slice 10 as tested
+  electrical widening (one second consumer, one distinct
+  source) plus written adapters (B / N keys, powered-mill
+  and powered-workstation HUD counts) — not as playtested,
+  balanced, or Unity-verified. No new playtest-gate
+  checklist item is added for the demo itself, because it
+  exercises no adapter binding the checklist does not
+  already cover, except for the B key, which has no
+  checklist item at all: that gap, observed in Step 2,
+  is carried in the review as gap 7 rather than silently
+  closed by a review step. Slice 11 is not scoped by this
+  review; its ranked candidates, carried unchanged from
+  the 0.44.0 scope, are a third squad type and the
+  deferred doctrines first, and further electrical widening
+  second.
+- No core system rides along with this step: no new block
+  type, no new voltage level, no new consumer, source,
+  doctrine, or squad type, no balance pass, no warning,
+  tint, or refresh, and no save-format change. Earlier
+  demo scenarios are unchanged; the new scenario's save
+  is 43,974 chars, the same length as the Slice 5 and
+  Slice 8 saves by coincidence of format, not the same
+  save.
+- Tests: 1300 passed, 0 failed (was 1239; +61, no
+  failures on the first full run). Demo: Slice 9 Step 4
+  scenario save 43,975 chars unchanged; new Slice 10 Step
+  3 scenario save 43,974 chars, powered 5 + loaded 5,
+  kinetic 1 + loaded 1, destroyed 1.
+
 ## 0.46.0 — 2026-10-30 — Slice 10 Step 2: Alternator, second power source
 
 - Alternator, decided in this step (rationale in

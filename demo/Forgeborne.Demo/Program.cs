@@ -527,3 +527,97 @@ SeedPocketS9(simS9Loaded.World, 10, 14);
 for (int i = 0; i < 5; i++) simS9Loaded.World.Advance();
 Console.WriteLine($"Slice 9 loaded phase after 5 ticks: powered gathered {simS9Loaded.World.PoweredBlocksGathered} (5 + 5 again), kinetic gathered {simS9Loaded.World.KineticBlocksGathered}, destroyed {simS9Loaded.World.DestroyedMills} (no new destruction), stone {simS9Loaded.World.Player.Inventory.Get(BlockType.Stone)}");
 Console.WriteLine($"Slice 9 done: powered {simS9.World.PoweredBlocksGathered} + loaded {simS9Loaded.World.PoweredBlocksGathered}, kinetic {simS9.World.KineticBlocksGathered} + loaded {simS9Loaded.World.KineticBlocksGathered}, destroyed {simS9.World.DestroyedMills}, save JSON length: {saveS9.Length} chars");
+
+// Slice 10 Step 3 scenario: Slice 10 composed in one run —
+// the second consumer and the second source together, not
+// separately. Three mills on the y=20 plane, as in Slice 9,
+// plus three workstations on the y=5 plane beside the
+// player's spawn, because workstation regen is
+// player-centred (Manhattan distance 3) while mill rates
+// are machine-centred, so the two consumers cannot be
+// proved side by side at one player position: the demo
+// therefore walks the player between the three benches
+// to read each bench's regen, and states that walk
+// openly instead of pretending one position proves all
+// three. Mill rows: (z=10) Alternator -> cable ->
+// transformer -> cable -> mill, the cable step-down path
+// Step 2 proved, running LV every tick; (z=14) a mill
+// fed HV directly by an Alternator, destroyed on tick 1
+// by the Step 1 mismatch rule, with no salvage and no
+// cascade; (z=18) a mill with no power at all, still
+// excavating every 5th tick beside them. Workstation
+// benches: (z=16) Alternator -> transformer ->
+// workstation, the face-adjacent step-down path Step 2
+// proved, powered at base + 5; (z=22) a workstation with
+// no source, still regenerating at base beside it;
+// (z=28) a workstation fed HV directly by an Alternator,
+// disabled (regen 0) but surviving, by the Step 1 rule
+// that a bench trips offline where a mill breaks. Each
+// mill gets a five-stone pocket, as in Slice 9. The
+// layout is staged directly with TrySet, exactly as the
+// Step 1-2 tests stage theirs: aim placement of a mill,
+// a workstation, a transformer, a cable, and an
+// Alternator was each proved in its own step's tests,
+// and walking this layout in by aim would prove walking,
+// not wiring. What this demo cannot show, by
+// construction, is any adapter feel or scene visibility:
+// no B / N key press, no powered-workstation indicator
+// beyond the HUD counts, and no visible disappearance
+// of the destroyed mill appear in a headless run, so
+// those claims stay in their Windows checklist items
+// (17 for destruction disappearance, 18 for the N key;
+// the B key has no checklist item yet, the gap Step 2
+// observed and this review carries), not in the numbers
+// below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 10 Step 3 scenario — Alternator-fed mill + workstation, HV mill destroyed, HV workstation disabled, kinetic + unpowered baselines, save/load round-trip");
+var simS10 = new Simulation(42);
+void SeedPocketS10(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+simS10.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+simS10.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+simS10.World.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+simS10.World.Chunk.TrySet(13, 20, 10, BlockType.Cable);
+simS10.World.Chunk.TrySet(14, 20, 10, BlockType.Alternator);
+simS10.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+simS10.World.Chunk.TrySet(11, 20, 14, BlockType.Alternator);
+simS10.World.Chunk.TrySet(10, 20, 18, BlockType.KineticMill);
+SeedPocketS10(simS10.World, 10, 10);
+SeedPocketS10(simS10.World, 10, 14);
+SeedPocketS10(simS10.World, 10, 18);
+simS10.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+simS10.World.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+simS10.World.Chunk.TrySet(19, 5, 16, BlockType.Alternator);
+simS10.World.Chunk.TrySet(17, 5, 22, BlockType.Workstation);
+simS10.World.Chunk.TrySet(17, 5, 28, BlockType.Workstation);
+simS10.World.Chunk.TrySet(18, 5, 28, BlockType.Alternator);
+simS10.World.Player.TakeDamage(20);
+Console.WriteLine($"Slice 10 voltages before any tick: cable step-down mill {simS10.World.DeliveredVoltage(10, 20, 10)}, direct HV mill {simS10.World.DeliveredVoltage(10, 20, 14)}, kinetic mill {simS10.World.DeliveredVoltage(10, 20, 18)}, powered workstation {simS10.World.DeliveredVoltage(17, 5, 16)}, unpowered workstation {simS10.World.DeliveredVoltage(17, 5, 22)}, HV workstation {simS10.World.DeliveredVoltage(17, 5, 28)}");
+var s10HudBefore = simS10.Hud();
+Console.WriteLine($"Slice 10 HUD before: {s10HudBefore.PoweredMills}/{s10HudBefore.TotalMills} MILLS POWERED, {s10HudBefore.PoweredWorkstations}/{s10HudBefore.TotalWorkstations} WORKSTATIONS POWERED (only the LV mill and the LV workstation count)");
+Console.WriteLine($"Slice 10 powered bench regen at spawn: {simS10.World.EffectiveWorkstationRegen()} (base 5 + powered 5), shields {simS10.World.Player.Shields}");
+simS10.World.Advance();
+Console.WriteLine($"Slice 10 tick 1: HV mill cell now {simS10.World.Chunk.Get(10, 20, 14)} (destroyed), destroyed {simS10.World.DestroyedMills}, powered gathered {simS10.World.PoweredBlocksGathered}, kinetic gathered {simS10.World.KineticBlocksGathered}, stone {simS10.World.Player.Inventory.Get(BlockType.Stone)}, HV pocket stone at (9,20,14) still {simS10.World.Chunk.Get(9, 20, 14)}, HV Alternator {simS10.World.Chunk.Get(11, 20, 14)}, HV workstation {simS10.World.Chunk.Get(17, 5, 28)} (survives, disabled), shields {simS10.World.Player.Shields} (65 + 10 powered regen)");
+var s10HudAfter1 = simS10.Hud();
+Console.WriteLine($"Slice 10 HUD after tick 1: {s10HudAfter1.PoweredMills}/{s10HudAfter1.TotalMills} MILLS POWERED (total drops with the destroyed mill), {s10HudAfter1.PoweredWorkstations}/{s10HudAfter1.TotalWorkstations} WORKSTATIONS POWERED (the disabled bench stays in the total, not the powered count)");
+var s10WalkUnpowered = simS10.World.Player.MoveTo(16, 5, 22, simS10.World.Chunk);
+Console.WriteLine($"Slice 10 walk to unpowered bench -> {s10WalkUnpowered}, effective regen there: {simS10.World.EffectiveWorkstationRegen()} (base 5, no source)");
+var s10WalkMismatched = simS10.World.Player.MoveTo(16, 5, 28, simS10.World.Chunk);
+Console.WriteLine($"Slice 10 walk to HV bench -> {s10WalkMismatched}, effective regen there: {simS10.World.EffectiveWorkstationRegen()} (0, disabled — not destroyed, not boosted)");
+var s10WalkPowered = simS10.World.Player.MoveTo(16, 5, 16, simS10.World.Chunk);
+Console.WriteLine($"Slice 10 walk back to powered bench -> {s10WalkPowered}, effective regen there: {simS10.World.EffectiveWorkstationRegen()} (base 5 + powered 5 again)");
+for (int i = 0; i < 4; i++) simS10.World.Advance();
+Console.WriteLine($"Slice 10 after 5 ticks: powered gathered {simS10.World.PoweredBlocksGathered} (5, pocket exhausted), kinetic gathered {simS10.World.KineticBlocksGathered}, destroyed {simS10.World.DestroyedMills}, stone {simS10.World.Player.Inventory.Get(BlockType.Stone)} (5 + 1, no refund for the destroyed mill), shields {simS10.World.Player.Shields} (capped at 85)");
+var saveS10 = simS10.SaveToJson();
+var simS10Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS10Loaded.LoadFromJson(saveS10)}");
+var s10LoadedHud = simS10Loaded.Hud();
+Console.WriteLine($"Slice 10 after load: cable step-down mill {simS10Loaded.World.Chunk.Get(10, 20, 10)}, HV mill cell {simS10Loaded.World.Chunk.Get(10, 20, 14)} (still gone, no resurrection), kinetic mill {simS10Loaded.World.Chunk.Get(10, 20, 18)}, powered workstation {simS10Loaded.World.Chunk.Get(17, 5, 16)}, unpowered workstation {simS10Loaded.World.Chunk.Get(17, 5, 22)}, HV workstation {simS10Loaded.World.Chunk.Get(17, 5, 28)} (still standing, disabled), power {s10LoadedHud.PoweredMills}/{s10LoadedHud.TotalMills} mills, {s10LoadedHud.PoweredWorkstations}/{s10LoadedHud.TotalWorkstations} workstations, voltages re-derived: mill {simS10Loaded.World.DeliveredVoltage(10, 20, 10)}, powered workstation {simS10Loaded.World.DeliveredVoltage(17, 5, 16)}, session counters reset: powered {simS10Loaded.World.PoweredBlocksGathered}, kinetic {simS10Loaded.World.KineticBlocksGathered}, destroyed {simS10Loaded.World.DestroyedMills}, stone {simS10Loaded.World.Player.Inventory.Get(BlockType.Stone)} (no refund on load), player back at powered bench ({simS10Loaded.World.Player.X},{simS10Loaded.World.Player.Y},{simS10Loaded.World.Player.Z}), effective regen {simS10Loaded.World.EffectiveWorkstationRegen()}");
+simS10Loaded.World.Player.TakeDamage(20);
+SeedPocketS10(simS10Loaded.World, 10, 10);
+for (int i = 0; i < 5; i++) simS10Loaded.World.Advance();
+Console.WriteLine($"Slice 10 loaded phase after 5 ticks: powered gathered {simS10Loaded.World.PoweredBlocksGathered} (5 again), kinetic gathered {simS10Loaded.World.KineticBlocksGathered}, destroyed {simS10Loaded.World.DestroyedMills} (no new destruction), stone {simS10Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS10Loaded.World.Player.Shields} (65 + 10 per tick, capped at 85)");
+Console.WriteLine($"Slice 10 done: powered {simS10.World.PoweredBlocksGathered} + loaded {simS10Loaded.World.PoweredBlocksGathered}, kinetic {simS10.World.KineticBlocksGathered} + loaded {simS10Loaded.World.KineticBlocksGathered}, destroyed {simS10.World.DestroyedMills}, save JSON length: {saveS10.Length} chars");

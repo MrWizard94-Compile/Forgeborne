@@ -3102,6 +3102,92 @@ look inevitable.
 - Next, in order: Slice 10 Step 3, demo scenario +
   documentation-only review, closing Slice 10.
 
+## 0.47.0 — Slice 10 Step 3: demo scenario + review, closing Slice 10
+- Decision, on composition: one Simulation, both
+  consumers, both delivery paths, both failure rules,
+  both baselines — not two demos and not a demo that
+  proves the source against the mill alone. The mill
+  rows use the cable step-down path for the powered
+  mill (Alternator -> cable -> transformer -> cable ->
+  mill), because Step 2 proved that path for the mill
+  and the face-adjacent step-down path for the
+  workstation, and the demo's job is to compose the
+  paths, not to re-prove each path in isolation; the
+  powered workstation therefore uses face-adjacent
+  step-down, so the demo contains one of each path and
+  neither path is left as a Step 2 claim the review
+  never composes. The direct-HV mill and the direct-HV
+  workstation sit in the same run so the two mismatch
+  rules — destroy vs disable — are visible side by
+  side on the same tick, not in separate runs where a
+  reader could mistake one rule for the other.
+- Decision, on the bench walk: workstation regen is
+  player-centred (Manhattan distance 3), so one player
+  position cannot prove three benches at once — a
+  powered bench near the player masks an unpowered
+  bench near the same player, by the
+  `EffectiveWorkstationRegen` rule itself (any powered
+  near bench wins). The demo therefore walks the
+  player between benches with `MoveTo` (each returning
+  True, into Air cells above the y=4 tree layer) and
+  reads each bench's regen at its own position, then
+  reads the powered bench again after the walk to
+  prove the reading follows the bench, not the walk.
+  This is recorded as a measurement procedure, not a
+  gameplay claim, and the tests assert the same
+  readings: no sentence in the demo, the tests, or the
+  review claims three benches were proved
+  simultaneously at one position. A demo that parked
+  the player once and quoted three regen numbers would
+  have been quoting one number three times.
+- Decision, on staging: the layout is staged directly
+  with TrySet, exactly as the Step 1-2 tests stage
+  theirs, and the bench walk is a player-position walk,
+  not a block-placement walk. Aim placement of a mill,
+  a workstation, a transformer, a cable, and an
+  Alternator was each proved in its own step's tests;
+  walking this layout in by aim would have proved
+  walking, not wiring, and the review says so openly
+  rather than letting the demo borrow aim-placement
+  evidence it does not contain.
+- Decision, on the checklist: no new playtest-gate
+  checklist item for the demo itself, by the same
+  no-new-item rule the Slice 7, 8, and 9 reviews
+  applied — the demo exercises no adapter binding the
+  checklist does not already cover. The one exception
+  is named, not fixed: the B key still has no checklist
+  item, while T, Y, U, I, and N each have one, so a
+  Windows checker following the gate doc would never
+  be asked to press B. That is a gate-doc gap, and a
+  review step is the wrong place to repair a gate doc
+  it does not otherwise touch; the gap is recorded in
+  the review as gap 7, so the gate doc is not quoted
+  as complete for Slice 10 while it lacks B, and the
+  next step that touches the gate doc for its own
+  reason closes it.
+- Decision, on the verdict: Slice 10 is closed as
+  tested electrical widening plus written adapters, not
+  as playtested, balanced, or Unity-verified, and
+  Slice 11 is NOT scoped by this review. The scope's
+  ranked candidates are carried unchanged (third squad
+  type and deferred doctrines first, further electrical
+  widening second) because the Step 3 evidence gives no
+  reason to reorder them — and scoping Slice 11 now,
+  inside a review, would have been guessing with the
+  composition evidence in hand rather than deciding
+  with it, the same reason the Slice 9 review did not
+  scope Slice 10.
+- Deliberately NOT in this step: a new core system of
+  any kind, a balance pass, a pre-destruction or
+  pre-disablement warning, a mesh tint or refresh, a
+  display for live networks feeding no consumer, a
+  B-key checklist repair, or any claim about Windows
+  Unity verification or the pending Slice 1 director
+  playtest gate.
+- Next, in order: scoping Slice 11 as its own decision
+  step, from the ranked candidates carried in
+  `docs/slice-10-review.md`.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
