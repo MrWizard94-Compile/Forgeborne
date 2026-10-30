@@ -929,3 +929,88 @@ SeedPocketS13(simS13Loaded.World, 10, 14);
 for (int i = 0; i < 5; i++) simS13Loaded.World.Advance();
 Console.WriteLine($"Slice 13 loaded phase after 5 ticks: powered gathered {simS13Loaded.World.PoweredBlocksGathered} (5 again), destroyed {simS13Loaded.World.DestroyedMills} (no new destruction), stone {simS13Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS13Loaded.World.Player.Shields} (65 + 10 per bench tick, capped at 85), enemies {simS13Loaded.World.Enemies.Count} (the pylon kill stays dead)");
 Console.WriteLine($"Slice 13 done: powered {simS13.World.PoweredBlocksGathered} + loaded {simS13Loaded.World.PoweredBlocksGathered}, destroyed {simS13.World.DestroyedMills}, save JSON length: {saveS13.Length} chars");
+
+// Slice 14 Step 2 scenario: Slice 14 composed in one run —
+// the third source beside the sources the reader already
+// trusts, with a mismatch and an idle case beside them, so
+// the demo proves a distinction, not a label. On the y=20
+// plane: a mill fed HV through a Conduit -> cable -> cable
+// run (destroyed on tick 1, the cable-only delivery in
+// action); a mill fed LV directly by a Dynamo with a
+// five-stone pocket (powered, the existing source at its
+// voltage); and a mill standing directly beside a Conduit
+// with no cable (reads None, warns nothing, survives, and
+// falls back to kinetic cadence — the idle case that proves
+// the Conduit delivers nothing face-adjacent). On the y=5
+// plane: a Shock Pylon fed HV through a single Conduit ->
+// cable run (powered, and it kills the staged enemy in three
+// ticks of 10 damage — while
+// its only cable cell reads None in PowerState, the
+// single-cable tint finding Step 1 carried, not fixed: the
+// network is live and the pylon fires, but the cable cell
+// itself is untinted because DeliveredVoltage for a cell
+// counts only its neighbours and a Conduit is not a direct
+// source); and a workstation fed LV through a Conduit ->
+// cable -> transformer step-down beside the player spawn,
+// so the powered bench regen reads 10 from the first tick.
+// The layout is staged directly with TrySet, exactly as the
+// Step 1 tests stage theirs: aim placement of a Conduit was
+// proved in Step 1's tests, and walking this layout in by
+// aim would prove walking, not wiring. What this demo
+// cannot show, by construction, is any adapter feel: no
+// M-key build, no mesh tint, and no scene visibility appear
+// in a headless run, so the M key stays in playtest-gate
+// checklist item 28 (Windows-only) and the single-cable
+// tint stays a review remainder, not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 14 Step 2 scenario — Conduit cable-fed mill destroyed, Dynamo mill powered, direct-Conduit mill kinetic, Conduit cable pylon firing, Conduit step-down bench, save/load round-trip");
+var simS14 = new Simulation(42);
+void SeedPocketS14(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+simS14.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+simS14.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+simS14.World.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+simS14.World.Chunk.TrySet(13, 20, 10, BlockType.Conduit);
+simS14.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+simS14.World.Chunk.TrySet(11, 20, 14, BlockType.Dynamo);
+SeedPocketS14(simS14.World, 10, 14);
+simS14.World.Chunk.TrySet(10, 20, 18, BlockType.KineticMill);
+simS14.World.Chunk.TrySet(11, 20, 18, BlockType.Conduit);
+SeedPocketS14(simS14.World, 10, 18);
+simS14.World.Chunk.TrySet(10, 5, 16, BlockType.ShockPylon);
+simS14.World.Chunk.TrySet(11, 5, 16, BlockType.Cable);
+simS14.World.Chunk.TrySet(12, 5, 16, BlockType.Conduit);
+simS14.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+simS14.World.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+simS14.World.Chunk.TrySet(19, 5, 16, BlockType.Cable);
+simS14.World.Chunk.TrySet(20, 5, 16, BlockType.Conduit);
+simS14.World.Player.TakeDamage(20);
+simS14.World.Enemies.Add(new Enemy(10, 5, 17));
+Console.WriteLine($"Slice 14 voltages before any tick: Conduit cable mill {simS14.World.DeliveredVoltage(10, 20, 10)}, Dynamo mill {simS14.World.DeliveredVoltage(10, 20, 14)}, direct-Conduit mill {simS14.World.DeliveredVoltage(10, 20, 18)}, Conduit cable pylon {simS14.World.DeliveredVoltage(10, 5, 16)}, Conduit step-down workstation {simS14.World.DeliveredVoltage(17, 5, 16)}");
+var s14HudBefore = simS14.Hud();
+Console.WriteLine($"Slice 14 HUD before: {s14HudBefore.PoweredMills}/{s14HudBefore.TotalMills} MILLS POWERED, {s14HudBefore.PoweredWorkstations}/{s14HudBefore.TotalWorkstations} WORKSTATIONS POWERED, {s14HudBefore.PoweredPylons}/{s14HudBefore.TotalPylons} PYLONS POWERED, WARNED: {s14HudBefore.WarnedMills} MILLS, {s14HudBefore.WarnedWorkstations} WORKSTATIONS, {s14HudBefore.WarnedPylons} PYLONS, POWER: {s14HudBefore.LiveNetworks} LIVE NETWORKS, {s14HudBefore.LoneSources} LONE SOURCES (0 LONE is itself a finding: the Slice 12 lone rule disqualifies any source beside a consumer, so the direct Conduit beside its mill counts as neither live nor lone even though it delivers nothing — the Conduit beside a mill is invisible in both counts, carried as a review remainder)");
+Console.WriteLine($"Slice 14 power states before: Conduit cable mill {simS14.World.PowerState(10, 20, 10)}, its cables {simS14.World.PowerState(11, 20, 10)}/{simS14.World.PowerState(12, 20, 10)} (two-cable run: both Energised), Dynamo mill {simS14.World.PowerState(10, 20, 14)}, direct-Conduit mill {simS14.World.PowerState(10, 20, 18)}, pylon {simS14.World.PowerState(10, 5, 16)}, its single cable {simS14.World.PowerState(11, 5, 16)} (None: the carried single-cable finding), step-down workstation {simS14.World.PowerState(17, 5, 16)}, its cable {simS14.World.PowerState(19, 5, 16)}, transformer {simS14.World.PowerState(18, 5, 16)} (sources and transformers stay None by decision)");
+Console.WriteLine($"Slice 14 shields before: {simS14.World.Player.Shields} (65 after 20 damage, parked beside the powered step-down bench at (16,5,16), effective regen {simS14.World.EffectiveWorkstationRegen()}), enemy at (10,5,17) 30 HP, in the Conduit-fed pylon's range");
+simS14.World.Advance();
+var s14HudAfter1 = simS14.Hud();
+Console.WriteLine($"Slice 14 tick 1: Conduit cable mill cell now {simS14.World.Chunk.Get(10, 20, 10)} (destroyed), destroyed {simS14.World.DestroyedMills}, powered gathered {simS14.World.PoweredBlocksGathered}, kinetic gathered {simS14.World.KineticBlocksGathered}, direct-Conduit mill still {simS14.World.Chunk.Get(10, 20, 18)} (survives: it was never fed), WARNED now {s14HudAfter1.WarnedMills} MILLS, {s14HudAfter1.WarnedWorkstations} WORKSTATIONS, {s14HudAfter1.WarnedPylons} PYLONS, POWER now {s14HudAfter1.LiveNetworks} LIVE NETWORKS, {s14HudAfter1.LoneSources} LONE SOURCES (the destroyed mill's cable run now feeds nothing, so it counts live; the direct Conduit still counts neither, as before), shields {simS14.World.Player.Shields} (regen 10 at the powered bench), enemy at ({simS14.World.Enemies[0].X},5,{simS14.World.Enemies[0].Z}) {simS14.World.Enemies[0].Health} HP (the Conduit-fed pylon fired 10; its single cable reads {simS14.World.PowerState(11, 5, 16)}, still untinted)");
+for (int tick = 2; tick <= 5; tick++)
+{
+    simS14.World.Advance();
+    Console.WriteLine($"Slice 14 tick {tick}: enemies {simS14.World.Enemies.Count}{(simS14.World.Enemies.Count > 0 ? $" at ({simS14.World.Enemies[0].X},5,{simS14.World.Enemies[0].Z}) {simS14.World.Enemies[0].Health} HP" : " (Conduit-fed pylon kill)")} , powered gathered {simS14.World.PoweredBlocksGathered}, kinetic gathered {simS14.World.KineticBlocksGathered}, shields {simS14.World.Player.Shields}");
+}
+Console.WriteLine($"Slice 14 after 5 ticks: powered gathered {simS14.World.PoweredBlocksGathered} (Dynamo pocket exhausted), kinetic gathered {simS14.World.KineticBlocksGathered} (direct-Conduit mill, 1 in 5 ticks), destroyed {simS14.World.DestroyedMills}, stone {simS14.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS14.World.Player.Shields}, enemies {simS14.World.Enemies.Count}");
+var saveS14 = simS14.SaveToJson();
+var simS14Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS14Loaded.LoadFromJson(saveS14)}");
+var s14LoadedHud = simS14Loaded.Hud();
+Console.WriteLine($"Slice 14 after load: Conduit cable mill cell {simS14Loaded.World.Chunk.Get(10, 20, 10)} (still gone, no resurrection), Dynamo mill {simS14Loaded.World.Chunk.Get(10, 20, 14)}, direct-Conduit mill {simS14Loaded.World.Chunk.Get(10, 20, 18)}, pylon {simS14Loaded.World.Chunk.Get(10, 5, 16)}, step-down workstation {simS14Loaded.World.Chunk.Get(17, 5, 16)}, power {s14LoadedHud.PoweredMills}/{s14LoadedHud.TotalMills} mills, {s14LoadedHud.PoweredWorkstations}/{s14LoadedHud.TotalWorkstations} workstations, {s14LoadedHud.PoweredPylons}/{s14LoadedHud.TotalPylons} pylons, WARNED {s14LoadedHud.WarnedMills}/{s14LoadedHud.WarnedWorkstations}/{s14LoadedHud.WarnedPylons}, POWER: {s14LoadedHud.LiveNetworks} LIVE NETWORKS, {s14LoadedHud.LoneSources} LONE SOURCES (the direct Conduit still counts neither after load), states Dynamo mill {simS14Loaded.World.PowerState(10, 20, 14)}, direct-Conduit mill {simS14Loaded.World.PowerState(10, 20, 18)}, pylon {simS14Loaded.World.PowerState(10, 5, 16)}, single cable {simS14Loaded.World.PowerState(11, 5, 16)} (still None after load: the finding re-derives, it is not a stale tint), workstation {simS14Loaded.World.PowerState(17, 5, 16)} (all re-derived, not saved), session counters reset: powered {simS14Loaded.World.PoweredBlocksGathered}, kinetic {simS14Loaded.World.KineticBlocksGathered}, destroyed {simS14Loaded.World.DestroyedMills}, stone {simS14Loaded.World.Player.Inventory.Get(BlockType.Stone)}, player back at bench ({simS14Loaded.World.Player.X},{simS14Loaded.World.Player.Y},{simS14Loaded.World.Player.Z}), effective regen {simS14Loaded.World.EffectiveWorkstationRegen()}");
+simS14Loaded.World.Player.TakeDamage(20);
+SeedPocketS14(simS14Loaded.World, 10, 14);
+SeedPocketS14(simS14Loaded.World, 10, 18);
+for (int i = 0; i < 5; i++) simS14Loaded.World.Advance();
+Console.WriteLine($"Slice 14 loaded phase after 5 ticks: powered gathered {simS14Loaded.World.PoweredBlocksGathered} (5 again), kinetic gathered {simS14Loaded.World.KineticBlocksGathered} (1 again), destroyed {simS14Loaded.World.DestroyedMills} (no new destruction), stone {simS14Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS14Loaded.World.Player.Shields}, enemies {simS14Loaded.World.Enemies.Count} (the pylon kill stays dead)");
+Console.WriteLine($"Slice 14 done: powered {simS14.World.PoweredBlocksGathered} + loaded {simS14Loaded.World.PoweredBlocksGathered}, kinetic {simS14.World.KineticBlocksGathered} + loaded {simS14Loaded.World.KineticBlocksGathered}, destroyed {simS14.World.DestroyedMills}, save JSON length: {saveS14.Length} chars");

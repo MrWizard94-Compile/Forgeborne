@@ -1,5 +1,75 @@
 # Forgeborne — Changelog
 
+## 0.63.0 — 2026-10-30 — Slice 14 Step 2: composed demo + review, closing Slice 14
+
+- Composed demo, decided in this step (rationale in
+  DECISIONS.md): one Simulation proves the Step 1 Conduit
+  beside the sources the reader already trusts, not as
+  separate proofs. On the y=20 plane a mill fed HV through
+  a Conduit -> cable -> cable run (destroyed tick 1), a
+  mill fed LV directly by a Dynamo with a five-stone
+  pocket (powered, 5 in 5 ticks), and a mill standing
+  directly beside a Conduit with no cable (reads None,
+  warns nothing, survives, gathers 1 kinetic stone in 5
+  ticks); on the y=5 plane a Shock Pylon fed HV through a
+  single Conduit -> cable run (powered, kills its staged
+  enemy in three 10-damage ticks) and a workstation fed LV
+  through a Conduit -> cable -> transformer step-down
+  beside the player spawn (powered, bench regen 10 from
+  the first tick), through a save/load round-trip with a
+  loaded 5-tick phase repeating powered 5 and kinetic 1.
+- Two findings, proved in composition and carried, not
+  fixed: the single cable cell touching a Conduit reads
+  None in PowerState (untinted) while its pylon fires and
+  its mill is destroyed, because DeliveredVoltage for a
+  cell counts only its neighbours and a Conduit is not a
+  direct source, while a two-cable Conduit run reads
+  Energised on both cells; and a Conduit standing
+  directly beside a mill counts as neither a live network
+  nor a lone source, because the Slice 12 lone rule
+  disqualifies any source beside a consumer, whatever it
+  delivers — so the demo's POWER line reads 0 LIVE, 0 LONE
+  before the tick and 1 LIVE, 0 LONE after it and after
+  load. Neither finding is a delivery failure, and neither
+  is patched inside this demo step; both are remainders
+  for Slice 15 scoping, with checklist item 28 already
+  asking the scene observer to record the single-cable
+  cell honestly. No new playtest-gate checklist item is
+  added by this step.
+- Review: new docs/slice-14-review.md, documentation-only
+  review closing Slice 14 (gate checked against the scope,
+  verdict: reviewed and closed as a tested third source
+  plus a composed demo, not playtested, balanced, or
+  Unity-verified, Slice 15 NOT scoped, candidates carried
+  in scope order). Demo staging notes pinned in the
+  review: TrySet staging, no squads in this demo (so it
+  proves electrical composition only), no bench walk (the
+  step-down bench sits beside the spawn), and the pylon
+  kill at shrinking range, not a range-5 boundary proof.
+- Tests: 1988 passed, 0 failed (was 1894; +94 composed-
+  integration tests mirroring the demo, no failures on
+  the final runs). Demo numbers: HUD before 1/3 mills,
+  1/1 workstations, 1/1 pylons, WARNED 1/0/0, POWER 0
+  LIVE, 0 LONE; tick 1 mill Air, destroyed 1, powered 1,
+  kinetic 0, shields 65 -> 75, enemy (11,5,17) 20 HP,
+  single cable None; tick 3 pylon kill, enemies 0; after
+  5 ticks powered 5, kinetic 1, destroyed 1, stone 6,
+  shields capped 85; after load HUD 1/2 mills, 1/1
+  workstations, 1/1 pylons, WARNED 0/0/0, POWER 1 LIVE,
+  0 LONE, counters reset, stone 6, player back at bench
+  reading regen 10; loaded phase powered 5, kinetic 1,
+  destroyed 0, stone 12, shields capped 85, enemies 0.
+  All earlier demo saves unchanged (Slice 1 43,881; Slice
+  2 43,921; Step 1 44,016; Step 3 44,103; Slice 4 44,026;
+  Slice 5 43,974; Slice 6 44,024; Slice 7 44,013; Slice 8
+  43,974; Slice 9 43,975; Slice 10 43,974; Slice 11 44,038;
+  Slice 12 43,974; Slice 13 44,045). New scenario save
+  43,974 chars.
+- Next, in order: scoping Slice 15 as its own decision
+  step, chosen from the ranked candidates this review
+  carries (Patrol first, Slice 14 remainders second,
+  Slice 13 scene-proof remainders third).
+
 ## 0.62.0 — 2026-10-30 — Slice 14 Step 1: third power source, the Conduit (cable-only HV)
 
 - Source, decided in this step (rationale in DECISIONS.md):

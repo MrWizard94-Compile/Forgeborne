@@ -5144,5 +5144,151 @@ Eq(Voltage.HV, condLoaded.DeliveredVoltage(17, 5, 16), "slice14 step1 conduit ca
 Check(condLoaded.IsPylonPowered(17, 5, 16), "slice14 step1 conduit cable pylon is powered after load");
 Eq(CellPowerState.Powered, condLoaded.PowerState(17, 5, 16), "slice14 step1 conduit cable pylon power state is Powered after load");
 
+// Slice 14 Step 2 composed integration: the demo layout as
+// tests, so the demo numbers are proved, not just printed.
+// One Simulation carries the Conduit cable-fed mill, the
+// Dynamo mill, the direct-Conduit mill, the Conduit cable
+// pylon, and the Conduit step-down workstation together
+// through ticks and a save/load round-trip. Two findings
+// from Step 1 are asserted here as composition facts, not
+// smoothed over: the single cable cell touching a Conduit
+// reads None in PowerState while its pylon fires, and a
+// Conduit standing directly beside a mill counts as neither
+// a live network nor a lone source, because the Slice 12
+// lone rule disqualifies any source beside a consumer.
+var s14Sim = new Simulation(42);
+void SeedPocketS14Test(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+s14Sim.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s14Sim.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s14Sim.World.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+s14Sim.World.Chunk.TrySet(13, 20, 10, BlockType.Conduit);
+s14Sim.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+s14Sim.World.Chunk.TrySet(11, 20, 14, BlockType.Dynamo);
+SeedPocketS14Test(s14Sim.World, 10, 14);
+s14Sim.World.Chunk.TrySet(10, 20, 18, BlockType.KineticMill);
+s14Sim.World.Chunk.TrySet(11, 20, 18, BlockType.Conduit);
+SeedPocketS14Test(s14Sim.World, 10, 18);
+s14Sim.World.Chunk.TrySet(10, 5, 16, BlockType.ShockPylon);
+s14Sim.World.Chunk.TrySet(11, 5, 16, BlockType.Cable);
+s14Sim.World.Chunk.TrySet(12, 5, 16, BlockType.Conduit);
+s14Sim.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+s14Sim.World.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+s14Sim.World.Chunk.TrySet(19, 5, 16, BlockType.Cable);
+s14Sim.World.Chunk.TrySet(20, 5, 16, BlockType.Conduit);
+s14Sim.World.Player.TakeDamage(20);
+s14Sim.World.Enemies.Add(new Enemy(10, 5, 17));
+Eq(Voltage.HV, s14Sim.World.DeliveredVoltage(10, 20, 10), "slice14 step2 composed conduit cable mill voltage HV");
+Eq(Voltage.LV, s14Sim.World.DeliveredVoltage(10, 20, 14), "slice14 step2 composed dynamo mill voltage LV");
+Eq(Voltage.None, s14Sim.World.DeliveredVoltage(10, 20, 18), "slice14 step2 composed direct conduit mill voltage None");
+Eq(Voltage.HV, s14Sim.World.DeliveredVoltage(10, 5, 16), "slice14 step2 composed conduit cable pylon voltage HV");
+Eq(Voltage.LV, s14Sim.World.DeliveredVoltage(17, 5, 16), "slice14 step2 composed conduit step-down workstation voltage LV");
+Check(s14Sim.World.IsMismatched(10, 20, 10), "slice14 step2 composed conduit cable mill is mismatched");
+Check(s14Sim.World.IsPowered(10, 20, 14), "slice14 step2 composed dynamo mill is powered");
+Check(!s14Sim.World.IsPowered(10, 20, 18), "slice14 step2 composed direct conduit mill is not powered");
+Check(!s14Sim.World.IsMismatched(10, 20, 18), "slice14 step2 composed direct conduit mill is not mismatched");
+Check(s14Sim.World.IsPylonPowered(10, 5, 16), "slice14 step2 composed conduit cable pylon is powered");
+Check(!s14Sim.World.IsPylonMismatched(10, 5, 16), "slice14 step2 composed conduit cable pylon is not mismatched");
+Check(s14Sim.World.IsWorkstationPowered(17, 5, 16), "slice14 step2 composed step-down workstation is powered");
+Check(!s14Sim.World.IsWorkstationMismatched(17, 5, 16), "slice14 step2 composed step-down workstation is not mismatched");
+Eq(CellPowerState.Mismatched, s14Sim.World.PowerState(10, 20, 10), "slice14 step2 composed conduit cable mill state Mismatched");
+Eq(CellPowerState.Energised, s14Sim.World.PowerState(11, 20, 10), "slice14 step2 composed two-cable run first cable Energised");
+Eq(CellPowerState.Energised, s14Sim.World.PowerState(12, 20, 10), "slice14 step2 composed two-cable run second cable Energised");
+Eq(CellPowerState.Powered, s14Sim.World.PowerState(10, 20, 14), "slice14 step2 composed dynamo mill state Powered");
+Eq(CellPowerState.None, s14Sim.World.PowerState(10, 20, 18), "slice14 step2 composed direct conduit mill state None");
+Eq(CellPowerState.Powered, s14Sim.World.PowerState(10, 5, 16), "slice14 step2 composed conduit cable pylon state Powered");
+Eq(CellPowerState.None, s14Sim.World.PowerState(11, 5, 16), "slice14 step2 composed single conduit cable state None while its pylon fires");
+Eq(CellPowerState.Powered, s14Sim.World.PowerState(17, 5, 16), "slice14 step2 composed step-down workstation state Powered");
+Eq(CellPowerState.Energised, s14Sim.World.PowerState(19, 5, 16), "slice14 step2 composed step-down cable state Energised via its transformer");
+Eq(CellPowerState.None, s14Sim.World.PowerState(18, 5, 16), "slice14 step2 composed transformer state None by decision");
+Eq(CellPowerState.None, s14Sim.World.PowerState(13, 20, 10), "slice14 step2 composed cable-run conduit state None by decision");
+Eq(CellPowerState.None, s14Sim.World.PowerState(11, 20, 18), "slice14 step2 composed direct conduit state None by decision");
+var s14HudBefore = s14Sim.Hud();
+Eq(1, s14HudBefore.PoweredMills, "slice14 step2 composed one mill powered before the tick");
+Eq(3, s14HudBefore.TotalMills, "slice14 step2 composed three mills total before the tick");
+Eq(1, s14HudBefore.PoweredWorkstations, "slice14 step2 composed one workstation powered before the tick");
+Eq(1, s14HudBefore.TotalWorkstations, "slice14 step2 composed one workstation total before the tick");
+Eq(1, s14HudBefore.PoweredPylons, "slice14 step2 composed one pylon powered before the tick");
+Eq(1, s14HudBefore.TotalPylons, "slice14 step2 composed one pylon total before the tick");
+Eq(1, s14HudBefore.WarnedMills, "slice14 step2 composed one mill warned before the tick");
+Eq(0, s14HudBefore.WarnedWorkstations, "slice14 step2 composed no workstation warned before the tick");
+Eq(0, s14HudBefore.WarnedPylons, "slice14 step2 composed no pylon warned before the tick");
+Eq(0, s14HudBefore.LiveNetworks, "slice14 step2 composed no live network before the tick");
+Eq(0, s14HudBefore.LoneSources, "slice14 step2 composed no lone source before the tick: the direct conduit beside a mill counts neither");
+Eq(65, s14Sim.World.Player.Shields, "slice14 step2 composed shields 65 after 20 damage");
+Eq(10, s14Sim.World.EffectiveWorkstationRegen(), "slice14 step2 composed step-down bench regen 10 at spawn");
+Eq(0, s14Sim.World.Player.Inventory.Get(BlockType.Stone), "slice14 step2 composed stone starts at 0");
+Eq(30, s14Sim.World.Enemies[0].Health, "slice14 step2 composed staged enemy 30 HP");
+s14Sim.World.Advance();
+Eq(BlockType.Air, s14Sim.World.Chunk.Get(10, 20, 10), "slice14 step2 composed conduit cable mill destroyed on tick 1");
+Eq(1, s14Sim.World.DestroyedMills, "slice14 step2 composed one mill destroyed after tick 1");
+Eq(1, s14Sim.World.PoweredBlocksGathered, "slice14 step2 composed powered gathered 1 after tick 1");
+Eq(0, s14Sim.World.KineticBlocksGathered, "slice14 step2 composed kinetic gathered 0 after tick 1");
+Eq(BlockType.KineticMill, s14Sim.World.Chunk.Get(10, 20, 18), "slice14 step2 composed direct conduit mill survives tick 1");
+var s14HudAfter1 = s14Sim.Hud();
+Eq(0, s14HudAfter1.WarnedMills, "slice14 step2 composed no mill warned after tick 1");
+Eq(1, s14HudAfter1.LiveNetworks, "slice14 step2 composed destroyed mill cable run counts live after tick 1");
+Eq(0, s14HudAfter1.LoneSources, "slice14 step2 composed still no lone source after tick 1");
+Eq(75, s14Sim.World.Player.Shields, "slice14 step2 composed shields 75 after tick 1 regen");
+Eq(20, s14Sim.World.Enemies[0].Health, "slice14 step2 composed pylon fires 10 on tick 1");
+Eq(11, s14Sim.World.Enemies[0].X, "slice14 step2 composed enemy steps east on tick 1");
+Eq(CellPowerState.None, s14Sim.World.PowerState(11, 5, 16), "slice14 step2 composed single conduit cable still None after tick 1");
+s14Sim.World.Advance();
+Eq(10, s14Sim.World.Enemies[0].Health, "slice14 step2 composed pylon fires 10 on tick 2");
+s14Sim.World.Advance();
+Eq(0, s14Sim.World.Enemies.Count, "slice14 step2 composed pylon kills the enemy on tick 3");
+s14Sim.World.Advance();
+s14Sim.World.Advance();
+Eq(5, s14Sim.World.PoweredBlocksGathered, "slice14 step2 composed powered gathered 5 after 5 ticks");
+Eq(1, s14Sim.World.KineticBlocksGathered, "slice14 step2 composed kinetic gathered 1 after 5 ticks");
+Eq(1, s14Sim.World.DestroyedMills, "slice14 step2 composed destroyed stays 1 after 5 ticks");
+Eq(6, s14Sim.World.Player.Inventory.Get(BlockType.Stone), "slice14 step2 composed stone 6 after 5 ticks");
+Eq(85, s14Sim.World.Player.Shields, "slice14 step2 composed shields capped at 85 after 5 ticks");
+Eq(0, s14Sim.World.Enemies.Count, "slice14 step2 composed no enemies after 5 ticks");
+var s14Save = s14Sim.SaveToJson();
+var s14Loaded = new Simulation(99);
+Check(s14Loaded.LoadFromJson(s14Save), "slice14 step2 composed save loads");
+Eq(BlockType.Air, s14Loaded.World.Chunk.Get(10, 20, 10), "slice14 step2 composed destroyed mill stays gone after load");
+Eq(BlockType.KineticMill, s14Loaded.World.Chunk.Get(10, 20, 14), "slice14 step2 composed dynamo mill loads");
+Eq(BlockType.KineticMill, s14Loaded.World.Chunk.Get(10, 20, 18), "slice14 step2 composed direct conduit mill loads");
+Eq(BlockType.ShockPylon, s14Loaded.World.Chunk.Get(10, 5, 16), "slice14 step2 composed pylon loads");
+Eq(BlockType.Workstation, s14Loaded.World.Chunk.Get(17, 5, 16), "slice14 step2 composed workstation loads");
+Eq(BlockType.Conduit, s14Loaded.World.Chunk.Get(13, 20, 10), "slice14 step2 composed cable-run conduit loads");
+Eq(BlockType.Conduit, s14Loaded.World.Chunk.Get(11, 20, 18), "slice14 step2 composed direct conduit loads");
+Eq(BlockType.Conduit, s14Loaded.World.Chunk.Get(12, 5, 16), "slice14 step2 composed pylon conduit loads");
+Eq(BlockType.Conduit, s14Loaded.World.Chunk.Get(20, 5, 16), "slice14 step2 composed step-down conduit loads");
+var s14LoadedHud = s14Loaded.Hud();
+Eq(1, s14LoadedHud.PoweredMills, "slice14 step2 composed one mill powered after load");
+Eq(2, s14LoadedHud.TotalMills, "slice14 step2 composed two mills total after load");
+Eq(1, s14LoadedHud.PoweredWorkstations, "slice14 step2 composed one workstation powered after load");
+Eq(1, s14LoadedHud.PoweredPylons, "slice14 step2 composed one pylon powered after load");
+Eq(0, s14LoadedHud.WarnedMills, "slice14 step2 composed no mill warned after load");
+Eq(1, s14LoadedHud.LiveNetworks, "slice14 step2 composed one live network after load");
+Eq(0, s14LoadedHud.LoneSources, "slice14 step2 composed no lone source after load");
+Eq(CellPowerState.Powered, s14Loaded.World.PowerState(10, 20, 14), "slice14 step2 composed dynamo mill state Powered after load");
+Eq(CellPowerState.None, s14Loaded.World.PowerState(10, 20, 18), "slice14 step2 composed direct conduit mill state None after load");
+Eq(CellPowerState.Powered, s14Loaded.World.PowerState(10, 5, 16), "slice14 step2 composed pylon state Powered after load");
+Eq(CellPowerState.None, s14Loaded.World.PowerState(11, 5, 16), "slice14 step2 composed single cable state None after load");
+Eq(CellPowerState.Powered, s14Loaded.World.PowerState(17, 5, 16), "slice14 step2 composed workstation state Powered after load");
+Eq(0, s14Loaded.World.PoweredBlocksGathered, "slice14 step2 composed powered counter resets on load");
+Eq(0, s14Loaded.World.KineticBlocksGathered, "slice14 step2 composed kinetic counter resets on load");
+Eq(0, s14Loaded.World.DestroyedMills, "slice14 step2 composed destroyed counter resets on load");
+Eq(6, s14Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice14 step2 composed stone stays 6 on load");
+Eq(16, s14Loaded.World.Player.X, "slice14 step2 composed player back at bench X after load");
+Eq(10, s14Loaded.World.EffectiveWorkstationRegen(), "slice14 step2 composed bench regen 10 after load");
+s14Loaded.World.Player.TakeDamage(20);
+SeedPocketS14Test(s14Loaded.World, 10, 14);
+SeedPocketS14Test(s14Loaded.World, 10, 18);
+for (int s14Tick = 0; s14Tick < 5; s14Tick++) s14Loaded.World.Advance();
+Eq(5, s14Loaded.World.PoweredBlocksGathered, "slice14 step2 composed loaded powered gathered 5 again");
+Eq(1, s14Loaded.World.KineticBlocksGathered, "slice14 step2 composed loaded kinetic gathered 1 again");
+Eq(0, s14Loaded.World.DestroyedMills, "slice14 step2 composed loaded destroyed stays 0");
+Eq(12, s14Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice14 step2 composed loaded stone 12");
+Eq(85, s14Loaded.World.Player.Shields, "slice14 step2 composed loaded shields capped at 85");
+Eq(0, s14Loaded.World.Enemies.Count, "slice14 step2 composed pylon kill stays dead after load");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

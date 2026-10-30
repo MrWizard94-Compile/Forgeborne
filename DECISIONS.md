@@ -4888,6 +4888,114 @@ look inevitable.
   documentation-only review closing Slice 14, carrying the
   single-cable tint finding as a remainder.
 
+## 0.63.0 — Slice 14 Step 2: composed demo + review, closing Slice 14 (2026-10-30, silent scheduled run)
+
+- Composition, decided in this step: one Simulation, not
+  separate proofs, because the scope's demo job is to show
+  the third source beside the sources already trusted, with
+  a mismatch and an idle case beside them. The Dynamo mill
+  is the existing-source-at-its-voltage proof (LV direct,
+  powered, 5 in 5 ticks); the Conduit cable mill is the
+  mismatch proof (HV through cable, destroyed tick 1); the
+  direct-Conduit mill is the idle proof (None, no warning,
+  kinetic fallback, 1 in 5 ticks); the single-cable pylon
+  is the safe-HV proof (powered, three-tick kill); the
+  step-down workstation is the safe-LV proof (Conduit
+  cable through a transformer, regen 10). No second
+  existing-source consumer is staged, because the Dynamo
+  mill already carries that role and a second would have
+  proved a source Step 1 already proved.
+- Staging corrections, stated openly, because the first
+  demo execution is part of the evidence: the pylon enemy
+  was first staged at (10,5,19), as Slice 13 had staged
+  its pylon enemy, and the Conduit-fed pylon fired twice
+  before the enemy reached Manhattan distance 6 and
+  walked out of range alive at 10 HP. The demo as first
+  staged therefore proved a two-hit escape, not a kill,
+  so the enemy was re-staged to (10,5,17), where it dies
+  on tick 3 (20 after tick 1, 10 after tick 2, dead on
+  tick 3, each drop exactly 10, so no other damage source
+  fired). The kill is a shrinking-range kill, not a
+  range-5 boundary proof: the stationary range-5 boundary
+  rests on the Slice 12 Step 2 tests, as in the Slice 12
+  and Slice 13 demo notes, and a reader who quotes this
+  demo for the boundary is misquoting it.
+- Finding found by the demo, not by Step 1 — the
+  direct-Conduit count invisibility: the draft demo text
+  expected POWER 0 LIVE, 1 LONE before the tick, and the
+  run printed 0 LONE. The text was corrected, not the
+  count: the Slice 12 lone rule counts a source only when
+  no cable, transformer, or consumer is face-adjacent to
+  it, and the direct Conduit sits beside a mill, which is
+  a consumer, so it counts as neither live nor lone even
+  though it delivers nothing. This is the definition
+  applied consistently, not a miscount — a Dynamo beside
+  a mill is likewise not lone, and it does deliver — but
+  it is a genuine visibility question, because the player
+  who places a Conduit beside a mill sees nothing in
+  either count while the mill reads None and gathers
+  kinetically. Whether the counts should distinguish a
+  beside-a-consumer source that delivers nothing from one
+  that delivers is a Slice 15 scoping question, with its
+  own tests; redefining a count inside a demo step would
+  have moved the rule the demo was supposed to prove.
+- Finding re-proved, not fixed — single-cable tint: the
+  demo's single cable cell reads None before the tick, on
+  tick 1 (printed, not asserted), and after load, while
+  its pylon fires and its sibling two-cable run reads
+  Energised on both cells. The step-down cable, by
+  contrast, reads Energised even though it is also a
+  single cable cell touching a Conduit — because its other
+  neighbour is a transformer, whose flipped output counts
+  for the cable cell, while the pylon cable's neighbours
+  are only a consumer and a Conduit, neither of which
+  counts. The finding is therefore narrower than "a single
+  cable touching a Conduit reads None": it is "a cable
+  cell whose only neighbours are a consumer and a Conduit
+  reads None". That precision is recorded here so a later
+  query redesign does not over-correct cables that
+  already read correctly through a transformer.
+- Bench procedure, stated openly: the player never walks
+  in this demo. The step-down workstation sits beside the
+  spawn (16,5,16) by staging, so regen 10 is a
+  spawn-bench reading, not a bench-walk measurement as in
+  Slices 10 and 13. The demo also contains no squads, so
+  it proves electrical composition only; orbital proof
+  stays in the earlier slices' demos and tests. TrySet
+  staging is used throughout, exactly as the Step 1 tests
+  stage theirs, because aim placement of a Conduit was
+  proved in Step 1 and walking this layout in by aim
+  would prove walking, not wiring.
+- No-new-checklist-item rule, applied: this review adds
+  no playtest-gate checklist item, because the demo
+  exercises no adapter binding the checklist does not
+  already cover. Checklist item 28 already asks the scene
+  observer to record the single-cable untinted cell and
+  the two-cable yellow run honestly, and the M key is
+  already covered there. A new item for the
+  direct-Conduit count question would pre-decide a
+  display change Slice 15 scoping has not yet weighed, so
+  the question is carried in the review and here, not as
+  a checklist line.
+- Test-file note: the composed tests were inserted before
+  the runner's summary and return, per the Slice 13 Step 4
+  repair note, and the count rose from 1894 to 1988 on
+  the first full run with no failures — no test-file
+  repair was needed in this step. The demo's first
+  execution needed the two staging corrections above, and
+  its second execution ran correctly end to end, so no
+  test or demo fix was needed after staging.
+- Deliberately not in this step: a new core system of any
+  kind; a fix to the single-cable tint or the
+  direct-Conduit count; a balance pass (Conduit cost and
+  HV stay first-pass); a new checklist item; Slice 15
+  scoping (that is the next run's decision step, chosen
+  from the review's ranked candidates, not guessed here).
+- Next step: scoping Slice 15 as its own decision step,
+  chosen from the ranked candidates this review carries
+  (Patrol first, Slice 14 remainders second, Slice 13
+  scene-proof remainders third).
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
