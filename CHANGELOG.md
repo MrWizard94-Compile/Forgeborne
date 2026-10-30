@@ -1,5 +1,85 @@
 # Forgeborne — Changelog
 
+## 0.70.0 — 2026-10-30 — Slice 16 Step 3: lighting, sky,
+and fog to art-direction
+
+- Lighting, decided in this step (rationale in
+  DECISIONS.md): new adapter
+  ForgeborneUnity/Assets/Scripts/DuskLighting.cs
+  sets the scene's dusk light in code at Awake — a
+  directional sun, warm (1.00, 0.82, 0.60),
+  intensity 1.1, low at about 15 degrees above the
+  horizon, azimuth 235 first-pass, soft shadows;
+  flat ambient, storm blue-grey (0.32, 0.38, 0.46),
+  so shadow sides read blue-grey instead of black;
+  and fog, exponential, density 0.008, storm
+  blue-grey (0.45, 0.52, 0.60), giving depth beyond
+  the fight while leaving about 83% contrast at the
+  far observation band of about 24 cells. All values
+  are public fields on the script, so the scene
+  author tunes through the Inspector without editing
+  code, and all are labelled first-pass — chosen
+  for readability and testability, not final feel.
+  An Inspector-wired light is used when present;
+  unwired, the script creates one named
+  ForgeborneDuskLight. No GameManager field is
+  needed; the script stands alone like
+  SquadMarkerDisplay.
+- Sky, decided in this step (rationale in
+  DECISIONS.md): a stated combination, not a pure
+  script and not pure notes. Light, fog, and ambient
+  are code-set; the sky is an Inspector-wired
+  material, because a gradient skybox needs an
+  editor-built material and a headless run writes
+  no shader file and no scene file and claims no
+  built scene. The decided gradient spec, recorded
+  in the script header, in docs/art-direction.md,
+  and in DECISIONS.md, is zenith storm blue-grey
+  (0.20, 0.26, 0.34) to horizon lightened storm
+  blue-grey (0.52, 0.54, 0.58), original only, no
+  planet, no skyline. If no material is wired, the
+  script logs a warning and leaves the scene's
+  existing skybox untouched, so a deliberate sky is
+  never replaced by a runtime guess — and item 33
+  observes the sky as actually built, not the spec.
+- Readability contract, decided in this step
+  (rationale in DECISIONS.md): new playtest-gate
+  item 33 re-observes item 32's whole combined scene
+  under this dusk light — voxel edges at near, mid,
+  and far bands, all tint and marker separations
+  together, HUD cyan and orange against the dusk
+  scene, dusk mood readable and not horror-dark,
+  and fog depth confirmed or refuted at the far
+  band. The separations are predicted, not claimed,
+  from the light arithmetic in the script header:
+  warm light keeps cyan apart from Powered green on
+  the blue channel and Mismatched red apart from
+  orange rally on the green channel. If the light
+  makes any colour unread, the light changes — the
+  palette does not move to fit the light.
+- Deliberately not moved in this step: no core file,
+  no MeshBuilder colour, no PowerTint value, no
+  PowerState query, no refresh event set, no HUD
+  layout or colour, no marker colour, shape, size,
+  or position, no scene file, no shader file, no
+  imported asset, and no camera change — the camera
+  stays FpsInputAdapter's. Art-direction rules 1–7
+  are unchanged; only a first-pass values note for
+  rules 1 and 6 is appended to docs/art-direction.md.
+  Unity adapter code is not compiled headlessly,
+  following the Slice 13 Step 2 precedent, so this
+  step adds no headless test and no demo scenario
+  for light, sky, or fog — a printed value does not
+  prove a visible dusk. Item 32 stands alongside
+  item 33 as the pre-dusk observation; item 33
+  extends it, as item 32 itself promised.
+- Tests: 2130 passed, 0 failed (unchanged,
+  adapter-only step). Demo unchanged: Slice 15
+  scenario save 44,016 chars, all earlier demo saves
+  as in the 0.69.0 entry.
+- Next, in order: Slice 16 Step 4, first FPS weapon
+  view model script, decided in that step.
+
 ## 0.69.0 — 2026-10-30 — Slice 16 Step 2: marker occlusion
 under the new scene
 

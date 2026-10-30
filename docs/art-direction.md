@@ -68,3 +68,32 @@ and a minimal HUD (health, shields, objective, ammo, mini-map
 placeholder). Full city, planet, squad, and tank art are later slices,
 not Slice 1. Art that is not in Slice 1 must not block Slice 1's
 gameplay gate.
+
+## Slice 16 Step 3 — first-pass dusk light (0.70.0)
+
+Rules 1–7 above are UNCHANGED by this note; these are the
+first-pass values that implement rules 1 and 6 in the scene,
+decided in Slice 16 Step 3 (rationale in DECISIONS.md) and
+observed on Windows by playtest-gate item 33, not by this note:
+
+- Directional dusk sun, warm (1.00, 0.82, 0.60), intensity 1.1,
+  low sun about 15 degrees above the horizon, azimuth 235
+  first-pass, soft shadows — set in code by
+  `ForgeborneUnity/Assets/Scripts/DuskLighting.cs`, whose
+  public fields are the tuning surface.
+- Flat ambient, storm blue-grey (0.32, 0.38, 0.46), so shadow
+  sides read blue-grey instead of falling to black.
+- Fog, exponential, density 0.008, storm blue-grey
+  (0.45, 0.52, 0.60) — depth beyond the fight, not a veil
+  over the far observation band (about 24 cells).
+- Sky gradient, editor-built material (no shader file from a
+  headless run, no planet, no skyline, original only):
+  zenith storm blue-grey (0.20, 0.26, 0.34), horizon
+  lightened storm blue-grey (0.52, 0.54, 0.58). If no
+  gradient material is wired, the scene keeps its existing
+  skybox and item 33 observes that sky, not this spec.
+
+All values are first-pass, chosen for readability and
+testability, not final feel. If the light makes a marker,
+tint, or HUD colour unread, the light changes — the palette
+does not move to fit the light.

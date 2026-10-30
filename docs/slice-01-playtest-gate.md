@@ -498,6 +498,64 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     Do not claim this verified in Unity until it is
     observed there and recorded in DECISIONS.md.
 
+33. [ ] Dusk light, sky, and fog, added 0.70.0 (adapter
+    code written, NOT yet compiled or run in Unity on
+    Windows; no headless test proves a light, a sky, or
+    fog — the cited headless evidence is only the
+    DuskLighting field values and the fog arithmetic
+    in its header): re-observe the SAME combined scene
+    item 32 built — one squad of each kind, each rally
+    marker, the pending sphere while picking, a Powered
+    mill, a Mismatched workstation, and a yellow
+    Energised cable run, under the Step 1 chunk
+    material — now under the Step 3 dusk light, with
+    the DuskLighting script in the scene. First,
+    record which light the scene actually used (an
+    Inspector-wired DuskLight, or the script-created
+    ForgeborneDuskLight), its colour, intensity, and
+    angle as observed, and which skybox the scene
+    actually used (the editor-built gradient to the
+    0.70.0 spec, or the pre-existing sky the warning
+    left in place) — the sky spec is not the sky
+    observation. Second, at the same three FPS
+    distance bands item 32 used (near 2-3 cells, mid
+    about 10 cells, far bench-to-core scale about 24
+    cells Manhattan), observe voxel edges still
+    reading as large, chunky, clear edges, and record
+    the band at which any edge or marker stops
+    reading, if any does. Third, in that same combined
+    view, observe the separations again under warm
+    dusk light: green Powered faces are not the cyan
+    squad cube, red Mismatched faces are not the
+    orange rally cube or pending sphere, yellow cable
+    sits on ground cells and never as a floating
+    marker, and the light-grey Heavy cylinder is not
+    an untinted white voxel (by shape and centre
+    position, not colour alone). Fourth, observe the
+    HUD against the dusk scene: cyan health and
+    shields and the orange objective still read
+    against dark voxel and the storm blue-grey sky.
+    Fifth, observe the mood honestly: readable in
+    daylight dusk, gritty and industrial, not clean,
+    not cartoon, not horror-dark — shadow sides
+    reading blue-grey, not black — and fog giving
+    depth beyond the fight without hiding the far
+    band (about 83% contrast at 24 cells by the
+    script's arithmetic, to be confirmed or refuted
+    here, not quoted as the result). If the light
+    makes any colour unread, record that as a light
+    finding and a light value to change; do NOT
+    re-palette a marker, a tint, or a HUD colour to
+    fit the light, and do NOT change a fog value
+    silently to hide a readability failure — record
+    the value changed and why. This item does NOT
+    supersede item 32: item 32 stands as the
+    occlusion and readability observation under the
+    pre-dusk sky, and this item extends it to the
+    dusk light, as item 32 itself promised. Do not
+    claim this verified in Unity until it is
+    observed there and recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

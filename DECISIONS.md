@@ -5613,6 +5613,150 @@ new scene (2026-10-30, silent scheduled run)
   fog to docs/art-direction.md, decided in that
   step.
 
+- Slice 16 Step 3 (0.70.0), lighting, sky, and fog:
+  state found on entry — remote main head
+  f3f39fa1a21bc3bec29b481000b088766663fe93,
+  CHANGELOG 0.69.0 (Slice 16 Step 2), sync record 71
+  entries ending at that commit, local working copy
+  matched — no step was repeated: the 0.69.0 decision
+  named Slice 16 Step 3, lighting, sky, and fog to
+  docs/art-direction.md, decided in that step, and
+  this run did exactly that. Tests 2130 baseline
+  re-run passing; demo Slice 15 save 44,016 chars.
+- Lighting form decision: a stated combination —
+  light, fog, and ambient set in code by a new
+  adapter script, sky by an Inspector-wired material
+  — rather than a pure script or pure scene-wiring
+  notes. The scope offered all three forms, and the
+  split follows what each value actually needs: a
+  directional light, a fog mode, and an ambient
+  colour are fully code-settable with no scene file,
+  so setting them in code gives a deterministic
+  first frame (Awake, before any rendered frame
+  depends on them) and a single visible tuning
+  surface in public fields; a gradient skybox needs
+  an editor-built material, and a headless run
+  writes no shader file and no scene file and claims
+  no built scene, so the sky is decided as a spec
+  plus an Inspector field, not runtime-invented.
+  The alternative of a runtime solid-colour skybox
+  was rejected because a flat sky would flatten the
+  dusk the art direction asks for, and guessing
+  gradient-shader property names a headless run
+  cannot verify would be a silent failure wearing a
+  material's name. The alternative of pure Inspector
+  notes for everything was rejected because it would
+  leave the light itself unwritten, repeating the
+  pre-Step-1 material gap the slice exists to close.
+- Light values decision, all first-pass: directional
+  sun warm (1.00, 0.82, 0.60), intensity 1.1, low at
+  about 15 degrees above the horizon, azimuth 235,
+  soft shadows; flat ambient storm blue-grey (0.32,
+  0.38, 0.46); fog exponential, density 0.008,
+  storm blue-grey (0.45, 0.52, 0.60). Warm sun over
+  a storm sky is the dusk the art direction names —
+  the sun warms the scene while the sky and the
+  shadow sides stay blue-grey, so the frame reads
+  as dusk rather than as noon or as night. Ambient
+  is the "not horror-dark" value: without it, voxel
+  shadow sides would fall to black under a single
+  low sun and the readability contract would fail
+  before any marker was observed. Fog density is
+  chosen from the observation bands, not from taste:
+  exp(-0.008 x 24) is about 0.83 at the far band, so
+  fog is depth beyond the fight, and exp(-0.008 x
+  100) is about 0.45, so a later skyline would sit
+  in atmosphere rather than in a wall of fog. Every
+  value is a public field, so a scene author who
+  wants a different dusk changes a field, not code
+  — a deliberate scene light is expressed through
+  the tuning surface, and an Inspector-wired light
+  is used rather than replaced, while an unwired
+  scene gets a created ForgeborneDuskLight instead
+  of a dark one. No GameManager field is added, by
+  the SquadMarkerDisplay precedent: a light needs no
+  Simulation, so wiring it through GameManager would
+  be ceremony, not safety.
+- Sky decision: gradient spec zenith (0.20, 0.26,
+  0.34) to horizon (0.52, 0.54, 0.58), original only,
+  no planet, no skyline. The spec stays inside the
+  storm blue-grey family the art direction pins, so
+  the sky does not introduce a new palette colour
+  the HUD or markers must then compete with, and
+  the horizon lightening is the dusk read, not a
+  sunset orange that would fight the orange
+  objective accent. The unwired-sky rule is the
+  Step 1 non-overwrite rule carried forward: an
+  Inspector material wins when present, and when
+  absent the script warns and leaves the existing
+  skybox untouched, rather than replacing a
+  deliberate sky with a runtime guess or rendering
+  pink. That honesty costs the step a completed sky
+  claim — the sky is specified, not built, until a
+  scene author builds the gradient in the editor —
+  and item 33 is written to observe the sky as
+  built, so the gap is visible instead of papered.
+- Readability contract decision: item 33
+  re-observes item 32's whole combined scene under
+  this light, at the same three bands, because the
+  separations the scope asks for are confusions
+  between things under a new variable, and only a
+  combined scene under that variable can prove
+  them apart. The light arithmetic is stated in the
+  script header as a prediction, not a result: warm
+  light multiplies cyan (0, 1, 1) toward (0, 0.82,
+  0.60) while Powered green (0.25, 0.9, 0.25) moves
+  toward (0.25, 0.74, 0.15), so cyan and green stay
+  apart on the blue channel; Mismatched red (1,
+  0.15, 0.15) stays far from orange rally (1, 0.55,
+  0) on the green channel; Energised yellow stays
+  on ground cells by construction, never floating.
+  The honest edge is stated, not hidden: the
+  Heavy light-grey cylinder against untinted white
+  was already a shape-and-position separation in
+  item 32, and warm light does not turn it into a
+  colour separation — item 33 observes it as shape
+  and position again. The contract's enforcement
+  rule is one-directional on purpose: if the light
+  makes a colour unread, the light changes, because
+  the palette is art-direction law and the light is
+  the new variable, and a step that re-palettes the
+  game to flatter its own light would move the
+  display every later step is proved against.
+- Checklist honesty: this step adds item 33 and
+  closes nothing. Item 32 stands as the pre-dusk
+  occlusion and readability observation, exactly as
+  it promised Step 3 would re-observe its scene;
+  items 25, 26, 27, 30, and 31 are untouched; and
+  item 33 does not claim the sky spec as an observed
+  sky, the light arithmetic as an observed light,
+  or the fog arithmetic as observed fog. The next
+  free playtest-gate checklist number is 34, for
+  Slice 16 Step 4.
+- What did not move, stated so a later reader can
+  check it: no core file, no MeshBuilder colour, no
+  PowerTint value, no PowerState query, no refresh
+  event set, no HUD line or colour, no marker
+  colour, shape, size, or position, no scene file,
+  no shader file, no imported asset, no camera
+  change. Art-direction rules 1–7 are unchanged; a
+  first-pass values note for rules 1 and 6 is
+  appended, clearly labelled first-pass, and it
+  changes no rule. Cited headless evidence is only
+  the DuskLighting field values and the fog
+  arithmetic — no new test and no demo scenario
+  claims a light, sky, or fog result, per the Slice
+  13 Step 2 precedent.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 16 Step 4, first FPS weapon view
+  model script, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
