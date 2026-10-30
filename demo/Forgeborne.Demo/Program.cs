@@ -805,3 +805,127 @@ SeedPocketS12(simS12Loaded.World, 10, 14);
 for (int i = 0; i < 5; i++) simS12Loaded.World.Advance();
 Console.WriteLine($"Slice 12 loaded phase after 5 ticks: powered gathered {simS12Loaded.World.PoweredBlocksGathered} (5 again), destroyed {simS12Loaded.World.DestroyedMills} (no new destruction), stone {simS12Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS12Loaded.World.Player.Shields} (65 + 10 per bench tick, capped at 85), enemies {simS12Loaded.World.Enemies.Count} (the pylon kill stays dead)");
 Console.WriteLine($"Slice 12 done: powered {simS12.World.PoweredBlocksGathered} + loaded {simS12Loaded.World.PoweredBlocksGathered}, destroyed {simS12.World.DestroyedMills}, save JSON length: {saveS12.Length} chars");
+
+// Slice 13 Step 4 scenario: Slice 13 composed in one run —
+// the Step 1 warning reading a threatened mill, a threatened
+// workstation, and a threatened pylon in the same Simulation,
+// beside the Step 2 snapshot kinds (all three, paid, through
+// the picker, HoldGround, deployed at the player and marching
+// to their rallies) and the Step 3
+// power-state query reading the same cells the warning reads
+// — not three separate proofs. On the y=20 plane: a mill fed
+// HV directly by an Alternator (threatened, destroyed on the
+// first tick), a mill fed LV directly by a Dynamo with a
+// five-stone pocket (powered, gathering), and a live cable
+// run (Dynamo -> cable -> cable, free end, energised, feeding
+// nothing). On the y=5 plane: a workstation fed HV directly
+// by an Alternator (threatened, disabled, not destroyed), a
+// workstation fed LV through an Alternator -> transformer
+// step-down (powered), and a pylon fed LV directly by a Dynamo
+// (threatened, disabled, not destroyed), with one enemy staged
+// in the pylon's range so the disabled pylon's silence is a
+// real non-fire, not an empty lane. The player spawns at
+// (16,5,16), already beside the threatened workstation, so the
+// first tick reads its disablement as regen 0 with no walk.
+// After that tick the two surviving threatened machines are
+// rewired — the workstation's Alternator swapped for a Dynamo,
+// the pylon's Dynamo swapped for an Alternator — and their
+// warnings clear on the next snapshot while the destroyed mill
+// stays gone, which is the warning/tint agreement in action:
+// a rewired machine loses its warning and its red tint
+// together, a destroyed machine loses both because it is gone.
+// The player then walks to the pylon lane while the rewired
+// pylon proves its recovery by firing on the same enemy it
+// could not fire at while threatened until the kill, and walks
+// back to the rewired bench to read regen 10. The destroyed
+// mill's Alternator becomes a lone source after the tick, so
+// the live counts read 1 LIVE NETWORK and 1 LONE SOURCE after
+// load where they read 1 and 0 before the tick — an orphaned
+// source, not a new source. The layout is staged directly with TrySet,
+// exactly as the Step 1-3 tests stage theirs: aim placement of
+// a mill, a workstation, a pylon, a cable, a transformer, a
+// Dynamo, and an Alternator was each proved in its own step's
+// tests, and walking this layout in by aim would prove walking,
+// not wiring. What this demo cannot show, by construction, is
+// any adapter feel or scene visibility: no WarningText line,
+// no per-kind marker shape, no mesh tint, and no refresh event
+// appear in a headless run, so those claims stay in their
+// Windows checklist items (24 for the warning line, 25 for the
+// markers, 26 for the tint, 27 for the refresh), not in the
+// numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 13 Step 4 scenario — warned mill, workstation, and pylon beside three squad kinds and the power-state query, save/load round-trip");
+var simS13 = new Simulation(42);
+simS13.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+simS13.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS13.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS13.BeginOrbitalPick();
+simS13.SetOrbitalRally(5, 5, 5);
+var s13Van = simS13.ConfirmOrbitalDeploy();
+simS13.OrbitalCommand.SelectKind(SquadKind.Recon);
+simS13.BeginOrbitalPick();
+simS13.SetOrbitalRally(5, 5, 25);
+var s13Rec = simS13.ConfirmOrbitalDeploy();
+simS13.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS13.BeginOrbitalPick();
+simS13.SetOrbitalRally(25, 5, 5);
+var s13Heavy = simS13.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Vanguard {(s13Van == null ? "REJECTED" : "HoldGround, rally (5,5,5)")}, Recon {(s13Rec == null ? "REJECTED" : "HoldGround, rally (5,5,25)")}, Heavy {(s13Heavy == null ? "REJECTED" : "HoldGround, rally (25,5,5)")}, ore left {simS13.World.Player.Inventory.Get(BlockType.EmberOre)} (squads deploy at the player, (16,5,16), and march to their rallies)");
+void SeedPocketS13(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+simS13.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+simS13.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+simS13.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+simS13.World.Chunk.TrySet(11, 20, 14, BlockType.Dynamo);
+SeedPocketS13(simS13.World, 10, 14);
+simS13.World.Chunk.TrySet(14, 20, 18, BlockType.Dynamo);
+simS13.World.Chunk.TrySet(13, 20, 18, BlockType.Cable);
+simS13.World.Chunk.TrySet(12, 20, 18, BlockType.Cable);
+simS13.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+simS13.World.Chunk.TrySet(18, 5, 16, BlockType.Alternator);
+simS13.World.Chunk.TrySet(17, 5, 28, BlockType.Workstation);
+simS13.World.Chunk.TrySet(18, 5, 28, BlockType.Transformer);
+simS13.World.Chunk.TrySet(19, 5, 28, BlockType.Alternator);
+simS13.World.Chunk.TrySet(10, 5, 16, BlockType.ShockPylon);
+simS13.World.Chunk.TrySet(11, 5, 16, BlockType.Dynamo);
+simS13.World.Player.TakeDamage(20);
+simS13.World.Enemies.Add(new Enemy(10, 5, 19));
+Console.WriteLine($"Slice 13 voltages before any tick: threatened mill {simS13.World.DeliveredVoltage(10, 20, 10)}, powered mill {simS13.World.DeliveredVoltage(10, 20, 14)}, cable {simS13.World.DeliveredVoltage(12, 20, 18)}, threatened workstation {simS13.World.DeliveredVoltage(17, 5, 16)}, powered workstation {simS13.World.DeliveredVoltage(17, 5, 28)}, threatened pylon {simS13.World.DeliveredVoltage(10, 5, 16)}");
+var s13HudBefore = simS13.Hud();
+Console.WriteLine($"Slice 13 HUD before: {s13HudBefore.PoweredMills}/{s13HudBefore.TotalMills} MILLS POWERED, {s13HudBefore.PoweredWorkstations}/{s13HudBefore.TotalWorkstations} WORKSTATIONS POWERED, {s13HudBefore.PoweredPylons}/{s13HudBefore.TotalPylons} PYLONS POWERED, WARNED: {s13HudBefore.WarnedMills} MILLS, {s13HudBefore.WarnedWorkstations} WORKSTATIONS, {s13HudBefore.WarnedPylons} PYLONS, POWER: {s13HudBefore.LiveNetworks} LIVE NETWORKS, {s13HudBefore.LoneSources} LONE SOURCES");
+Console.WriteLine($"Slice 13 power states before: threatened mill {simS13.World.PowerState(10, 20, 10)}, powered mill {simS13.World.PowerState(10, 20, 14)}, cable {simS13.World.PowerState(12, 20, 18)}, threatened workstation {simS13.World.PowerState(17, 5, 16)}, powered workstation {simS13.World.PowerState(17, 5, 28)}, threatened pylon {simS13.World.PowerState(10, 5, 16)}, Dynamo {simS13.World.PowerState(11, 20, 14)}, transformer {simS13.World.PowerState(18, 5, 28)} (sources and transformers stay None by decision)");
+foreach (var sq in OrbitalView.Snapshot(simS13.World))
+    Console.WriteLine($"Slice 13 snapshot before: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 13 shields before: {simS13.World.Player.Shields} (65 after 20 damage, parked beside the threatened workstation at (16,5,16)), enemy at (10,5,19) 30 HP, in the threatened pylon's range");
+simS13.World.Advance();
+var s13HudAfter1 = simS13.Hud();
+Console.WriteLine($"Slice 13 tick 1: threatened mill cell now {simS13.World.Chunk.Get(10, 20, 10)} (destroyed), destroyed {simS13.World.DestroyedMills}, powered gathered {simS13.World.PoweredBlocksGathered}, WARNED now {s13HudAfter1.WarnedMills} MILLS, {s13HudAfter1.WarnedWorkstations} WORKSTATIONS, {s13HudAfter1.WarnedPylons} PYLONS (the mill's warning is gone because the mill is gone; the two disablements still warn), shields {simS13.World.Player.Shields} (regen 0 at the disabled bench), enemy at ({simS13.World.Enemies[0].X},5,{simS13.World.Enemies[0].Z}) {simS13.World.Enemies[0].Health} HP (the disabled pylon fired nothing)");
+simS13.World.Chunk.TrySet(18, 5, 16, BlockType.Dynamo);
+simS13.World.Chunk.TrySet(11, 5, 16, BlockType.Alternator);
+var s13HudRewired = simS13.Hud();
+Console.WriteLine($"Slice 13 rewired: workstation source Alternator -> Dynamo, pylon source Dynamo -> Alternator; WARNED now {s13HudRewired.WarnedMills} MILLS, {s13HudRewired.WarnedWorkstations} WORKSTATIONS, {s13HudRewired.WarnedPylons} PYLONS, power {s13HudRewired.PoweredWorkstations}/{s13HudRewired.TotalWorkstations} WORKSTATIONS, {s13HudRewired.PoweredPylons}/{s13HudRewired.TotalPylons} PYLONS, states workstation {simS13.World.PowerState(17, 5, 16)}, pylon {simS13.World.PowerState(10, 5, 16)} (warning and tint agree: both clear together)");
+var s13WalkLane = simS13.World.Player.MoveTo(10, 5, 10, simS13.World.Chunk);
+Console.WriteLine($"Slice 13 walk to pylon lane -> {s13WalkLane}, player at (10,5,10), enemy stays in the rewired pylon's range");
+for (int tick = 2; tick <= 5; tick++)
+{
+    simS13.World.Advance();
+    Console.WriteLine($"Slice 13 tick {tick}: enemies {simS13.World.Enemies.Count}{(simS13.World.Enemies.Count > 0 ? $" at ({simS13.World.Enemies[0].X},5,{simS13.World.Enemies[0].Z}) {simS13.World.Enemies[0].Health} HP" : " (rewired pylon kill)")} , powered gathered {simS13.World.PoweredBlocksGathered}, shields {simS13.World.Player.Shields} (no bench in range on the pylon lane)");
+}
+var s13WalkBench = simS13.World.Player.MoveTo(16, 5, 16, simS13.World.Chunk);
+Console.WriteLine($"Slice 13 walk back to rewired bench -> {s13WalkBench}, effective regen there: {simS13.World.EffectiveWorkstationRegen()} (base 5 + powered 5)");
+Console.WriteLine($"Slice 13 after 5 ticks: powered gathered {simS13.World.PoweredBlocksGathered} (pocket exhausted), destroyed {simS13.World.DestroyedMills}, stone {simS13.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS13.World.Player.Shields}, enemies {simS13.World.Enemies.Count}");
+var saveS13 = simS13.SaveToJson();
+var simS13Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS13Loaded.LoadFromJson(saveS13)}");
+var s13LoadedHud = simS13Loaded.Hud();
+Console.WriteLine($"Slice 13 after load: threatened mill cell {simS13Loaded.World.Chunk.Get(10, 20, 10)} (still gone, no resurrection), powered mill {simS13Loaded.World.Chunk.Get(10, 20, 14)}, cable {simS13Loaded.World.Chunk.Get(12, 20, 18)}, rewired workstation {simS13Loaded.World.Chunk.Get(17, 5, 16)}, rewired pylon {simS13Loaded.World.Chunk.Get(10, 5, 16)}, power {s13LoadedHud.PoweredMills}/{s13LoadedHud.TotalMills} mills, {s13LoadedHud.PoweredWorkstations}/{s13LoadedHud.TotalWorkstations} workstations, {s13LoadedHud.PoweredPylons}/{s13LoadedHud.TotalPylons} pylons, WARNED {s13LoadedHud.WarnedMills}/{s13LoadedHud.WarnedWorkstations}/{s13LoadedHud.WarnedPylons}, POWER: {s13LoadedHud.LiveNetworks} LIVE NETWORKS, {s13LoadedHud.LoneSources} LONE SOURCES, states mill {simS13Loaded.World.PowerState(10, 20, 14)}, workstation {simS13Loaded.World.PowerState(17, 5, 16)}, pylon {simS13Loaded.World.PowerState(10, 5, 16)}, cable {simS13Loaded.World.PowerState(12, 20, 18)} (all re-derived, not saved), session counters reset: powered {simS13Loaded.World.PoweredBlocksGathered}, destroyed {simS13Loaded.World.DestroyedMills}, stone {simS13Loaded.World.Player.Inventory.Get(BlockType.Stone)}, player back at bench ({simS13Loaded.World.Player.X},{simS13Loaded.World.Player.Y},{simS13Loaded.World.Player.Z}), effective regen {simS13Loaded.World.EffectiveWorkstationRegen()}");
+foreach (var sq in OrbitalView.Snapshot(simS13Loaded.World))
+    Console.WriteLine($"Slice 13 snapshot after load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) reads {sq.Activity}");
+simS13Loaded.World.Player.TakeDamage(20);
+SeedPocketS13(simS13Loaded.World, 10, 14);
+for (int i = 0; i < 5; i++) simS13Loaded.World.Advance();
+Console.WriteLine($"Slice 13 loaded phase after 5 ticks: powered gathered {simS13Loaded.World.PoweredBlocksGathered} (5 again), destroyed {simS13Loaded.World.DestroyedMills} (no new destruction), stone {simS13Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS13Loaded.World.Player.Shields} (65 + 10 per bench tick, capped at 85), enemies {simS13Loaded.World.Enemies.Count} (the pylon kill stays dead)");
+Console.WriteLine($"Slice 13 done: powered {simS13.World.PoweredBlocksGathered} + loaded {simS13Loaded.World.PoweredBlocksGathered}, destroyed {simS13.World.DestroyedMills}, save JSON length: {saveS13.Length} chars");

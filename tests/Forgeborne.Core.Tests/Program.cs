@@ -4695,5 +4695,172 @@ Eq(CellPowerState.Mismatched, s13TintLoaded.World.PowerState(20, 20, 10), "slice
 
 // ---- Silence instruction (recorded, not a test) ----
 
+
+// ---- Slice 13 Step 4: composed demo scenario (0.60.0) ----
+// Mirrors the Slice 13 demo scenario step for step: a warning
+// reading a threatened mill, a threatened workstation, and a
+// threatened pylon in one Simulation, beside the Step 2
+// snapshot kinds and the Step 3 power-state query reading the
+// same cells the warning reads, through a save/load
+// round-trip. Staged with TrySet, exactly as the Step 1-3
+// tests stage theirs; aim placement of each block was proved
+// in its own step's tests and is not re-proved here. Two
+// composition facts are pinned so they are not over-claimed
+// later: squads deploy at the player and march to their
+// rallies, so the snapshot reads Marching, not Holding, at
+// every point in this run; and the destroyed mill's
+// Alternator becomes a lone source after the tick, so the
+// lone-source count reads 1 after load where it read 0
+// before the tick — an orphaned source, not a new source.
+var s13fSim = new Simulation(42);
+s13fSim.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+s13fSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s13fSim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s13fSim.BeginOrbitalPick();
+s13fSim.SetOrbitalRally(5, 5, 5);
+Check(s13fSim.ConfirmOrbitalDeploy() != null, "slice13 step4 composed Vanguard deploys through the paid picker");
+s13fSim.OrbitalCommand.SelectKind(SquadKind.Recon);
+s13fSim.BeginOrbitalPick();
+s13fSim.SetOrbitalRally(5, 5, 25);
+Check(s13fSim.ConfirmOrbitalDeploy() != null, "slice13 step4 composed Recon deploys through the paid picker");
+s13fSim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s13fSim.BeginOrbitalPick();
+s13fSim.SetOrbitalRally(25, 5, 5);
+Check(s13fSim.ConfirmOrbitalDeploy() != null, "slice13 step4 composed Heavy deploys through the paid picker");
+Eq(0, s13fSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice13 step4 composed three paid squads cost all 30 ore");
+void SeedPocketS13fTest(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+s13fSim.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13fSim.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+s13fSim.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+s13fSim.World.Chunk.TrySet(11, 20, 14, BlockType.Dynamo);
+SeedPocketS13fTest(s13fSim.World, 10, 14);
+s13fSim.World.Chunk.TrySet(14, 20, 18, BlockType.Dynamo);
+s13fSim.World.Chunk.TrySet(13, 20, 18, BlockType.Cable);
+s13fSim.World.Chunk.TrySet(12, 20, 18, BlockType.Cable);
+s13fSim.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+s13fSim.World.Chunk.TrySet(18, 5, 16, BlockType.Alternator);
+s13fSim.World.Chunk.TrySet(17, 5, 28, BlockType.Workstation);
+s13fSim.World.Chunk.TrySet(18, 5, 28, BlockType.Transformer);
+s13fSim.World.Chunk.TrySet(19, 5, 28, BlockType.Alternator);
+s13fSim.World.Chunk.TrySet(10, 5, 16, BlockType.ShockPylon);
+s13fSim.World.Chunk.TrySet(11, 5, 16, BlockType.Dynamo);
+Eq(Voltage.HV, s13fSim.World.DeliveredVoltage(10, 20, 10), "slice13 step4 composed threatened mill voltage HV");
+Eq(Voltage.LV, s13fSim.World.DeliveredVoltage(10, 20, 14), "slice13 step4 composed powered mill voltage LV");
+Eq(Voltage.LV, s13fSim.World.DeliveredVoltage(12, 20, 18), "slice13 step4 composed cable voltage LV");
+Eq(Voltage.HV, s13fSim.World.DeliveredVoltage(17, 5, 16), "slice13 step4 composed threatened workstation voltage HV");
+Eq(Voltage.LV, s13fSim.World.DeliveredVoltage(17, 5, 28), "slice13 step4 composed powered workstation voltage LV");
+Eq(Voltage.LV, s13fSim.World.DeliveredVoltage(10, 5, 16), "slice13 step4 composed threatened pylon voltage LV");
+var s13fHudBefore = s13fSim.Hud();
+Eq(1, s13fHudBefore.PoweredMills, "slice13 step4 composed one mill powered before the tick");
+Eq(2, s13fHudBefore.TotalMills, "slice13 step4 composed two mills total before the tick");
+Eq(1, s13fHudBefore.PoweredWorkstations, "slice13 step4 composed one workstation powered before the tick");
+Eq(2, s13fHudBefore.TotalWorkstations, "slice13 step4 composed two workstations total before the tick");
+Eq(0, s13fHudBefore.PoweredPylons, "slice13 step4 composed no pylon powered before the tick");
+Eq(1, s13fHudBefore.TotalPylons, "slice13 step4 composed one pylon total before the tick");
+Eq(1, s13fHudBefore.WarnedMills, "slice13 step4 composed one mill warned before the tick");
+Eq(1, s13fHudBefore.WarnedWorkstations, "slice13 step4 composed one workstation warned before the tick");
+Eq(1, s13fHudBefore.WarnedPylons, "slice13 step4 composed one pylon warned before the tick");
+Eq(1, s13fHudBefore.LiveNetworks, "slice13 step4 composed one live network before the tick");
+Eq(0, s13fHudBefore.LoneSources, "slice13 step4 composed no lone source before the tick");
+Eq(CellPowerState.Mismatched, s13fSim.World.PowerState(10, 20, 10), "slice13 step4 composed threatened mill query Mismatched");
+Eq(CellPowerState.Powered, s13fSim.World.PowerState(10, 20, 14), "slice13 step4 composed powered mill query Powered");
+Eq(CellPowerState.Energised, s13fSim.World.PowerState(12, 20, 18), "slice13 step4 composed cable query Energised");
+Eq(CellPowerState.Mismatched, s13fSim.World.PowerState(17, 5, 16), "slice13 step4 composed threatened workstation query Mismatched");
+Eq(CellPowerState.Powered, s13fSim.World.PowerState(17, 5, 28), "slice13 step4 composed powered workstation query Powered");
+Eq(CellPowerState.Mismatched, s13fSim.World.PowerState(10, 5, 16), "slice13 step4 composed threatened pylon query Mismatched");
+Eq(CellPowerState.None, s13fSim.World.PowerState(11, 20, 14), "slice13 step4 composed Dynamo query None");
+Eq(CellPowerState.None, s13fSim.World.PowerState(18, 5, 28), "slice13 step4 composed transformer query None");
+var s13fSnapBefore = OrbitalView.Snapshot(s13fSim.World);
+Eq(3, s13fSnapBefore.Count, "slice13 step4 composed snapshot carries three squads");
+Eq(SquadKind.Vanguard, s13fSnapBefore[0].Kind, "slice13 step4 composed snapshot first kind Vanguard");
+Eq(SquadKind.Recon, s13fSnapBefore[1].Kind, "slice13 step4 composed snapshot second kind Recon");
+Eq(SquadKind.Heavy, s13fSnapBefore[2].Kind, "slice13 step4 composed snapshot third kind Heavy");
+Eq(SquadActivity.Marching, s13fSnapBefore[0].Activity, "slice13 step4 composed Vanguard marches to its rally, not holding yet");
+Eq(SquadActivity.Marching, s13fSnapBefore[1].Activity, "slice13 step4 composed Recon marches to its rally, not holding yet");
+Eq(SquadActivity.Marching, s13fSnapBefore[2].Activity, "slice13 step4 composed Heavy marches to its rally, not holding yet");
+s13fSim.World.Player.TakeDamage(20);
+Eq(65, s13fSim.World.Player.Shields, "slice13 step4 composed shields 65 after 20 damage");
+s13fSim.World.Enemies.Add(new Enemy(10, 5, 19));
+s13fSim.World.Advance();
+Eq(BlockType.Air, s13fSim.World.Chunk.Get(10, 20, 10), "slice13 step4 composed warned mill destroyed on tick 1");
+Eq(1, s13fSim.World.DestroyedMills, "slice13 step4 composed one mill destroyed");
+Eq(1, s13fSim.World.PoweredBlocksGathered, "slice13 step4 composed powered mill gathers 1 on tick 1");
+Eq(65, s13fSim.World.Player.Shields, "slice13 step4 composed disabled bench regens 0 on tick 1");
+Eq(1, s13fSim.World.Enemies.Count, "slice13 step4 composed enemy survives the disabled pylon tick");
+Eq(30, s13fSim.World.Enemies[0].Health, "slice13 step4 composed disabled pylon fires nothing on tick 1");
+Eq(11, s13fSim.World.Enemies[0].X, "slice13 step4 composed enemy steps toward the player on tick 1");
+var s13fHudAfter1 = s13fSim.Hud();
+Eq(0, s13fHudAfter1.WarnedMills, "slice13 step4 composed destroyed mill warns no more");
+Eq(1, s13fHudAfter1.WarnedWorkstations, "slice13 step4 composed warned workstation still warns after tick 1");
+Eq(1, s13fHudAfter1.WarnedPylons, "slice13 step4 composed warned pylon still warns after tick 1");
+Eq(1, s13fHudAfter1.LoneSources, "slice13 step4 composed destroyed mill orphans its Alternator into a lone source");
+Check(s13fSim.World.Chunk.TrySet(18, 5, 16, BlockType.Dynamo), "slice13 step4 composed workstation rewired Alternator to Dynamo");
+Check(s13fSim.World.Chunk.TrySet(11, 5, 16, BlockType.Alternator), "slice13 step4 composed pylon rewired Dynamo to Alternator");
+var s13fHudRewired = s13fSim.Hud();
+Eq(0, s13fHudRewired.WarnedMills, "slice13 step4 composed rewiring leaves no mill warned");
+Eq(0, s13fHudRewired.WarnedWorkstations, "slice13 step4 composed rewired workstation warning clears");
+Eq(0, s13fHudRewired.WarnedPylons, "slice13 step4 composed rewired pylon warning clears");
+Eq(2, s13fHudRewired.PoweredWorkstations, "slice13 step4 composed rewired workstation counts powered");
+Eq(1, s13fHudRewired.PoweredPylons, "slice13 step4 composed rewired pylon counts powered");
+Eq(CellPowerState.Powered, s13fSim.World.PowerState(17, 5, 16), "slice13 step4 composed rewired workstation query Powered");
+Eq(CellPowerState.Powered, s13fSim.World.PowerState(10, 5, 16), "slice13 step4 composed rewired pylon query Powered");
+Check(s13fSim.World.Player.MoveTo(10, 5, 10, s13fSim.World.Chunk), "slice13 step4 composed player walks to the pylon lane");
+s13fSim.World.Advance();
+Eq(20, s13fSim.World.Enemies[0].Health, "slice13 step4 composed rewired pylon fires 10 on tick 2");
+s13fSim.World.Advance();
+Eq(10, s13fSim.World.Enemies[0].Health, "slice13 step4 composed rewired pylon fires 10 on tick 3");
+s13fSim.World.Advance();
+Eq(0, s13fSim.World.Enemies.Count, "slice13 step4 composed rewired pylon kills the enemy on tick 4");
+s13fSim.World.Advance();
+Eq(5, s13fSim.World.PoweredBlocksGathered, "slice13 step4 composed powered mill gathers 5 in 5 ticks, pocket exhausted");
+Eq(5, s13fSim.World.Player.Inventory.Get(BlockType.Stone), "slice13 step4 composed stone is the mill pocket only");
+Eq(65, s13fSim.World.Player.Shields, "slice13 step4 composed no bench regen on the pylon lane");
+Check(s13fSim.World.Player.MoveTo(16, 5, 16, s13fSim.World.Chunk), "slice13 step4 composed player walks back to the rewired bench");
+Eq(10, s13fSim.World.EffectiveWorkstationRegen(), "slice13 step4 composed rewired bench regen is base 5 plus powered 5");
+var s13fSave = s13fSim.SaveToJson();
+var s13fLoaded = new Simulation(99);
+Check(s13fLoaded.LoadFromJson(s13fSave), "slice13 step4 composed save loads");
+Eq(BlockType.Air, s13fLoaded.World.Chunk.Get(10, 20, 10), "slice13 step4 composed destroyed mill stays gone after load");
+Eq(BlockType.KineticMill, s13fLoaded.World.Chunk.Get(10, 20, 14), "slice13 step4 composed powered mill loads");
+Eq(BlockType.Cable, s13fLoaded.World.Chunk.Get(12, 20, 18), "slice13 step4 composed energised cable loads");
+Eq(BlockType.Workstation, s13fLoaded.World.Chunk.Get(17, 5, 16), "slice13 step4 composed rewired workstation loads");
+Eq(BlockType.ShockPylon, s13fLoaded.World.Chunk.Get(10, 5, 16), "slice13 step4 composed rewired pylon loads");
+var s13fLoadedHud = s13fLoaded.Hud();
+Eq(1, s13fLoadedHud.PoweredMills, "slice13 step4 composed loaded mill still powered");
+Eq(1, s13fLoadedHud.TotalMills, "slice13 step4 composed loaded mill total drops with the destroyed mill");
+Eq(2, s13fLoadedHud.PoweredWorkstations, "slice13 step4 composed loaded workstations still powered");
+Eq(1, s13fLoadedHud.PoweredPylons, "slice13 step4 composed loaded pylon still powered");
+Eq(0, s13fLoadedHud.WarnedMills, "slice13 step4 composed loaded warnings all clear, mills");
+Eq(0, s13fLoadedHud.WarnedWorkstations, "slice13 step4 composed loaded warnings all clear, workstations");
+Eq(0, s13fLoadedHud.WarnedPylons, "slice13 step4 composed loaded warnings all clear, pylons");
+Eq(1, s13fLoadedHud.LiveNetworks, "slice13 step4 composed live network count re-derives after load");
+Eq(1, s13fLoadedHud.LoneSources, "slice13 step4 composed orphaned lone source count re-derives after load");
+Eq(CellPowerState.Powered, s13fLoaded.World.PowerState(10, 20, 14), "slice13 step4 composed loaded mill query Powered");
+Eq(CellPowerState.Powered, s13fLoaded.World.PowerState(17, 5, 16), "slice13 step4 composed loaded workstation query Powered");
+Eq(CellPowerState.Powered, s13fLoaded.World.PowerState(10, 5, 16), "slice13 step4 composed loaded pylon query Powered");
+Eq(CellPowerState.Energised, s13fLoaded.World.PowerState(12, 20, 18), "slice13 step4 composed loaded cable query Energised");
+Eq(0, s13fLoaded.World.PoweredBlocksGathered, "slice13 step4 composed session gather counter resets after load");
+Eq(0, s13fLoaded.World.DestroyedMills, "slice13 step4 composed session destruction counter resets after load");
+Eq(16, s13fLoaded.World.Player.X, "slice13 step4 composed loaded player back at the bench");
+Eq(10, s13fLoaded.World.EffectiveWorkstationRegen(), "slice13 step4 composed loaded bench regen re-derives");
+var s13fSnapLoaded = OrbitalView.Snapshot(s13fLoaded.World);
+Eq(3, s13fSnapLoaded.Count, "slice13 step4 composed snapshot still carries three squads after load");
+Eq(SquadKind.Vanguard, s13fSnapLoaded[0].Kind, "slice13 step4 composed loaded snapshot first kind Vanguard");
+Eq(SquadKind.Recon, s13fSnapLoaded[1].Kind, "slice13 step4 composed loaded snapshot second kind Recon");
+Eq(SquadKind.Heavy, s13fSnapLoaded[2].Kind, "slice13 step4 composed loaded snapshot third kind Heavy");
+s13fLoaded.World.Player.TakeDamage(20);
+Eq(45, s13fLoaded.World.Player.Shields, "slice13 step4 composed loaded shields 45 after 20 damage");
+SeedPocketS13fTest(s13fLoaded.World, 10, 14);
+for (int i = 0; i < 5; i++) s13fLoaded.World.Advance();
+Eq(5, s13fLoaded.World.PoweredBlocksGathered, "slice13 step4 composed loaded mill gathers 5 again");
+Eq(0, s13fLoaded.World.DestroyedMills, "slice13 step4 composed loaded phase destroys no mill");
+Eq(10, s13fLoaded.World.Player.Inventory.Get(BlockType.Stone), "slice13 step4 composed loaded stone is 5 plus 5, no refund on load");
+Eq(85, s13fLoaded.World.Player.Shields, "slice13 step4 composed loaded bench regen caps shields at 85");
+Eq(0, s13fLoaded.World.Enemies.Count, "slice13 step4 composed pylon kill stays dead after load");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

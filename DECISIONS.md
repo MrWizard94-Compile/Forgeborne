@@ -4539,6 +4539,120 @@ look inevitable.
   proved together in one Simulation, not as separate
   proofs, and with Slice 14 NOT scoped by that review.
 
+## 0.60.0 — Slice 13 Step 4: composed demo + review, closing Slice 13
+
+- Decision, on composition, not three proofs in one file: the
+  demo stages every Slice 13 readout in a single Simulation so
+  a disagreement between them would show up as a wrong number
+  in the same run, not as three green runs that never met. The
+  threatened trio is deliberately asymmetric in outcome — the
+  mill is destroyed, the workstation and the pylon survive
+  disabled — because Step 1's warning already splits those
+  outcomes, and a demo that only staged mills would have
+  proved a warning, not the warning. The powered counterparts
+  are there for the same reason: a Mismatched query with no
+  Powered query beside it proves a label, not a distinction,
+  and an Energised cable with no live-network count beside it
+  proves a colour, not a wiring. The live run (Dynamo -> cable
+  -> cable, free end) is kept from Slice 12's pattern, not
+  re-staged as a new proof, so the composition reuses a
+  counted shape the reader already trusts.
+- Decision, on the tick-then-rewire order: the demo ticks
+  once while all three machines are threatened, then rewires
+  the two survivors, rather than rewiring before any tick.
+  Rewiring first would have proved clearing without ever
+  proving the warning reads before the loss it warns about,
+  and ticking without ever rewiring would have proved loss
+  without proving recovery. The chosen order proves both in
+  sequence: warning before tick, destruction and disablement
+  on tick, clearing on rewiring, recovery fire after
+  rewiring. The mill is the exception that proves the rule's
+  limit: it cannot be rewired after the tick because it is
+  gone, and the demo says so instead of staging a second,
+  pre-tick rewiring as if it were the same proof — a mill
+  saved by pre-tick rewiring is a Step 1 test's claim, not
+  this demo's.
+- Decision, on the marching squads, stated, not smoothed
+  over: picker squads deploy at the player, and five ticks do
+  not carry a squad from (16,5,16) to any of the three
+  rallies, so every snapshot in this run reads Marching and
+  the loaded snapshot reads Vanguard (13,5,14), Recon
+  (12,5,17), Heavy (18,5,13), still en route. Calling them
+  "at their rallies" would have been false, and running
+  twenty-two idle ticks before staging the electrical layout
+  just to photograph Holding squads would have proved
+  patience, not composition — the holding proof stays in the
+  earlier steps' tests, where it belongs, and this demo's
+  squad claim is kinds and doctrines together, nothing more.
+  The same honesty applies to the pylon kill: each tick's drop
+  is exactly 10, so no squad fired, which is the evidence
+  that the kill is the pylon's, not a claim that squads were
+  kept out of range by design — the enemy's path
+  (11,5,19 -> 12,5,19 -> 12,5,18 -> killed) follows the
+  nearest target, squad or player, and the pylon fired while
+  the enemy stayed in range, whatever that target was.
+- Decision, on the orphaned Alternator: after tick 1 the lone-
+  source count reads 1 where it read 0 before the tick,
+  because the destroyed mill's Alternator is now adjacent to
+  nothing. This is not a bug to fix in the demo and not a
+  source to hide: the count is defined per cell on every
+  snapshot, so a source orphaned by a destruction must count,
+  and a demo that staged the threatened mill's source beside
+  a cable just to keep the count at 0 would have hidden a
+  real consequence. The review records it as a pinned staging
+  fact so a later reader does not mistake it for a new source
+  or for a counting regression.
+- Decision, on the bench-walk measurement procedure, carried
+  from Slices 10 and 12: workstation regen is player-centred
+  (Manhattan distance 3) while pylon fire is machine-centred,
+  so one player position cannot prove both at once. The demo
+  parks at the threatened bench for tick 1 (regen 0), walks
+  to the pylon lane for the recovery kill (no bench in range,
+  shields flat at 65), and walks back to the rewired bench to
+  read regen 10, and states each walk instead of pretending
+  otherwise. The loaded phase then applies that regen for
+  five bench ticks (45 -> 85, capped), mirroring Slice 12's
+  loaded-phase shape, because a reading without a tick
+  proves a number, not an effect.
+- Decision, on the test-file repair, recorded because a stale
+  count is a silent failure mode: the composed tests were
+  first appended after the runner's top-level return, so the
+  suite printed 1708 as if nothing had been added. The repair
+  moves the summary and return to the end of the file, where
+  every future append must also go — or, better, where a
+  future step should insert its tests before the summary
+  rather than appending after it. No test was changed by the
+  repair, and the count rose to 1807 with no failures, which
+  is the evidence the repair worked, not the repair's claim.
+- Verification, stated without inflation: 99 composed-
+  integration tests mirror the demo, the demo ran correctly
+  on its first execution, and every earlier demo save length
+  stands (Slice 11 44,038, Slice 12 43,974, new Slice 13
+  44,045). The demo proves core rules and HUD numbers, not
+  scene visibility: items 24, 25, 26, and 27 stay Windows-
+  only, and this step adds no new checklist item, by the same
+  no-new-item rule as the Slice 10, 11, and 12 reviews — a
+  demo exercises no adapter binding the checklist does not
+  already cover, so inventing an item for it would have been
+  checklist inflation.
+- Deliberately NOT in this step: any core rule, rating, cost,
+  phase, delivery, transformer, or cable change; a new block
+  type, save field, or key binding; a balance pass (the
+  warning shape, marker shapes and colours, and tint values
+  stay first-pass); a claim about Windows Unity verification
+  or the pending Slice 1 director playtest gate; scoping
+  Slice 14 — the review carries its ranked candidates
+  (deferred third source, Patrol, Slice 13 remainders) but
+  does not choose among them; or closing any gap beyond
+  Slice 13's own, in the sense the review states (tested core
+  plus written adapters, not scene-verified proof).
+- Next, in order: scoping Slice 14 as its own decision step,
+  chosen from the ranked candidates this review carries —
+  deferred third source first, Patrol second, Slice 13
+  remainders (vertex-colour material, MeshRenderer wiring,
+  marker occlusion observations) third — with Slice 13's
+  composition evidence in hand, not guessed now.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

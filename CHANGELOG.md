@@ -1,5 +1,73 @@
 # Forgeborne — Changelog
 
+## 0.60.0 — 2026-10-30 — Slice 13 Step 4: composed demo + review, closing Slice 13
+
+- Composed demo, decided in this step (rationale in
+  DECISIONS.md): one Simulation proves the Step 1 warning, the
+  Step 2 snapshot kinds, and the Step 3 power-state query
+  together, not as separate proofs. Three paid squads through
+  the picker (Vanguard, Recon, Heavy, 10 EmberOre each, ore
+  left 0, all HoldGround) beside a threatened mill (HV direct
+  from an Alternator), a powered mill (LV direct from a Dynamo,
+  five-stone pocket), a live cable run (Dynamo -> cable ->
+  cable, free end, energised), a threatened workstation (HV
+  direct), a powered workstation (LV through Alternator ->
+  transformer step-down), and a threatened pylon (LV direct),
+  with one enemy staged in the pylon's range. Before any tick
+  the HUD reads 1/2 mills, 1/2 workstations, 0/1 pylons, WARNED
+  1/1/1, POWER 1 LIVE NETWORK, 0 LONE SOURCES; the query reads
+  Mismatched for all three threatened cells, Powered for both
+  powered consumers, Energised for the cable, and None for a
+  Dynamo and for the transformer; the snapshot carries all
+  three kinds, reading Marching, because picker squads deploy
+  at the player and march to their rallies. Tick 1 destroys
+  the threatened mill, leaves the enemy at 30 HP (the disabled
+  pylon fires nothing), holds shields at 65 (regen 0 at the
+  disabled bench), and drops the warnings to 0/1/1. Rewiring
+  the workstation (Alternator -> Dynamo) and the pylon (Dynamo
+  -> Alternator) clears the warnings to 0/0/0 and both queries
+  to Powered, proving warning and tint agree; the rewired
+  pylon then kills the same enemy in three ticks (30 -> 20 ->
+  10 -> 0, exactly 10 per tick, so no squad fired), the powered
+  mill gathers 5 in 5 ticks, and the rewired bench reads regen
+  10. Save/load keeps the destroyed mill gone, re-derives all
+  counts and queries (1/1 mills, 2/2 workstations, 1/1 pylons,
+  WARNED 0/0/0, POWER 1 LIVE NETWORK, 1 LONE SOURCE — the lone
+  source is the destroyed mill's orphaned Alternator, not a
+  new source), keeps all three kinds Marching en route, and
+  repeats in the loaded phase (powered 5 again, destroyed 0,
+  stone 10, shields capped at 85, enemy stays dead).
+- Review, decided in this step: new docs/slice-13-review.md,
+  documentation only, checks Slice 13 against its scope and
+  closes it as tested warning core and power-state query plus
+  written adapters, not playtested, balanced, or
+  Unity-verified. Slice 12 gaps 4 (no warning), 5 (tint and
+  refresh), and 6 (shared marker) are recorded as closed in
+  that sense, with the scene proof for the adapters carried
+  as a new gap 4 (material, wiring, and occlusion
+  observations, items 26, 27, and 25). Slice 14 is NOT scoped
+  by this review; its ranked candidates are the deferred
+  third source first, Patrol second, and any Slice 13 remainder
+  third. No new playtest-gate checklist item, because the demo
+  exercises no adapter binding the checklist does not already
+  cover.
+- Verification, stated honestly, not inflated: 99 composed-
+  integration tests mirror the demo; the demo proves core
+  rules and HUD numbers, not that a warning line, a marker
+  shape, a tint, or a refresh reads or fires in the scene —
+  those stay in checklist items 24, 25, 26, and 27, Windows-
+  only. One test-file repair, not a code fix: the composed
+  tests were first appended after the runner's top-level
+  return, so they did not execute and the count still read
+  1708; moving the summary and return to the end of the file
+  made them run. No core rule, rating, cost, phase, delivery,
+  or save-format change in this step, and no new save field.
+- Tests: 1807 passed, 0 failed (was 1708; +99, no failures on
+  the final runs). Demo unchanged except for the new scenario:
+  Slice 11 scenario save 44,038 chars, Slice 12 scenario save
+  43,974 chars, all earlier demo saves as in the 0.59.0 entry.
+  New scenario save 44,045 chars.
+
 ## 0.59.0 — 2026-10-30 — Slice 13 Step 3: mesh tint and mesh refresh for power state
 
 - Power-state query, decided in this step (rationale in
