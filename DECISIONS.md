@@ -1963,6 +1963,78 @@ look inevitable.
   step, from the ranked candidates carried in
   docs/slice-07-review.md.
 
+## 0.35.0 — 2026-10-30 — Slice 8 scope: aim-based interaction
+
+- Decision, on Slice 8 order: movement before aim, body
+  before hands. Movement rotation is the smaller rule —
+  one rotation of two scalars, testable on yaw alone —
+  while the aim step's tests will want to position and
+  face the player freely; proving the body first means
+  the aim step walks a yawed player with the real rule
+  instead of teleporting around a world-aligned walk it
+  is about to replace. The reverse order would work
+  too, and the scope says so by giving the aim step no
+  dependence on movement it cannot set up with yaw
+  alone — but the chosen order keeps each step's failure
+  attributable to exactly one rule, which is the
+  discipline every slice since Slice 6 step 1 has used.
+- Decision, on taking the top candidate unchanged: the
+  Slice 7 review's ranking is kept — aim interaction
+  first, rest of tier 2 second, third kind and deferred
+  doctrines third — because the Step 2 evidence gives
+  no reason to reorder it. The range contrast proves
+  two kinds differ; it says nothing about whether power
+  work should move before interaction work, and a scope
+  that reordered on no evidence would be guessing, not
+  deciding. The tier-2 and widening candidates are
+  carried as ranked Slice 9 candidates, not promises.
+- Decision, on the picker as precedent, not as work: the
+  rally picker already aims by the core `Look` vector
+  (adapter raycast along camera forward, pitch-aware
+  since 0.28.0), so Slice 8 extends an existing aim
+  system to the player's own actions rather than
+  inventing a second one. The picker itself is not
+  reworked by this scope: its ray, its bounds, and its
+  fail-closed Confirm are settled, and an aim step that
+  touched the picker would be two systems at once.
+- Hypotheses recorded, not decisions, for the steps to
+  settle with tests: rotation lives in core
+  (`Simulation.Tick`, adapter still raw); movement uses
+  the horizontal yaw projection only, never pitch;
+  the aim ray is voxel-stepped from a stated eye origin
+  with a stated, bounded reach; offsets retire and the
+  three builders are distinguished by block type; a shot
+  that hits nothing still consumes ammo, as today; a
+  no-target action refuses with existing failure results
+  and never silently falls back to fixed +Z cells; the
+  adapter needs no logic change in Step 2. Each is
+  labelled a starting hypothesis in the scope so a step
+  that overturns one does so openly, with rationale and
+  tests, rather than quietly.
+- Questions carried into the steps, not answered here:
+  the strafe sign at yaw 90; whether diagonal speed is
+  preserved or normalised under rotation; the eye-height
+  origin for the aim ray; whether one reach covers all
+  three actions or each has its own; what looking up
+  gathers; whether fire uses one aim rule for enemies
+  and the core or two stated rules; and whether neutral
+  aim reproduces the Slice 1 cells or moves the demo
+  numbers openly. A scope that answered these without
+  tests would be deciding what the steps exist to prove.
+- Deliberately NOT in this scope step: any new core
+  system, movement mode, weapon rule, squad, doctrine,
+  kind, power tier, or consumer; any change to movement,
+  gather, build, fire, squad, Dynamo, mill, loot, skill,
+  or save rules; any save-format field; any adapter file
+  change; a distinct Recon marker (kept at the shared
+  cyan cube per 0.33.0, pending a play-observed
+  confusion); a mesh tint or a mesh-refresh hook (both
+  remain named gaps from 0.30.0, not fixed by a scoping
+  step); a balance pass; any claim about Windows Unity
+  verification or the pending Slice 1 director playtest
+  gate.
+- Next, in order: Slice 8 Step 1, yaw-rotated movement.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

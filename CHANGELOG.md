@@ -1,5 +1,52 @@
 # Forgeborne — Changelog
 
+## 0.35.0 — 2026-10-30 — Slice 8 scope: aim-based interaction
+
+- New `docs/slice-08-scope.md` (documentation only,
+  no new core system, by design). Slice 8 theme:
+  aim-based interaction — the player's aim (core
+  `Look` yaw and pitch) decides what the player touches
+  and which way the player walks, closing the gap Slice 7
+  left open: a player who can look anywhere but still
+  gathers, builds, fires, and walks only at fixed +Z.
+  In order: (1) yaw-rotated movement, decided in that
+  step (core rotation hypothesis, horizontal yaw only,
+  strafe sign and diagonal speed each decided and
+  tested, interaction cells deliberately unchanged for
+  that step); (2) aim-based gather / build / fire,
+  decided in that step (ray origin, traversal, and
+  reach stated; gather, build, and fire targeting each
+  decided; no silent fallback to fixed +Z cells;
+  neutral-aim compatibility proved or demo numbers
+  updated openly; no adapter logic change expected);
+  (3) Slice 8 demo scenario + documentation-only review.
+  Ranked Slice 9 candidates recorded, not promised:
+  rest of automation tier 2 first, third kind and
+  deferred doctrines second. Unity verification and the
+  director playtest explicitly left open, not closed by
+  this scope.
+- Tests: **862 passed, 0 failed** (unchanged,
+  documentation-only step). Demo unchanged: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars;
+  Slice 2 save 43,908 chars; Step 1 scenario save 44,016
+  chars; Step 3 scenario save 44,103 chars; Slice 4
+  scenario save 44,026 chars; Slice 5 Step 2 scenario
+  save 43,974 chars; Slice 6 Step 4 scenario save 44,024
+  chars; Slice 7 Step 2 scenario save 44,013 chars.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: this step adds no adapter change, and adds no
+  new checklist item, because it scopes work rather than
+  adding anything to verify in Unity. The test count
+  above covers no new system; it confirms the existing
+  suite still passes under the unchanged code.
+- What must NOT change in this step is unchanged:
+  movement, gather, build, and fire rules; weapon, squad,
+  Dynamo, mill, loot, skill, and save rules; the gather /
+  build / survive loop; and the save format, which gains
+  no field in this step. No third kind, no new doctrine,
+  no voltage ladder, no balance pass, and no licence /
+  monetisation / release change rides along.
+
 ## 0.34.0 — 2026-10-30 — Slice 7 Step 2: demo scenario + review
 
 - Composed Slice 7 demo scenario (demo/Forgeborne.Demo),
