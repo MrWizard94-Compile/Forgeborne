@@ -556,6 +556,54 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     claim this verified in Unity until it is
     observed there and recorded in DECISIONS.md.
 
+34. [ ] First FPS weapon view model, added 0.71.0 (adapter
+    code written, NOT yet compiled or run in Unity on
+    Windows; no headless test proves a visible model —
+    the cited headless evidence is only the existing
+    core weapon and HUD coverage, that HudDisplay's
+    AmmoText reads name, mag, and reserve from HudState
+    and that fire and reload act in core): with the
+    WeaponViewModel script in the scene and CameraAnchor
+    wired to the GameObject carrying FpsInputAdapter,
+    first record whether the model appears at all and
+    where it actually sits — lower-right frame, sight
+    readable, crosshair at frame centre clear — or
+    whether the unwired-anchor warning fired instead,
+    in which case no model claim is made. Second,
+    observe the sight honestly: the dark housing and
+    the small cyan dot must read as a sight at FPS
+    distance, not as a floating speck or a bright
+    blob, and the cyan energy strip must read as an
+    energy accent, not as a second HUD element.
+    Third, observe non-obstruction together, not one
+    element at a time: the model must not cover the
+    crosshair, the ammo line, the rally picker while
+    picking, or the objective readout, in the same
+    frame in which all of them are present. Fourth,
+    fire until the mag empties and reload, and
+    observe the mag falling on fire and restoring on
+    reload in the HUD ammo line while the model stays
+    in frame and unchanged — the model carries no
+    number, so agreement here means the HUD line
+    moves and the model does not contradict it, not
+    that the model animates. Fifth, save and load,
+    and observe the model still present exactly once
+    after load, with the HUD ammo matching the save
+    — not refilled, not duplicated. Sixth, walk
+    close to a wall facing it and record honestly
+    whether the model clips into the wall: a
+    camera-child model is expected to clip nearer
+    than its own depth, and that observation is
+    evidence for a later viewmodel-layer step, not a
+    failure to hide. This item does NOT claim a
+    per-weapon model: the first model is
+    weapon-agnostic by decision, so equipping a
+    generated weapon is observed as a HUD line
+    change with the model unchanged, and any
+    difference in shape would be a new step's work.
+    Do not claim this verified in Unity until it is
+    observed there and recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

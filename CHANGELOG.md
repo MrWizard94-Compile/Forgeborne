@@ -1,5 +1,77 @@
 # Forgeborne — Changelog
 
+## 0.71.0 — 2026-10-30 — Slice 16 Step 4: first FPS weapon
+view model script
+
+- View model, decided in this step (rationale in
+  DECISIONS.md): new adapter
+  ForgeborneUnity/Assets/Scripts/WeaponViewModel.cs
+  builds a first, static, original view model from
+  primitives at Start and parents it to the camera
+  object carrying FpsInputAdapter (CameraAnchor
+  field, camera-local offset 0.22, -0.22, 0.60, so
+  the model sits lower-right with the crosshair
+  clear). Shape: worn dark-metal receiver, barrel,
+  stock, and grip; a bright cyan energy strip along
+  the receiver and a small cyan sight dot in a dark
+  sight housing; one small orange accent panel on
+  the receiver's right side. No imported art, no
+  copied rifle, no reproduced AMMO / TARGET readout
+  layout — the reference remains style only. If the
+  anchor is unwired, no model is built and a warning
+  logs, so an unwired scene shows a visible absence
+  rather than a rifle floating at the world origin.
+  Colliders are removed from every part, so the
+  model cannot block the picker raycast.
+- Data, decided in this step (rationale in
+  DECISIONS.md): the model carries no number and no
+  ammo, damage, or reload rule of its own. Numeric
+  ammo — name, mag, reserve — stays in HudDisplay's
+  AmmoText from HudState, so the model and the HUD
+  ammo line can never contradict each other, and
+  the script takes no Simulation field rather than
+  polling HudState and discarding it or inventing a
+  glow rule. Geometry is weapon-agnostic, stated
+  plainly: one shape for the Pulse Rifle and for
+  any GeneratedWeapon, whose stats change the HUD
+  line and nothing about the model. A per-weapon
+  model is a later slice, not promised here.
+- Motion, deferred openly: no sway, bob, or recoil.
+  Each is a motion rule needing tuning against the
+  camera motion FpsInputAdapter already owns and a
+  Windows observation of its own, so none is
+  smuggled in as polish on a static first-pass.
+- Readability contract, decided in this step
+  (rationale in DECISIONS.md): new playtest-gate
+  item 34 observes the model on Windows — frame
+  placement and sight readability, non-obstruction
+  of crosshair, ammo line, picker, and objective
+  together, mag falling on fire and restoring on
+  reload in the HUD line while the model stays
+  unchanged, exactly one model after a save/load
+  round-trip with HUD ammo matching the save, and
+  honest wall-clipping observation at close range
+  as evidence for a later viewmodel-layer step.
+- Deliberately not moved in this step: no core file,
+  no MeshBuilder colour, no PowerTint value, no
+  PowerState query, no refresh event set, no HUD
+  layout or colour, no marker colour, shape, size,
+  or position, no light, sky, or fog value, no
+  FpsInputAdapter or GameManager edit, no camera
+  change, no scene file, no shader file, no
+  imported asset. Unity adapter code is not compiled
+  headlessly, following the Slice 13 Step 2 precedent,
+  so this step adds no headless test and no demo
+  scenario for the model's look — a printed ammo
+  line does not prove a visible model.
+- Tests: 2130 passed, 0 failed (unchanged,
+  adapter-only step). Demo unchanged: Slice 15
+  scenario save 44,016 chars, all earlier demo saves
+  as in the 0.70.0 entry.
+- Next, in order: Slice 16 Step 5, composed review
+  closing Slice 16, documentation-only with no new
+  demo scenario, decided in that step.
+
 ## 0.70.0 — 2026-10-30 — Slice 16 Step 3: lighting, sky,
 and fog to art-direction
 

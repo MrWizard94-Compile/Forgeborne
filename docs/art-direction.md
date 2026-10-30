@@ -97,3 +97,36 @@ All values are first-pass, chosen for readability and
 testability, not final feel. If the light makes a marker,
 tint, or HUD colour unread, the light changes — the palette
 does not move to fit the light.
+
+## Slice 16 Step 4 — first FPS weapon view model (0.71.0)
+
+Rule 3 above is UNCHANGED by this note; this is the
+first-pass model that implements it in the scene,
+decided in Slice 16 Step 4 (rationale in DECISIONS.md)
+and observed on Windows by playtest-gate item 34, not
+by this note:
+
+- Form: script-built from original primitives at Start
+  by `ForgeborneUnity/Assets/Scripts/WeaponViewModel.cs`,
+  parented to the camera object carrying
+  `FpsInputAdapter` (CameraAnchor field); no imported
+  art, no copied rifle, no scene file from a headless
+  run. If the anchor is unwired, no model is built
+  and a warning logs — a visible absence, never a
+  rifle floating at the world origin.
+- Placement: camera-local (0.22, -0.22, 0.60) —
+  lower-right frame, crosshair clear, rearmost part
+  about 0.39 in front of the camera.
+- Shape: dark worn-metal receiver, barrel, stock, and
+  grip; a bright cyan energy strip along the receiver
+  and a small cyan sight dot in a dark sight housing;
+  one small orange accent panel on the receiver's
+  right side. Colour only for the glow — no bloom
+  or post-processing effect is claimed.
+- Scope: static and weapon-agnostic. No sway, bob, or
+  recoil yet, and one shape for every equipped weapon;
+  numeric ammo stays in the HUD ammo line only, so
+  the model can never contradict it. A known limit:
+  the camera-child model clips into a wall closer
+  than its own depth — observed by item 34, and a
+  later step's camera-system question, not hidden.

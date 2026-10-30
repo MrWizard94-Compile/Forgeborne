@@ -5757,6 +5757,206 @@ new scene (2026-10-30, silent scheduled run)
 - Next step: Slice 16 Step 4, first FPS weapon view
   model script, decided in that step.
 
+- Slice 16 Step 4 (0.71.0), first FPS weapon view model
+  script: state found on entry — remote main head
+  462c5c1a72e9f2330e750836591738cdd566ef96,
+  CHANGELOG 0.70.0 (Slice 16 Step 3), sync record 72
+  entries ending at that commit, local working copy
+  matched — no step was repeated: the 0.70.0 decision
+  named Slice 16 Step 4, first FPS weapon view model
+  script, decided in that step, and this run did
+  exactly that. (The local run log's top entry was
+  still 0.69.0, but the sync record and the remote
+  head both confirmed 0.70.0, so the 0.70.0 step was
+  verified as pushed, not re-implemented; this run's
+  entry records that check.) Tests 2130 baseline
+  re-run passing; demo Slice 15 save 44,016 chars.
+- Model form decision: script-built primitives at
+  Start, following the SquadMarkerDisplay pattern,
+  rather than Inspector-wired parts or a stated
+  combination leaning on notes. The scope offered
+  all three, and the choice follows what a headless
+  run can honestly produce: it writes no scene file
+  and no part assets, so Inspector-wired parts would
+  be a wiring note with no model behind it, while a
+  script builds the same model in any scene that
+  wires the one anchor field. Build-once, never
+  per-frame, for the same pool reason the markers
+  are pooled: a per-frame build would allocate a
+  rifle every frame for a shape that never changes
+  in this step. The rejected alternative of building
+  the model as a child of a separate camera object
+  was rejected because there is no second camera in
+  this project — FpsInputAdapter's object IS the
+  camera — and a second camera would be a
+  camera-system step, not a view-model step.
+- Adapter line decision: parent to the camera object
+  carrying FpsInputAdapter, via a CameraAnchor field,
+  with no FpsInputAdapter edit and no GameManager
+  field. FpsInputAdapter already sets that transform
+  every Update from the core Look forward vector and
+  the FPS controller position, so a child model
+  inherits aim and movement with no duplicated
+  camera math and no new failure mode in the adapter
+  that owns the camera. No GameManager field by the
+  DuskLighting precedent: a script that needs no
+  Simulation takes no GameManager ceremony. The
+  unwired-anchor rule is the Step 1 non-overwrite
+  rule carried forward in a stricter form: where
+  Step 1 null-fills a forgotten renderer field,
+  this step cannot conjure a camera — any camera
+  it guessed would be the wrong camera — so it
+  builds nothing and warns, and item 34 observes
+  the warning case as a visible absence rather
+  than letting a world-origin rifle pass as a view
+  model. Offset (0.22, -0.22, 0.60) is first-pass
+  placement arithmetic, not an observation: right
+  and down put the model in the lower-right
+  quadrant without reaching the corner where the
+  ammo line lives, 0.60 forward keeps the rearmost
+  part (the stock, at about 0.39) in front of the
+  default near plane, and the body's 0.09 width
+  keeps the whole model clear of frame centre, so
+  the crosshair is clear by construction and
+  confirmed or refuted by item 34.
+- Shape decision, original only: receiver, barrel,
+  stock, and grip in worn dark metal (0.15, 0.15,
+  0.17), a bright cyan strip along the receiver and
+  a small cyan sight dot, one small orange panel on
+  the receiver's right side. The palette is
+  art-direction law — cyan primary, orange
+  secondary — and the orange is deliberately kept
+  to one small panel so it stays an accent and
+  never competes with the orange objective and
+  rally markers, which carry gameplay meaning.
+  "Worn" is a dark matte finish, not a weathering
+  claim: no texture, decal, or weathering pass is
+  asserted, because a colour value cannot prove
+  wear. The sight is a housing plus a glow dot, a
+  readable sight in the art-direction's spirit —
+  the reference sight's AMMO / TARGET digital
+  layout is deliberately NOT reproduced, because
+  reproducing it would copy the reference layout
+  rule 7 forbids and would put a second ammo
+  number in the scene. Glow is bright cyan colour,
+  not bloom: no post-processing effect exists in
+  this step to claim, and item 34 observes the
+  strip and dot as colour, not as bloom.
+- Data decision, the step's sharpest edge: the
+  model renders no state of its own, carries no
+  number, and the script takes no Simulation field.
+  The scope says the view model renders core state
+  only, through HudState, and holds no ammo rule —
+  and the honest reading of that sentence for a
+  static, weapon-agnostic model is negative: the
+  only weapon numbers the player sees are
+  HudDisplay's AmmoText from HudState, so there is
+  no second count that could contradict the HUD.
+  A Simulation field read every frame and discarded
+  would be fake core-reading, a field driving a
+  made-up glow rule (for example a binary
+  glow-on/glow-off at empty mag) would be a second
+  weapon display rule invented to look like a mag
+  gauge while showing nothing about a falling mag,
+  and a genuine HudState poll every frame would
+  double the 32^3 snapshot scan HudDisplay already
+  pays for a model that changes nothing per frame.
+  All three were rejected for those stated reasons,
+  not overlooked. Item 34's fire-and-reload
+  observation is therefore written as it is: the
+  HUD line moves while the model stays unchanged,
+  which is agreement by absence of a second number,
+  not animation. A mag-driven model element, if a
+  later step wants one, is that step's stated
+  decision with its own capacity question answered
+  (HudState carries mag and reserve but no mag
+  capacity, so a proportional gauge cannot be
+  derived from HudState alone).
+- Weapon-agnostic decision, stated plainly: one
+  shape for the Pulse Rifle and for any
+  GeneratedWeapon. Generated weapons differ in core
+  stats — name, damage, mag size — and those stats
+  already surface through the HUD line and through
+  core fire, so the model changing shape per weapon
+  would add a visual identity system with no
+  observed need, while the model staying one shape
+  keeps the first-pass claim small: the model is a
+  frame presence, not a weapon identity. Item 34
+  observes the consequence directly (generated
+  weapon equipped, HUD line changes, model
+  unchanged), so a later reader cannot mistake
+  agnosticism for an oversight.
+- Motion deferral decision: static only, no sway,
+  bob, or recoil. Each is a motion rule tuned
+  against camera motion the adapter already owns,
+  and each would need its own Windows observation;
+  including any unobserved would be polish claimed
+  without evidence, the exact inflation the Slice 13
+  Step 2 precedent forbids. The static first-pass
+  proves what item 34 can observe without motion:
+  placement, sight readability, non-obstruction.
+  Motion is the next view-model decision, not a
+  hidden part of this one, and it is not promised
+  a slice of its own here.
+- Save / load decision: the model holds no state,
+  so a round-trip cannot duplicate it or reset ammo
+  through it. GameManager.LoadFromJson swaps world
+  and weapon inside the same Simulation and never
+  recreates this script's GameObject, and the
+  _built flag guards even a repeated Start — so
+  item 34's "exactly once after load, HUD ammo
+  matching the save" is a structural consequence,
+  observed on Windows, not a hope. If a future
+  scene rebuilds the view-model object on load, that
+  future step must re-prove this item, not inherit
+  it.
+- Known limit, stated not hidden: a camera-child
+  model intersects world geometry when the player
+  stands closer to a wall than the model's depth
+  (about 0.6 in front of the camera). No viewmodel
+  layer and no second depth camera is added here,
+  because that is a camera-system decision with its
+  own render-order consequences, and a static
+  parent cannot pretend it away. Item 34 observes
+  the clipping at close range as evidence for that
+  later step, and the step's honesty is measured by
+  that observation being present, not by the model
+  never clipping. Collider removal on every part is
+  the one interaction decision made here, by the
+  marker precedent: a view-model part must never
+  block the centre-screen picker raycast the adapter
+  casts from the camera, or aiming a rally would
+  hit the player's own rifle.
+- Checklist honesty: this step adds item 34 and
+  closes nothing. Items 25, 26, 27, 30, 31, 32, and
+  33 are untouched; item 34 does not claim the
+  placement arithmetic as an observed placement,
+  the sight shape as an observed sight, or the
+  static scope as observed motion. The next free
+  playtest-gate checklist number is 35, for Slice
+  16 Step 5.
+- What did not move, stated so a later reader can
+  check it: no core file, no MeshBuilder colour, no
+  PowerTint value, no PowerState query, no refresh
+  event set, no HUD line or colour, no marker
+  colour, shape, size, or position, no light, sky,
+  or fog value, no FpsInputAdapter or GameManager
+  edit, no camera change, no scene file, no shader
+  file, no imported asset. Cited headless evidence
+  is only the existing core weapon and HUD coverage
+  — no new test and no demo scenario claims a
+  visible model, per the Slice 13 Step 2 precedent.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 16 Step 5, composed review
+  closing Slice 16, documentation-only with no new
+  demo scenario, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
