@@ -358,6 +358,15 @@ public sealed class Simulation
     /// rides along with the cable rule, per the scope.</summary>
     public BuildResult BuildCableAhead() => BuildAimed(BlockType.Cable);
 
+    /// <summary>Slice 10 Step 2: an Alternator by aim (see
+    /// BuildAimed), costing 10 Stone and no EmberOre. Placed
+    /// by aim like every other block since Slice 8 — no
+    /// placement rule of its own, and no condition on the
+    /// build: it generates always while placed, like a
+    /// Dynamo, and its distinctness is its HV output and
+    /// its stone price, not a build-time condition.</summary>
+    public BuildResult BuildAlternatorAhead() => BuildAimed(BlockType.Alternator);
+
     /// <summary>
     /// Slice 8 Step 2 — fire by aim, replacing BOTH the old
     /// FireAtNearestEnemy (Manhattan-nearest, aim-blind) and

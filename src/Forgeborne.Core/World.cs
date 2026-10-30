@@ -145,15 +145,34 @@ public sealed class WorldZone
     /// needs no voltage flag: Dynamo, Transformer, and Cable
     /// blocks are saved as chunk bytes like every block, and an
     /// old save's Dynamo loads at LV by the DynamoOutput rule.
+    /// Slice 10 Step 2 generalises "direct source" from Dynamo
+    /// alone to Dynamo and Alternator together: a direct source
+    /// still beats any converted or cabled voltage, so a mill
+    /// touching an Alternator and an LV-outputting transformer
+    /// receives HV, not LV — the direct source wins over the
+    /// conversion, whichever source it is. Two distinct direct
+    /// sources touching one cell (a Dynamo and an Alternator)
+    /// are a conflict, not a precedence: the cell receives
+    /// None, the same visible-dead outcome as a mixed cable
+    /// network, rather than silently letting one source win
+    /// by scan order or by a Dynamo-beats-Alternator rule
+    /// invented here. A Dynamo beside a Dynamo is still one
+    /// voltage, as before, and an Alternator beside an
+    /// Alternator is likewise one voltage (HV).
     /// </summary>
     public Voltage DeliveredVoltage(int x, int y, int z)
     {
+        var direct = new HashSet<Voltage>();
         foreach (var (dx, dy, dz) in Neighbours)
         {
             int nx = x + dx, ny = y + dy, nz = z + dz;
-            if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo)
-                return VoltageRules.DynamoOutput;
+            if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
+            var neighbour = Chunk.Get(nx, ny, nz);
+            if (neighbour == BlockType.Dynamo) direct.Add(VoltageRules.DynamoOutput);
+            else if (neighbour == BlockType.Alternator) direct.Add(VoltageRules.AlternatorOutput);
         }
+        if (direct.Count == 1) return direct.First();
+        if (direct.Count > 1) return Voltage.None;
         var candidates = new HashSet<Voltage>();
         foreach (var (dx, dy, dz) in Neighbours)
         {
@@ -174,10 +193,11 @@ public sealed class WorldZone
     /// The connected Cable component containing one cable cell:
     /// every Cable cell reachable from it by face-adjacent
     /// steps, face only, no diagonals. Only Cable cells are in
-    /// the component — a wall, workstation, mill, Dynamo, or
-    /// Transformer is a boundary, never a conductor — so a
-    /// non-cable block between two cables breaks the network
-    /// rather than passing voltage through silently.
+    /// the component — a wall, workstation, mill, Dynamo,
+    /// Alternator, or Transformer is a boundary, never a
+    /// conductor — so a non-cable block between two cables
+    /// breaks the network rather than passing voltage through
+    /// silently.
     /// </summary>
     private HashSet<(int, int, int)> CableComponent(int startX, int startY, int startZ)
     {
@@ -202,11 +222,13 @@ public sealed class WorldZone
     /// Slice 9 Step 2 network voltage: the single voltage a
     /// connected Cable component carries, derived from the
     /// sources touching any of its cells — a Dynamo touching
-    /// any cable in the component (LV), or a Transformer output
-    /// touching any cable in it (its flipped input, computed
-    /// with this component excluded as that transformer's
-    /// input, so a transformer cannot feed the component it
-    /// is itself fed by). No loss per hop and no length limit
+    /// any cable in the component (LV), an Alternator touching
+    /// any cable in it (HV, since Slice 10 Step 2), or a
+    /// Transformer output touching any cable in it (its
+    /// flipped input, computed with this component excluded
+    /// as that transformer's input, so a transformer cannot
+    /// feed the component it is itself fed by). No loss per
+    /// hop and no length limit
     /// in this step: a cable ten cells long carries the same
     /// voltage as a cable one cell long, proved by test, so a
     /// failed delivery in this step means unconnected or
@@ -234,6 +256,7 @@ public sealed class WorldZone
             if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
             var neighbour = Chunk.Get(nx, ny, nz);
             if (neighbour == BlockType.Dynamo) candidates.Add(VoltageRules.DynamoOutput);
+            else if (neighbour == BlockType.Alternator) candidates.Add(VoltageRules.AlternatorOutput);
             else if (neighbour == BlockType.Transformer && (nx, ny, nz) != excludedTransformer)
             {
                 var output = TransformerOutput(nx, ny, nz,
@@ -246,24 +269,30 @@ public sealed class WorldZone
 
     /// <summary>
     /// A transformer's output voltage: the flipped value of its
-    /// input, where the input is LV when a face-adjacent cell
-    /// holds a Dynamo — a direct source beats a converted one,
-    /// so a transformer touching both a Dynamo and another
-    /// transformer converts from the Dynamo — and otherwise
+    /// input, where the input is the single voltage of a
+    /// face-adjacent direct source — LV from a Dynamo, HV
+    /// from an Alternator since Slice 10 Step 2 — a direct
+    /// source beats a converted one, so a transformer
+    /// touching both a Dynamo and another transformer
+    /// converts from the Dynamo, and a transformer touching
+    /// an Alternator converts HV down to LV — and otherwise
     /// the single voltage its other face-adjacent inputs agree
     /// on: another transformer's output, or a Cable component
     /// touching it (computed with this transformer excluded as
     /// that component's source, so a transformer cannot be fed
-    /// by the cable it feeds). Distinct non-Dynamo inputs
-    /// resolve to None, not to the first in neighbour order,
-    /// for the same reason a mixed cable network resolves to
-    /// None: a conflict must be visible, not scan-order luck.
+    /// by the cable it feeds). Distinct direct inputs (a
+    /// Dynamo and an Alternator touching one transformer)
+    /// resolve to None, like every other conflict here, not
+    /// to the first in neighbour order and not to a
+    /// Dynamo-beats-Alternator rule: a conflict must be
+    /// visible, not scan-order luck. Distinct non-direct
+    /// inputs resolve to None for the same reason.
     /// The visited set stops a ring of transformers with no
-    /// Dynamo from recursing forever: every transformer in the
-    /// ring reports None, because no input ever reaches a
-    /// Dynamo. A transformer with no powered neighbour outputs
-    /// None, not a guessed level, so an unpowered transformer
-    /// converts nothing and powers nothing.
+    /// source from recursing forever: every transformer in
+    /// the ring reports None, because no input ever reaches
+    /// a source. A transformer with no powered neighbour
+    /// outputs None, not a guessed level, so an unpowered
+    /// transformer converts nothing and powers nothing.
     /// <paramref name="excludedComponent"/> is a Cable component
     /// that must not count as this transformer's input: it is
     /// the component whose voltage is being computed from this
@@ -274,12 +303,17 @@ public sealed class WorldZone
         HashSet<(int, int, int)> visited, HashSet<(int, int, int)>? excludedComponent)
     {
         if (!visited.Add((x, y, z))) return Voltage.None;
+        var directInputs = new HashSet<Voltage>();
         foreach (var (dx, dy, dz) in Neighbours)
         {
             int nx = x + dx, ny = y + dy, nz = z + dz;
-            if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo)
-                return VoltageRules.Flipped(VoltageRules.DynamoOutput);
+            if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
+            var neighbour = Chunk.Get(nx, ny, nz);
+            if (neighbour == BlockType.Dynamo) directInputs.Add(VoltageRules.DynamoOutput);
+            else if (neighbour == BlockType.Alternator) directInputs.Add(VoltageRules.AlternatorOutput);
         }
+        if (directInputs.Count == 1) return VoltageRules.Flipped(directInputs.First());
+        if (directInputs.Count > 1) return Voltage.None;
         var candidates = new HashSet<Voltage>();
         foreach (var (dx, dy, dz) in Neighbours)
         {
@@ -314,7 +348,11 @@ public sealed class WorldZone
     /// destruction phase, never a cadence. Step 2 widens
     /// delivery without changing this definition: a mill fed LV
     /// through a cable run is powered, exactly like a mill fed
-    /// LV face-adjacent to a Dynamo, and a mill fed nothing
+    /// LV face-adjacent to a Dynamo, and a mill fed LV stepped
+    /// down from an Alternator through a transformer (Slice 10
+    /// Step 2) is powered exactly the same way — the definition
+    /// cares about the delivered level, not which source made
+    /// it — and a mill fed nothing
     /// through a broken or conflicted cable run is not — and,
     /// crucially, is not destroyed either, because no voltage
     /// delivered is not a mismatched voltage (see IsMismatched).
@@ -417,7 +455,7 @@ public sealed class WorldZone
 
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable)) return BuildResult.InvalidType;
+        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable or BlockType.Alternator)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
@@ -495,6 +533,29 @@ public sealed class WorldZone
             if (!Player.Inventory.Has(BlockType.EmberOre, 1))
                 return BuildResult.InsufficientResources;
             Player.Inventory.Remove(BlockType.EmberOre, 1);
+        }
+        else if (type == BlockType.Alternator)
+        {
+            // Slice 10 Step 2 Alternator: 10 Stone, no EmberOre.
+            // This is the cost side of the source's distinctness,
+            // and it is deliberately the mirror image of the
+            // Dynamo's 5 ore: an Alternator competes with walls
+            // and mills for stone, not with workstations and
+            // squads for ore, so it can be staged before the
+            // player has ore at all — but safe use still costs
+            // a transformer's 5 ore for the step-down, so the
+            // safe-use ore total ties a Dynamo's 5 ore and the
+            // Alternator is not a cheaper Dynamo wearing a new
+            // name: what the stone buys is native HV and early
+            // staging, and what it costs is the transformer
+            // step and the direct-HV danger itself. A stone
+            // price also keeps the source buildable in
+            // existing gathered resources only, with no new
+            // currency. Same check-before-spend rule as the
+            // other machines, and the same support rule above.
+            if (!Player.Inventory.Has(BlockType.Stone, 10))
+                return BuildResult.InsufficientResources;
+            Player.Inventory.Remove(BlockType.Stone, 10);
         }
         else // Workstation: 10 Stone + 5 EmberOre
         {
@@ -741,6 +802,8 @@ public sealed class WorldZone
     /// <summary>
     /// Slice 5 Step 1 powered automation: every tick, each powered
     /// Kinetic Mill (receiving its rated voltage, per IsPowered —
+    /// LV from a Dynamo, stepped down from an Alternator, or
+    /// converted back through transformers)
     /// LV from a Dynamo or converted back through transformers)
     /// excavates at most one adjacent gatherable block, in the same
     /// fixed neighbour order and through the same reused

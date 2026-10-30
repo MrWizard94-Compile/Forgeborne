@@ -3161,6 +3161,242 @@ var hudHvState = hudHv.Hud();
 Eq(1, hudHvState.TotalWorkstations, "slice10 HUD counts HV workstation in total");
 Eq(0, hudHvState.PoweredWorkstations, "slice10 HUD counts HV workstation as NOT powered");
 
+// ---- Slice 10 Step 2: Alternator, second power source ----
+// The source decided in this step: a native HV generator, not
+// a Dynamo reskin. Its output level, its stone-only price, its
+// place in DeliveredVoltage precedence, and its proof against
+// BOTH consumers (mill and workstation) through face-adjacency
+// and through cable are all decided here, with tests.
+Eq(11, (byte)BlockType.Alternator, "slice10 step2 alternator block type appended as 11");
+Eq(8, (byte)BlockType.Dynamo, "slice10 step2 dynamo value unchanged at 8");
+Eq(9, (byte)BlockType.Transformer, "slice10 step2 transformer value unchanged at 9");
+Eq(10, (byte)BlockType.Cable, "slice10 step2 cable value unchanged at 10");
+Eq(Voltage.HV, VoltageRules.AlternatorOutput, "slice10 step2 alternator outputs HV, not the dynamo's LV");
+// Build: 10 Stone, no EmberOre, check-before-spend, support
+// rule, not gatherable.
+var altWorld = new WorldZone(42);
+altWorld.Player.Inventory.Add(BlockType.Stone, 10);
+Eq(BuildResult.Success, altWorld.Build(15, 4, 15, BlockType.Alternator), "slice10 step2 alternator builds with 10 stone");
+Eq(BlockType.Alternator, altWorld.Chunk.Get(15, 4, 15), "slice10 step2 alternator placed");
+Eq(0, altWorld.Player.Inventory.Get(BlockType.Stone), "slice10 step2 alternator consumes its stone");
+Eq(0, altWorld.Player.Inventory.Get(BlockType.EmberOre), "slice10 step2 alternator spends no ore");
+Eq(GatherResult.NotGatherable, altWorld.Gather(15, 4, 15), "slice10 step2 alternator itself is not gatherable");
+var poorAltWorld = new WorldZone(42);
+Eq(BuildResult.InsufficientResources, poorAltWorld.Build(15, 4, 15, BlockType.Alternator), "slice10 step2 alternator without stone fails");
+Eq(BlockType.Air, poorAltWorld.Chunk.Get(15, 4, 15), "slice10 step2 failed alternator leaves air");
+var floatAltWorld = new WorldZone(42);
+floatAltWorld.Player.Inventory.Add(BlockType.Stone, 10);
+Eq(BuildResult.Floating, floatAltWorld.Build(16, 20, 16, BlockType.Alternator), "slice10 step2 alternator floating in air fails like other machines");
+// Direct HV destroys a mill: the native-HV proof, and the
+// reason safe use needs a transformer. The mill excavates
+// nothing on its destruction tick, and its pocket survives.
+var altDirectWorld = new WorldZone(42);
+altDirectWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+altDirectWorld.Chunk.TrySet(17, 20, 16, BlockType.Alternator);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    altDirectWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.HV, altDirectWorld.DeliveredVoltage(16, 20, 16), "slice10 step2 direct alternator delivers HV to its mill");
+Check(altDirectWorld.IsMismatched(16, 20, 16), "slice10 step2 direct alternator mill is mismatched");
+Check(!altDirectWorld.IsPowered(16, 20, 16), "slice10 step2 direct alternator mill is not powered");
+altDirectWorld.Advance();
+Eq(BlockType.Air, altDirectWorld.Chunk.Get(16, 20, 16), "slice10 step2 direct alternator mill destroyed on tick 1");
+Eq(1, altDirectWorld.DestroyedMills, "slice10 step2 direct alternator destruction counter is 1");
+Eq(0, altDirectWorld.PoweredBlocksGathered, "slice10 step2 destroyed mill gathers nothing powered");
+Eq(0, altDirectWorld.KineticBlocksGathered, "slice10 step2 destroyed mill gathers nothing kinetic");
+Eq(BlockType.Stone, altDirectWorld.Chunk.Get(15, 20, 16), "slice10 step2 destroyed mill excavates nothing: its pocket stone survives");
+Eq(BlockType.Alternator, altDirectWorld.Chunk.Get(17, 20, 16), "slice10 step2 destroying a mill does not destroy its alternator");
+// Face-adjacent step-down, mill: Alternator -> transformer ->
+// mill runs at LV, every tick, like a Dynamo-fed mill.
+var altStepMillWorld = new WorldZone(42);
+altStepMillWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+altStepMillWorld.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+altStepMillWorld.Chunk.TrySet(18, 20, 16, BlockType.Alternator);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    altStepMillWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.LV, altStepMillWorld.DeliveredVoltage(16, 20, 16), "slice10 step2 alternator stepped down through a transformer delivers LV to its mill");
+Check(altStepMillWorld.IsPowered(16, 20, 16), "slice10 step2 stepped-down alternator mill is powered");
+for (int i = 0; i < 5; i++) altStepMillWorld.Advance();
+Eq(5, altStepMillWorld.PoweredBlocksGathered, "slice10 step2 stepped-down mill gathers 5 in 5 ticks at powered cadence");
+Eq(0, altStepMillWorld.KineticBlocksGathered, "slice10 step2 stepped-down mill counts nothing kinetic");
+Eq(BlockType.Alternator, altStepMillWorld.Chunk.Get(18, 20, 16), "slice10 step2 powered mill never excavates its alternator");
+Eq(BlockType.Transformer, altStepMillWorld.Chunk.Get(17, 20, 16), "slice10 step2 powered mill never excavates its transformer");
+// Face-adjacent step-down, workstation: the second consumer
+// proved against the new source, not just the mill.
+var altStepWsWorld = new WorldZone(42);
+altStepWsWorld.Player.TakeDamage(20);
+altStepWsWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+altStepWsWorld.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+altStepWsWorld.Chunk.TrySet(19, 5, 16, BlockType.Alternator);
+Eq(Voltage.LV, altStepWsWorld.DeliveredVoltage(17, 5, 16), "slice10 step2 alternator stepped down delivers LV to its workstation");
+Check(altStepWsWorld.IsWorkstationPowered(17, 5, 16), "slice10 step2 stepped-down alternator workstation is powered");
+Check(!altStepWsWorld.IsWorkstationMismatched(17, 5, 16), "slice10 step2 stepped-down alternator workstation is not mismatched");
+Eq(10, altStepWsWorld.EffectiveWorkstationRegen(), "slice10 step2 stepped-down workstation effective regen is base 5 + powered 5");
+altStepWsWorld.Advance();
+Eq(75, altStepWsWorld.Player.Shields, "slice10 step2 stepped-down workstation restores 10 shields per tick");
+// Direct HV disables a workstation, exactly as Slice 10 Step 1
+// decided: it survives, it restores nothing, it is not powered.
+var altDirectWsWorld = new WorldZone(42);
+altDirectWsWorld.Player.TakeDamage(20);
+altDirectWsWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+altDirectWsWorld.Chunk.TrySet(18, 5, 16, BlockType.Alternator);
+Eq(Voltage.HV, altDirectWsWorld.DeliveredVoltage(17, 5, 16), "slice10 step2 direct alternator delivers HV to its workstation");
+Check(!altDirectWsWorld.IsWorkstationPowered(17, 5, 16), "slice10 step2 direct alternator workstation is not powered");
+Check(altDirectWsWorld.IsWorkstationMismatched(17, 5, 16), "slice10 step2 direct alternator workstation is mismatched");
+Eq(0, altDirectWsWorld.EffectiveWorkstationRegen(), "slice10 step2 direct alternator workstation effective regen is 0: disabled");
+altDirectWsWorld.Advance();
+Eq(BlockType.Workstation, altDirectWsWorld.Chunk.Get(17, 5, 16), "slice10 step2 direct alternator workstation survives its tick, unlike a mill");
+Eq(65, altDirectWsWorld.Player.Shields, "slice10 step2 direct alternator workstation restores nothing");
+// Cable step-down, mill: Alternator -> cable -> transformer ->
+// cable -> mill runs at LV through a cable run, so the source
+// is proved through distribution, not only face-adjacency.
+var altCableMillWorld = new WorldZone(42);
+altCableMillWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+altCableMillWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+altCableMillWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+altCableMillWorld.Chunk.TrySet(19, 20, 16, BlockType.Cable);
+altCableMillWorld.Chunk.TrySet(20, 20, 16, BlockType.Alternator);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    altCableMillWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.LV, altCableMillWorld.DeliveredVoltage(16, 20, 16), "slice10 step2 alternator through cable and transformer delivers LV to its mill");
+Check(altCableMillWorld.IsPowered(16, 20, 16), "slice10 step2 cable stepped-down alternator mill is powered");
+for (int i = 0; i < 5; i++) altCableMillWorld.Advance();
+Eq(5, altCableMillWorld.PoweredBlocksGathered, "slice10 step2 cable stepped-down mill gathers 5 in 5 ticks");
+Eq(BlockType.Cable, altCableMillWorld.Chunk.Get(17, 20, 16), "slice10 step2 cable mill never excavates its cable");
+Eq(BlockType.Alternator, altCableMillWorld.Chunk.Get(20, 20, 16), "slice10 step2 cable mill never excavates its alternator");
+// Cable direct HV destroys a mill, as face-adjacent HV does.
+var altCableHvWorld = new WorldZone(42);
+altCableHvWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+altCableHvWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+altCableHvWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+altCableHvWorld.Chunk.TrySet(19, 20, 16, BlockType.Alternator);
+Eq(Voltage.HV, altCableHvWorld.DeliveredVoltage(16, 20, 16), "slice10 step2 alternator through cable delivers HV to its mill");
+altCableHvWorld.Advance();
+Eq(BlockType.Air, altCableHvWorld.Chunk.Get(16, 20, 16), "slice10 step2 cable HV mill destroyed on tick 1");
+Eq(1, altCableHvWorld.DestroyedMills, "slice10 step2 cable HV destruction counter is 1");
+// Cable step-down, workstation: the second consumer proved
+// through cable as well as face-adjacency.
+var altCableWsWorld = new WorldZone(42);
+altCableWsWorld.Player.TakeDamage(20);
+altCableWsWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+altCableWsWorld.Chunk.TrySet(18, 5, 16, BlockType.Cable);
+altCableWsWorld.Chunk.TrySet(19, 5, 16, BlockType.Transformer);
+altCableWsWorld.Chunk.TrySet(20, 5, 16, BlockType.Cable);
+altCableWsWorld.Chunk.TrySet(21, 5, 16, BlockType.Alternator);
+Eq(Voltage.LV, altCableWsWorld.DeliveredVoltage(17, 5, 16), "slice10 step2 alternator through cable and transformer delivers LV to its workstation");
+Check(altCableWsWorld.IsWorkstationPowered(17, 5, 16), "slice10 step2 cable stepped-down alternator workstation is powered");
+altCableWsWorld.Advance();
+Eq(75, altCableWsWorld.Player.Shields, "slice10 step2 cable stepped-down workstation restores 10 shields per tick");
+// Precedence, direct conflict: a mill touching a Dynamo and
+// an Alternator receives None — a visible dead mill, not a
+// silent Dynamo win and not a destruction.
+var altConflictWorld = new WorldZone(42);
+altConflictWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+altConflictWorld.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+altConflictWorld.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+foreach (var (x, y, z) in new[] { (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    altConflictWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.None, altConflictWorld.DeliveredVoltage(16, 20, 16), "slice10 step2 dynamo plus alternator on one mill delivers nothing");
+Check(!altConflictWorld.IsMismatched(16, 20, 16), "slice10 step2 direct-conflict mill is not mismatched");
+Check(!altConflictWorld.IsPowered(16, 20, 16), "slice10 step2 direct-conflict mill is not powered");
+for (int i = 0; i < 5; i++) altConflictWorld.Advance();
+Eq(BlockType.KineticMill, altConflictWorld.Chunk.Get(16, 20, 16), "slice10 step2 direct-conflict mill survives 5 ticks");
+Eq(1, altConflictWorld.KineticBlocksGathered, "slice10 step2 direct-conflict mill falls back to kinetic cadence, 1 in 5 ticks");
+Eq(0, altConflictWorld.PoweredBlocksGathered, "slice10 step2 direct-conflict mill counts nothing powered");
+// Precedence, direct beats converted: a mill touching a direct
+// Alternator (HV) and a transformer outputting LV receives HV,
+// so the direct source wins over the conversion, and the mill
+// is destroyed — the direct rule is source-neutral, not a
+// Dynamo-only privilege.
+var altDirectBeatsWorld = new WorldZone(42);
+altDirectBeatsWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+altDirectBeatsWorld.Chunk.TrySet(17, 20, 16, BlockType.Alternator);
+altDirectBeatsWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+altDirectBeatsWorld.Chunk.TrySet(19, 20, 16, BlockType.Alternator);
+Eq(Voltage.HV, altDirectBeatsWorld.DeliveredVoltage(16, 20, 16), "slice10 step2 direct alternator beats converted LV for its mill");
+altDirectBeatsWorld.Advance();
+Eq(BlockType.Air, altDirectBeatsWorld.Chunk.Get(16, 20, 16), "slice10 step2 direct-beats-converted mill destroyed on tick 1");
+Eq(BlockType.Transformer, altDirectBeatsWorld.Chunk.Get(18, 20, 16), "slice10 step2 direct-beats-converted transformer survives");
+// Precedence, transformer conflict: a transformer touching a
+// Dynamo and an Alternator converts nothing, so the mill it
+// feeds idles at kinetic cadence instead of guessing a level.
+var altTrConflictWorld = new WorldZone(42);
+altTrConflictWorld.Chunk.TrySet(18, 21, 16, BlockType.KineticMill);
+altTrConflictWorld.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+altTrConflictWorld.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+altTrConflictWorld.Chunk.TrySet(17, 20, 16, BlockType.Alternator);
+foreach (var (x, y, z) in new[] { (17, 21, 16), (19, 21, 16), (18, 22, 16), (18, 21, 17), (18, 21, 15) })
+    altTrConflictWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.None, altTrConflictWorld.DeliveredVoltage(18, 21, 16), "slice10 step2 dynamo plus alternator transformer outputs nothing");
+Check(!altTrConflictWorld.IsPowered(18, 21, 16), "slice10 step2 transformer-conflict mill is not powered");
+for (int i = 0; i < 5; i++) altTrConflictWorld.Advance();
+Eq(BlockType.KineticMill, altTrConflictWorld.Chunk.Get(18, 21, 16), "slice10 step2 transformer-conflict mill survives 5 ticks");
+Eq(1, altTrConflictWorld.KineticBlocksGathered, "slice10 step2 transformer-conflict mill falls back to kinetic cadence, 1 in 5 ticks");
+// Precedence, cable conflict: one network touched by a Dynamo
+// and an Alternator carries nothing, like any mixed network.
+var altCableConflictWorld = new WorldZone(42);
+altCableConflictWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+altCableConflictWorld.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+altCableConflictWorld.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+altCableConflictWorld.Chunk.TrySet(17, 21, 16, BlockType.Dynamo);
+altCableConflictWorld.Chunk.TrySet(18, 21, 16, BlockType.Alternator);
+foreach (var (x, y, z) in new[] { (15, 20, 16), (16, 21, 16), (16, 19, 16), (16, 20, 17), (16, 20, 15) })
+    altCableConflictWorld.Chunk.TrySet(x, y, z, BlockType.Stone);
+Eq(Voltage.None, altCableConflictWorld.DeliveredVoltage(16, 20, 16), "slice10 step2 dynamo plus alternator cable network delivers nothing");
+for (int i = 0; i < 5; i++) altCableConflictWorld.Advance();
+Eq(BlockType.KineticMill, altCableConflictWorld.Chunk.Get(16, 20, 16), "slice10 step2 cable-conflict mill survives 5 ticks");
+Eq(1, altCableConflictWorld.KineticBlocksGathered, "slice10 step2 cable-conflict mill falls back to kinetic cadence, 1 in 5 ticks");
+// Aimed builder: same aim as the Slice 10 Step 1 workstation
+// build, with alternator inventory (10 Stone, no ore).
+var simAlt = new Simulation(42);
+simAlt.Tick(0.1f, 0, 0, false);
+simAlt.World.Player.Inventory.Add(BlockType.Stone, 10);
+simAlt.ApplyLook(-18.4f, -53f);
+Eq(BuildResult.Success, simAlt.BuildAlternatorAhead(), "slice10 step2 simulation build alternator ahead succeeds");
+Eq(BlockType.Alternator, simAlt.World.Chunk.Get(15, 4, 17), "slice10 step2 simulation alternator placed by aim");
+Eq(0, simAlt.World.Player.Inventory.Get(BlockType.Stone), "slice10 step2 simulation alternator spends its stone");
+// Derived, not stored: an Alternator and its step-down chains
+// survive save/load as chunk bytes and re-derive LV on load,
+// with no stored voltage or source flag.
+var altSaveWorld = new WorldZone(42);
+altSaveWorld.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+altSaveWorld.Chunk.TrySet(16, 4, 15, BlockType.Transformer);
+altSaveWorld.Chunk.TrySet(17, 4, 15, BlockType.Alternator);
+altSaveWorld.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+altSaveWorld.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+altSaveWorld.Chunk.TrySet(19, 5, 16, BlockType.Alternator);
+var altSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(altSaveWorld));
+Check(altSaveLoaded.Chunk.ToBytes().SequenceEqual(altSaveWorld.Chunk.ToBytes()), "slice10 step2 save/load chunk equal with alternators");
+Eq(BlockType.Alternator, altSaveLoaded.Chunk.Get(17, 4, 15), "slice10 step2 alternator survives save/load as a chunk byte");
+Eq(BlockType.Alternator, altSaveLoaded.Chunk.Get(19, 5, 16), "slice10 step2 second alternator survives save/load as a chunk byte");
+Eq(Voltage.LV, altSaveLoaded.DeliveredVoltage(15, 4, 15), "slice10 step2 loaded stepped-down mill re-derives LV from placement");
+Eq(Voltage.LV, altSaveLoaded.DeliveredVoltage(17, 5, 16), "slice10 step2 loaded stepped-down workstation re-derives LV from placement");
+Check(altSaveLoaded.IsPowered(15, 4, 15), "slice10 step2 loaded stepped-down mill is powered");
+Check(altSaveLoaded.IsWorkstationPowered(17, 5, 16), "slice10 step2 loaded stepped-down workstation is powered");
+// HUD display decision: no new source count — sources are not
+// counted, consumers are, as with the Dynamo. The existing
+// powered-consumer counts are the proof a stepped-down
+// Alternator is feeding both consumers, and a lone Alternator
+// counts as neither, openly: a live source feeding no
+// consumer shows nothing, the same gap as an energised cable
+// feeding no mill.
+var altHud = new Simulation(42);
+altHud.World.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+altHud.World.Chunk.TrySet(16, 4, 15, BlockType.Transformer);
+altHud.World.Chunk.TrySet(17, 4, 15, BlockType.Alternator);
+altHud.World.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+altHud.World.Chunk.TrySet(18, 5, 16, BlockType.Transformer);
+altHud.World.Chunk.TrySet(19, 5, 16, BlockType.Alternator);
+var altHudState = altHud.Hud();
+Eq(1, altHudState.TotalMills, "slice10 step2 HUD counts 1 alternator-fed mill");
+Eq(1, altHudState.PoweredMills, "slice10 step2 HUD counts stepped-down alternator mill as powered");
+Eq(1, altHudState.TotalWorkstations, "slice10 step2 HUD counts 1 alternator-fed workstation");
+Eq(1, altHudState.PoweredWorkstations, "slice10 step2 HUD counts stepped-down alternator workstation as powered");
+var altLoneHud = new Simulation(42);
+altLoneHud.World.Chunk.TrySet(17, 5, 16, BlockType.Alternator);
+var altLoneHudState = altLoneHud.Hud();
+Eq(0, altLoneHudState.TotalMills, "slice10 step2 HUD counts a lone alternator as no mill");
+Eq(0, altLoneHudState.TotalWorkstations, "slice10 step2 HUD counts a lone alternator as no workstation");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

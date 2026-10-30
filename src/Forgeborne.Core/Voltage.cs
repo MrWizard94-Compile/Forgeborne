@@ -6,8 +6,11 @@ namespace Forgeborne.Core;
 /// output and the Kinetic Mill's rating; HV exists only because
 /// a transformer can produce it, so that a cable (Step 2) has a
 /// second voltage to carry and a mismatch rule (Step 3) has a
-/// voltage to punish. None means no voltage is delivered, not a
-/// third level: a cell with no powered neighbour carries nothing.
+/// voltage to punish. Since Slice 10 Step 2 HV also has a native
+/// generator, the Alternator (see AlternatorOutput): HV is no
+/// longer only a transformer's flip of LV. None means no voltage
+/// is delivered, not a third level: a cell with no powered
+/// neighbour carries nothing.
 /// </summary>
 public enum Voltage
 {
@@ -23,6 +26,18 @@ public static class VoltageRules
     /// carries no voltage field, and it loads at LV, exactly the
     /// level that powered its neighbouring mill before this step.</summary>
     public const Voltage DynamoOutput = Voltage.LV;
+
+    /// <summary>Slice 10 Step 2: the Alternator's output level.
+    /// HV, not LV — that is the whole of the source's
+    /// distinctness at the voltage level: a native HV
+    /// generator, where the Dynamo is a native LV generator
+    /// and a transformer only flips a voltage it is fed.
+    /// An LV-rated consumer fed directly by an Alternator
+    /// is therefore mismatched (a mill is destroyed, a
+    /// workstation is disabled), and safe use runs through
+    /// one transformer step-down, which is the step's
+    /// proof burden, not an accident of placement.</summary>
+    public const Voltage AlternatorOutput = Voltage.HV;
 
     /// <summary>The Kinetic Mill's rated voltage: the only voltage
     /// that runs it at the every-tick powered cadence. Any other

@@ -18,6 +18,8 @@ public enum BlockType : byte
     Transformer = 9,
     /// <summary>Slice 9 Step 2 (Electrical tier 2, distribution): carries a voltage beyond face-adjacency over a face-adjacent network of Cable cells, with no loss and no length limit in this step. Only Cable cells conduct: a wall, workstation, or mill between cables breaks the network. Appended in 0.41.0; earlier values unchanged, so old saves still load.</summary>
     Cable = 10,
+    /// <summary>Slice 10 Step 2 (Electrical widening, second source): a native HV generator. Unlike the Dynamo (LV) it cannot safely feed an LV-rated consumer directly — a mill fed HV directly is destroyed, a workstation fed HV directly is disabled — and safe use runs through one transformer step-down. Appended in 0.46.0; earlier values unchanged, so old saves still load.</summary>
+    Alternator = 11,
 }
 
 public static class BlockInfo

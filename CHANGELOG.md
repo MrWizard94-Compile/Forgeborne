@@ -1,5 +1,73 @@
 # Forgeborne — Changelog
 
+## 0.46.0 — 2026-10-30 — Slice 10 Step 2: Alternator, second power source
+
+- Alternator, decided in this step (rationale in
+  DECISIONS.md): a native HV generator, not a Dynamo
+  reskin. New `BlockType.Alternator = 11`, appended
+  only, so old saves still load. Its output is HV
+  (`VoltageRules.AlternatorOutput`), against the
+  Dynamo's LV: a mill fed directly by an Alternator is
+  destroyed on its tick, and a workstation fed directly
+  is disabled that tick, exactly by the Step 1 mismatch
+  rules — the source is proved against both consumers'
+  failure rules, not just their powered rules. Safe use
+  runs through one transformer step-down, face-adjacent
+  and through cable, and both consumers run powered
+  that way (mill every tick, workstation base + 5).
+  Always-on while placed, like a Dynamo: no fuel or
+  other condition is invented in this step, so a failed
+  delivery stays unambiguous (unwired, conflicted, or
+  mismatched, never "out of fuel"). Cost 10 Stone, no
+  EmberOre — the mirror image of the Dynamo's 5 ore,
+  so the Alternator competes with walls and mills for
+  stone, not with workstations and squads for ore, and
+  can be staged before the player has ore; safe use
+  still costs a transformer's 5 ore, so the safe-use
+  ore total ties a Dynamo's and the Alternator is not
+  a cheaper Dynamo. New `Simulation.BuildAlternatorAhead`
+  plus an N adapter key (suppressed while the picker is
+  open, like the other builders) and playtest-gate
+  checklist item 18, Windows-only.
+- Precedence, decided in this step, in
+  `DeliveredVoltage` and `TransformerOutput`: "direct
+  source" now means Dynamo or Alternator together. A
+  direct source still beats any converted or cabled
+  voltage, whichever source it is — a mill touching a
+  direct Alternator and an LV-outputting transformer
+  receives HV. Two distinct direct sources touching
+  one cell, one transformer, or one cable network
+  resolve to None, not to a silent winner: a
+  Dynamo-plus-Alternator mill, transformer, or network
+  is visibly dead (kinetic / base behaviour), never
+  destroyed, because no voltage delivered is not a
+  mismatch. Cable networks carry Alternator HV like
+  any other voltage, with the same mixed-network rule.
+  No change to the ladder, conversion, cable loss or
+  length rules, the mill's or workstation's ratings,
+  powered behaviours, mismatch rules, or costs, Dynamo
+  cost or output, or the save format: power is still
+  derived from placement, so old saves load unchanged
+  and Alternator step-down chains re-derive LV on load.
+- Display, decided in this step: no new HUD source
+  count or line. Sources are not counted, consumers
+  are, as with the Dynamo — the existing powered-mill
+  and powered-workstation counts are the Alternator's
+  display, and they prove it feeding both consumers.
+  Stated openly: a lone Alternator feeding no consumer
+  shows nothing, the same named gap as an energised
+  cable feeding no mill. Observed, not fixed here: the
+  Step 1 workstation key (B) has no playtest-gate
+  checklist item in the gate doc, while every other
+  builder key does — carried as a gap for a later step
+  to close, not bundled into this source step.
+- Tests: 1239 passed, 0 failed (was 1157; +82, no
+  failures on the first full run). Demo unchanged:
+  Slice 9 Step 4 scenario save 43,975 chars, voltages
+  LV/LV/HV/None, HUD 2/4 mills before and 2/3 after
+  tick 1, powered 10 + kinetic 1 + destroyed 1 in 5
+  ticks, stone 11.
+
 ## 0.45.0 — 2026-10-30 — Slice 10 Step 1: powered Workstation, second powered consumer
 
 - Powered Workstation, decided in this step (rationale in

@@ -105,6 +105,20 @@ public class FpsInputAdapter : MonoBehaviour
             // the key list above. Same picker guard as the other
             // builders, for the same ore reason.
             if (Input.GetKeyDown(KeyCode.B)) Simulation.BuildWorkstationAhead();
+            // Slice 10 Step 2: N builds an Alternator by aim, via
+            // BuildAlternatorAhead (10 Stone, no EmberOre). N is
+            // free: existing keys are WASD / Space / E / Q / R /
+            // O / Return / Esc / 1 / 2 / 3 / 4 / T / Y / U / I /
+            // B / mouse click. Same picker guard as the other
+            // builders: an Alternator spends stone, not ore, so
+            // it cannot break a pending Confirm's affordability
+            // the way an ore build could — but the guard is kept
+            // uniform anyway, so no builder fires while the
+            // picker is modal, and the rule stays one rule.
+            // No HUD source count rides along: the existing
+            // powered-mill and powered-workstation counts are
+            // the Alternator's display, as decided in core.
+            if (Input.GetKeyDown(KeyCode.N)) Simulation.BuildAlternatorAhead();
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's

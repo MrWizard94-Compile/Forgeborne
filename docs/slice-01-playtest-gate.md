@@ -138,6 +138,22 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     counted destruction precede its visible disappearance.
     Do not claim this verified in Unity until it is
     observed there and recorded in DECISIONS.md.
+18. [ ] Alternator key, added 0.46.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core HV output, stone price, precedence, and
+    step-down rules are headless-tested): press N with
+    10 Stone to build an Alternator in the cell before
+    the aimed surface, like T / Y / U / I / B; N is
+    suppressed while the rally picker is open, like the
+    other builders; a mill or workstation fed LV through
+    an Alternator plus a transformer reads as powered on
+    the existing HUD counts, a mill fed HV directly from
+    an Alternator disappears on its tick (item 17), a
+    workstation fed HV directly reads as NOT powered,
+    and a lone Alternator feeding no consumer shows
+    nothing on the HUD, by decision. Do not claim this
+    verified in Unity until it is observed there and
+    recorded in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

@@ -2994,6 +2994,114 @@ look inevitable.
 - Next, in order: Slice 10 Step 2, one distinct power
   source, decided in that step.
 
+## 0.46.0 — Slice 10 Step 2: Alternator, second power source
+- Decision, on the source: the Alternator, under the
+  blueprint's name, as a native HV generator — a new
+  block type, Alternator = 11, appended only. The name
+  is kept because the design finally gives it a meaning
+  the blueprint never stated: HV is no longer only a
+  transformer's flip of Dynamo LV, it has a generator
+  of its own, so transformer step-down becomes a
+  primary path (Alternator -> transformer -> consumer)
+  instead of a round-trip curiosity (Dynamo ->
+  transformer -> transformer -> mill). An LV-outputting
+  second source was rejected as a reskin risk: at
+  Dynamo cost it would have been a Dynamo under a new
+  name, and at a merely different cost it would still
+  have been proved by the same LV tests a Dynamo passes.
+  HV output is proved by tests a Dynamo cannot pass:
+  direct feed destroys a mill and disables a
+  workstation, while step-down feed powers both.
+- Decision, on requirements: always-on while placed,
+  like a Dynamo. No fuel, spin-up, terrain, or
+  placement condition is invented here. A condition
+  would have made every failed delivery ambiguous (no
+  fuel, unwired, or conflicted?) and would have been a
+  second system smuggled into a source step; the scope
+  hypothesis was always-on, and nothing in this step's
+  evidence overturned it. The source's distinctness
+  therefore rests on output level and cost, both
+  tested, not on a condition.
+- Decision, on cost: 10 Stone, no EmberOre. This is
+  the mirror image of the Dynamo's 5 ore, chosen so
+  the two sources compete for different resources: an
+  Alternator competes with walls and mills for stone,
+  a Dynamo with workstations and squads for ore. It
+  also gives the Alternator its one staging advantage:
+  it can be placed before the player has any ore.
+  Stated openly, as a first-pass value, not a balance
+  claim: safe use still needs a transformer's 5 ore,
+  so the safe-use ore total ties a Dynamo's 5 ore and
+  the Alternator costs 10 stone on top — it is not a
+  cheaper Dynamo, and a player who already has ore
+  and wants safe LV power has no ore reason to prefer
+  it. Its reasons are native HV, stone staging, and
+  resource-pool choice, and a balance pass may still
+  find those reasons too weak or too strong.
+- Decision, on precedence: "direct source" is now
+  Dynamo or Alternator together, not Dynamo alone.
+  A direct source still beats any converted or cabled
+  voltage, whichever source it is, so a mill touching
+  a direct Alternator and an LV-outputting transformer
+  receives HV and is destroyed — the direct rule is
+  source-neutral, not a Dynamo privilege carried over
+  by accident. Two distinct direct sources touching
+  one cell, one transformer, or one cable network
+  resolve to None, not to a Dynamo-beats-Alternator
+  rule: a silent Dynamo win would have hidden a wiring
+  conflict, and a silent Alternator win would have
+  hidden it the other way. None is the existing
+  visible-dead outcome for mixed voltages everywhere
+  else in this system, and a conflicted consumer is
+  never destroyed, because no delivery is not a
+  mismatch — the same rule that already protects a
+  conflicted mill in Slice 9 Step 2.
+- Decision, on proof: both consumers, both delivery
+  paths, both failure rules. Face-adjacent step-down
+  powers a mill (5 in 5 ticks) and a workstation
+  (base + 5 regen); cable step-down powers a mill and
+  a workstation the same way; direct HV destroys a
+  mill (face-adjacent and through cable) and disables
+  a workstation (face-adjacent), with the workstation
+  surviving and the mill's pocket surviving. A source
+  step proved against the mill alone would not have
+  been a widening, and this step's 82 tests are
+  counted against that burden, not against the mill.
+- Decision, on placement and display: aimed builder
+  (`BuildAlternatorAhead`, N adapter key, suppressed
+  while the picker is open like every other builder,
+  checklist item 18, Windows-only) — N is free, and
+  the picker guard is kept uniform even though an
+  Alternator spends stone, not ore, so it could not
+  break a pending Confirm's affordability: one modal
+  rule for all builders, not a per-resource exception.
+  No new HUD source count or line, by the Dynamo
+  precedent: sources are not counted, consumers are,
+  and the existing powered-mill and powered-workstation
+  counts already prove the Alternator feeding both.
+  Stated openly: a lone Alternator feeding no consumer
+  shows nothing, the same named gap as an energised
+  cable feeding no mill, carried forward rather than
+  fixed by inventing a source indicator in this step.
+- Observed, not fixed here: the Step 1 workstation key
+  (B) has no playtest-gate checklist item, while every
+  other builder key (T, Y, U, I, and now N) does. That
+  is a documentation gap in the gate doc, not a core
+  rule, and closing it belongs to a step that touches
+  the gate doc for its own reason — bundling it here
+  would have made this source step also a gate-doc
+  repair step, and the gap is recorded here so it is
+  not lost.
+- Deliberately NOT in this step: a new voltage level,
+  a fuel or condition system, a per-hop loss, a cable
+  length limit, drag-to-lay, a third consumer, a second
+  source, a balance pass, a pre-destruction warning,
+  mesh tint or refresh, or any claim about Windows
+  Unity verification or the pending Slice 1 director
+  playtest gate.
+- Next, in order: Slice 10 Step 3, demo scenario +
+  documentation-only review, closing Slice 10.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
