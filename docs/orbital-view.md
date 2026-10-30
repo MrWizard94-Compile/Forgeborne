@@ -184,6 +184,13 @@ path, used by tests and the demo — not by the Unity adapter.
    when line of sight returns. If markers prove unreadable
    at FPS distance because of this, record that as evidence
    for a later step; do not silently change the material.
+   Note, added 0.69.0 (Slice 16 Step 2): this item stands
+   as the baseline occlusion observation. Playtest-gate
+   item 32 is the re-observation under the Step 1 chunk
+   material as occluder, plus combined tint-and-marker
+   readability at FPS distance bands; it does not
+   supersede this item. Re-observation under the Step 3
+   dusk light is still owed by Step 3's own item.
 9. [ ] Marker hygiene, added 0.29.0: markers never block
    the picker (aim through a marker cell and the rally
    still picks the voxel behind it) and never block player

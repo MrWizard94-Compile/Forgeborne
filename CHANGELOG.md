@@ -1,5 +1,69 @@
 # Forgeborne — Changelog
 
+## 0.69.0 — 2026-10-30 — Slice 16 Step 2: marker occlusion
+under the new scene
+
+- Occlusion, decided in this step (rationale in
+  DECISIONS.md): honest depth occlusion is REAFFIRMED
+  under the Step 1 material, not changed. Step 1
+  changed only the chunk mesh's material; markers
+  carry their own opaque URP Lit materials (Standard
+  fallback) with default depth behaviour, so the
+  occluder changed but the occlusion mechanism did
+  not. No renderQueue, depth-test, or shader change
+  is made here, and no marker colour, shape, size,
+  or position moves. A through-wall marker would
+  still be a wallhack claim, and no Windows evidence
+  yet exists that honest occlusion makes markers
+  useless at FPS distance, so no readability aid is
+  adopted now — size, brightness, and outline aids
+  are named as candidates for a later step only if
+  item 32's observation proves uselessness.
+- Readability, decided in this step (rationale in
+  DECISIONS.md): new playtest-gate item 32 observes
+  occlusion and readability together, in one combined
+  scene, not one marker at a time — all three kind
+  markers, rally and pending markers, a green Powered
+  mill, a red Mismatched workstation, and a yellow
+  Energised cable run, at near (2-3 cells), mid
+  (about 10 cells), and far (bench-to-core scale,
+  about 24 cells Manhattan) FPS distance bands,
+  against dark voxel and the scene's current sky.
+  The separations are grounded in the values already
+  in code: Powered green (0.25, 0.9, 0.25) is never
+  cyan, Mismatched red (1, 0.15, 0.15) is never
+  orange, Energised yellow (1, 0.85, 0.1) sits on
+  ground cable cells and never floats, and the
+  light-grey Heavy cylinder separates from untinted
+  white voxels by shape and centre position, not
+  colour alone. Item 32 does NOT observe the Step 3
+  dusk light, which is not yet built — Step 3's own
+  checklist item re-observes this same combined
+  scene under that light. Item 32 extends, and does
+  not supersede, item 25 (kind distinction and slot
+  reuse) or orbital-view item 8 (baseline occlusion);
+  both stand alongside it, and a note to that effect
+  is added to docs/orbital-view.md.
+- Deliberately not moved in this step: no core file,
+  no MeshBuilder colour, no PowerTint value, no
+  PowerState query, no refresh event set, no HUD
+  line, no marker, no light, no sky, no fog, and no
+  scene file. The only adapter change is a comment
+  in SquadMarkerDisplay.cs recording the
+  reaffirmation, so the decision is visible where
+  the markers are built. Unity adapter code is not
+  compiled headlessly, following the Slice 13 Step
+  2 precedent, so this step adds no headless test
+  and no demo scenario for occlusion — a printed
+  snapshot line does not prove a visible marker.
+- Tests: 2130 passed, 0 failed (unchanged,
+  adapter-only step). Demo unchanged: Slice 15
+  scenario save 44,016 chars, all earlier demo saves
+  as in the 0.68.0 entry.
+- Next, in order: Slice 16 Step 3, lighting, sky,
+  and fog to docs/art-direction.md, decided in that
+  step.
+
 ## 0.68.0 — 2026-10-30 — Slice 16 Step 1: vertex-colour chunk
 material and MeshRenderer wiring
 

@@ -52,6 +52,19 @@
 // proves occlusion makes markers useless at FPS distance, that
 // is a later step's evidence to revisit, not a silent shader
 // change here.
+// Slice 16 Step 2, decided 0.69.0 (rationale in
+// DECISIONS.md), REAFFIRMS this decision under the Step 1
+// material: Step 1 changed only the chunk mesh's material,
+// and the markers carry their own opaque materials above,
+// so the occluder changed but the occlusion mechanism did
+// not — no renderQueue, depth-test, or shader change is
+// made here, and no behaviour changes. What is new is the
+// observation: playtest-gate item 32 re-observes occlusion
+// with the Step 1 material as the occluder, and observes
+// markers and tints together at FPS distance bands. The
+// Step 3 dusk light is not yet built, so item 32 does NOT
+// claim light coverage — Step 3's own checklist item
+// re-observes this same combined scene under that light.
 // Markers are pooled, not rebuilt per frame: the pool grows to
 // the largest squad count seen (at most 3 live squads, so at
 // most 3 squad markers, 3 rally markers, and 1 pending marker)

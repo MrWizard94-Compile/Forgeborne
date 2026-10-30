@@ -444,6 +444,60 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     itself. Do not claim this verified in Unity until
     it is observed there and recorded in DECISIONS.md.
 
+32. [ ] Marker occlusion under the Step 1 material, added
+    0.69.0 (adapter code unchanged except a comment
+    reaffirming the decision, NOT yet compiled or run in
+    Unity on Windows; no headless test proves a marker
+    hidden or visible in the scene — the cited headless
+    evidence is only that markers are ordinary opaque
+    primitives with their own URP Lit / Standard
+    materials, separate from the Step 1 chunk material):
+    build one combined scene and observe it whole, not
+    one marker at a time — one squad of each kind (cyan
+    cube Vanguard, magenta capsule Recon, light-grey
+    cylinder Heavy), each rally's orange flat cube, the
+    orange pending sphere while picking, a Powered mill
+    with green faces, a Mismatched workstation with red
+    faces, and a yellow Energised cable run, all with
+    the Step 1 chunk material as the occluding mesh.
+    First, walk behind a wall so each kind marker in
+    turn, then a rally marker, then the pending marker,
+    is on the far side, and observe each hidden while
+    occluded and reappearing when line of sight returns,
+    proving honest depth occlusion stands under the new
+    material. Second, at three FPS distance bands —
+    near (2-3 cells), mid (about 10 cells), and far
+    (bench-to-core scale, about 24 cells Manhattan) —
+    observe each marker still reading as itself against
+    dark voxel and the scene's current sky, and record
+    the band at which any marker stops reading, if any
+    does. Third, in that same combined view, observe
+    the separations together: green Powered faces are
+    not the cyan squad cube, red Mismatched faces are
+    not the orange rally cube or pending sphere, yellow
+    cable sits on ground cells and never as a floating
+    marker, and the light-grey Heavy cylinder is not an
+    untinted white voxel — that last separation is by
+    shape and centre position, not colour alone, and
+    must be observed as such. This item does NOT
+    observe the Step 3 dusk light, which is not yet
+    built: Step 3's own checklist item re-observes this
+    same combined scene under that light, and until
+    then no light claim is made here. This item does
+    NOT supersede item 25 (kind distinction and slot
+    reuse) or item 8 of `docs/orbital-view.md`
+    (baseline occlusion): it extends the occlusion
+    question to the Step 1 material as occluder plus
+    combined tint-and-marker readability, and those
+    items stand alongside it. If honest occlusion
+    proves markers unreadable at FPS distance, record
+    that as evidence for a later step's stated aid
+    (size, brightness, or outline change that still
+    hides behind a wall); do NOT silently change a
+    marker shader or render queue in this observation.
+    Do not claim this verified in Unity until it is
+    observed there and recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

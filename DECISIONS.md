@@ -5495,6 +5495,124 @@ MeshRenderer wiring (2026-10-30, silent scheduled run)
 - Next step: Slice 16 Step 2, marker occlusion
   under the new scene, decided in that step.
 
+## 0.69.0 — Slice 16 Step 2: marker occlusion under the
+new scene (2026-10-30, silent scheduled run)
+
+- Previous state verified from GitHub before work:
+  main head 98919ffe2026fd0f0c5884eae20f47622d91a429,
+  CHANGELOG 0.68.0 (Slice 16 Step 1) — local working
+  copy matched and the sync record's last entry was
+  that commit, so no step was repeated: the 0.68.0
+  decision named Slice 16 Step 2 as next, and this
+  run did exactly that. Tests 2130 baseline re-run
+  passing; demo Slice 15 save 44,016 chars.
+- Occlusion decision: REAFFIRMED, not changed.
+  Honest depth occlusion stands under the Step 1
+  material because Step 1 changed only the chunk
+  mesh's material, while markers carry their own
+  materials — SquadMarkerDisplay.LazyMaterial and
+  RallyMaterial each build an opaque URP Lit
+  material with a Standard fallback, with default
+  depth behaviour and no render-queue override.
+  The occluder therefore changed (the Step 1
+  material now renders the wall) but the mechanism
+  that hides a marker behind it did not, so there
+  is nothing in Step 1 to re-decide in code: no
+  shader, renderQueue, or depth-test line is
+  touched, and the only adapter edit is a comment
+  recording the reaffirmation where the markers
+  are built, so a later reader does not mistake
+  "no code change" for "occlusion forgotten in
+  Slice 16". A through-wall marker remains a
+  wallhack claim, not a readability aid, per the
+  Slice 13 Step 2 decision and the Slice 16 scope.
+- Why no aid is adopted now: the scope allows a
+  stated, non-wallhack aid only with evidence that
+  honest occlusion makes markers useless at FPS
+  distance, and no such evidence exists — no
+  Windows observation of markers under any
+  material has been recorded yet, so adopting an
+  aid now would be designing against an imagined
+  failure. Candidates are named, not adopted, with
+  their costs stated so a later step decides from
+  evidence rather than taste: enlarging markers
+  would move the cell-centre scale contract item
+  25 observes; brightening them risks washing the
+  tint separations item 32 observes; an outline
+  pass is a second material per marker, not a
+  tweak to the existing one. If item 32 proves
+  uselessness, that observation — with the distance
+  band and background where it failed — is the
+  evidence the aid step decides from.
+- Readability decision: one combined observation,
+  not one marker at a time. Item 32 stages all
+  three kind markers, rally and pending markers,
+  and all three tints in a single scene, because
+  the separations the scope asks for are
+  confusions between things, and a scene that
+  shows only one thing at a time cannot prove
+  two things apart. Distance bands are stated as
+  observation bands, not as claimed readability
+  limits: near 2-3 cells, mid about 10 cells, far
+  bench-to-core scale (about 24 cells Manhattan,
+  the known bench-to-core distance), with the band
+  at which any marker stops reading recorded if
+  one does. Backgrounds are dark voxel and the
+  scene's current sky, stated as current rather
+  than dusk, because Step 3's light does not exist
+  yet — item 32's light clause is therefore owed
+  to Step 3's own item, which re-observes this
+  same combined scene, and item 32 claims no
+  light coverage. Tint separations are grounded
+  in code values, not asserted: Powered green
+  (0.25, 0.9, 0.25) against cyan (0, 1, 1),
+  Mismatched red (1, 0.15, 0.15) against orange
+  rally (1, 0.55, 0), Energised yellow (1, 0.85,
+  0.1) on ground cable cells against floating
+  markers, and — the honest edge — light-grey
+  Heavy (0.85, 0.85, 0.85) against untinted white
+  (1, 1, 1, 1), which separates by cylinder shape
+  and cell-centre position, not colour alone, and
+  item 32 says so rather than claiming a colour
+  separation that does not exist.
+- Checklist honesty: this step adds item 32 and
+  closes nothing. Item 25 stands (kind distinction
+  and slot reuse are not re-observed here),
+  orbital-view item 8 stands (baseline occlusion),
+  and items 26 (tint), 27 (refresh), 30 (material
+  assignment), and 31 (wiring null-fill) are
+  untouched. Item 32 extends the occlusion
+  question to the Step 1 material as occluder
+  plus combined readability; the scope's warning
+  against blind duplication is met by that
+  extension, not by superseding the items it
+  builds on, and a note to that effect is added
+  to docs/orbital-view.md. The next free
+  playtest-gate checklist number is 33, for
+  Slice 16 Step 3.
+- What did not move, stated so a later reader can
+  check it: no core file, no MeshBuilder colour,
+  no PowerTint value, no PowerState query, no
+  refresh event set, no HUD line, no marker
+  colour, shape, size, or position, no light, no
+  sky, no fog, no scene file. Cited headless
+  evidence is only the existing marker-material
+  code (opaque, separate from the chunk material)
+  and the existing tint-value code — no new test
+  and no demo scenario claims an occlusion or a
+  readability result, per the Slice 13 Step 2
+  precedent.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 16 Step 3, lighting, sky, and
+  fog to docs/art-direction.md, decided in that
+  step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
