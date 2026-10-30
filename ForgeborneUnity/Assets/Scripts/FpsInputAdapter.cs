@@ -43,6 +43,39 @@ public class FpsInputAdapter : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E)) Simulation.GatherAhead();
         if (Input.GetKeyDown(KeyCode.Q)) Simulation.BuildWallAhead();
         if (Input.GetKeyDown(KeyCode.R)) Simulation.Weapon.Reload();
+        // Powered Unity presence (Slice 6 Step 3): T builds a
+        // Kinetic Mill (front-left, via BuildKineticMillAhead) and
+        // Y builds a Dynamo (front-centre, via BuildDynamoAhead),
+        // wiring keys to builders that are already proved in core
+        // — no core build rule is added or changed here. T and Y
+        // are free: existing keys are WASD / Space / E / Q / R /
+        // O / Return / Esc / 1 / 2 / mouse click, and T/Y sit
+        // together as the build pair, next to each other on the
+        // keyboard, so a mill and its Dynamo are built as a pair
+        // without moving between them (which is also what makes
+        // them face-adjacent and therefore powered). Both keys are
+        // suppressed while the picker is open, like mouse fire:
+        // the picker is modal for squad deployment, and a Dynamo
+        // build while picking would spend 5 EmberOre — the exact
+        // resource a pending Confirm is about to charge 10 of —
+        // so an untimed Dynamo key could make the deploy the
+        // player is aiming fail for no visible reason. The mill
+        // is suppressed with it so the pair behaves as one modal
+        // rule, not two. E / Q / R keep their pre-existing
+        // unsuppressed behaviour in this step: they spend no
+        // EmberOre, so they cannot break a pending Confirm's
+        // affordability, and changing them would be a second
+        // modal change bundled into a powered-presence step.
+        // Mesh visibility of a key build follows the scene's
+        // pre-existing refresh path (see docs/powered-presence.md):
+        // this step adds no refresh hook, and the live HUD power
+        // line (HudDisplay) is the presence proof that updates
+        // every frame regardless of mesh refresh.
+        if (!Simulation.OrbitalCommand.IsPicking)
+        {
+            if (Input.GetKeyDown(KeyCode.T)) Simulation.BuildKineticMillAhead();
+            if (Input.GetKeyDown(KeyCode.Y)) Simulation.BuildDynamoAhead();
+        }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's
         // feet). O opens the picker, or cancels it if already

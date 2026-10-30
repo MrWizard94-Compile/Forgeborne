@@ -63,6 +63,14 @@ public sealed class HudState
     public int AmmoReserve { get; set; }
     public string WeaponName { get; set; } = "PULSE RIFLE";
     public int EnemyCount { get; set; }
+    /// <summary>Slice 6 Step 3 power indicator, derived from placement
+    /// on every snapshot, never saved: how many Kinetic Mills exist,
+    /// and how many of them are powered (face-adjacent to a Dynamo,
+    /// per WorldZone.IsPowered). A Dynamo on its own counts as
+    /// neither, and a wall or workstation next to a Dynamo counts
+    /// as neither — only mills are consumers in this loop.</summary>
+    public int PoweredMills { get; set; }
+    public int TotalMills { get; set; }
     /// <summary>Mini-map: top-down solid / enemy presence, 32x32, for Slice 1 placeholder rendering.</summary>
     public bool[,] MiniMapSolid { get; set; } = new bool[32, 32];
 
@@ -88,6 +96,19 @@ public sealed class HudState
             bool solid = false;
             for (int y = 0; y < 32; y++) if (BlockInfo.IsSolid(world.Chunk.Get(x, y, z))) { solid = true; break; }
             hud.MiniMapSolid[x, z] = solid;
+        }
+        // Power indicator (Slice 6 Step 3): count mills, then ask
+        // IsPowered per mill only — the block-type check first keeps
+        // the 32^3 scan cheap, since mills are rare and IsPowered
+        // checks six neighbours. Derived, like the activity word:
+        // removing a Dynamo drops the count on the next snapshot.
+        for (int x = 0; x < 32; x++)
+        for (int y = 0; y < 32; y++)
+        for (int z = 0; z < 32; z++)
+        {
+            if (world.Chunk.Get(x, y, z) != BlockType.KineticMill) continue;
+            hud.TotalMills++;
+            if (world.IsPowered(x, y, z)) hud.PoweredMills++;
         }
         return hud;
     }

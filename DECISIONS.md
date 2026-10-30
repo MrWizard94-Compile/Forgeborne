@@ -1489,6 +1489,96 @@ look inevitable.
   `docs/orbital-view.md` (items 7-9), and they remain open.
 - Next, in order: Slice 6 Step 3, powered Unity presence.
 
+## 0.30.0 — 2026-10-30 — Slice 6 Step 3: powered Unity presence
+
+- Decision, on the build keys: T for the Kinetic Mill,
+  Y for the Dynamo, confirming the scope hypothesis that
+  this step wires keys to already-proved builders rather
+  than adding a build rule. The choice was checked
+  against the full existing key set (WASD / Space / E /
+  Q / R / O / Return / Esc / 1 / 2 / mouse click), so
+  there is no collision to discover on Windows, and the
+  pair sits together on the keyboard for the reason that
+  matters mechanically: front-left (mill) vs
+  front-centre (Dynamo) with no move between builds is
+  face-adjacent, so the pair a player builds by hand is
+  powered by construction, not by a second step. Either
+  order works, because adjacency is symmetric.
+- Decision, on picker suppression: both new keys are
+  suppressed while the picker is open, and the rationale
+  is ore-specific, not generic modality. Mouse fire is
+  already suppressed while picking; a Dynamo key is the
+  same hazard in resource form — 5 EmberOre spent
+  mid-pick can drop the player below the 10 a pending
+  Confirm is about to charge, turning an aimed deploy
+  into an unexplained refusal. The mill is suppressed
+  with the Dynamo even though it spends no ore, because
+  the two keys are one build pair and a pair with two
+  modal rules would be a trap (build a mill while
+  picking, then wonder why its Dynamo key does nothing).
+  E / Q / R were deliberately left unsuppressed: they
+  spend no EmberOre, so they cannot break a pending
+  Confirm, and changing them would bundle a second modal
+  change into a powered-presence step. If a later step
+  makes the picker fully modal, it should say so and
+  change all of them at once, with tests for the new rule.
+- Decision, on the indicator form: a count pair on
+  HudState (`PoweredMills` / `TotalMills`), rendered as
+  one `POWER: x/y MILLS POWERED` line, confirming the
+  scope hypothesis of a HUD line derived from IsPowered.
+  A count was chosen over a per-mill mark because the
+  scope offered both and the count is the one that
+  survives the common case: several mills across a base,
+  where a mark on each mill line would need a mill list
+  the HUD does not have, while a count answers the
+  player's actual question (is my automation powered?)
+  in one line. The derivation reuses the exact rule the
+  mills themselves run on, so indicator and behaviour
+  cannot disagree the way a second power computation
+  could. Only mills are counted: a Dynamo alone is a
+  source with no consumer, and a wall next to a Dynamo
+  is not a consumer either — counting either would make
+  1/1 lie about a base with no powered machine.
+- Decision, on the mesher: NO distinct Dynamo / mill
+  tint in this step, with the check recorded rather than
+  assumed. MeshBuilder gives every quad identical unit
+  UVs and no per-block colour or atlas, and
+  VoxelMeshRenderer puts all quads in one mesh, so there
+  is no existing distinctness to switch on — a tint
+  would be new UV / material work plus Unity material
+  wiring, unprovable headlessly, in a step whose job is
+  keys plus a text line. The scope explicitly allowed
+  this outcome ("carried as a named gap, not claimed"),
+  and the gap is named in docs/powered-presence.md
+  alongside its checklist observation, so a later step
+  starts from a confirmed gap, not a rediscovery.
+- Decision, on the mesh-refresh gap: named, not fixed,
+  for the same scope discipline. No adapter refreshes
+  the mesh on any key build — E / Q have always built
+  core state without a refresh hook, and GameManager
+  refreshes only on start and load — so wiring a refresh
+  for T / Y alone would have made the new keys behave
+  differently from the old ones, and wiring one for all
+  builders would have been a second system in this step.
+  The honest claim is therefore split: the HUD power
+  line updates every frame from Hud() and is the presence
+  proof, while mesh visibility of a key build is a
+  checklist question (item 6) whose answer decides a
+  refresh-on-build follow-up for all builders at once.
+- Deliberately NOT in this step: any change to Dynamo
+  cost, distribution, cadence, or kinetic mill behaviour;
+  squad rules, loot, skills, or core health; any
+  save-format field; a voltage ladder, second source,
+  second consumer, crafting, or fuel; a mesh tint; a
+  mesh-refresh hook; any change to E / Q / R modality;
+  and any claim about Windows Unity verification or the
+  pending Slice 1 director playtest gate — the adapter
+  code is written, the checklist is added to
+  docs/powered-presence.md and item 12 to
+  docs/slice-01-playtest-gate.md, and they remain open.
+- Next, in order: Slice 6 Step 4, demo scenario +
+  documentation-only review.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

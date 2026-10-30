@@ -1784,6 +1784,90 @@ Eq(20, actSaveSnap.HuntingTargetX, "slice6 hunting target survives save/load by 
 // not a function of AtRally at all.
 Check(actHunt.AtRally == false && actHunt.Activity == SquadActivity.Hunting, "slice6 hunting word is independent of rally position");
 
+// ---- Slice 6 Step 3: powered Unity presence (core indicator only) ----
+// The indicator is a HudState count derived from placement through
+// WorldZone.IsPowered, not a new core rule and not a new save field.
+// The adapter keys (T mill, Y Dynamo) and the HUD text line cannot
+// be compiled headlessly, so these tests prove the numbers the
+// adapter will render — the same core/adapter split as Steps 1-2.
+var powHudFresh = HudState.FromWorld(new WorldZone(42), new Weapon());
+Eq(0, powHudFresh.TotalMills, "slice6 fresh world has no mills for the power indicator");
+Eq(0, powHudFresh.PoweredMills, "slice6 fresh world has no powered mills");
+var powHudUn = new WorldZone(42);
+powHudUn.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+var powHudUnSnap = HudState.FromWorld(powHudUn, new Weapon());
+Eq(1, powHudUnSnap.TotalMills, "slice6 unpowered mill counts as one mill");
+Eq(0, powHudUnSnap.PoweredMills, "slice6 unpowered mill counts as zero powered");
+var powHudPair = new WorldZone(42);
+powHudPair.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+powHudPair.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+var powHudPairSnap = HudState.FromWorld(powHudPair, new Weapon());
+Eq(1, powHudPairSnap.TotalMills, "slice6 powered pair counts as one mill");
+Eq(1, powHudPairSnap.PoweredMills, "slice6 powered pair counts as one powered mill");
+// Two mills, one powered: the count is per mill, not per Dynamo,
+// and the chained mill (two cells from the Dynamo, through the
+// powered mill) stays unpowered, per the Slice 5 distribution rule.
+var powHudTwo = new WorldZone(42);
+powHudTwo.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+powHudTwo.Chunk.TrySet(11, 20, 10, BlockType.KineticMill);
+powHudTwo.Chunk.TrySet(12, 20, 10, BlockType.Dynamo);
+var powHudTwoSnap = HudState.FromWorld(powHudTwo, new Weapon());
+Eq(2, powHudTwoSnap.TotalMills, "slice6 two mills count as two");
+Eq(1, powHudTwoSnap.PoweredMills, "slice6 only the face-adjacent mill of two counts powered");
+// A diagonal Dynamo powers nothing, and neither a Dynamo alone
+// nor a wall next to a Dynamo counts as a mill at all.
+var powHudDiag = new WorldZone(42);
+powHudDiag.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+powHudDiag.Chunk.TrySet(17, 21, 16, BlockType.Dynamo);
+Eq(0, HudState.FromWorld(powHudDiag, new Weapon()).PoweredMills, "slice6 diagonal dynamo powers no mill");
+var powHudDynOnly = new WorldZone(42);
+powHudDynOnly.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+var powHudDynOnlySnap = HudState.FromWorld(powHudDynOnly, new Weapon());
+Eq(0, powHudDynOnlySnap.TotalMills, "slice6 a dynamo alone is not a mill");
+Eq(0, powHudDynOnlySnap.PoweredMills, "slice6 a dynamo alone is not a powered mill");
+var powHudWall = new WorldZone(42);
+powHudWall.Chunk.TrySet(16, 20, 16, BlockType.Wall);
+powHudWall.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+Eq(0, HudState.FromWorld(powHudWall, new Weapon()).TotalMills, "slice6 a wall next to a dynamo is not a mill");
+// Derived, not stored: removing the Dynamo drops the count on
+// the next snapshot, with no save or flag involved.
+var powHudLoss = new WorldZone(42);
+powHudLoss.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+powHudLoss.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+Eq(1, HudState.FromWorld(powHudLoss, new Weapon()).PoweredMills, "slice6 powered count before dynamo removal is one");
+powHudLoss.Chunk.TrySet(17, 20, 16, BlockType.Air);
+Eq(0, HudState.FromWorld(powHudLoss, new Weapon()).PoweredMills, "slice6 powered count after dynamo removal is zero");
+Eq(1, HudState.FromWorld(powHudLoss, new Weapon()).TotalMills, "slice6 mill itself survives dynamo removal in the count");
+// Derived across save/load too: the pair survives as chunk bytes
+// (no new save field), and the loaded snapshot counts it again.
+var powHudSave = new WorldZone(42);
+powHudSave.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+powHudSave.Chunk.TrySet(16, 4, 15, BlockType.Dynamo);
+var powHudSaveSnap = HudState.FromWorld(SaveSystem.LoadZone(SaveSystem.SaveZone(powHudSave)), new Weapon());
+Eq(1, powHudSaveSnap.TotalMills, "slice6 loaded powered pair counts as one mill");
+Eq(1, powHudSaveSnap.PoweredMills, "slice6 loaded powered pair counts as one powered mill");
+// Through the real Simulation builders, with no move between
+// the two builds: mill front-left, Dynamo front-centre, and the
+// two cells are face-adjacent, so Simulation.Hud() — the exact
+// call HudDisplay renders — reads 1/1. A mill built alone reads
+// 0/1, so the indicator distinguishes the pair from the mill.
+var powSim = new Simulation(42);
+powSim.Tick(0.1f, 0, 0, false);
+powSim.World.Player.Inventory.Add(BlockType.Stone, 10);
+powSim.World.Player.Inventory.Add(BlockType.Wood, 5);
+powSim.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Success, powSim.BuildKineticMillAhead(), "slice6 simulation mill ahead succeeds for the indicator pair");
+Eq(BuildResult.Success, powSim.BuildDynamoAhead(), "slice6 simulation dynamo ahead succeeds for the indicator pair");
+Eq(1, powSim.Hud().TotalMills, "slice6 simulation builder pair counts as one mill in Hud()");
+Eq(1, powSim.Hud().PoweredMills, "slice6 simulation builder pair counts as one powered mill in Hud()");
+var powSimSolo = new Simulation(42);
+powSimSolo.Tick(0.1f, 0, 0, false);
+powSimSolo.World.Player.Inventory.Add(BlockType.Stone, 10);
+powSimSolo.World.Player.Inventory.Add(BlockType.Wood, 5);
+Eq(BuildResult.Success, powSimSolo.BuildKineticMillAhead(), "slice6 simulation mill alone succeeds for the indicator");
+Eq(1, powSimSolo.Hud().TotalMills, "slice6 simulation mill alone counts as one mill in Hud()");
+Eq(0, powSimSolo.Hud().PoweredMills, "slice6 simulation mill alone counts as zero powered in Hud()");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

@@ -67,6 +67,17 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     `docs/orbital-command.md`. Do not claim this verified
     in Unity until that item is completed there and recorded
     in DECISIONS.md.
+12. [ ] Powered Unity presence, added 0.30.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core power-indicator counts are headless-tested):
+    press T to build a mill and Y to build a Dynamo, the
+    HUD power line reads 0/1 then 1/1 for the pair, both
+    keys are suppressed while the rally picker is open,
+    and mesh visibility / tint are recorded as observed —
+    full detail in the checklist in
+    `docs/powered-presence.md`. Do not claim this verified
+    in Unity until that checklist is completed there and
+    recorded in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

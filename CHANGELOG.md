@@ -1,5 +1,87 @@
 # Forgeborne — Changelog
 
+## 0.30.0 — 2026-10-30 — Slice 6 Step 3: powered Unity presence
+
+- Powered Unity presence, decided in this step (rationale
+  in DECISIONS.md): the Slice 5 loop gains a hand in Unity
+  — T builds a Kinetic Mill (front-left, via the existing
+  `BuildKineticMillAhead`, 10 Stone + 5 Wood) and Y builds
+  a Dynamo (front-centre, via the existing
+  `BuildDynamoAhead`, 5 EmberOre), in
+  `ForgeborneUnity/Assets/Scripts/FpsInputAdapter.cs`.
+  No core build rule is added or changed: the builders,
+  their cells, costs, and support rules already existed,
+  and this step only wires keys to them. T and Y are free
+  (existing keys are WASD / Space / E / Q / R / O /
+  Return / Esc / 1 / 2 / mouse click) and sit together as
+  the build pair, so a mill and a Dynamo built with no
+  move between them are face-adjacent and therefore
+  powered. Both keys are suppressed while the rally
+  picker is open, like mouse fire: a Dynamo build while
+  picking would spend 5 EmberOre that a pending Confirm
+  is about to charge 10 of, so an untimed key could make
+  the aimed deploy fail for no visible reason; the mill
+  is suppressed with it so the pair behaves as one modal
+  rule. E / Q / R keep their pre-existing unsuppressed
+  behaviour (they spend no EmberOre, so they cannot break
+  a pending Confirm's affordability).
+- The power indicator, decided in this step: `HudState`
+  gains `PoweredMills` / `TotalMills`, derived in core on
+  every snapshot by counting Kinetic Mill cells in the
+  chunk and asking `WorldZone.IsPowered` per mill — no
+  new core rule, no new save field. `HudDisplay` renders
+  it as `POWER: {powered}/{total} MILLS POWERED` from
+  its new `PowerText` field, wired in the Inspector. A
+  Dynamo alone, or a wall next to a Dynamo, counts as
+  neither; only mills are consumers. The counts are
+  derived, not saved: removing a Dynamo drops the count
+  on the next snapshot, and a loaded pair counts again
+  because the Dynamo block survives as a chunk byte.
+- Mesher check, decided in this step: the mesher does NOT
+  already render a Dynamo distinctly from stone or mills
+  (`MeshBuilder` assigns every quad the same unit UVs,
+  with no per-block colour, atlas, or material split), so
+  no distinct mesh tint is added or claimed here — a tint
+  would need per-block UV / material work plus Unity
+  material wiring, which is not small and cannot be
+  proved headlessly. The text indicator above is the
+  presence proof, per the scope, and the tint is carried
+  as a named gap in `docs/powered-presence.md`, not
+  quietly dropped. A second pre-existing gap is named
+  there too: no adapter refreshes the voxel mesh on any
+  key build (E / Q / T / Y alike; `GameManager`
+  refreshes on start and load only), so mesh visibility
+  of a key build is a checklist question, not an
+  assumption — the HUD line updates every frame
+  regardless of mesh refresh.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: see the new checklist in
+  `docs/powered-presence.md` (keys, indicator counts,
+  picker suppression, mesh visibility, tint observation)
+  and item 12 added to
+  `docs/slice-01-playtest-gate.md`. The test count below
+  covers the core indicator counts only; it does not
+  cover adapter keys or rendering, and this entry does
+  not claim otherwise. What must NOT change in this step
+  is unchanged: Dynamo cost (5 EmberOre), face-adjacency
+  distribution, powered cadence (every tick, replacing
+  not stacking with kinetic cadence), kinetic mill
+  behaviour, squad rules, loot, skills, core health, and
+  the save format, which gains no field in this step.
+- Tests: **709 passed, 0 failed** (was 685; +24, with no
+  test failures during the run: fresh 0/0, unpowered
+  0/1, powered 1/1, two mills 1/2, diagonal 0 powered,
+  Dynamo-alone and wall-next-to-Dynamo count as no mill,
+  count drops on Dynamo removal, counts survive
+  save/load by derivation, and the Simulation builder
+  pair reads 1/1 through `Hud()` while a lone builder
+  mill reads 0/1). Demo unchanged: Slice 1 gathered 1,
+  built 1, killed 2, save 43,881 chars; Slice 2 save
+  43,908 chars; Step 1 scenario save 44,016 chars;
+  Step 3 scenario save 44,103 chars; Slice 4 scenario
+  save 44,026 chars; Slice 5 Step 2 scenario save
+  43,974 chars.
+
 ## 0.29.0 — 2026-10-30 — Slice 6 Step 2: 3D squad / rally markers and the Advance display fix
 
 - 3D squad / rally markers, decided in this step (rationale
