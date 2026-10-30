@@ -5201,6 +5201,100 @@ look inevitable.
 - Next step: Slice 15 Step 2, composed demo scenario
   + documentation-only review, closing Slice 15.
 
+## 0.66.0 — Slice 15 Step 2: composed demo + review, closing Slice 15 (2026-10-30, silent scheduled run)
+
+- Previous state verified from GitHub before work:
+  main head 4f969ccae423730428e9bd1bbcb512f1b26f2cb5,
+  CHANGELOG 0.65.0 (Slice 15 Step 1) — local working
+  copy matched and the sync record's last entry was
+  that commit, so no step was repeated: the 0.65.0
+  decision named Slice 15 Step 2, composed demo
+  scenario + documentation-only review, closing Slice
+  15, and this run did exactly that. Tests 2069
+  baseline re-run passing; demo Slice 14 save 43,974
+  chars.
+- Composition decision: one Simulation, not separate
+  proofs. A Recon Patrol beside a Heavy HoldGround
+  was chosen over a second Patrol or a Vanguard
+  Patrol because the composition must prove two
+  things at once — a route walked and engaged on,
+  and an existing doctrine doing its own job — and
+  Recon's 12 damage makes the engagement proof
+  visible over three ticks where a Vanguard's 30
+  would end it in one. The Heavy is a holding
+  contrast, not a fire proof: no enemy ever comes
+  within its range 2 while it holds, so Heavy fire
+  is not claimed from this demo and rests on the
+  earlier slices' tests. No electrical layout is
+  staged, because this demo claims orbital
+  composition, not wiring.
+- Composition facts pinned, so they are not
+  over-claimed later: the patrol's march to its
+  rally takes 8 ticks through the shared step rule,
+  alternating axes as the gaps shrink — not a
+  diagonal, not a straight line; the enemy walks
+  west one cell per tick toward the nearest squad
+  or the player and stands on the rally cell itself
+  on tick 6, so the tick-7 kill is a patrol at
+  (20,19) firing at an adjacent enemy on its route,
+  not a step onto the enemy's cell and not a chase;
+  the loop's 24 ticks are rally-to-rally (tick 8 to
+  tick 32), with the east turn on tick 12 proving
+  no dwell; the loaded index reset is proved by
+  discrimination (first loaded tick east, where a
+  persisted waypoint 4 would step north), not by
+  the index value alone, because the patrol was
+  saved at its rally and needs no march to it.
+  The new save length, 44,016 chars, matches the
+  Step 1 scenario's length by format coincidence
+  only — it is a different save, not the same one.
+- Test note: the composed tests passed on their
+  first full run and the demo ran correctly on its
+  first execution, with one deliberate extension
+  before tests were written: the demo first ran 28
+  ticks, stopping one step short of the north
+  waypoint, so it was extended to 32 ticks to prove
+  the loop repeats (rally on tick 8 and again on
+  tick 32) before the save, and the loaded phase
+  wording was corrected to match — a saved-at-rally
+  patrol turns east on load, it does not march to
+  its rally. No code was changed for either edit.
+- Deliberately not in this step: a new core system,
+  a second doctrine, a fourth kind, a price or cap
+  change, a movement rule change, a pathfinder, a
+  balance pass, a save field, a marker change, a
+  new checklist item, or scoping the graphics slice
+  (that is the next decision step's work).
+- Director queue decision, recorded here as
+  directed (made by Rob, 2026-10-30 09:27 EDT, in
+  chat — not an Ember decision under delegation):
+  graphics is the next slice after Slice 15 closes,
+  ahead of the previously ranked Slice 16 candidates
+  (Slice 14 remainders: single-cable tint query,
+  direct-Conduit count; Slice 13 remainders:
+  vertex-colour material, MeshRenderer wiring,
+  marker occlusion), which are carried after
+  graphics unless a later director decision reorders
+  them. Graphics as directed is the scene-proof
+  layer: vertex-colour URP material and MeshRenderer
+  wiring, marker occlusion, lighting / sky / fog to
+  docs/art-direction.md, and a first FPS weapon view
+  model script — adapter-only where Unity is
+  concerned, with Windows checklist items, following
+  the Slice 13 pattern. This review records the
+  queue; it does not scope graphics, and it does
+  not reorder the remainders among themselves.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping the graphics slice as its own
+  decision step, per the director queue decision
+  recorded above.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

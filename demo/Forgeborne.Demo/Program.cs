@@ -1014,3 +1014,76 @@ SeedPocketS14(simS14Loaded.World, 10, 18);
 for (int i = 0; i < 5; i++) simS14Loaded.World.Advance();
 Console.WriteLine($"Slice 14 loaded phase after 5 ticks: powered gathered {simS14Loaded.World.PoweredBlocksGathered} (5 again), kinetic gathered {simS14Loaded.World.KineticBlocksGathered} (1 again), destroyed {simS14Loaded.World.DestroyedMills} (no new destruction), stone {simS14Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS14Loaded.World.Player.Shields}, enemies {simS14Loaded.World.Enemies.Count} (the pylon kill stays dead)");
 Console.WriteLine($"Slice 14 done: powered {simS14.World.PoweredBlocksGathered} + loaded {simS14Loaded.World.PoweredBlocksGathered}, kinetic {simS14.World.KineticBlocksGathered} + loaded {simS14Loaded.World.KineticBlocksGathered}, destroyed {simS14.World.DestroyedMills}, save JSON length: {saveS14.Length} chars");
+
+// Slice 15 Step 2 scenario: Slice 15 composed in one run —
+// the new doctrine walking its route beside an existing
+// doctrine doing its own job, with an enemy encounter on
+// the route so the demo proves engagement, not just walking.
+// A Recon Patrol (range 5, 12 damage per tick, so a 30-HP
+// enemy takes three hits, not one — a Vanguard kill in a
+// single tick would not show firing while still walking)
+// deploys paid through the picker to rally (20,5,20), and
+// a Heavy HoldGround deploys paid through the picker to
+// rally (10,5,10). Both deploy at the player (16,5,16):
+// the patrol marches to its rally and then walks its loop
+// (rally, 3 east, 3 south, 3 west, 3 north, repeat), while
+// the Heavy marches to its rally and holds there, firing
+// only once holding — the contrast that keeps Patrol from
+// collapsing into HoldGround. One enemy is staged east of
+// the loop at (26,5,20): it walks toward the nearest squad
+// or the player, so it meets the patrol on the route, is
+// shot in passing without being chased, and the patrol is
+// still on route on the next tick. The layout is staged
+// directly only for the enemy (TrySet staging does not
+// apply to squads, which deploy through the picker, as in
+// Slice 13); no electrical layout is staged, because this
+// demo claims orbital composition, not wiring. What this
+// demo cannot show, by construction, is any adapter feel:
+// no Alpha7 key press, no kind marker shape, and no scene
+// visibility appear in a headless run, so the Alpha7 key
+// stays in playtest-gate checklist item 29 and
+// orbital-command checklist item 13 (both Windows-only),
+// not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 15 Step 2 scenario — Recon Patrol walking its rally loop and firing in passing beside a Heavy HoldGround, save/load round-trip");
+var simS15 = new Simulation(42);
+simS15.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+simS15.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS15.OrbitalCommand.SelectKind(SquadKind.Recon);
+simS15.BeginOrbitalPick();
+simS15.SetOrbitalRally(20, 5, 20);
+var s15Patrol = simS15.ConfirmOrbitalDeploy();
+simS15.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS15.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS15.BeginOrbitalPick();
+simS15.SetOrbitalRally(10, 5, 10);
+var s15Heavy = simS15.ConfirmOrbitalDeploy();
+simS15.World.Enemies.Add(new Enemy(26, 5, 20));
+Console.WriteLine($"Paid squads deployed: Recon Patrol {(s15Patrol == null ? "REJECTED" : "rally (20,5,20)")}, Heavy HoldGround {(s15Heavy == null ? "REJECTED" : "rally (10,5,10)")}, ore left {simS15.World.Player.Inventory.Get(BlockType.EmberOre)} (squads deploy at the player, (16,5,16), and march to their rallies)");
+foreach (var sq in OrbitalView.Snapshot(simS15.World))
+    Console.WriteLine($"Slice 15 snapshot before: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 15 enemy before: at (26,5,20) 30 HP, east of the patrol loop");
+for (int tick = 1; tick <= 32; tick++)
+{
+    simS15.World.Advance();
+    var patrol = simS15.World.Squads[0];
+    var heavy = simS15.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS15.World);
+    Console.WriteLine($"Slice 15 tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} target ({patrol.PatrolTarget.X},5,{patrol.PatrolTarget.Z}) reads {snaps[0].Activity}, heavy at ({heavy.X},5,{heavy.Z}) reads {snaps[1].Activity}, enemies {simS15.World.Enemies.Count}{(simS15.World.Enemies.Count > 0 ? $" at ({simS15.World.Enemies[0].X},5,{simS15.World.Enemies[0].Z}) {simS15.World.Enemies[0].Health} HP" : " (enemy dead)")}");
+}
+Console.WriteLine($"Slice 15 after 32 ticks: patrol at ({simS15.World.Squads[0].X},5,{simS15.World.Squads[0].Z}) waypoint {simS15.World.Squads[0].PatrolWaypointIndex}, heavy at ({simS15.World.Squads[1].X},5,{simS15.World.Squads[1].Z}) holding its rally, enemies {simS15.World.Enemies.Count}");
+var saveS15 = simS15.SaveToJson();
+var simS15Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS15Loaded.LoadFromJson(saveS15)}");
+foreach (var sq in OrbitalView.Snapshot(simS15Loaded.World))
+    Console.WriteLine($"Slice 15 snapshot after load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 15 loaded patrol waypoint index: {simS15Loaded.World.Squads[0].PatrolWaypointIndex} (reset to 0 on load: the patrol was saved at its rally, so the reset is proved by the first loaded tick turning east — a persisted waypoint 4 would have stepped north instead)");
+for (int tick = 1; tick <= 8; tick++)
+{
+    simS15Loaded.World.Advance();
+    var patrol = simS15Loaded.World.Squads[0];
+    var heavy = simS15Loaded.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS15Loaded.World);
+    Console.WriteLine($"Slice 15 loaded tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} target ({patrol.PatrolTarget.X},5,{patrol.PatrolTarget.Z}) reads {snaps[0].Activity}, heavy at ({heavy.X},5,{heavy.Z}) reads {snaps[1].Activity}, enemies {simS15Loaded.World.Enemies.Count}");
+}
+Console.WriteLine($"Slice 15 done: patrol {simS15.World.Squads[0].Kind} {simS15.World.Squads[0].Doctrine} + loaded patrol, heavy holding, save JSON length: {saveS15.Length} chars");

@@ -5481,5 +5481,109 @@ Eq(0, p15Loaded.PatrolWaypointIndex, "slice15 patrol save/load waypoint index re
 Check(p15Loaded.MoveForPatrol(p15SaveLoaded.Chunk, Array.Empty<Enemy>()), "slice15 patrol loaded squad steps toward its rally");
 Eq(22, p15Loaded.X, "slice15 patrol loaded squad steps west to its rally first");
 
+
+// Slice 15 Step 2 composed integration: the demo layout as
+// tests, so the demo numbers are proved, not just printed.
+// One Simulation carries a Recon Patrol on its rally loop
+// beside a Heavy HoldGround marching to its own rally, with
+// one enemy meeting the patrol on the route, through ticks
+// and a save/load round-trip. The Recon kind is deliberate:
+// 12 damage per tick means a 30-HP enemy takes three hits,
+// so the demo proves firing while still walking — a Vanguard
+// kill in a single tick would not show the patrol walking on
+// after a hit. The Heavy is the contrast: it marches, then
+// holds and reads Holding, and never fires while moving.
+var s15Sim = new Simulation(42);
+s15Sim.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+s15Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+s15Sim.OrbitalCommand.SelectKind(SquadKind.Recon);
+s15Sim.BeginOrbitalPick();
+s15Sim.SetOrbitalRally(20, 5, 20);
+var s15Patrol = s15Sim.ConfirmOrbitalDeploy();
+s15Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s15Sim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s15Sim.BeginOrbitalPick();
+s15Sim.SetOrbitalRally(10, 5, 10);
+var s15Heavy = s15Sim.ConfirmOrbitalDeploy();
+s15Sim.World.Enemies.Add(new Enemy(26, 5, 20));
+Check(s15Patrol != null, "slice15 step2 composed patrol deploys paid through the picker");
+Check(s15Heavy != null, "slice15 step2 composed heavy deploys paid through the picker");
+Eq(0, s15Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice15 step2 composed two paid deploys spend all 20 ore");
+Eq(TacticalDoctrine.Patrol, s15Sim.World.Squads[0].Doctrine, "slice15 step2 composed first squad doctrine patrol");
+Eq(SquadKind.Recon, s15Sim.World.Squads[0].Kind, "slice15 step2 composed first squad kind recon");
+Eq(TacticalDoctrine.HoldGround, s15Sim.World.Squads[1].Doctrine, "slice15 step2 composed second squad doctrine holdground");
+Eq(SquadKind.Heavy, s15Sim.World.Squads[1].Kind, "slice15 step2 composed second squad kind heavy");
+var s15SnapBefore = OrbitalView.Snapshot(s15Sim.World);
+Eq(SquadActivity.Patrolling, s15SnapBefore[0].Activity, "slice15 step2 composed patrol reads patrolling before any tick");
+Eq(SquadActivity.Marching, s15SnapBefore[1].Activity, "slice15 step2 composed heavy reads marching before any tick");
+Eq(30, s15Sim.World.Enemies[0].Health, "slice15 step2 composed staged enemy 30 HP");
+for (int s15Tick = 0; s15Tick < 5; s15Tick++) s15Sim.World.Advance();
+Eq(19, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol X after 5 ticks");
+Eq(18, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol Z after 5 ticks");
+Eq(0, s15Sim.World.Squads[0].PatrolWaypointIndex, "slice15 step2 composed patrol still on waypoint 0 after 5 ticks");
+Eq(18, s15Sim.World.Enemies[0].Health, "slice15 step2 composed enemy 18 HP after 5 ticks: one 12-damage passing shot");
+Eq(21, s15Sim.World.Enemies[0].X, "slice15 step2 composed enemy steps toward the patrol");
+var s15Snap5 = OrbitalView.Snapshot(s15Sim.World)[0];
+Eq(SquadActivity.Patrolling, s15Snap5.Activity, "slice15 step2 composed patrol still reads patrolling while firing in passing");
+Check(!s15Snap5.HasHuntingTarget, "slice15 step2 composed firing patrol has no hunting target");
+s15Sim.World.Advance();
+Eq(19, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol X after 6 ticks");
+Eq(19, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol Z after 6 ticks");
+Eq(6, s15Sim.World.Enemies[0].Health, "slice15 step2 composed enemy 6 HP after 6 ticks: second passing shot");
+Eq(20, s15Sim.World.Enemies[0].X, "slice15 step2 composed enemy reaches the rally cell on tick 6");
+Eq(20, s15Sim.World.Enemies[0].Z, "slice15 step2 composed enemy Z on the rally cell on tick 6");
+s15Sim.World.Advance();
+Eq(0, s15Sim.World.Enemies.Count, "slice15 step2 composed enemy dead on tick 7: third passing shot, no chase");
+Eq(20, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol X after the kill tick");
+Eq(19, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol Z after the kill tick: still on route, not on the enemy cell");
+s15Sim.World.Advance();
+Eq(20, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol reaches its rally on tick 8");
+Eq(20, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol rally Z on tick 8");
+Eq(0, s15Sim.World.Squads[0].PatrolWaypointIndex, "slice15 step2 composed patrol at rally waypoint on tick 8");
+for (int s15Tick = 0; s15Tick < 3; s15Tick++) s15Sim.World.Advance();
+Eq(23, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol reaches the east waypoint on tick 11");
+Eq(20, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol east waypoint Z on tick 11");
+Eq(1, s15Sim.World.Squads[0].PatrolWaypointIndex, "slice15 step2 composed patrol east waypoint index on tick 11");
+s15Sim.World.Advance();
+Eq(22, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol turns at the east waypoint without dwelling on tick 12");
+Eq(2, s15Sim.World.Squads[0].PatrolWaypointIndex, "slice15 step2 composed patrol south waypoint index on tick 12");
+Eq(10, s15Sim.World.Squads[1].X, "slice15 step2 composed heavy reaches its rally X on tick 12");
+Eq(10, s15Sim.World.Squads[1].Z, "slice15 step2 composed heavy reaches its rally Z on tick 12");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s15Sim.World)[1].Activity, "slice15 step2 composed heavy reads holding on tick 12");
+for (int s15Tick = 0; s15Tick < 5; s15Tick++) s15Sim.World.Advance();
+Eq(20, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol reaches the south waypoint on tick 17");
+Eq(23, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol south waypoint Z on tick 17");
+for (int s15Tick = 0; s15Tick < 6; s15Tick++) s15Sim.World.Advance();
+Eq(17, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol reaches the west waypoint on tick 23");
+Eq(20, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol west waypoint Z on tick 23");
+for (int s15Tick = 0; s15Tick < 6; s15Tick++) s15Sim.World.Advance();
+Eq(20, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol reaches the north waypoint on tick 29");
+Eq(17, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol north waypoint Z on tick 29");
+for (int s15Tick = 0; s15Tick < 3; s15Tick++) s15Sim.World.Advance();
+Eq(20, s15Sim.World.Squads[0].X, "slice15 step2 composed patrol returns to its rally on tick 32: the loop repeats");
+Eq(20, s15Sim.World.Squads[0].Z, "slice15 step2 composed patrol rally Z again on tick 32");
+Eq(0, s15Sim.World.Squads[0].PatrolWaypointIndex, "slice15 step2 composed patrol rally waypoint index again on tick 32");
+var s15Snap32 = OrbitalView.Snapshot(s15Sim.World);
+Eq(SquadActivity.Patrolling, s15Snap32[0].Activity, "slice15 step2 composed patrol reads patrolling after a full circuit");
+Eq(SquadActivity.Holding, s15Snap32[1].Activity, "slice15 step2 composed heavy still reads holding after 32 ticks");
+Eq(100, s15Snap32[1].Health, "slice15 step2 composed heavy takes no damage on its march and hold");
+Eq(0, s15Sim.World.Enemies.Count, "slice15 step2 composed no enemies after 32 ticks");
+var s15Save = s15Sim.SaveToJson();
+var s15Loaded = new Simulation(99);
+Check(s15Loaded.LoadFromJson(s15Save), "slice15 step2 composed save loads");
+Eq(20, s15Loaded.World.Squads[0].X, "slice15 step2 composed loaded patrol X at its rally");
+Eq(20, s15Loaded.World.Squads[0].Z, "slice15 step2 composed loaded patrol Z at its rally");
+Eq(0, s15Loaded.World.Squads[0].PatrolWaypointIndex, "slice15 step2 composed loaded patrol waypoint index resets to 0");
+Eq(10, s15Loaded.World.Squads[1].X, "slice15 step2 composed loaded heavy X at its rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s15Loaded.World)[1].Activity, "slice15 step2 composed loaded heavy reads holding");
+Eq(0, s15Loaded.World.Enemies.Count, "slice15 step2 composed kill stays dead after load");
+s15Loaded.World.Advance();
+Eq(21, s15Loaded.World.Squads[0].X, "slice15 step2 composed loaded patrol turns east on tick 1: reset proved, a persisted waypoint 4 would step north");
+Eq(1, s15Loaded.World.Squads[0].PatrolWaypointIndex, "slice15 step2 composed loaded patrol east waypoint index on tick 1");
+for (int s15Tick = 0; s15Tick < 2; s15Tick++) s15Loaded.World.Advance();
+Eq(23, s15Loaded.World.Squads[0].X, "slice15 step2 composed loaded patrol reaches the east waypoint again");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s15Loaded.World)[0].Activity, "slice15 step2 composed loaded patrol reads patrolling on its resumed loop");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s15Loaded.World)[1].Activity, "slice15 step2 composed loaded heavy still reads holding");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

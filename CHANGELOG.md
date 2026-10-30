@@ -1,5 +1,70 @@
 # Forgeborne — Changelog
 
+## 0.66.0 — 2026-10-30 — Slice 15 Step 2: composed demo + review, closing Slice 15
+
+- Composed demo, decided in this step (rationale in
+  DECISIONS.md): one Simulation proves the Step 1 Patrol
+  beside the doctrines the reader already trusts, not as
+  separate proofs. A Recon Patrol (range 5, 12 damage per
+  tick, so a 30-HP enemy takes three hits) deploys paid
+  through the picker to rally (20,5,20), and a Heavy
+  HoldGround deploys paid through the picker to rally
+  (10,5,10); both deploy at the player (16,5,16), 20
+  EmberOre spent, 0 left. One enemy staged east of the
+  loop at (26,5,20) walks toward the nearest squad and
+  meets the patrol on its route: tick 5 at (19,18) the
+  enemy drops 30 -> 18 HP, tick 6 at (19,19) it drops
+  18 -> 6 HP standing on the rally cell itself, tick 7
+  at (20,19) it dies — three passing shots, no chase,
+  the patrol still on route and reading Patrolling
+  with no hunting target throughout. The patrol reaches
+  its rally on tick 8, the east waypoint on tick 11
+  (turning without dwelling on tick 12), the south
+  waypoint on tick 17, the west on tick 23, the north
+  on tick 29, and its rally again on tick 32 — a full
+  24-tick circuit, so the route repeats. The Heavy
+  reaches its rally on tick 12 and holds there at full
+  100 HP. Through a save/load round-trip the patrol
+  loads at its rally with its waypoint index reset to
+  0, proved by its first loaded tick turning east
+  where a persisted waypoint 4 would have stepped
+  north; it reaches the east waypoint again on loaded
+  tick 3 and is still patrolling on loaded tick 8.
+  No new core system rides along with this step.
+- Review, decided in this step: new
+  docs/slice-15-review.md (gate checked against the
+  scope, verdict: reviewed and closed as a tested
+  fourth doctrine plus a composed demo, not
+  playtested, balanced, or Unity-verified, Slice 15
+  remainders carried in priority order, no new
+  playtest-gate checklist item — the demo exercises
+  no adapter binding item 29 / orbital-command item
+  13 do not already cover).
+- Queue decision recorded in this step, director-made
+  2026-10-30 09:27 EDT (not an Ember decision): graphics
+  is the next slice after Slice 15 closes, ahead of
+  the previously ranked Slice 16 candidates, which
+  are carried after graphics unless a later director
+  decision reorders them. Graphics as directed is the
+  scene-proof layer: vertex-colour URP material and
+  MeshRenderer wiring, marker occlusion, lighting /
+  sky / fog to docs/art-direction.md, and a first FPS
+  weapon view model script — adapter-only where Unity
+  is concerned, with Windows checklist items,
+  following the Slice 13 pattern. Recorded in the
+  Slice 15 review and in DECISIONS.md, so it is
+  visible in the repo, not only in a schedule body.
+  This step does NOT scope the graphics slice: its
+  own scope document is the next decision step.
+- Tests: 2130 passed, 0 failed (was 2069; +61, no
+  failures on the final runs). Demo unchanged except
+  for the new scenario: Slice 14 scenario save 43,974
+  chars, all earlier demo saves as in the 0.65.0
+  entry. New scenario save 44,016 chars.
+- Next, in order: scoping the graphics slice as its
+  own decision step, per the director queue decision
+  recorded above.
+
 ## 0.65.0 — 2026-10-30 — Slice 15 Step 1: fourth doctrine Patrol, a rally loop walked and repeated
 
 - Doctrine, decided in this step (rationale in
