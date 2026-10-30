@@ -174,3 +174,42 @@ for (int tick = 5; tick <= 6; tick++)
 }
 var s4LoadedSnap = OrbitalView.Snapshot(simS4Loaded.World);
 Console.WriteLine($"Slice 4 done: HoldGround doctrine {s4LoadedSnap[0].Doctrine} at rally: {s4LoadedSnap[0].AtRally}, Advance doctrine {s4LoadedSnap[1].Doctrine}, enemies left {simS4Loaded.World.Enemies.Count}, save JSON length: {saveS4.Length} chars");
+
+// Slice 5 Step 2 scenario: Slice 5 composed in one run — the Step 1
+// electrical loop running inside the gather -> build -> survive
+// loop, not in a pocket test alone. The powered pair is built
+// through the real Simulation builders (mill front-left, Dynamo
+// front-centre, face-adjacent with no move between builds), its
+// neighbours are seeded as one fresh stone pocket so the rate
+// comparison is controlled, and an unpowered mill pocket runs
+// alongside it as the kinetic baseline. After 5 ticks the game
+// saves and loads, fresh stone is seeded around the loaded
+// powered mill (its first pocket is spent, as it should be),
+// and 5 more ticks prove the loaded loop still runs at the
+// powered rate while the kinetic baseline still runs at its own.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 5 Step 2 scenario — powered mill vs kinetic mill, save/load round-trip");
+var simS5 = new Simulation(42);
+simS5.Tick(0.1f, 0, 0, false);
+simS5.World.Player.Inventory.Add(BlockType.Stone, 10);
+simS5.World.Player.Inventory.Add(BlockType.Wood, 5);
+simS5.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+Console.WriteLine($"Mill build -> {simS5.BuildKineticMillAhead()}, Dynamo build -> {simS5.BuildDynamoAhead()}, ore left {simS5.World.Player.Inventory.Get(BlockType.EmberOre)}");
+Console.WriteLine($"Powered pair: mill at (15,4,17) = {simS5.World.Chunk.Get(15, 4, 17)}, Dynamo at (16,4,17) = {simS5.World.Chunk.Get(16, 4, 17)}, mill powered: {simS5.World.IsPowered(15, 4, 17)}");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS5.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+simS5.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+foreach (var (x, y, z) in new[] { (9, 20, 10), (10, 21, 10), (10, 19, 10), (10, 20, 11), (10, 20, 9) })
+    simS5.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+Console.WriteLine($"Unpowered mill pocket: mill at (10,20,10) powered: {simS5.World.IsPowered(10, 20, 10)}");
+int stoneBefore = simS5.World.Player.Inventory.Get(BlockType.Stone);
+for (int i = 0; i < 5; i++) simS5.World.Advance();
+Console.WriteLine($"After 5 ticks: powered gathered {simS5.World.PoweredBlocksGathered}, kinetic gathered {simS5.World.KineticBlocksGathered}, stone {stoneBefore} -> {simS5.World.Player.Inventory.Get(BlockType.Stone)}, Dynamo still at (16,4,17): {simS5.World.Chunk.Get(16, 4, 17)}");
+var saveS5 = simS5.SaveToJson();
+var simS5Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS5Loaded.LoadFromJson(saveS5)}");
+Console.WriteLine($"After load: mill {simS5Loaded.World.Chunk.Get(15, 4, 17)}, Dynamo {simS5Loaded.World.Chunk.Get(16, 4, 17)}, mill powered: {simS5Loaded.World.IsPowered(15, 4, 17)}, session counters reset: powered {simS5Loaded.World.PoweredBlocksGathered}, kinetic {simS5Loaded.World.KineticBlocksGathered}");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS5Loaded.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) simS5Loaded.World.Advance();
+Console.WriteLine($"Slice 5 done: loaded powered gathered {simS5Loaded.World.PoweredBlocksGathered}, loaded kinetic gathered {simS5Loaded.World.KineticBlocksGathered}, stone now {simS5Loaded.World.Player.Inventory.Get(BlockType.Stone)}, save JSON length: {saveS5.Length} chars");

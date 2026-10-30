@@ -1160,6 +1160,38 @@ look inevitable.
 - Next, in order: Slice 5 Step 2, demo scenario +
   documentation-only review.
 
+## 2026-10-30 — Slice 5 Step 2 (0.26.0, under delegation)
+
+- Decision: Step 2 is composition + review only, as with
+  0.13.0, 0.19.0, and 0.23.0. No new core system rides along
+  with a demo scenario and a review; a review that smuggled
+  in a system would make its own verdict unverifiable. The
+  demo's seeded stone pockets are a controlled-rate device,
+  not a gameplay claim: the powered pair itself is built
+  through the real Simulation builders, and the pockets exist
+  so the 5-to-1 rate comparison is not at the mercy of
+  generated terrain. The loaded-phase re-seeding is labelled
+  in the demo, the tests, and the review as fresh seeding —
+  the first pocket is spent, and pretending otherwise would
+  overstate what the round-trip proves.
+- Decision: Slice 6 candidate order is carried unchanged
+  from the 0.24.0 scope (pitch + markers first, second squad
+  type second). The Step 2 evidence gives no reason to
+  reorder: power is proved at one voltage, and the
+  presentation gaps that most limit the picker in Unity are
+  older and more exposed than a second voltage. One new
+  note is added to the first candidate, not a reordering:
+  Slice 5 touched no Unity adapter, so powered automation
+  has no Unity presence at all yet — that absence belongs
+  with the pitch + markers candidate when Slice 6 is scoped.
+- Deliberately NOT in this step: any Slice 6 system, any
+  balance claim, any Unity adapter change, any change to
+  Dynamo cost / distribution / cadence, and any change to
+  repo visibility, licence, monetisation, or release status.
+  The Unity verification checklist and the Slice 1 director
+  playtest gate remain open, untouched by this headless step.
+- Next, in order: scoping Slice 6 as its own decision step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

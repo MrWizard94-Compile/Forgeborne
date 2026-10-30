@@ -1549,6 +1549,52 @@ Eq(BuildResult.Success, simDyn.BuildDynamoAhead(), "simulation build dynamo ahea
 Eq(BlockType.Dynamo, simDyn.World.Chunk.Get(16, 4, 17), "simulation dynamo placed front-centre");
 Eq(0, simDyn.World.Player.Inventory.Get(BlockType.EmberOre), "simulation dynamo spends its ore");
 
+// ---- Slice 5 Step 2: demo scenario + review (composition only) ----
+// Mirrors the Slice 5 demo scenario step for step: a powered pair
+// built through the Simulation builders, a seeded stone pocket, an
+// unpowered mill pocket as the kinetic baseline, 5 ticks, a
+// save/load round-trip, a freshly seeded pocket in the loaded
+// game, and 5 more ticks. No new core system rides along.
+var simS5 = new Simulation(42);
+simS5.Tick(0.1f, 0, 0, false);
+simS5.World.Player.Inventory.Add(BlockType.Stone, 10);
+simS5.World.Player.Inventory.Add(BlockType.Wood, 5);
+simS5.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Success, simS5.BuildKineticMillAhead(), "slice 5 demo mill builds through simulation builder");
+Eq(BuildResult.Success, simS5.BuildDynamoAhead(), "slice 5 demo dynamo builds through simulation builder");
+Eq(BlockType.KineticMill, simS5.World.Chunk.Get(15, 4, 17), "slice 5 demo mill placed front-left");
+Eq(BlockType.Dynamo, simS5.World.Chunk.Get(16, 4, 17), "slice 5 demo dynamo placed front-centre");
+Eq(0, simS5.World.Player.Inventory.Get(BlockType.EmberOre), "slice 5 demo dynamo spends its ore");
+Check(simS5.World.IsPowered(15, 4, 17), "slice 5 demo builder pair is powered with no move between builds");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS5.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+simS5.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+foreach (var (x, y, z) in new[] { (9, 20, 10), (10, 21, 10), (10, 19, 10), (10, 20, 11), (10, 20, 9) })
+    simS5.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+Check(!simS5.World.IsPowered(10, 20, 10), "slice 5 demo unpowered pocket mill is not powered");
+Eq(0, simS5.World.Player.Inventory.Get(BlockType.Stone), "slice 5 demo stone spent on mill, none banked before ticks");
+for (int i = 0; i < 5; i++) simS5.World.Advance();
+Eq(5, simS5.World.PoweredBlocksGathered, "slice 5 demo powered mill gathers 5 in 5 ticks");
+Eq(1, simS5.World.KineticBlocksGathered, "slice 5 demo kinetic mill gathers 1 in 5 ticks alongside");
+Eq(6, simS5.World.Player.Inventory.Get(BlockType.Stone), "slice 5 demo powered + kinetic output both reach player inventory");
+Eq(BlockType.Dynamo, simS5.World.Chunk.Get(16, 4, 17), "slice 5 demo powered mill never excavates its dynamo");
+var saveS5 = simS5.SaveToJson();
+var simS5Loaded = new Simulation(99);
+Check(simS5Loaded.LoadFromJson(saveS5), "slice 5 demo save loads");
+Eq(BlockType.KineticMill, simS5Loaded.World.Chunk.Get(15, 4, 17), "slice 5 demo mill survives save/load");
+Eq(BlockType.Dynamo, simS5Loaded.World.Chunk.Get(16, 4, 17), "slice 5 demo dynamo survives save/load");
+Check(simS5Loaded.World.IsPowered(15, 4, 17), "slice 5 demo loaded mill is powered from placement, no flag needed");
+Eq(0, simS5Loaded.World.PoweredBlocksGathered, "slice 5 demo session powered counter resets on load");
+Eq(0, simS5Loaded.World.KineticBlocksGathered, "slice 5 demo session kinetic counter resets on load");
+Eq(6, simS5Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice 5 demo gathered stone survives save/load");
+foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
+    simS5Loaded.World.Chunk.TrySet(x, y, z, BlockType.Stone);
+for (int i = 0; i < 5; i++) simS5Loaded.World.Advance();
+Eq(5, simS5Loaded.World.PoweredBlocksGathered, "slice 5 demo loaded powered mill gathers 5 in 5 ticks");
+Eq(1, simS5Loaded.World.KineticBlocksGathered, "slice 5 demo loaded kinetic mill gathers 1 in 5 ticks alongside");
+Eq(12, simS5Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice 5 demo loaded stone total is pre-load 6 plus loaded 6");
+Eq(BlockType.Dynamo, simS5Loaded.World.Chunk.Get(16, 4, 17), "slice 5 demo loaded powered mill never excavates its dynamo");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

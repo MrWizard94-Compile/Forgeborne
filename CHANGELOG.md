@@ -1,5 +1,50 @@
 # Forgeborne — Changelog
 
+## 0.26.0 — 2026-10-30 — Slice 5 Step 2: demo scenario + review
+
+- Composed Slice 5 demo scenario, plus `docs/slice-05-review.md`
+  (documentation only, no new core system, by design). One
+  Simulation proves Step 1 together with the loop it joins,
+  not separately: a Kinetic Mill and a Dynamo built through
+  the real Simulation builders (front-left and front-centre,
+  face-adjacent with no move between builds, Dynamo spending
+  its 5 EmberOre), a seeded stone pocket around the powered
+  mill, and an unpowered mill pocket alongside as the kinetic
+  baseline. After 5 ticks the powered mill has gathered 5
+  blocks and the kinetic mill 1, stone 0 -> 6, and the Dynamo
+  still stands — the powered mill never excavates its own
+  source. Save/load keeps the mill, the Dynamo, and the
+  gathered stone, the loaded mill is powered from placement
+  with no flag, and both session counters reset to 0, as
+  they are not saved. Five fresh stone neighbours are then
+  seeded around the loaded powered mill (its first pocket
+  is spent, as it should be — labelled as fresh seeding,
+  not leftover blocks), and 5 more ticks give loaded powered
+  5 and loaded kinetic 1, stone 12 in total. Save JSON
+  43,974 chars.
+- Review verdict: Slice 5 is **reviewed and closed as tested,
+  integrated powered automation** — not playtested, balanced,
+  or Unity-verified. It carries the ranked Slice 6 candidates
+  from the 0.24.0 scope in the same order, as the starting
+  point for Slice 6 scoping, not as a promise, and adds one
+  new note to the first candidate: powered automation has no
+  Unity presence at all yet (no Dynamo build key, no powered
+  rendering, no power indicator), since Slice 5 touched no
+  adapter. Slice 6 is NOT scoped by this review.
+- Demo otherwise unchanged: Slice 1 gathered 1, built 1,
+  killed 2, save 43,881 chars; Slice 2 built 1, killed 2,
+  kinetic gathered 1, squad intact 3 members / 90 HP,
+  squads saved+loaded 1, save 43,908 chars; Step 1 scenario
+  core 42 HP, weapon 28/120, shields 100/105, save 44,016
+  chars; Step 3 scenario core 42 HP, 3 paid squads 90 HP,
+  10 ore left, 4th picker deploy REFUSED at cap, save 44,103
+  chars; Slice 4 scenario HoldGround at rally, Advance
+  hunting, save 44,026 chars.
+- Tests: **633 passed, 0 failed** (was 610; +23 composed-
+  integration tests mirroring the new demo scenario, with
+  no test failures during the run). Next in order: scoping
+  Slice 6 as its own decision step.
+
 ## 0.25.0 — 2026-10-29 — Slice 5 Step 1: automation tier 2, first electrical loop
 
 - The first powered loop, decided in this step (rationale in
