@@ -1,5 +1,45 @@
 # Forgeborne — Changelog
 
+## 0.39.0 — 2026-10-30 — Slice 9 scope: electrical tier 2 (voltage, cable, destruction)
+
+- Slice 9 scoped as its own decision step (rationale in
+  DECISIONS.md), following the 0.38.0 decision that named
+  scoping Slice 9 as next, from the ranked candidates
+  carried in the Slice 8 review (rest of automation tier
+  2 first, third kind and deferred doctrines second).
+  New `docs/slice-09-scope.md` — documentation only, no
+  code changed, by design. Slice 9 theme: electrical tier
+  2 completion against the mill that already exists — a
+  voltage ladder with a transformer first, cable
+  distribution that carries a voltage beyond
+  face-adjacency second, mismatched-voltage destruction
+  third, closed by a composed demo and review fourth.
+  Each step's decisions are left to that step, with
+  starting hypotheses stated in the scope, not decisions
+  smuggled into it: ladder count and names (blueprint
+  LV-to-EV vocabulary, not a decision), existing Dynamo
+  output level and old-save load rule, transformer form
+  and direction, interim unmatched-voltage fallback in
+  Step 1 (kinetic fallback, destruction deferred to Step
+  3, with the change to be named openly when it lands),
+  cable form and network voltage resolution, mill rating
+  and undervoltage handling, destruction salvage and
+  cascade, and save/display/adapter rules per step.
+  Deliberately NOT in Slice 9: additional powered
+  consumers or sources (first ranked Slice 10 candidate),
+  tiers 3-4, crafting, fuel, a per-machine inventory,
+  a third kind or doctrine, a balance pass, mesh tint /
+  refresh, free-deploy enforcement, or Windows Unity
+  verification.
+- Tests: 929 passed, 0 failed (unchanged, documentation-
+  only step). Demo unchanged: Slice 1 gathered 1, built 1,
+  killed 2, save 43,881 chars; Slice 2 save 43,921 chars;
+  Step 1 scenario save 44,016 chars; Step 3 scenario save
+  44,103 chars; Slice 4 scenario save 44,026 chars;
+  Slice 5 Step 2 scenario save 43,974 chars; Slice 6 Step 4
+  scenario save 44,024 chars; Slice 7 Step 2 scenario save
+  44,013 chars; Slice 8 Step 3 scenario save 43,974 chars.
+
 ## 0.38.0 — 2026-10-30 — Slice 8 Step 3: demo scenario + review
 
 - Slice 8 composed demo, decided in this step (rationale in

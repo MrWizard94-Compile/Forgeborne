@@ -2323,6 +2323,93 @@ look inevitable.
   (rest of automation tier 2 first, third kind and
   deferred doctrines second).
 
+## 0.39.0 — 2026-10-30 — Slice 9 scope: electrical tier 2 (voltage, cable, destruction)
+
+- Decision, on Slice 9 order: ladder + transformer first,
+  cable distribution second, mismatch destruction third,
+  demo + review fourth. The order is a dependency chain,
+  not a preference list: a ladder without distribution can
+  only mismatch a mill touching its own Dynamo, a
+  distribution rule without a ladder can only carry the one
+  voltage that already exists, and a destruction rule
+  without either can never fire, because a single voltage
+  delivered by face-adjacency alone can never mismatch.
+  Each step therefore creates the condition the next step
+  needs, and a failure in Step 4's composed demo can be
+  attributed to one step's rule, not to three rules proved
+  at once.
+- Decision, on what Slice 9 closes and what it leaves:
+  Slice 9 closes the tier 2 core — ladder, conversion,
+  distribution, and the blueprint failure rule — against
+  the one consumer that already exists, the Kinetic Mill.
+  It does NOT close tier 2 widening: additional powered
+  consumers or sources (a powered workstation, an
+  alternator as a distinct source) are the first ranked
+  Slice 10 candidate, not Slice 9 scope creep, because a
+  second consumer would need its own baseline proved at
+  the same time as the ladder, the cable, and the
+  destruction rule. Recording the split here, in the scope
+  and in the changelog, is what keeps "rest of tier 2"
+  from silently shrinking to "whatever Slice 9 happened to
+  build".
+- Decision, on hypotheses vs decisions in the scope: every
+  step question the scope lists — ladder count and names,
+  Dynamo output level, transformer form and direction,
+  cable form and network resolution, mill rating and
+  undervoltage, salvage and cascade — is a hypothesis or
+  an open question for its step, not a decision made in
+  this document. The two places the scope does commit are
+  deliberate and stated as such: the step order above, and
+  the interim unmatched-voltage rule for Step 1 (fallback
+  to kinetic cadence, destruction deferred to Step 3), so
+  that Step 3's change from fallback to destruction is a
+  recorded behaviour change with a rationale, in the Slice
+  8 Step 2 manner, rather than a test quietly rewritten.
+  If Step 1 finds destruction must already exist, it must
+  say why Step 3 then exists at all and re-scope before
+  building — the scope names that escape hatch rather
+  than leaving Step 1 to smuggle Step 3's system in.
+- Decision, on placement: new Slice 9 blocks are placed by
+  the Slice 8 aimed builder, distinct by block type, not by
+  a revived front-left / front-right / front-centre offset
+  and not by a new placement rule per block. The offsets
+  were retired for a reason — aim decides one cell and an
+  offset silently moving it to another was exactly the bug
+  Slice 8 closed — and a transformer or cable that reintroduced
+  an offset would reopen it. Adapter keys for new block types
+  are decided in their steps, following the T / Y precedent
+  (aimed builder, suppressed while the picker is open).
+- Decision, on save and display conservatism: the scope's
+  starting hypothesis, not a decision, is that voltage and
+  cable networks are derived at load from the blocks
+  themselves, like powered state today, with no new saved
+  flag — unless a step's design creates stored state (for
+  example, a selectable transformer direction), which then
+  follows the existing old-save / malformed-entry rules.
+  The scope also warns Steps 1 and 3 against a display lie:
+  a count that calls a mismatched mill "powered" before
+  Step 3 destroys it would misstate the step's own rule, so
+  each step must state what its HudState count means.
+- Decision, on gaps carried unchanged: Windows Unity
+  verification and the Slice 1 director playtest gate remain
+  open and are not closed, reordered away, or answered by
+  scoping; aim feel is a later Windows observation, not a
+  Slice 9 retune; mesh tint / mesh refresh, the shared
+  marker, and the free-deploy primitive remain named gaps
+  from 0.30.0 / 0.33.0, not Slice 9 work. Scoping a slice
+  adds a verification plan (checklist items per step), not
+  a verification claim.
+- Deliberately NOT in this step: any core system, any
+  weapon / squad / Dynamo / mill / loot / skill / save
+  change, any balance pass, any new checklist item beyond
+  what the scope names as per-step decisions, any claim
+  about Windows Unity verification or the pending Slice 1
+  director playtest gate, and any Slice 9 system build —
+  the systems are built one at a time, in scope order,
+  starting next run.
+- Next, in order: Slice 9 Step 1, voltage ladder and
+  transformer, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
