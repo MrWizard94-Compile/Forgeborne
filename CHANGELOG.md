@@ -1,5 +1,48 @@
 # Forgeborne — Changelog
 
+## 0.56.0 — 2026-10-30 — Slice 13 scope: adapter visibility and fairness, warning first, then marker distinction, then mesh tint and refresh
+
+- Scope, documentation only, no code changed, by design:
+  new docs/slice-13-scope.md — Slice 13 theme adapter
+  visibility and fairness, in order: (1) a
+  pre-destruction / pre-disablement warning, decided in
+  that step (all three mismatch outcomes as starting
+  hypothesis, because all three already have a core
+  mismatch predicate: mill destroyed, workstation
+  disabled, pylon disabled; a readout only, never a
+  delay, grace period, or salvage rule); (2) a
+  scene-marker distinction for the squad kinds,
+  decided in that step (adapter-only: SquadSnapshot
+  already carries Kind, SquadMarkerDisplay already
+  reads the snapshot but ignores Kind, rendering one
+  cyan cube for all three kinds; rally orange flat
+  and pending orange sphere stay unchanged unless the
+  step justifies otherwise); (3) mesh tint and mesh
+  refresh for power state, decided in that step (a
+  core per-cell power-state query, headless-testable,
+  plus adapter tint and refresh wiring, checklist
+  only: MeshData carries no colour channel today, and
+  RefreshMesh is called only at Start and on load,
+  never after a build key or destruction tick);
+  (4) Slice 13 demo scenario + documentation-only
+  review. Scope grounded in current code facts
+  verified this run: BlockType appended through
+  ShockPylon = 12; HudDisplay renders four POWER
+  lines (mills, workstations, live networks / lone
+  sources, pylons), so a warning needs a fifth Text
+  field or a stated fold-in; builder keys run T / Y /
+  U / I / B / N / P with picker Alpha1-6, so no step
+  may assume a free binding; playtest-gate checklist
+  items run through 23 (22 live line, 23 P key).
+  Ranked Slice 14 candidates recorded, not promised:
+  deferred third source first, Patrol second, any
+  Slice 13 remainder third.
+- Tests: 1622 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 11
+  scenario save 44,038 chars, Slice 12 scenario save
+  43,974 chars, all earlier demo saves as in the
+  0.55.0 entry.
+
 ## 0.55.0 — 2026-10-30 — Slice 12 Step 3: composed demo + review, closing Slice 12
 
 - Demo, decided in this step (rationale in

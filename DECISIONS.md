@@ -4102,6 +4102,95 @@ look inevitable.
   live networks and lone sources, decided in that
   step.
 
+## 0.56.0 — Slice 13 scope: adapter visibility and fairness, split into three ordered steps
+
+- Decision, on the theme: Slice 13 is adapter
+  visibility and fairness, because that is the Slice
+  12 review's first-ranked candidate and Slice 12's
+  composition evidence gives no reason to reorder
+  it. The power side is now wide (three consumers,
+  two sources, live counts) and the squad side is
+  wide (three kinds, three doctrines), but the scene
+  still cannot warn of a loss, tell kinds apart, or
+  show power state — so the next slice is about
+  what the player can see, not about adding a
+  fourth thing to see. The theme is taken from the
+  review's candidate list, not invented here.
+- Decision, on splitting the candidate apart: the
+  Slice 12 review left Slice 13 scoping to decide
+  the visibility question "as one visibility question
+  or split apart there", and this scope splits it
+  into three ordered steps, because the three
+  sub-questions verify differently: a warning has a
+  headless-testable core readout, a marker
+  distinction is adapter-only on a snapshot that
+  already carries kind, and a mesh tint needs a
+  colour channel that does not exist plus a refresh
+  event set. One step covering all three would be
+  untestable as a unit, and a single "visibility"
+  step that claimed all three on one test count
+  would be dishonest about which parts any test
+  actually proves.
+- Decision, on ordering warning first: destruction
+  without warning costs a whole mill with no
+  salvage, and disablement costs regen or fire with
+  no notice, while marker confusion costs only
+  recognition and an untinted mesh costs only
+  legibility — so the fairness-critical readout
+  comes before the recognition and legibility work.
+  The cost of this order is stated, not hidden:
+  Step 1 adds no scene visibility at all, only a HUD
+  readout, and a reader who wants the scene itself
+  to change must wait for Steps 2 and 3.
+- Decision, on ordering marker second and mesh
+  third: the marker step is the smallest adapter-only
+  change (snapshot Kind already exists, marker code
+  already pools and positions, only the per-kind
+  rendering is missing), while the mesh step is the
+  largest adapter surface (a new colour channel in
+  MeshBuilder plus a refresh event set across build
+  keys and destruction ticks), so the small,
+  independent step goes before the large one and
+  gives the mesh step a settled marker palette to
+  avoid colliding with.
+- Decision, on what Step 1 is not: a HUD warning
+  line is not a mesh tint and not a mesh refresh,
+  and a warning is not a grace period — a warning
+  that postpones destruction by even one tick would
+  be a rule change smuggled in as a display step.
+  Gap 5 stays open after Step 1, by decision, and
+  Step 1's review must say so, so no later sentence
+  can quote the warning line as if the threatened
+  machine were visible in the scene.
+- Decision, on Step 2's honesty requirement: a
+  marker distinction cannot be proved by any test
+  count, because the adapter is not compiled
+  headlessly, so Step 2's verification is written
+  adapter code plus a Windows-only checklist item,
+  and existing snapshot-Kind tests are cited, not
+  re-counted as marker evidence. The same honesty
+  rule applies to Step 3's tint and refresh wiring;
+  only Step 3's per-cell power-state query is a
+  headless-testable core claim.
+- Decision, on adapter grounding: HudDisplay renders
+  four POWER lines today, so Step 1 needs a fifth
+  Text field or a stated fold-in; builder keys today
+  run T / Y / U / I / B / N / P with picker Alpha1-6,
+  so no step may assume a free binding for a warning
+  or tint control; playtest-gate checklist items run
+  through 23, so Slice 13 steps add items 24 and up,
+  Windows-only.
+- Deliberately NOT in this step: any core system (a
+  scope document builds nothing); a third source, a
+  third consumer, Patrol, a fourth kind, or a second
+  doctrine; a balance pass; a camera or mini-map; a
+  new block type, save field, or rule change; or
+  any claim about Windows Unity verification or the
+  pending Slice 1 director playtest gate.
+- Next, in order: Slice 13 Step 1, a
+  pre-destruction / pre-disablement warning, decided
+  in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
