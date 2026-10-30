@@ -5957,6 +5957,108 @@ new scene (2026-10-30, silent scheduled run)
   closing Slice 16, documentation-only with no new
   demo scenario, decided in that step.
 
+## 0.72.0 — Slice 16 Step 5: review closing Slice 16,
+documentation-only
+
+- State found on entry: remote main head
+  05742e247f88093c8b9559de88d8ff6bfde1d33c,
+  CHANGELOG 0.71.0 (Slice 16 Step 4), sync record 73
+  entries ending at that commit, local working copy
+  matched — no step was repeated: the 0.71.0 decision
+  named Slice 16 Step 5, composed review closing
+  Slice 16, documentation-only with no new demo
+  scenario, decided in that step, and this run did
+  exactly that. (The local run log's top entry was
+  still 0.69.0, but the sync record and the remote
+  head both confirmed 0.70.0 and 0.71.0 as pushed, so
+  neither step was re-implemented; this entry records
+  that check.) Tests 2130 baseline re-run passing;
+  demo Slice 15 save 44,016 chars, all earlier demo
+  saves unchanged.
+- Review-form decision: documentation-only, no new
+  composed demo scenario, per the scope's Step 5 —
+  not an omission. A demo scenario that printed ammo
+  numbers or tint colours would prove core numbers
+  again, not the material, the wiring, the occlusion,
+  the light, or the model, so adding one would look
+  like graphics evidence while proving nothing about
+  graphics. The review therefore re-runs the full
+  suite and the whole demo and quotes save lengths
+  only as a no-core-change check. Earlier reviews
+  paired a demo with their review because their
+  slices added core systems; Slice 16 added none, so
+  the same form would have been the wrong form here.
+- Gate-check decision: the review checks the slice
+  against docs/slice-16-scope.md step by step rather
+  than quoting the step count as the verdict. Every
+  step was pushed with passing tests, with the
+  adapter-only steps' suite-unchanged status stated
+  as adapter-only verification, never inflated into
+  a test claim; each decision is recorded with
+  rationale and its own checklist item (30, 31, 32,
+  33, 34); no MeshBuilder colour, PowerTint value,
+  PowerState query, refresh event set, HUD layout or
+  colour, or core rule moved; every earlier demo save
+  length stands. The scope's own gate wording is
+  followed: Slice 16 is done when those conditions
+  hold and the review records the verdict honestly,
+  separating headless-tested core claims from
+  Windows-checklist adapter claims.
+- Checklist-relation decision: the review states the
+  relations explicitly because a silent list would
+  invite miscounting. Item 26 (tint observation) and
+  item 27 (refresh observation) are NOT closed by
+  Steps 1–4 — items 30 and 31 observe the assignment
+  and the fill beside them. Item 32 does NOT
+  supersede item 25 or orbital-view item 8; item 33
+  does NOT supersede item 32 (it extends it to dusk,
+  as item 32 promised); item 34 does NOT claim a
+  per-weapon model. The review adds no new checklist
+  item, because it exercises no adapter binding the
+  checklist does not already cover; the next free
+  playtest-gate number is 35, recorded here so the
+  next step does not renumber by accident.
+- Gap-order decision: gaps are carried in the review's
+  priority order, with the queue decision now spent.
+  Graphics was ordered ahead of the remainders, and
+  the build is now done, so the Slice 14 remainders
+  (single-cable tint, direct-Conduit count) return to
+  the front of the queue — but as starting-point
+  candidates, not promises, and Slice 17 is NOT scoped
+  here, by the scope's own terms. The Slice 13
+  remainders are carried as observations still unmade
+  (items 25–27 plus 30–34), not as steps to re-scope
+  blindly: if an observation fails, that failure is a
+  fix step with its own decision. The closed-by-this-
+  slice paragraph is worded in the build sense only,
+  deliberately: the layer exists as written code, the
+  observations do not yet exist, and conflating those
+  two would be exactly the inflation this slice's
+  precedent forbids.
+- Deliberately-not list, carried into the review:
+  no second graphics system, city, planet, squad or
+  tank model, enemy silhouette, or mini-map; no
+  display-query redesign; no scene-proof observation
+  presented as a headless result; no scene, shader,
+  texture, or imported asset file; no copied art or
+  layout; no HUD redesign; no core change; no Windows
+  verification claim; no Slice 17 scope; no view
+  model motion, per-weapon model, or mag-driven
+  element (the last carries Step 4's open capacity
+  question: HudState has mag and reserve but no mag
+  capacity, so a proportional gauge cannot be derived
+  from HudState alone).
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 17 as its own decision
+  step, chosen from the ranked candidates this review
+  carries, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

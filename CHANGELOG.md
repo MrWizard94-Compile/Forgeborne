@@ -1,5 +1,83 @@
 # Forgeborne — Changelog
 
+## 0.72.0 — 2026-10-30 — Slice 16 Step 5: review closing
+Slice 16, documentation-only
+
+- Review, decided in this step (rationale in
+  DECISIONS.md): new docs/slice-16-review.md checks
+  Slice 16 against docs/slice-16-scope.md and closes
+  it as a reviewed whole — a written scene-proof
+  layer plus Windows checklist items, not a
+  playtested, Unity-verified, or visual result.
+  This step is documentation-only by the scope's own
+  terms, with one honest difference from earlier
+  reviews stated in the review itself: it is NOT
+  accompanied by a new composed demo scenario,
+  because no graphics claim in Steps 1–4 is
+  headless-provable — a demo scenario printing ammo
+  numbers or tint colours would prove the core
+  numbers again, not the material, the wiring, the
+  occlusion, the light, or the model. The review
+  re-runs the full suite and the whole demo instead,
+  and quotes the demo save lengths as a
+  no-core-change check only.
+- Gate check, decided in this step (rationale in
+  DECISIONS.md): every Slice 16 step pushed with
+  passing tests (for the adapter-only steps, with
+  the suite unchanged and the adapter-only
+  verification stated, never inflated into a test
+  claim); each step's decision recorded with
+  rationale and its own Windows checklist item
+  (item 30 material assignment, item 31 wiring
+  null-fill, item 32 combined occlusion and
+  readability under the Step 1 material, item 33
+  the same combined scene under dusk light, item 34
+  the view model); no MeshBuilder colour, no
+  PowerTint value, no PowerState query, no refresh
+  event set, no HUD layout or colour, and no core
+  rule changed; every earlier demo save length
+  unchanged. Checklist relations are stated, not
+  left to miscount: item 26 and item 27 are NOT
+  closed by Steps 1–4 (items 30 and 31 observe
+  beside them); item 32 does NOT supersede item 25
+  or orbital-view item 8; item 33 does NOT supersede
+  item 32; item 34 does NOT claim a per-weapon
+  model. This review adds no new checklist item —
+  the next free playtest-gate number is 35 — and
+  it does NOT scope Slice 17.
+- Gaps carried, in priority order (rationale in
+  DECISIONS.md): Windows Unity verification for
+  Slices 1–16 (items 25–27 and 30–34, plus scene
+  assembly including the editor-built gradient
+  skybox material); the Slice 1 director playtest
+  gate, still pending; first-pass graphics values
+  unproven (dusk azimuth, fog contrast arithmetic,
+  view model offset, static weapon-agnostic model);
+  the Slice 13 scene-proof observations still unmade
+  as observations; the single-cable tint finding;
+  the direct-Conduit count invisibility; the patrol
+  route's stated limits; the free deploy primitive.
+  Closed by this slice in the build sense only: the
+  director-ordered scene-proof build itself — the
+  Slice 14 remainders in gaps 5 and 6 are now the
+  front of the queue again, unless a later director
+  decision reorders them.
+- Deliberately not moved in this step: no code, no
+  demo scenario, no test, no checklist item, no
+  scene file, no shader file, no imported asset, no
+  HUD, marker, tint, light, or core change, and no
+  Slice 17 scope. Unity adapter code is not compiled
+  headlessly, following the Slice 13 Step 2
+  precedent, so this step adds no headless test for
+  the review itself.
+- Tests: 2130 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 15
+  scenario save 44,016 chars, all earlier demo saves
+  as in the 0.71.0 entry.
+- Next, in order: scoping Slice 17 as its own
+  decision step, chosen from the ranked candidates
+  this review carries, decided in that step.
+
 ## 0.71.0 — 2026-10-30 — Slice 16 Step 4: first FPS weapon
 view model script
 
