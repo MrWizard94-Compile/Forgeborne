@@ -148,8 +148,9 @@ public sealed class Simulation
     /// not make W climb, looking down does not make W dive. The two
     /// scalars are combined at full value each (no diagonal
     /// normalisation), preserving the Slice 1 diagonal-speed quirk;
-    /// see DECISIONS.md 0.36.0. Gather, build, and fire keep their
-    /// fixed +Z / nearest-enemy rules until Slice 8 Step 2.
+    /// see DECISIONS.md 0.36.0. Gather, build, and fire read the
+    /// same Look direction from Slice 8 Step 2 (see GatherAhead,
+    /// BuildAimed, FireAimed).
     /// </summary>
     public void Tick(float dt, float forward, float strafe, bool jump)
     {
@@ -172,14 +173,51 @@ public sealed class Simulation
         // Sync FPS health display back through HudState in callers.
     }
 
+    /// <summary>
+    /// Slice 8 Step 2 — aim constants, decided in this step
+    /// (rationale in DECISIONS.md). EyeHeight 1.6 m is not a new
+    /// invention: the Unity adapter already renders the camera
+    /// at Fps.Y + 1.6, so core and adapter now agree on where
+    /// the eye is instead of core borrowing an adapter height
+    /// silently. AimReach 10 m is one reach for all three
+    /// actions, a first-pass value for determinism and
+    /// testability, not a feel claim — and it matches the old
+    /// FireAtCore 10-metre bubble, so fire keeps its old range
+    /// while gaining aim. An unbounded ray was refused: it
+    /// would let a key press strip a distant hillside or hit
+    /// an enemy anywhere in the chunk.
+    /// </summary>
+    public const float EyeHeight = 1.6f;
+    public const float AimReach = 10f;
+
+    /// <summary>Trace the player's aim ray (eye point, Look
+    /// forward, AimReach) through the shared AimRay rule.</summary>
+    private AimHit TraceAim(bool includeActors) =>
+        AimRay.Trace(World.Chunk, World.Enemies, World.CoreX, World.CoreY, World.CoreZ,
+            Fps.X, Fps.Y + EyeHeight, Fps.Z, Look.Forward(), AimReach, includeActors);
+
+    /// <summary>
+    /// Slice 8 Step 2 — gather by aim, replacing the fixed +Z
+    /// ground cell: the first solid along the aim ray is the
+    /// gather target, through the existing World.Gather rules
+    /// (bedrock, walls, workstations, and mills are never
+    /// gathered; a full inventory consumes nothing; the skill
+    /// gather bonus accrues only on successful gathers).
+    /// Looking down at the ground gathers ground, looking
+    /// level gathers what is ahead at eye height, and looking
+    /// up gathers nothing (Air) — there is no ground under a
+    /// skyward ray within reach, and no fallback to +Z. A ray
+    /// that leaves the chunk returns OutOfBounds. Actors do
+    /// not block a gather: the ray passes through enemy and
+    /// core cells to the first solid behind them.
+    /// </summary>
     public GatherResult GatherAhead()
     {
-        // Gather the ground block directly in front of the FPS player.
-        int x = (int)Math.Floor(Fps.X);
-        int y = (int)Math.Floor(Fps.Y) - 1;
-        int z = (int)Math.Floor(Fps.Z) + 1;
-        var blockBefore = World.Chunk.Get(x, y, z);
-        var r = World.Gather(x, y, z);
+        var hit = TraceAim(includeActors: false);
+        if (hit.Kind != AimTargetKind.Solid)
+            return hit.LeftBounds ? GatherResult.OutOfBounds : GatherResult.Air;
+        var blockBefore = World.Chunk.Get(hit.X, hit.Y, hit.Z);
+        var r = World.Gather(hit.X, hit.Y, hit.Z);
         if (r == GatherResult.Success)
         {
             BlocksGathered++;
@@ -196,17 +234,36 @@ public sealed class Simulation
         return r;
     }
 
-    public BuildResult BuildWallAhead()
+    /// <summary>
+    /// Slice 8 Step 2 — build by aim, shared by all three
+    /// builders: the build cell is the last air cell before
+    /// the first solid along the aim ray (face-adjacent to
+    /// that solid, because the ray steps face-by-face), through
+    /// the existing World.Build air / support / cost rules.
+    /// The old front-right / front-left / front-centre offsets
+    /// retire in this step: the three builders are now
+    /// distinguished by block type, not by offset, because
+    /// keeping offsets under an aim rule would mean the aim
+    /// decides one cell and the offset silently moves it to
+    /// another. A ray with no solid within reach has no aimed
+    /// surface, so the build fails Floating (and spends
+    /// nothing, since World.Build is never reached); a ray
+    /// that leaves the chunk fails OutOfBounds. The
+    /// Dynamo-mill face-adjacency power rule is unchanged:
+    /// a powered pair is still a mill face-adjacent to a
+    /// Dynamo, however the two blocks were placed.
+    /// </summary>
+    private BuildResult BuildAimed(BlockType type)
     {
-        // Build a wall at feet level, front-right of the player, supported by the ground below.
-        // Front-centre is used by GatherAhead in tests, so front-right avoids building on a just-gathered cell.
-        int x = (int)Math.Floor(Fps.X) + 1;
-        int y = (int)Math.Floor(Fps.Y);
-        int z = (int)Math.Floor(Fps.Z) + 1;
-        var r = World.Build(x, y, z, BlockType.Wall);
+        var hit = TraceAim(includeActors: false);
+        if (hit.Kind != AimTargetKind.Solid)
+            return hit.LeftBounds ? BuildResult.OutOfBounds : BuildResult.Floating;
+        var r = World.Build(hit.PrevX, hit.PrevY, hit.PrevZ, type);
         if (r == BuildResult.Success) BlocksBuilt++;
         return r;
     }
+
+    public BuildResult BuildWallAhead() => BuildAimed(BlockType.Wall);
 
     /// <summary>
     /// Orbital Tactical command from the headless loop: deploy a
@@ -242,13 +299,12 @@ public sealed class Simulation
     /// </summary>
     /// <summary>
     /// FPS view direction (Slice 6 Step 1, movement rotated by it in
-    /// Slice 8 Step 1): yaw + clamped pitch, with a derived forward
+    /// Slice 8 Step 1, gather / build / fire aimed by it in
+    /// Slice 8 Step 2): yaw + clamped pitch, with a derived forward
     /// vector. The Unity adapter feeds mouse deltas here and renders
     /// the camera from it; it holds no yaw of its own any more.
     /// Session input state, not saved: a fresh Simulation starts at
-    /// yaw 0, pitch 0, and RestoreWorld does not reset it. GatherAhead,
-    /// the builders, and FireAtNearestEnemy keep their Slice 1 rules
-    /// until Slice 8 Step 2 — only movement reads yaw, in Tick.
+    /// yaw 0, pitch 0, and RestoreWorld does not reset it.
     /// </summary>
     public Look Look { get; } = new();
 
@@ -268,62 +324,50 @@ public sealed class Simulation
     /// <summary>Deploy the picker's selected squad at its pending rally, paying the squad economy price; null if not picking, no rally, unaffordable, or over-cap — in which cases the picker stays open, with no squad and no charge.</summary>
     public TacticalSquad? ConfirmOrbitalDeploy() => OrbitalCommand.Confirm(World);
 
-    public BuildResult BuildKineticMillAhead()
-    {
-        // Front-left, mirroring BuildWallAhead's front-right, so the
-        // two builders do not collide in tests or in play. Supported
-        // by the ground below, like a wall.
-        int x = (int)Math.Floor(Fps.X) - 1;
-        int y = (int)Math.Floor(Fps.Y);
-        int z = (int)Math.Floor(Fps.Z) + 1;
-        var r = World.Build(x, y, z, BlockType.KineticMill);
-        if (r == BuildResult.Success) BlocksBuilt++;
-        return r;
-    }
+    /// <summary>Slice 8 Step 2: a Kinetic Mill by aim (see
+    /// BuildAimed). A powered pair is still built by aiming
+    /// at the ground left-front for the mill and front for
+    /// the Dynamo, with no move between builds.</summary>
+    public BuildResult BuildKineticMillAhead() => BuildAimed(BlockType.KineticMill);
+
+    /// <summary>Slice 8 Step 2: a Dynamo by aim (see BuildAimed),
+    /// costing 5 EmberOre as in Slice 5 Step 1.</summary>
+    public BuildResult BuildDynamoAhead() => BuildAimed(BlockType.Dynamo);
 
     /// <summary>
-    /// Slice 5 Step 1: build a Dynamo ahead of the player, front-centre
-    /// at feet level — distinct from the wall (front-right) and the mill
-    /// (front-left) builders, so the three do not collide in tests or
-    /// in play. Supported by the ground below, like a wall. A Dynamo
-    /// built here is face-adjacent to a mill built front-left only if
-    /// the player has not moved between the two builds; tests that need
-    /// a guaranteed powered pair place both blocks directly instead.
+    /// Slice 8 Step 2 — fire by aim, replacing BOTH the old
+    /// FireAtNearestEnemy (Manhattan-nearest, aim-blind) and
+    /// FireAtCore (10-metre bubble, aim-blind) with one aim
+    /// rule: the first enemy cell or core cell the aim ray
+    /// reaches within AimReach is hit; a solid block before
+    /// either stops the shot, so fire cannot hit through a
+    /// wall; a shot with nothing aimed still consumes ammo
+    /// and hits nothing, as before — a fired shot is a fired
+    /// shot, and making misses free would be an economy
+    /// change, not an aim fix. Weapon damage, magazine, and
+    /// reload rules do not change: aim changes what is hit,
+    /// not how hard the weapon hits. Squad fire rules are
+    /// untouched. Returns false only when the weapon cannot
+    /// fire (empty magazine); returns true when a shot was
+    /// fired, hit or not. The old methods are removed, not
+    /// kept as aliases: keeping a method named "nearest"
+    /// beside an aim rule would leave the aim-blind rule
+    /// alive under its old name.
     /// </summary>
-    public BuildResult BuildDynamoAhead()
-    {
-        int x = (int)Math.Floor(Fps.X);
-        int y = (int)Math.Floor(Fps.Y);
-        int z = (int)Math.Floor(Fps.Z) + 1;
-        var r = World.Build(x, y, z, BlockType.Dynamo);
-        if (r == BuildResult.Success) BlocksBuilt++;
-        return r;
-    }
-
-    public bool FireAtNearestEnemy()
+    public bool FireAimed()
     {
         if (!Weapon.Fire()) return false;
-        Enemy? nearest = null;
-        double best = double.MaxValue;
-        foreach (var e in World.Enemies)
+        var hit = TraceAim(includeActors: true);
+        if (hit.Kind == AimTargetKind.Enemy && hit.Enemy != null)
         {
-            double d = Math.Abs(e.X - Fps.X) + Math.Abs(e.Y - Fps.Y) + Math.Abs(e.Z - Fps.Z);
-            if (d < best) { best = d; nearest = e; }
+            World.AttackEnemy(hit.Enemy, EffectiveDamage);
+            if (hit.Enemy.IsDead) EnemiesKilled++;
         }
-        if (nearest == null) return true; // shot fired, nothing hit
-        World.AttackEnemy(nearest, EffectiveDamage);
-        if (nearest.IsDead) EnemiesKilled++;
-        return true;
-    }
-
-    /// <summary>Fire at the core if within 10 metres. Returns true if a shot was fired.</summary>
-    public bool FireAtCore()
-    {
-        if (!Weapon.Fire()) return false;
-        double dx = World.CoreX - Fps.X, dy = World.CoreY - Fps.Y, dz = World.CoreZ - Fps.Z;
-        double dist = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-        if (dist <= 10) World.DamageCore(EffectiveCoreDamage);
-        return true;
+        else if (hit.Kind == AimTargetKind.Core)
+        {
+            World.DamageCore(EffectiveCoreDamage);
+        }
+        return true; // shot fired; a solid, a miss, or no target still costs the round
     }
 
     public HudState Hud() => HudState.FromWorld(World, Weapon);

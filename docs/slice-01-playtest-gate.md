@@ -87,6 +87,18 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     than a straight walk, as in Slice 1. Do not claim
     this verified in Unity until it is observed there
     and recorded in DECISIONS.md.
+14. [ ] Aim-based gather / build / fire, added 0.37.0
+    (adapter bindings unchanged — E / Q / T / Y and mouse
+    click call the same methods, which now read the core
+    Look ray, headless-tested): look down at the ground
+    and press E to gather the ground block under the
+    crosshair; look at the ground and press Q / T / Y to
+    build a wall / mill / Dynamo in the cell before the
+    aimed surface; click with the crosshair on an enemy
+    within 10 m to hit it, and on empty sky to waste the
+    round; a wall between crosshair and enemy blocks the
+    shot. Do not claim this verified in Unity until it
+    is observed there and recorded in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

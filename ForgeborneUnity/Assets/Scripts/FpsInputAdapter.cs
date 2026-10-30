@@ -29,9 +29,12 @@ public class FpsInputAdapter : MonoBehaviour
         // already follows transform.forward, so a pitched camera
         // immediately lets a rally be picked by looking down at flat
         // ground — the concrete picker failure pitch exists to fix.
-        // Gather (E), build (Q), and fire (click) keep their Slice 1
-        // cells/rules until Slice 8 Step 2; pitch changes camera +
-        // picker only, and movement is yaw-rotated in core (Step 1).
+        // Gather (E), build (Q), and fire (click) are aimed in
+        // core from Slice 8 Step 2: the same E / Q / T / Y keys and
+        // mouse click call the same builder / fire methods, which
+        // now read the core Look ray — so this adapter needs no
+        // new binding for aim, only the renamed fire call below.
+        // Movement is yaw-rotated in core (Step 1).
         Simulation.ApplyLook(
             Input.GetAxis("Mouse X") * MouseSensitivity,
             Input.GetAxis("Mouse Y") * MouseSensitivity);
@@ -140,6 +143,6 @@ public class FpsInputAdapter : MonoBehaviour
                 }
             }
         }
-        else if (Input.GetMouseButtonDown(0)) Simulation.FireAtNearestEnemy();
+        else if (Input.GetMouseButtonDown(0)) Simulation.FireAimed();
     }
 }

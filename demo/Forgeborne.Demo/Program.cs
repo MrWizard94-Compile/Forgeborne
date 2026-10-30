@@ -1,6 +1,21 @@
 using System.Diagnostics;
 using Forgeborne.Core;
 
+// Aim the crosshair at the first live enemy's centre, as a
+// player would: Slice 8 Step 2 fire only hits what the Look
+// ray reaches, so a demo that fired blind would prove nothing
+// about aimed fire. The core rule stays aim-only; this helper
+// just points the demo's crosshair.
+void AimAtFirstEnemy(Simulation sim)
+{
+    if (sim.World.Enemies.Count == 0) return;
+    var e = sim.World.Enemies[0];
+    float dx = e.X + 0.5f - sim.Fps.X, dy = e.Y + 0.5f - (sim.Fps.Y + Simulation.EyeHeight), dz = e.Z + 0.5f - sim.Fps.Z;
+    float yaw = (float)(Math.Atan2(dx, dz) * 180 / Math.PI);
+    float pitch = (float)(Math.Atan2(dy, Math.Sqrt(dx * dx + dz * dz)) * 180 / Math.PI);
+    sim.ApplyLook(yaw - sim.Look.Yaw, pitch - sim.Look.Pitch);
+}
+
 // Headless demo: runs the full Slice 1 loop without Unity.
 // Usage: dotnet run --project demo/Forgeborne.Demo
 var sim = new Simulation(42);
@@ -9,9 +24,9 @@ Console.WriteLine("Forgeborne Slice 1 headless demo — gather, build, fight, ob
 for (int tick = 0; tick < 60; tick++)
 {
     sim.Tick(0.1f, tick < 20 ? 1f : 0f, 0f, false);
-    if (tick == 5) Console.WriteLine($"Tick {tick}: gather -> {sim.GatherAhead()} (gathered {sim.BlocksGathered})");
+    if (tick == 5) { sim.ApplyLook(0f, -45f); Console.WriteLine($"Tick {tick}: gather -> {sim.GatherAhead()} (gathered {sim.BlocksGathered})"); }
     if (tick == 10) { sim.World.Player.Inventory.Add(BlockType.Stone, 10); Console.WriteLine($"Tick {tick}: build -> {sim.BuildWallAhead()} (built {sim.BlocksBuilt})"); }
-    if (tick >= 20 && tick % 5 == 0) sim.FireAtNearestEnemy();
+    if (tick >= 20 && tick % 5 == 0) { AimAtFirstEnemy(sim); sim.FireAimed(); }
     if (tick % 20 == 0)
     {
         var hud = sim.Hud();
@@ -48,11 +63,12 @@ var squad = sim2.DeployOrbitalSquadPaid(sim2.World.Player.X, sim2.World.Player.Y
 Console.WriteLine($"Orbital squad deployed: {(squad == null ? "REJECTED" : "Vanguard HoldGround at player position")}");
 sim2.World.Player.Inventory.Add(BlockType.Stone, 10);
 sim2.World.Player.Inventory.Add(BlockType.Wood, 5);
+sim2.ApplyLook(-18.4f, -53f);
 Console.WriteLine($"Kinetic mill build -> {sim2.BuildKineticMillAhead()} (built {sim2.BlocksBuilt})");
 for (int tick = 0; tick < 20; tick++)
 {
     sim2.Tick(0.1f, 0f, 0f, false);
-    if (tick % 5 == 0) sim2.FireAtNearestEnemy();
+    if (tick % 5 == 0) { AimAtFirstEnemy(sim2); sim2.FireAimed(); }
     if (tick % 5 == 4)
     {
         var snap = OrbitalView.Snapshot(sim2.World);
@@ -69,7 +85,7 @@ Console.WriteLine($"Slice 2 done: gathered {sim2.BlocksGathered}, built {sim2.Bl
 // core health, the skill build, the shields above the base cap,
 // and the equipped weapon (with its in-progress mag) all survive.
 // The FPS controller is teleported near the core as the headless
-// stand-in for walking there; FireAtCore then does real damage.
+// stand-in for walking there; FireAimed at the core then does real damage.
 Console.WriteLine();
 Console.WriteLine("Forgeborne Slice 3 Step 1 scenario — core health, skill build, and weapon survive a save/load round-trip");
 var loot3 = LootGenerator.Generate(0, 1);
@@ -79,8 +95,9 @@ skillBuild3.Allocate("S3"); skillBuild3.Allocate("N2"); skillBuild3.Allocate("K1
 var sim3 = new Simulation(42, loot3, skillBuild3);
 sim3.World.Player.Restore(100, 100);
 sim3.Fps.Teleport(24, 5, 24);
-sim3.FireAtCore();
-sim3.FireAtCore();
+sim3.ApplyLook(45f, -10f);
+sim3.FireAimed();
+sim3.FireAimed();
 Console.WriteLine($"Before save: core {sim3.World.CoreHealth} HP, weapon {sim3.Weapon.Name} {sim3.Weapon.Mag}/{sim3.Weapon.Reserve}, effective damage {sim3.EffectiveDamage}, shields {sim3.World.Player.Shields}/{sim3.World.Player.MaxShields}");
 var save3 = sim3.SaveToJson();
 var sim4 = new Simulation(99);
@@ -102,8 +119,9 @@ skillBuildS3.Allocate("S3"); skillBuildS3.Allocate("N2"); skillBuildS3.Allocate(
 var simS3 = new Simulation(42, lootS3, skillBuildS3);
 simS3.World.Player.Restore(100, 100);
 simS3.Fps.Teleport(24, 5, 24);
-simS3.FireAtCore();
-simS3.FireAtCore();
+simS3.ApplyLook(45f, -10f);
+simS3.FireAimed();
+simS3.FireAimed();
 simS3.World.Player.Inventory.Add(BlockType.EmberOre, 40);
 var s3Squad1 = simS3.DeployOrbitalSquadPaid(18, 5, 16);
 var s3Squad2 = simS3.DeployOrbitalSquadPaid(19, 5, 16);
@@ -194,7 +212,11 @@ simS5.Tick(0.1f, 0, 0, false);
 simS5.World.Player.Inventory.Add(BlockType.Stone, 10);
 simS5.World.Player.Inventory.Add(BlockType.Wood, 5);
 simS5.World.Player.Inventory.Add(BlockType.EmberOre, 5);
-Console.WriteLine($"Mill build -> {simS5.BuildKineticMillAhead()}, Dynamo build -> {simS5.BuildDynamoAhead()}, ore left {simS5.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS5.ApplyLook(-18.4f, -53f);
+var s5Mill = simS5.BuildKineticMillAhead();
+simS5.ApplyLook(18.4f, 8f);
+var s5Dyn = simS5.BuildDynamoAhead();
+Console.WriteLine($"Mill build -> {s5Mill}, Dynamo build -> {s5Dyn}, ore left {simS5.World.Player.Inventory.Get(BlockType.EmberOre)}");
 Console.WriteLine($"Powered pair: mill at (15,4,17) = {simS5.World.Chunk.Get(15, 4, 17)}, Dynamo at (16,4,17) = {simS5.World.Chunk.Get(16, 4, 17)}, mill powered: {simS5.World.IsPowered(15, 4, 17)}");
 foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })
     simS5.World.Chunk.TrySet(x, y, z, BlockType.Stone);
@@ -272,7 +294,11 @@ Console.WriteLine($"Enemies left: {simS6.World.Enemies.Count}");
 simS6.World.Player.Inventory.Add(BlockType.Stone, 10);
 simS6.World.Player.Inventory.Add(BlockType.Wood, 5);
 simS6.World.Player.Inventory.Add(BlockType.EmberOre, 5);
-Console.WriteLine($"Mill build -> {simS6.BuildKineticMillAhead()}, Dynamo build -> {simS6.BuildDynamoAhead()}, ore left {simS6.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS6.ApplyLook(-108.4f, -142f);
+var s6Mill = simS6.BuildKineticMillAhead();
+simS6.ApplyLook(18.4f, 8f);
+var s6Dyn = simS6.BuildDynamoAhead();
+Console.WriteLine($"Mill build -> {s6Mill}, Dynamo build -> {s6Dyn}, ore left {simS6.World.Player.Inventory.Get(BlockType.EmberOre)}");
 var s6Hud = simS6.Hud();
 Console.WriteLine($"Power indicator: {s6Hud.PoweredMills}/{s6Hud.TotalMills} MILLS POWERED (mill powered: {simS6.World.IsPowered(15, 4, 17)})");
 foreach (var (x, y, z) in new[] { (14, 4, 17), (15, 5, 17), (15, 3, 17), (15, 4, 16), (15, 4, 18) })

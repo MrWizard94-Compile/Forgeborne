@@ -1,5 +1,124 @@
 # Forgeborne — Changelog
 
+## 0.37.0 — 2026-10-30 — Slice 8 Step 2: aim-based gather / build / fire
+
+- Aim-based interaction, decided in this step (rationale in
+  DECISIONS.md): gather, build, and fire now read the core
+  `Look` direction through one shared ray, `AimRay.Trace`
+  (new `src/Forgeborne.Core/Aim.cs`), replacing the fixed
+  +Z cells and the Manhattan-nearest fire rule. The ray
+  starts at the eye (feet + 1.6 m, the height the Unity
+  adapter already renders the camera at), walks the Look
+  forward vector in 0.05 m steps — small enough that a
+  cell change is always face-by-face — and reaches 10 m,
+  one reach for all three actions, a first-pass value for
+  determinism and testability, not a feel claim. It
+  matches the old FireAtCore 10-metre bubble, so fire
+  keeps its old range while gaining aim; an unbounded
+  ray was refused, since it would let a key press strip
+  a distant hillside or hit an enemy anywhere.
+- Gather: the first solid along the ray is the target,
+  through the existing `World.Gather` rules (bedrock,
+  walls, workstations, and mills never gathered; a full
+  inventory consumes nothing; the skill gather bonus
+  still accrues only on successful gathers). Looking
+  down at the ground gathers ground, looking level
+  gathers what is ahead at eye height, and looking up
+  gathers nothing (Air) — no fallback to +Z. A solid
+  stops the ray, so gather cannot strip a block through
+  a wall; a ray that leaves the chunk is OutOfBounds.
+  Actors do not block a gather: the ray passes through
+  enemy and core cells to the first solid behind them.
+- Build: the build cell is the last air cell before the
+  first solid along the ray (face-adjacent to it, by
+  the face-by-face walk), through the existing
+  `World.Build` air / support / cost rules. The old
+  front-right / front-left / front-centre offsets retire
+  in this step: the three builders are now distinguished
+  by block type, not by offset, because keeping offsets
+  under an aim rule would mean the aim decides one cell
+  and the offset silently moves it to another. A ray
+  with no solid within reach has no aimed surface, so
+  the build fails Floating and spends nothing; a ray
+  that leaves the chunk fails OutOfBounds. The
+  Dynamo-mill face-adjacency power rule is unchanged:
+  a powered pair is still a mill face-adjacent to a
+  Dynamo, however the two blocks were placed. A mill
+  aimed at the ground cell (15,3,17) lands at
+  (15,4,17) and a Dynamo aimed front lands at
+  (16,4,17), so the powered pair is unchanged in
+  placement — proved by the Slice 5 / Slice 6 tests and
+  demo, not by keeping the offsets.
+- Fire: one aim rule replaces BOTH old methods, which
+  are removed, not kept as aliases — keeping a method
+  named "nearest" beside an aim rule would leave the
+  aim-blind rule alive under its old name. The new
+  `FireAimed` hits the first enemy cell or core cell
+  the ray reaches within 10 m; a solid before either
+  stops the shot, so fire cannot hit through a wall;
+  a shot with nothing aimed still consumes ammo and
+  hits nothing, as before. Weapon damage, magazine,
+  and reload rules do not change, and squad fire rules
+  are untouched: aim changes what is hit, not how
+  hard the weapon hits.
+- Neutral-aim compatibility, stated openly, not
+  silently: at yaw 0, pitch -45, the eye ray reaches
+  the old gather cell (16,3,17), proved by test — pitch
+  is what moved gather off the old feet-level rule,
+  because the eye is 1.6 m above the feet and a level
+  ray passes over the ground. At yaw 0, pitch 0, gather
+  and build therefore do NOT reproduce the Slice 1
+  cells, and the Slice 1 demo is updated for that
+  (aimed gather / build, aimed fire at the first enemy)
+  instead of keeping numbers the new rule no longer
+  produces. Slice 1 demo numbers stand: gathered 1,
+  built 1, killed 2, save 43,881 chars. Slice 2 demo
+  numbers change openly: killed 1 (was 2), save
+  43,921 chars (was 43,908) — aimed fire is
+  range-bounded at 10 m where the nearest rule was
+  not, so one enemy the old rule would have hit is
+  now out of reach at the demo's fire ticks. All other
+  demo saves are unchanged: Step 1 scenario 44,016,
+  Step 3 scenario 44,103, Slice 4 scenario 44,026,
+  Slice 5 Step 2 scenario 43,974, Slice 6 Step 4
+  scenario 44,024, Slice 7 Step 2 scenario 44,013.
+- Adapter: no new binding. E / Q / T / Y and mouse
+  click call the same methods, which now read the core
+  Look ray; the click call is renamed from
+  `FireAtNearestEnemy` to `FireAimed`, and adapter
+  comments are updated to stop claiming Slice 1 cells.
+  The aim claim is checklist item 14 in
+  `docs/slice-01-playtest-gate.md`, not a Unity claim.
+  What must NOT change in this step is unchanged:
+  weapon, squad, Dynamo, mill, loot, skill, and core
+  health rules; enemy AI and targeting; the gather /
+  build / survive loop itself; and the save format,
+  which gains no field — `Look` stays session state.
+  No third kind, no new doctrine, no voltage ladder,
+  no balance pass, and no licence / monetisation /
+  release change rides along. One test-authoring
+  lesson is recorded in DECISIONS.md: a yaw -45 /
+  pitch -45 mill aim lands one cell west of the old
+  front-left cell, because the ray crosses the x=15
+  face before it reaches the ground — the tests now
+  aim at the (15,3,17) ground cell itself (yaw -18.4,
+  pitch -53), and the suite caught the first aim.
+- Tests: **908 passed, 0 failed** (was 889; +19 net:
+  20 new Slice 8 Step 2 tests, plus the pitch and
+  asymmetry blocks rewritten for the intended behaviour
+  change, minus the old expectations they replaced).
+  Two pre-existing blocks changed for the intended
+  behaviour change, not for bugs: the 0.28.0 pitched
+  gather / build / fire non-change test now proves the
+  skyward aim (gather Air, build Floating with no
+  spend, fire misses but consumes ammo), and the
+  0.36.0 yaw-90 asymmetry test now proves aim-based
+  gather / build / fire at yaw 90. The skill gather
+  bonus failed-gather setup changed with them: with
+  aim, an emptied cell lets the ray reach the next
+  ground cell, so air is no longer a reliable failure
+  — the failed gather now aims at a Wall (NotGatherable).
+
 ## 0.36.0 — 2026-10-30 — Slice 8 Step 1: yaw-rotated movement
 
 - Yaw-rotated FPS movement, decided in this step

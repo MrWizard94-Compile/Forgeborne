@@ -2129,6 +2129,134 @@ look inevitable.
 - Next, in order: Slice 8 Step 2, aim-based gather /
   build / fire.
 
+## 0.37.0 — 2026-10-30 — Slice 8 Step 2: aim-based gather / build / fire
+
+- Decision, on the ray: one shared ray, `AimRay.Trace`,
+  in core — not three per-action rays that could drift
+  apart, and not an adapter raycast, which would be
+  untestable headlessly. Origin is the eye, feet +
+  1.6 m: the scope allowed feet with a reason, but the
+  adapter already renders the camera at Fps.Y + 1.6,
+  so core and adapter agreeing on the eye is better
+  than core inventing a second eye height. Traversal
+  is a 0.05 m stepped walk, not a DDA: at that step a
+  cell change is always face-by-face, so the previous
+  cell is always face-adjacent to the hit solid, which
+  is exactly what the build rule needs, and a sampled
+  point inside a cell cannot skip a thin target. Reach
+  is one number, 10 m, for all three actions: it
+  matches the old core bubble, so fire keeps its range
+  while gaining aim, and a single reach keeps the step
+  from smuggling a per-action range decision in
+  disguise. It is a first-pass value, labelled as such
+  in the changelog, not a feel claim.
+- Decision, on gather targeting: the first solid along
+  the ray, through the existing World.Gather rules.
+  Pitch is confronted, not discovered: down gathers
+  ground, level gathers what is ahead at eye height,
+  up gathers nothing (Air). The scope's alternative —
+  gathering the ground under the aimed point — was
+  refused: it would let a level aim gather a block
+  10 m away under a point in the sky, which is a
+  cursor, not a hand. Actors do not block a gather:
+  an enemy standing in front of a wall should not make
+  the wall ungatherable, and the ray passes through
+  actor cells because they are air.
+- Decision, on build targeting: the last air cell
+  before the first solid — the standard voxel
+  placement rule, and the only one that gives both a
+  ground-top placement (aim down at ground, build on
+  top of it) and a face placement (aim at a wall side,
+  build beside it) from one rule. The three offsets
+  retire: keeping front-right / front-left /
+  front-centre under aim would mean the aim decides
+  one cell and the offset silently moves it to
+  another, which is the same hidden-default bug this
+  slice closes. No-target is Floating (spending
+  nothing, since World.Build is never reached), and
+  out-of-chunk is OutOfBounds — both reuse existing
+  results, because inventing a NoTarget result would
+  be a new API for a case the existing results already
+  describe as "cannot place here".
+- Decision, on fire targeting: one rule for enemies
+  and the core, so the old two methods are removed,
+  not kept as aliases. A method named "nearest"
+  beside an aim rule would leave the aim-blind rule
+  alive under its old name, and a reader could call
+  it by habit. The first actor cell wins over any
+  solid behind it because the walk reaches it first;
+  a solid first stops the shot, so fire cannot hit
+  through a wall. A miss still consumes ammo, as
+  before: making misses free would be an economy
+  change, not an aim fix, and the tests pin it for
+  blocked, out-of-reach, and skyward shots alike.
+- Decision, on no-target behaviour: refusal with
+  existing failure results, never a silent fallback
+  to the fixed +Z cells — the scope's starting
+  hypothesis, kept. Gather returns Air (or
+  OutOfBounds past the chunk edge), build returns
+  Floating (or OutOfBounds), fire consumes the round
+  and hits nothing. Any one of these falling back to
+  +Z would hide every aim failure and reintroduce,
+  as a hidden default, the exact bug this slice
+  closes, so the tests pin the refusals, not just
+  the successes.
+- Decision, on neutral-aim compatibility: proved and
+  reported as a split, not a single claim. Pitch -45
+  at yaw 0 reproduces the old gather cell (16,3,17),
+  because the eye ray at that angle strikes the
+  ground one cell ahead — so the old cell is not
+  lost, it is now reached by aiming down, as an FPS
+  player would. Level aim at yaw 0 does NOT
+  reproduce the Slice 1 cells, because the eye is
+  1.6 m above the feet and a level ray passes over
+  the ground; the Slice 1 demo is therefore updated
+  (aimed gather / build, aimed fire) and its numbers
+  stand (gathered 1, built 1, killed 2, save 43,881).
+  The Slice 2 demo numbers do change, and are
+  reported openly in the changelog: killed 1 (was 2),
+  save 43,921 (was 43,908), because aimed fire is
+  range-bounded at 10 m where the nearest rule was
+  not. Only a silent mismatch would have been
+  dishonest; a changed number with a stated reason
+  is the step working as intended.
+- Decision, on the adapter question: no new binding.
+  E / Q / T / Y and mouse click call the same
+  methods, which now read the core Look ray, so the
+  only adapter change is the renamed fire call plus
+  comments that stop claiming Slice 1 cells. The aim
+  claim is checklist item 14, Windows-only, not a
+  Unity claim — the same honesty split every slice
+  has kept between headless-tested core and
+  checklist adapter claims.
+- Test-authoring error caught by the suite, recorded
+  the same way as in 0.36.0: a yaw -45 / pitch -45
+  mill aim was first used for the powered pair, and
+  the suite failed because that ray crosses the x=15
+  face before it reaches the ground, landing the mill
+  at (14,4,17) — one cell west of the old front-left
+  cell, and therefore not face-adjacent to the Dynamo
+  at (16,4,17). The tests now aim at the (15,3,17)
+  ground cell itself (yaw -18.4, pitch -53), which
+  lands the mill at (15,4,17) and keeps the pair
+  powered; no core code changed for this, and the
+  geometry is now pinned by the Slice 5 / Slice 6
+  placement assertions, not by the builder succeeding
+  somewhere unspecified.
+- Deliberately NOT in this step: any weapon damage,
+  magazine, or reload change; any squad, doctrine,
+  kind, price, or cap change; any Dynamo cost,
+  distribution, or cadence change; any kinetic mill
+  change; any loot, skill, or core health change;
+  any enemy AI or targeting change; any movement
+  mode or vertical movement by pitch; any save-format
+  field (`Look` stays session state); a balance pass;
+  any claim about Windows Unity verification (new
+  checklist item 14 only) or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 8 Step 3, demo scenario +
+  documentation-only review.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

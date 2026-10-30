@@ -212,16 +212,23 @@ Check(genMesh.QuadCount == greedy, "meshbuilder quad count matches mesher");
 var sim = new Simulation(42);
 sim.Tick(0.1f, 0, 0, false);
 Check(!sim.IsPlayerDead, "simulation player alive after first tick");
+// Slice 8 Step 2: gather and build are aimed now. Pitching down
+// 45 at yaw 0 aims the eye ray at the old gather cell (16,3,17),
+// so the Slice 1 numbers survive with an explicit aim, not by
+// a fixed cell. Fire aims level at an enemy placed in front
+// within the 10 m reach, replacing the old nearest-enemy rule.
+sim.ApplyLook(0f, -45f);
 var gatherResult = sim.GatherAhead();
 Check(gatherResult == GatherResult.Success, $"simulation gather ahead succeeds (got {gatherResult})");
 Check(sim.BlocksGathered == 1, "simulation blocks gathered counts");
 sim.World.Player.Inventory.Add(BlockType.Stone, 10);
 var buildResult = sim.BuildWallAhead();
 Check(buildResult == BuildResult.Success, $"simulation build wall ahead succeeds (got {buildResult})");
-sim.World.SpawnWave(1);
-Check(sim.World.Enemies.Count == 1, "simulation wave spawns 1 enemy");
-for (int i = 0; i < 3; i++) sim.FireAtNearestEnemy();
-Check(sim.EnemiesKilled == 1, "simulation fire kills enemy in 3 shots (30 HP, 10 damage)");
+sim.ApplyLook(0f, 45f); // back to level for fire
+sim.World.Enemies.Add(new Enemy(16, 5, 22));
+Check(sim.World.Enemies.Count == 1, "simulation aimed fire test enemy placed in front");
+for (int i = 0; i < 3; i++) sim.FireAimed();
+Check(sim.EnemiesKilled == 1, "simulation aimed fire kills enemy in 3 shots (30 HP, 10 damage)");
 sim.World.DamageCore(100);
 Check(sim.IsObjectiveComplete, "simulation objective complete at core 0 HP");
 var simHud = sim.Hud();
@@ -229,13 +236,13 @@ Eq(100, simHud.ObjectivePercentCompleted, "simulation hud objective 100% after c
 
 // ---- Step 4: core attack + mesher benchmark ----
 var sim2 = new Simulation(42);
-// Move FPS close to the core by teleporting via a fresh controller position is not
-// possible (position is private-set in FpsController), so test FireAtCore at spawn
-// distance: it should fire but not damage (core is >10m away).
+// Slice 8 Step 2: aimed fire at spawn, level toward +Z, does not
+// hit the core — the core is at (28,5,28), not in the aim line,
+// and beyond the 10 m reach — so it fires but does not damage.
 int coreBefore = sim2.World.CoreHealth;
-sim2.FireAtCore();
-Check(sim2.World.CoreHealth == coreBefore, "fire at core out of range does not damage core");
-Check(sim2.Weapon.Mag == 41, "fire at core consumes ammo even out of range");
+sim2.FireAimed();
+Check(sim2.World.CoreHealth == coreBefore, "aimed fire off-line does not damage core");
+Check(sim2.Weapon.Mag == 41, "aimed fire consumes ammo even on a miss");
 // Mesher benchmark: one generated chunk must mesh in under 500 ms on this machine.
 var benchSw = System.Diagnostics.Stopwatch.StartNew();
 var benchMesh = MeshBuilder.BuildFromChunk(VoxelChunk.Generate(42));
@@ -305,9 +312,9 @@ Eq(genLoot.MagSize, genWeapon.Mag, "generated weapon starts with full mag");
 var simGen = new Simulation(42, genLoot);
 Eq(genLoot.Damage, simGen.Weapon.Damage, "simulation equipped generated damage");
 Eq(genLoot.MagSize, simGen.Weapon.Mag, "simulation equipped generated mag");
-simGen.World.SpawnWave(1);
+simGen.World.Enemies.Add(new Enemy(16, 5, 22));
 int enemyHpBefore = simGen.World.Enemies[0].Health;
-simGen.FireAtNearestEnemy();
+simGen.FireAimed();
 Eq(Math.Max(0, enemyHpBefore - genLoot.Damage), simGen.World.Enemies.Count == 0 ? 0 : simGen.World.Enemies[0].Health, "simulation fire deals generated damage, not fixed 10");
 var simEquip = new Simulation(42);
 Eq("Pulse Rifle", simEquip.Weapon.Name, "simulation default weapon is still Pulse Rifle");
@@ -317,7 +324,7 @@ Eq(genLoot.Name, simEquip.Weapon.Name, "simulation equip changes weapon name");
 Eq(genLoot.Damage, simEquip.Weapon.Damage, "simulation equip changes weapon damage");
 Eq(genLoot.MagSize, simEquip.Weapon.Mag, "simulation equip gives full generated mag");
 int equipMagBefore = simEquip.Weapon.Mag;
-simEquip.FireAtNearestEnemy();
+simEquip.FireAimed();
 Eq(equipMagBefore - 1, simEquip.Weapon.Mag, "simulation equip fire consumes generated mag");
 Check(!simEquip.Equip(null), "simulation equip null rejected, weapon unchanged");
 Eq(genLoot.Name, simEquip.Weapon.Name, "simulation equip null leaves weapon unchanged");
@@ -333,8 +340,8 @@ Eq(29, simSkill.EffectiveCoreDamage, "skill effective core damage 29 (20 x 1.45)
 Eq(105, simSkill.World.Player.MaxShields, "skill shield cap 105 (85 + 20)");
 Eq(10, simSkill.World.WorkstationRegenPerTick, "skill workstation regen 10 per tick (5 + 5)");
 Check(Math.Abs(simSkill.Fps.SpeedMultiplier - 1.05f) < 0.001f, "skill move speed multiplier 1.05");
-simSkill.World.SpawnWave(1);
-simSkill.FireAtNearestEnemy();
+simSkill.World.Enemies.Add(new Enemy(16, 5, 22));
+simSkill.FireAimed();
 Eq(6, simSkill.World.Enemies[0].Health, "skill fire deals 24 damage to 30 HP enemy, leaving 6");
 var simNoSkill = new Simulation(42, genLoot);
 Eq(20, simNoSkill.EffectiveDamage, "no-skill effective damage equals base weapon damage");
@@ -360,14 +367,20 @@ Check(Math.Abs(simSwift.Fps.EffectiveSpeed - 6.3f) < 0.01f, "skill Swift Feet ef
 simSwift.Tick(0.1f, 1, 0, false);
 Check(Math.Abs(simSwift.Fps.Z - 16.63f) < 0.01f, $"skill Swift Feet moves 0.63m in 0.1s (got Z {simSwift.Fps.Z})");
 // Gather bonus: +20% = one bonus unit per 5 successful gathers; a failed
-// gather in between must not advance the bonus. Target cell is (16,3,17).
+// gather in between must not advance the bonus. Target cell is (16,3,17),
+// aimed at with pitch -45 at yaw 0 (Slice 8 Step 2). The failed gather
+// aims at a Wall in that cell, not at air: with aim, an emptied cell
+// would simply let the ray reach the next ground cell, so air is no
+// longer a reliable failure — a non-gatherable solid is.
 var simGather = new Simulation(42, null, fullBuild);
+simGather.ApplyLook(0f, -45f);
 for (int i = 0; i < 4; i++)
 {
     simGather.World.Chunk.TrySet(16, 3, 17, BlockType.Stone);
     Check(simGather.GatherAhead() == GatherResult.Success, "skill gather bonus setup gather succeeds");
 }
-Check(simGather.GatherAhead() == GatherResult.Air, "skill gather bonus failed gather is air");
+simGather.World.Chunk.TrySet(16, 3, 17, BlockType.Wall);
+Check(simGather.GatherAhead() == GatherResult.NotGatherable, "skill gather bonus failed gather is not gatherable");
 simGather.World.Chunk.TrySet(16, 3, 17, BlockType.Stone);
 Check(simGather.GatherAhead() == GatherResult.Success, "skill gather bonus 5th gather succeeds");
 Eq(5, simGather.BlocksGathered, "skill gather counts 5 gathers, not bonus units");
@@ -440,6 +453,7 @@ var simMill = new Simulation(42);
 simMill.Tick(0.1f, 0, 0, false);
 simMill.World.Player.Inventory.Add(BlockType.Stone, 10);
 simMill.World.Player.Inventory.Add(BlockType.Wood, 5);
+simMill.ApplyLook(-18.4f, -53f);
 Eq(BuildResult.Success, simMill.BuildKineticMillAhead(), "simulation build kinetic mill ahead succeeds");
 for (int i = 0; i < 5; i++) simMill.Tick(0.1f, 0, 0, false);
 Eq(1, simMill.World.KineticBlocksGathered, "simulation kinetic mill gathers 1 block in 5 ticks");
@@ -667,6 +681,7 @@ Eq(29, compSim.EffectiveCoreDamage, "slice 2 composition skilled core damage 20 
 Eq(105, compSim.World.Player.MaxShields, "slice 2 composition shields cap 85 -> 105");
 compSim.World.Player.Inventory.Add(BlockType.Stone, 10);
 compSim.World.Player.Inventory.Add(BlockType.Wood, 5);
+compSim.ApplyLook(-18.4f, -53f);
 Eq(BuildResult.Success, compSim.BuildKineticMillAhead(), "slice 2 composition kinetic mill builds");
 Check(compSim.DeployOrbitalSquad(compSim.World.Player.X, compSim.World.Player.Y, compSim.World.Player.Z) != null, "slice 2 composition squad deploys");
 Eq(1, OrbitalView.Snapshot(compSim.World).Count, "slice 2 composition snapshot has 1 squad");
@@ -714,6 +729,7 @@ Eq(42, nullSim.World.Seed, "null restore leaves the world unchanged");
 var counterSim = new Simulation(42);
 counterSim.World.Player.Inventory.Add(BlockType.Stone, 10);
 counterSim.World.Player.Inventory.Add(BlockType.Wood, 5);
+counterSim.ApplyLook(-18.4f, -53f);
 Eq(BuildResult.Success, counterSim.BuildKineticMillAhead(), "restore test mill builds for counter");
 Eq(1, counterSim.BlocksBuilt, "restore test counter before restore is 1");
 var skillBuild = new SkillBuild();
@@ -1034,7 +1050,8 @@ Check(s3Build.Allocate("S1") && s3Build.Allocate("S2") && s3Build.Allocate("N1")
 var s3Sim = new Simulation(42, s3Loot, s3Build);
 s3Sim.World.Player.Restore(100, 100);
 s3Sim.Fps.Teleport(24, 5, 24);
-Check(s3Sim.FireAtCore() && s3Sim.FireAtCore(), "slice 3 demo two core shots fired");
+s3Sim.ApplyLook(45f, -10f);
+Check(s3Sim.FireAimed() && s3Sim.FireAimed(), "slice 3 demo two aimed core shots fired");
 Eq(42, s3Sim.World.CoreHealth, "slice 3 demo core damaged to 42 before save");
 Eq(28, s3Sim.Weapon.Mag, "slice 3 demo weapon mag is 28 after two core shots");
 s3Sim.World.Player.Inventory.Add(BlockType.EmberOre, 40);
@@ -1545,6 +1562,7 @@ Eq(1, savePowLoaded.PoweredBlocksGathered, "loaded powered mill gathers on its f
 var simDyn = new Simulation(42);
 simDyn.Tick(0.1f, 0, 0, false);
 simDyn.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+simDyn.ApplyLook(0f, -45f);
 Eq(BuildResult.Success, simDyn.BuildDynamoAhead(), "simulation build dynamo ahead succeeds");
 Eq(BlockType.Dynamo, simDyn.World.Chunk.Get(16, 4, 17), "simulation dynamo placed front-centre");
 Eq(0, simDyn.World.Player.Inventory.Get(BlockType.EmberOre), "simulation dynamo spends its ore");
@@ -1560,7 +1578,9 @@ simS5.Tick(0.1f, 0, 0, false);
 simS5.World.Player.Inventory.Add(BlockType.Stone, 10);
 simS5.World.Player.Inventory.Add(BlockType.Wood, 5);
 simS5.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+simS5.ApplyLook(-18.4f, -53f);
 Eq(BuildResult.Success, simS5.BuildKineticMillAhead(), "slice 5 demo mill builds through simulation builder");
+simS5.ApplyLook(18.4f, 8f);
 Eq(BuildResult.Success, simS5.BuildDynamoAhead(), "slice 5 demo dynamo builds through simulation builder");
 Eq(BlockType.KineticMill, simS5.World.Chunk.Get(15, 4, 17), "slice 5 demo mill placed front-left");
 Eq(BlockType.Dynamo, simS5.World.Chunk.Get(16, 4, 17), "slice 5 demo dynamo placed front-centre");
@@ -1675,23 +1695,25 @@ simLookRestore.ApplyLook(30f, -20f);
 Check(simLookRestore.RestoreWorld(new WorldZone(9)), "look restore world succeeds");
 Eq(30f, simLookRestore.Look.Yaw, "look yaw survives in-place restore");
 Eq(-20f, simLookRestore.Look.Pitch, "look pitch survives in-place restore");
-// What pitch does NOT change in this step, proved, not asserted:
-// gather, build, and fire keep their Slice 1 cells/rules while
-// pitched up 45 degrees. Movement is NOT part of that list any
-// more: Slice 8 Step 1 rotates it by yaw (see the Slice 8 section
-// at the end of this file), so the old yaw-90 world-aligned
-// expectation below was replaced, not kept, by that step — the
-// behaviour change is the step, and keeping the old test would
-// have asserted the bug the step closes.
+// Slice 8 Step 2 replaces this 0.28.0 non-change test, not by
+// accident: pitched up 45 degrees, gather / build / fire now
+// follow the aim ray into the sky, where there is nothing to
+// gather, no surface to build on, and no enemy in the line.
+// Keeping the old test would have asserted the aim-blind bug
+// Step 2 closes. Movement is NOT part of that list any more
+// either: Slice 8 Step 1 rotates it by yaw (see the Slice 8
+// section at the end of this file).
 var simPitch = new Simulation(42);
 simPitch.Tick(0.1f, 0, 0, false);
 simPitch.ApplyLook(0f, 45f);
-Check(simPitch.GatherAhead() == GatherResult.Success, "pitched look does not change gather ahead cell");
+Check(simPitch.GatherAhead() == GatherResult.Air, "pitched up 45 gather aims at sky, nothing gathered");
 simPitch.World.Player.Inventory.Add(BlockType.Stone, 10);
-Check(simPitch.BuildWallAhead() == BuildResult.Success, "pitched look does not change build wall ahead cell");
+Check(simPitch.BuildWallAhead() == BuildResult.Floating, "pitched up 45 build has no aimed surface");
+Eq(10, simPitch.World.Player.Inventory.Get(BlockType.Stone), "pitched up 45 failed build spends no stone");
 simPitch.World.SpawnWave(1);
-for (int i = 0; i < 3; i++) simPitch.FireAtNearestEnemy();
-Eq(1, simPitch.EnemiesKilled, "pitched look does not change fire at nearest enemy rule");
+for (int i = 0; i < 3; i++) simPitch.FireAimed();
+Eq(0, simPitch.EnemiesKilled, "pitched up 45 aimed fire misses the unaimed enemy");
+Eq(39, simPitch.Weapon.Mag, "pitched up 45 missed shots still consume ammo");
 
 // ---- Slice 6 Step 2: squad activity word + hunting target (0.29.0) ----
 // HoldGround reads by its rally: marching while away, holding at it, no prey ever.
@@ -1853,7 +1875,9 @@ powSim.Tick(0.1f, 0, 0, false);
 powSim.World.Player.Inventory.Add(BlockType.Stone, 10);
 powSim.World.Player.Inventory.Add(BlockType.Wood, 5);
 powSim.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+powSim.ApplyLook(-18.4f, -53f);
 Eq(BuildResult.Success, powSim.BuildKineticMillAhead(), "slice6 simulation mill ahead succeeds for the indicator pair");
+powSim.ApplyLook(18.4f, 8f);
 Eq(BuildResult.Success, powSim.BuildDynamoAhead(), "slice6 simulation dynamo ahead succeeds for the indicator pair");
 Eq(1, powSim.Hud().TotalMills, "slice6 simulation builder pair counts as one mill in Hud()");
 Eq(1, powSim.Hud().PoweredMills, "slice6 simulation builder pair counts as one powered mill in Hud()");
@@ -1861,6 +1885,7 @@ var powSimSolo = new Simulation(42);
 powSimSolo.Tick(0.1f, 0, 0, false);
 powSimSolo.World.Player.Inventory.Add(BlockType.Stone, 10);
 powSimSolo.World.Player.Inventory.Add(BlockType.Wood, 5);
+powSimSolo.ApplyLook(-18.4f, -53f);
 Eq(BuildResult.Success, powSimSolo.BuildKineticMillAhead(), "slice6 simulation mill alone succeeds for the indicator");
 Eq(1, powSimSolo.Hud().TotalMills, "slice6 simulation mill alone counts as one mill in Hud()");
 Eq(0, powSimSolo.Hud().PoweredMills, "slice6 simulation mill alone counts as zero powered in Hud()");
@@ -1916,7 +1941,9 @@ Eq(SquadActivity.Holding, OrbitalView.Snapshot(simS6.World)[0].Activity, "slice 
 simS6.World.Player.Inventory.Add(BlockType.Stone, 10);
 simS6.World.Player.Inventory.Add(BlockType.Wood, 5);
 simS6.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+simS6.ApplyLook(-108.4f, -142f);
 Eq(BuildResult.Success, simS6.BuildKineticMillAhead(), "slice 6 demo mill builds through simulation builder");
+simS6.ApplyLook(18.4f, 8f);
 Eq(BuildResult.Success, simS6.BuildDynamoAhead(), "slice 6 demo dynamo builds through simulation builder");
 var s6Hud = simS6.Hud();
 Eq(1, s6Hud.TotalMills, "slice 6 demo power indicator counts one mill");
@@ -2287,18 +2314,91 @@ slideFps.UpdateWorld(0.1f, 0, 0, false, slideChunk);
 for (int i = 0; i < 20; i++) slideFps.UpdateWorld(0.1f, 1f, 1f, false, slideChunk);
 Check(slideFps.X < 18f - FpsController.HalfWidth, $"slice8 world-space wall blocks X on diagonal (X={slideFps.X})");
 Check(slideFps.Z > 20f, $"slice8 world-space sliding still moves Z past blocked X (Z={slideFps.Z})");
-// Deliberate asymmetry for exactly this step, proved not assumed:
-// at yaw 90, gather / build / fire still use their fixed +Z /
-// nearest-enemy rules — Step 2 is where they learn to aim.
+// ---- Slice 8 Step 2: aim-based gather / build / fire ----
+// The Step 1 asymmetry is closed here: at yaw 90, gather,
+// build, and fire follow the aim ray (+X, down for ground),
+// not the old fixed +Z cells or the nearest-enemy rule.
+// Neutral-aim compatibility, stated openly: at yaw 0,
+// pitch -45, the eye ray reaches the old gather cell
+// (16,3,17) — pitch, not yaw, is what moved gather off
+// the old feet-level rule, because the eye is 1.6 m above
+// the feet and a level ray passes over the ground. At
+// yaw 0, pitch 0, gather and build therefore do NOT
+// reproduce the Slice 1 cells (the level ray finds only
+// air at eye height), and the Slice 1 demo is updated
+// for that in this step instead of silently keeping
+// numbers the new rule no longer produces.
+var aimNeutral = new Simulation(42);
+aimNeutral.Tick(0.1f, 0, 0, false);
+aimNeutral.ApplyLook(0f, -45f);
+Check(aimNeutral.GatherAhead() == GatherResult.Success, "slice8 step 2 pitch -45 yaw 0 gathers the old ground cell (16,3,17)");
+Eq(BlockType.Air, aimNeutral.World.Chunk.Get(16, 3, 17), "slice8 step 2 old gather cell is empty after aimed gather");
+var aimLevel = new Simulation(42);
+aimLevel.Tick(0.1f, 0, 0, false);
+Check(aimLevel.GatherAhead() == GatherResult.Air, "slice8 step 2 level aim gathers nothing: the eye ray passes over the ground");
 var asymSim = new Simulation(42);
 asymSim.Tick(0.1f, 0, 0, false);
-asymSim.ApplyLook(90f, 0f);
-Check(asymSim.GatherAhead() == GatherResult.Success, "slice8 step 1 yaw 90 gather still uses fixed +Z cell");
-asymSim.World.Player.Inventory.Add(BlockType.Stone, 10);
-Check(asymSim.BuildWallAhead() == BuildResult.Success, "slice8 step 1 yaw 90 build still uses fixed +Z cell");
-asymSim.World.SpawnWave(1);
-for (int i = 0; i < 3; i++) asymSim.FireAtNearestEnemy();
-Eq(1, asymSim.EnemiesKilled, "slice8 step 1 yaw 90 fire still uses nearest-enemy rule");
+asymSim.ApplyLook(90f, -45f);
+Check(asymSim.GatherAhead() == GatherResult.Success, "slice8 step 2 yaw 90 pitch -45 gathers the +X ground cell (17,3,16)");
+Eq(BlockType.Air, asymSim.World.Chunk.Get(17, 3, 16), "slice8 step 2 yaw 90 gather cell is empty after aimed gather");
+var aimBuild = new Simulation(42);
+aimBuild.Tick(0.1f, 0, 0, false);
+aimBuild.ApplyLook(90f, -45f);
+aimBuild.World.Player.Inventory.Add(BlockType.Stone, 10);
+Check(aimBuild.BuildWallAhead() == BuildResult.Success, "slice8 step 2 yaw 90 pitch -45 builds a wall");
+Eq(BlockType.Wall, aimBuild.World.Chunk.Get(17, 4, 16), "slice8 step 2 yaw 90 wall lands in the air cell before the +X ground");
+var aimFire = new Simulation(42);
+aimFire.Tick(0.1f, 0, 0, false);
+aimFire.ApplyLook(90f, 0f);
+aimFire.World.Enemies.Add(new Enemy(22, 5, 16));
+for (int i = 0; i < 3; i++) aimFire.FireAimed();
+Eq(1, aimFire.EnemiesKilled, "slice8 step 2 yaw 90 aimed fire kills the +X enemy in 3 shots");
+// Fire is blocked by a solid: a wall between the player and
+// an enemy stops the shot, costs the round, and leaves the
+// enemy untouched — fire cannot hit through a wall.
+var aimBlocked = new Simulation(42);
+aimBlocked.Tick(0.1f, 0, 0, false);
+aimBlocked.World.Chunk.TrySet(16, 5, 19, BlockType.Wall);
+aimBlocked.World.Enemies.Add(new Enemy(16, 5, 22));
+Check(aimBlocked.FireAimed(), "slice8 step 2 blocked shot still fires");
+Eq(30, aimBlocked.World.Enemies[0].Health, "slice8 step 2 wall blocks aimed fire: enemy untouched");
+Eq(41, aimBlocked.Weapon.Mag, "slice8 step 2 blocked shot still consumes ammo");
+// Fire reaches the core by aim: from (24,5,24), yaw 45 and
+// pitch -10 put the core cell (28,5,28) in the ray within
+// the 10 m reach, replacing the old 10 m bubble.
+var aimCore = new Simulation(42);
+aimCore.Fps.Teleport(24, 5, 24);
+aimCore.ApplyLook(45f, -10f);
+Check(aimCore.FireAimed(), "slice8 step 2 aimed core shot fires");
+Eq(90, aimCore.World.CoreHealth, "slice8 step 2 aimed core shot deals 10 damage");
+// Gather refuses a non-gatherable solid instead of falling
+// through it: a wall in the aimed cell is NotGatherable,
+// not a gather of the ground behind it.
+var aimWall = new Simulation(42);
+aimWall.Tick(0.1f, 0, 0, false);
+aimWall.World.Chunk.TrySet(16, 3, 17, BlockType.Wall);
+aimWall.ApplyLook(0f, -45f);
+Check(aimWall.GatherAhead() == GatherResult.NotGatherable, "slice8 step 2 gather at a wall refuses, does not gather through it");
+// No aimed surface, no build, no spend: pitching up with
+// stone in hand returns Floating and leaves the stone.
+var aimSky = new Simulation(42);
+aimSky.Tick(0.1f, 0, 0, false);
+aimSky.ApplyLook(0f, 45f);
+aimSky.World.Player.Inventory.Add(BlockType.Stone, 10);
+Check(aimSky.BuildWallAhead() == BuildResult.Floating, "slice8 step 2 skyward build has no aimed surface");
+Eq(10, aimSky.World.Player.Inventory.Get(BlockType.Stone), "slice8 step 2 skyward failed build spends no stone");
+// A ray that leaves the chunk is OutOfBounds, not Air.
+var aimEdge = new Simulation(42);
+aimEdge.Fps.Teleport(31, 4, 31);
+Check(aimEdge.GatherAhead() == GatherResult.OutOfBounds, "slice8 step 2 gather out of the chunk is out of bounds");
+// Reach is bounded: an enemy 12 m ahead, past the 10 m
+// reach, is not hit, and the shot still costs a round.
+var aimFar = new Simulation(42);
+aimFar.Tick(0.1f, 0, 0, false);
+aimFar.World.Enemies.Add(new Enemy(16, 5, 28));
+Check(aimFar.FireAimed(), "slice8 step 2 out-of-reach shot still fires");
+Eq(30, aimFar.World.Enemies[0].Health, "slice8 step 2 enemy past 10 m reach is not hit");
+Eq(41, aimFar.Weapon.Mag, "slice8 step 2 out-of-reach shot still consumes ammo");
 // Direct FpsController.Update keeps its Slice 1 meaning (forward
 // is +Z, strafe is +X) even now that Simulation rotates above it:
 // the rotation is a Simulation-Tick rule, not a second rule inside
