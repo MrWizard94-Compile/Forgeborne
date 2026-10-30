@@ -58,6 +58,15 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     at 1440p, 60 FPS is the blueprint target, not a Slice 1 fail
     threshold if the loop is otherwise playable — record the
     actual number, do not claim it.
+11. [ ] FPS pitch, added 0.28.0 (adapter code written, NOT yet
+    compiled or run in Unity on Windows; core Look math is
+    headless-tested): mouse up looks up, mouse down looks
+    down, the camera never flips past vertical, and looking
+    down at flat ground lets the orbital picker pick that
+    ground cell — full detail in checklist item 9 of
+    `docs/orbital-command.md`. Do not claim this verified
+    in Unity until that item is completed there and recorded
+    in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

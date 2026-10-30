@@ -1,5 +1,84 @@
 # Forgeborne — Changelog
 
+## 0.28.0 — 2026-10-30 — Slice 6 Step 1: FPS pitch aiming
+
+- FPS pitch aiming, decided in this step (rationale in
+  DECISIONS.md): pitch lives in a new testable core `Look`
+  in `src/Forgeborne.Core/Look.cs`, together with yaw —
+  not as an adapter-only camera angle, because the
+  direction vector is what the picker raycast, and any
+  future aim rule, actually consumes. `Look` holds yaw
+  (unbounded, wrapping naturally in trigonometry) and
+  pitch in degrees, clamped to [-89, 89] so the camera
+  cannot flip past vertical, with a unit forward vector
+  derived as (cos pitch * sin yaw, sin pitch, cos pitch *
+  cos yaw): yaw 0 faces +Z, the same "front" as the
+  Slice 1 builders, yaw 90 faces +X, positive pitch looks
+  up. Yaw is moved into `Look`, not duplicated beside it:
+  the Unity adapter no longer stores its own `_yaw`, it
+  feeds already-scaled mouse deltas (mouse delta times its
+  existing `MouseSensitivity`, so there is no second
+  sensitivity value in core) into
+  `Simulation.ApplyLook` / `Simulation.Look`, and renders
+  the camera from the core forward vector via
+  `Quaternion.LookRotation`, so no aim math is duplicated
+  in the adapter. The adapter's mouse-Y sign (positive =
+  look up, per the core convention) is a Windows checklist
+  item, not a headless claim: if it is inverted in Unity,
+  the adapter call flips, not the core convention.
+- What pitch changes first, decided as camera + picker
+  only, per the scope hypothesis: the picker raycast
+  already follows the camera's forward, so a pitched
+  camera immediately lets a rally be picked by looking
+  down at flat ground, which is the concrete picker
+  failure pitch exists to fix. Gather, build, and fire
+  keep their Slice 1 cells and rules, and movement stays
+  world-aligned — yaw-rotated movement is explicitly NOT
+  bundled in, and is carried forward as a Slice 7
+  candidate with aim-based interaction. Tests prove the
+  non-changes, not just assert them: a Simulation pitched
+  up 45 degrees still gathers ahead, builds a wall ahead,
+  and kills with fire at the nearest enemy, and a
+  Simulation yawed 90 degrees still moves in +Z, not +X.
+- Save question, decided as session state, not saved:
+  `Look` gains no save field, so a fresh Simulation (and
+  a load into one) starts at yaw 0, pitch 0. An in-place
+  `RestoreWorld` does NOT reset it, for the same identity
+  reason it keeps the same Fps object: a Unity load into
+  the same Simulation keeps the player's current view
+  instead of snapping the camera to +Z. This refines the
+  scope's "starts wherever the adapter starts it" wording
+  — a new scene's adapter starts at 0, 0; a continuing
+  session keeps its view — and the distinction is recorded
+  in DECISIONS.md, not hidden behind the hypothesis.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: see the new checklist item 9 in
+  `docs/orbital-command.md` and item 11 in
+  `docs/slice-01-playtest-gate.md` (mouse sign, clamp,
+  ground-rally picking, unchanged gather / build / fire,
+  world-aligned movement). The test count below covers
+  the core Look math only; it does not cover adapter
+  rendering, and this entry does not claim otherwise.
+  What must NOT change in this step is unchanged: weapon
+  damage, range, and mag rules; the fire targeting rule;
+  gather and build cells; squad movement, fire, targeting,
+  price, and cap; Dynamo cost, distribution, and cadence;
+  and the save format.
+- Tests: **665 passed, 0 failed** (was 633; +32, with no
+  test failures during the run: forward vectors at yaw 0 /
+  90 / 180 / -90, pitch +/-45, the combined yaw 90 +
+  pitch 45 vector, both clamps including a stepped 80 + 20
+  stopping at 89, yaw accumulation and 360-degree return
+  to +Z, unit length, Simulation ownership, Look not
+  saved but surviving in-place restore, and the pitched /
+  yawed non-change proofs above). Demo unchanged: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars; Slice 2
+  save 43,908 chars; Step 1 scenario save 44,016 chars;
+  Step 3 scenario save 44,103 chars; Slice 4 scenario save
+  44,026 chars; Slice 5 Step 2 scenario save 43,974 chars.
+  Next in order: Slice 6 Step 2, 3D squad / rally markers
+  and the Advance display fix.
+
 ## 0.27.0 — 2026-10-30 — Slice 6 scope: FPS presentation
 
 - Scoped Slice 6, plus `docs/slice-06-scope.md`

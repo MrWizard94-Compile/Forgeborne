@@ -221,6 +221,23 @@ public sealed class Simulation
     /// adapter binds O / crosshair / Enter / Esc to this object;
     /// it holds no rendering and no second copy of squad rules.
     /// </summary>
+    /// <summary>
+    /// FPS view direction (Slice 6 Step 1): yaw + clamped pitch, with
+    /// a derived forward vector. The Unity adapter feeds mouse deltas
+    /// here and renders the camera from it; it holds no yaw of its
+    /// own any more. Session input state, not saved: a fresh
+    /// Simulation starts at yaw 0, pitch 0, and RestoreWorld does
+    /// not reset it. Camera + picker only in this step — GatherAhead,
+    /// the builders, and FireAtNearestEnemy keep their Slice 1 rules,
+    /// and movement stays world-aligned (see Look.cs).
+    /// </summary>
+    public Look Look { get; } = new();
+
+    /// <summary>Feed already-scaled mouse deltas into Look: positive
+    /// yawDelta turns toward +X, positive pitchDelta looks up.</summary>
+    public void ApplyLook(float yawDeltaDegrees, float pitchDeltaDegrees) =>
+        Look.Add(yawDeltaDegrees, pitchDeltaDegrees);
+
     public OrbitalCommand OrbitalCommand { get; } = new();
 
     /// <summary>Open the rally picker (clears any stale pending rally).</summary>

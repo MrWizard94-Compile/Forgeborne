@@ -1290,6 +1290,94 @@ look inevitable.
   does not close either.
 - Next, in order: Slice 6 Step 1, FPS pitch aiming.
 
+## 2026-10-30 — Slice 6 Step 1: FPS pitch aiming (0.28.0, under delegation)
+
+- Decision, on where pitch lives: in core, as `Look`,
+  confirming the scope hypothesis, for the reason the
+  scope gave and the step's tests now prove: the forward
+  vector is what a raycast consumes, and a pitch that
+  existed only as a camera angle could not be tested
+  headlessly at all. The duplication risk the scope named
+  is answered by moving yaw, not copying it: the adapter's
+  `_yaw` is deleted, and `Simulation.Look` is the one yaw.
+  FpsController is deliberately not the home, because
+  Look is view state and FpsController is feet movement —
+  putting view angles on the movement object would be the
+  step that forces movement to rotate with yaw, which this
+  step refuses to do.
+- Decision, on sensitivity: reuse the adapter's existing
+  `MouseSensitivity`, with no second sensitivity in core.
+  `Look.Add` takes already-scaled deltas, so the number
+  of sensitivity values in the game stays one, and a
+  future sensitivity change is an adapter change, not a
+  core change. No invert option is claimed: if Windows
+  testing shows the Mouse Y sign inverted, the adapter
+  call flips and the core convention (positive pitchDelta
+  = look up) stays put, so headless tests never have to
+  be rewritten for a Unity sign.
+- Decision, on the clamp: [-89, 89], one degree short of
+  vertical on each side. At exactly +/-90 the horizontal
+  forward component is zero, the camera's up direction
+  becomes undefined for LookRotation, and the view flips;
+  89 keeps a small but nonzero horizontal component
+  (0.0175) while being, for play purposes, straight up or
+  down. It is a first-pass value for testability, not a
+  feel claim.
+- Decision, on what pitch changes first: camera + picker
+  only, confirming the scope hypothesis. The picker
+  raycast already follows `transform.forward`, so rendering
+  the camera from `Look` is the whole picker fix — no
+  picker code had to change at all, which is evidence the
+  hypothesis was right about where the failure lived. The
+  alternative (switching gather, build, or fire to aim in
+  this step) was rejected because it would have changed
+  the proven Slice 1 loop in the same step that introduces
+  pitch, and no test could then say which change broke it.
+  The step proves the non-change instead: pitched gather,
+  build, and fire tests, and a yawed-movement test, are in
+  the suite, not in a comment.
+- Decision, on yaw-rotated movement: NOT bundled, per the
+  scope hypothesis, and the yawed-movement test is the
+  proof that the refusal is real — a Simulation yawed 90
+  degrees still moves in +Z. Pitch is vertical aim; the
+  movement rewrite is a flagged later Slice 1 step, and
+  bundling it would have made step 1 a small FPS rewrite,
+  not a small step. It is carried forward with aim-based
+  interaction as a Slice 7 candidate, in the scope's
+  order, not quietly dropped.
+- Decision, on the save question: Look is session input
+  state, not saved — and, refining the scope's wording,
+  "not saved" does not mean "reset on every load". A
+  fresh Simulation starts at 0, 0 (which is what a new
+  Unity scene's adapter sees, and what a load into a fresh
+  Simulation proves in tests); an in-place RestoreWorld
+  keeps the current view, because RestoreWorld's whole
+  contract is identity preservation (same Simulation, same
+  Fps object) and snapping the camera to +Z on a Unity
+  load would break that contract for no gameplay reason.
+  The two cases are tested separately so the distinction
+  cannot silently collapse later.
+- Decision, on adapter rendering: `Quaternion.LookRotation`
+  from the core forward vector, not `Quaternion.Euler`
+  with a hand-negated pitch. Euler sign conventions for
+  pitch are exactly the kind of Unity-specific fact a
+  headless step cannot verify, and LookRotation sidesteps
+  it: the core vector is the truth, and the adapter only
+  points the camera along it. The sign question that
+  remains (Mouse Y up vs down) is therefore a single
+  checklist item, not a second copy of the math.
+- Deliberately NOT in this step: aim-based gather / build
+  / fire, yaw-rotated movement, any change to weapon,
+  squad, Dynamo, or save rules, any balance value, and
+  any claim about Windows Unity verification or the
+  pending Slice 1 director playtest gate — the adapter
+  code is written, the checklist items are added to
+  `docs/orbital-command.md` (item 9) and
+  `docs/slice-01-playtest-gate.md` (item 11), and both
+  remain open.
+- Next, in order: Slice 6 Step 2, 3D squad / rally markers
+  and the Advance display fix.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

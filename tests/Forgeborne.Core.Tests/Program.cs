@@ -1595,6 +1595,107 @@ Eq(1, simS5Loaded.World.KineticBlocksGathered, "slice 5 demo loaded kinetic mill
 Eq(12, simS5Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice 5 demo loaded stone total is pre-load 6 plus loaded 6");
 Eq(BlockType.Dynamo, simS5Loaded.World.Chunk.Get(16, 4, 17), "slice 5 demo loaded powered mill never excavates its dynamo");
 
+// ---- Slice 6 Step 1: FPS pitch aiming (core Look) ----
+// Decides the scope's open questions in core: pitch lives in a
+// testable core Look (yaw + clamped pitch + forward vector), the
+// adapter feeds it scaled mouse deltas and renders from it, and
+// camera + picker are the only consumers in this step — gather,
+// build, fire, and movement keep their Slice 1 rules.
+var look0 = new Look();
+Eq(0f, look0.Yaw, "look starts at yaw 0");
+Eq(0f, look0.Pitch, "look starts at pitch 0");
+var f0 = look0.Forward();
+Check(Math.Abs(f0.X) < 0.001f && Math.Abs(f0.Y) < 0.001f && Math.Abs(f0.Z - 1f) < 0.001f, $"look forward at 0,0 is +Z (got {f0.X},{f0.Y},{f0.Z})");
+var lookYaw = new Look();
+lookYaw.Add(90f, 0f);
+var fYaw = lookYaw.Forward();
+Check(Math.Abs(fYaw.X - 1f) < 0.001f && Math.Abs(fYaw.Y) < 0.001f && Math.Abs(fYaw.Z) < 0.001f, $"look yaw 90 faces +X (got {fYaw.X},{fYaw.Y},{fYaw.Z})");
+var lookBack = new Look();
+lookBack.Add(180f, 0f);
+var fBack = lookBack.Forward();
+Check(Math.Abs(fBack.X) < 0.001f && Math.Abs(fBack.Y) < 0.001f && Math.Abs(fBack.Z + 1f) < 0.001f, $"look yaw 180 faces -Z (got {fBack.X},{fBack.Y},{fBack.Z})");
+var lookLeft = new Look();
+lookLeft.Add(-90f, 0f);
+var fLeft = lookLeft.Forward();
+Check(Math.Abs(fLeft.X + 1f) < 0.001f && Math.Abs(fLeft.Z) < 0.001f, $"look yaw -90 faces -X (got {fLeft.X},{fLeft.Y},{fLeft.Z})");
+var lookUp = new Look();
+lookUp.Add(0f, 45f);
+var fUp = lookUp.Forward();
+Check(Math.Abs(fUp.X) < 0.001f && Math.Abs(fUp.Y - 0.7071f) < 0.001f && Math.Abs(fUp.Z - 0.7071f) < 0.001f, $"look pitch 45 lifts forward equally up and ahead (got {fUp.X},{fUp.Y},{fUp.Z})");
+var lookDown = new Look();
+lookDown.Add(0f, -45f);
+var fDown = lookDown.Forward();
+Check(Math.Abs(fDown.Y + 0.7071f) < 0.001f && Math.Abs(fDown.Z - 0.7071f) < 0.001f, $"look pitch -45 drops forward equally down and ahead (got {fDown.X},{fDown.Y},{fDown.Z})");
+var lookCombo = new Look();
+lookCombo.Add(90f, 45f);
+var fCombo = lookCombo.Forward();
+Check(Math.Abs(fCombo.X - 0.7071f) < 0.001f && Math.Abs(fCombo.Y - 0.7071f) < 0.001f && Math.Abs(fCombo.Z) < 0.001f, $"look yaw 90 pitch 45 faces +X and up, no +Z (got {fCombo.X},{fCombo.Y},{fCombo.Z})");
+var lookClampUp = new Look();
+lookClampUp.Add(0f, 200f);
+Eq(89f, lookClampUp.Pitch, "look pitch clamps at +89, never past vertical");
+Check(lookClampUp.ForwardY > 0.999f && Math.Abs(lookClampUp.ForwardZ) < 0.02f, $"look clamped-up forward is almost straight up (got Y {lookClampUp.ForwardY}, Z {lookClampUp.ForwardZ})");
+var lookClampDown = new Look();
+lookClampDown.Add(0f, -200f);
+Eq(-89f, lookClampDown.Pitch, "look pitch clamps at -89, never past vertical");
+var lookClampStep = new Look();
+lookClampStep.Add(0f, 80f);
+lookClampStep.Add(0f, 20f);
+Eq(89f, lookClampStep.Pitch, "look pitch clamps in steps too, 80 + 20 stops at 89 not 100");
+var lookWrap = new Look();
+lookWrap.Add(360f, 0f);
+Eq(360f, lookWrap.Yaw, "look yaw accumulates unbounded, no hidden normalisation");
+var fWrap = lookWrap.Forward();
+Check(Math.Abs(fWrap.X) < 0.001f && Math.Abs(fWrap.Z - 1f) < 0.001f, $"look yaw 360 faces +Z again (got {fWrap.X},{fWrap.Y},{fWrap.Z})");
+var lookUnit = new Look();
+lookUnit.Add(30f, -20f);
+var fUnit = lookUnit.Forward();
+double unitLen = Math.Sqrt(fUnit.X * fUnit.X + fUnit.Y * fUnit.Y + fUnit.Z * fUnit.Z);
+Check(Math.Abs(unitLen - 1.0) < 0.001, $"look forward vector is unit length (got {unitLen})");
+// Simulation owns one Look; the adapter feeds it, it holds no yaw of its own.
+var simLook = new Simulation(42);
+Eq(0f, simLook.Look.Yaw, "simulation look starts at yaw 0");
+Eq(0f, simLook.Look.Pitch, "simulation look starts at pitch 0");
+simLook.ApplyLook(90f, 45f);
+Eq(90f, simLook.Look.Yaw, "simulation apply look sets yaw");
+Eq(45f, simLook.Look.Pitch, "simulation apply look sets pitch");
+Check(Math.Abs(simLook.Look.ForwardX - 0.7071f) < 0.001f, $"simulation look forward X follows yaw+pitch (got {simLook.Look.ForwardX})");
+// Look is session state, not saved: a load into a fresh Simulation
+// starts looking forward, whatever the saving Simulation looked at.
+var simLookSave = new Simulation(42);
+simLookSave.ApplyLook(30f, -20f);
+var lookSaveJson = simLookSave.SaveToJson();
+var simLookLoaded = new Simulation(99);
+Check(simLookLoaded.LoadFromJson(lookSaveJson), "look save/load round-trip succeeds");
+Eq(0f, simLookLoaded.Look.Yaw, "look yaw is not saved: loaded simulation starts at yaw 0");
+Eq(0f, simLookLoaded.Look.Pitch, "look pitch is not saved: loaded simulation starts at pitch 0");
+// …and an in-place restore keeps the current session's view, so a
+// Unity load into the same Simulation does not snap the camera.
+var simLookRestore = new Simulation(42);
+simLookRestore.ApplyLook(30f, -20f);
+Check(simLookRestore.RestoreWorld(new WorldZone(9)), "look restore world succeeds");
+Eq(30f, simLookRestore.Look.Yaw, "look yaw survives in-place restore");
+Eq(-20f, simLookRestore.Look.Pitch, "look pitch survives in-place restore");
+// What pitch does NOT change in this step, proved, not asserted:
+// gather, build, and fire keep their Slice 1 cells/rules while
+// pitched up 45 degrees, and movement stays world-aligned even
+// while yawed 90 degrees (yaw-rotated movement is a later step).
+var simPitch = new Simulation(42);
+simPitch.Tick(0.1f, 0, 0, false);
+simPitch.ApplyLook(0f, 45f);
+Check(simPitch.GatherAhead() == GatherResult.Success, "pitched look does not change gather ahead cell");
+simPitch.World.Player.Inventory.Add(BlockType.Stone, 10);
+Check(simPitch.BuildWallAhead() == BuildResult.Success, "pitched look does not change build wall ahead cell");
+simPitch.World.SpawnWave(1);
+for (int i = 0; i < 3; i++) simPitch.FireAtNearestEnemy();
+Eq(1, simPitch.EnemiesKilled, "pitched look does not change fire at nearest enemy rule");
+var simYawMove = new Simulation(42);
+simYawMove.Tick(0.1f, 0, 0, false);
+float moveStartX = simYawMove.Fps.X, moveStartZ = simYawMove.Fps.Z;
+simYawMove.ApplyLook(90f, 0f);
+simYawMove.Tick(0.1f, 1f, 0f, false);
+Check(Math.Abs(simYawMove.Fps.X - moveStartX) < 0.001f, $"yaw 90 does not rotate movement into +X (X moved {simYawMove.Fps.X - moveStartX})");
+Check(simYawMove.Fps.Z > moveStartZ, $"yaw 90 movement stays world-aligned +Z (Z moved {simYawMove.Fps.Z - moveStartZ})");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

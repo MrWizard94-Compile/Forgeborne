@@ -49,11 +49,14 @@ no longer uses it.
   hit. `VoxelMeshRenderer` now carries a `MeshCollider` sharing
   the built mesh, so the raycast actually hits the chunk; without
   it the ray would pass through the rendered voxels and never
-  set a rally. The camera only yaws in Slice 1 (no pitch yet),
-  so the ray runs horizontally from eye height and hits walls
-  and vertical faces — a rally on flat ground ahead is picked
-  by aiming at the face beyond it, not by looking down. Pitch
-  aiming is a later FPS step, not claimed here.
+  set a rally. Since Slice 6 Step 1 (0.28.0) the camera also
+  pitches: the adapter feeds mouse deltas into the core
+  `Look` and renders from its forward vector, so the ray
+  follows the pitched camera and a rally on flat ground ahead
+  can be picked by looking down at it, not by aiming at the
+  face beyond it. Gather, build, and fire still keep their
+  Slice 1 rules in that step — pitch changes camera + picker
+  only — and movement stays world-aligned.
 - **Enter** — deploy the selected squad at the pending rally.
 - **Esc** — cancel the pick, no squad.
 - **1** — re-select HoldGround / Vanguard.
@@ -176,6 +179,20 @@ final balance):
    deploys for 10 EmberOre, and it hunts the nearest enemy
    instead of marching to the picked rally; with no enemy it
    stands still. Do not claim this verified in Unity until
+   this item is completed there and recorded in DECISIONS.md.
+9. [ ] FPS pitch, added 0.28.0 (adapter code written, NOT yet
+   compiled or run in Unity on Windows; the core Look math
+   is headless-tested, the adapter rendering is NOT):
+   moving the mouse up looks up and moving it down looks
+   down (if the sign is inverted in Unity, flip the Mouse Y
+   sign in the adapter call, not the core convention);
+   looking up then down stops at the clamp and never flips
+   the camera past vertical; press O and look down at flat
+   ground ahead — the pending rally becomes the ground cell
+   under the crosshair, not the face beyond it; gather (E),
+   build (Q), and fire (click) still act on their Slice 1
+   cells while pitched; and movement stays world-aligned
+   while yawed. Do not claim this verified in Unity until
    this item is completed there and recorded in DECISIONS.md.
 
 Record the result of each step, with Unity version and GPU, in

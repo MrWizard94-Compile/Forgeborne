@@ -8,18 +8,34 @@ public class FpsInputAdapter : MonoBehaviour
 {
     public Simulation? Simulation;
     public float MouseSensitivity = 2f;
-    private float _yaw;
 
     void Update()
     {
         if (Simulation == null) return;
         // WASD / arrows, world-aligned in Slice 1 (no yaw rotation of movement yet;
-        // yaw is stored for the camera, movement rotation is a later Slice 1 step).
+        // movement rotation is a later Slice 1 step, not bundled into pitch).
         float forward = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
         float strafe = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
         bool jump = Input.GetKeyDown(KeyCode.Space);
-        _yaw += Input.GetAxis("Mouse X") * MouseSensitivity;
-        transform.rotation = Quaternion.Euler(0f, _yaw, 0f);
+        // FPS pitch aiming (Slice 6 Step 1): the adapter holds NO yaw
+        // or pitch of its own any more. It feeds already-scaled mouse
+        // deltas into the core Look (positive Mouse Y = look up, per
+        // the core convention — verify the sign on Windows, see the
+        // checklist item 9 in docs/orbital-command.md) and renders
+        // the camera from the core forward vector via LookRotation,
+        // so no aim math is duplicated here. The picker raycast below
+        // already follows transform.forward, so a pitched camera
+        // immediately lets a rally be picked by looking down at flat
+        // ground — the concrete picker failure pitch exists to fix.
+        // Gather (E), build (Q), and fire (click) keep their Slice 1
+        // cells/rules in this step; pitch changes camera + picker
+        // only, and movement stays world-aligned.
+        Simulation.ApplyLook(
+            Input.GetAxis("Mouse X") * MouseSensitivity,
+            Input.GetAxis("Mouse Y") * MouseSensitivity);
+        Vector3 lookForward = new Vector3(
+            Simulation.Look.ForwardX, Simulation.Look.ForwardY, Simulation.Look.ForwardZ);
+        transform.rotation = Quaternion.LookRotation(lookForward);
         Simulation.Tick(Time.deltaTime, forward, strafe, jump);
         // Camera follows the FPS controller's feet position + eye height.
         transform.position = new Vector3(Simulation.Fps.X, Simulation.Fps.Y + 1.6f, Simulation.Fps.Z);
