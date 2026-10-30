@@ -1696,6 +1696,94 @@ simYawMove.Tick(0.1f, 1f, 0f, false);
 Check(Math.Abs(simYawMove.Fps.X - moveStartX) < 0.001f, $"yaw 90 does not rotate movement into +X (X moved {simYawMove.Fps.X - moveStartX})");
 Check(simYawMove.Fps.Z > moveStartZ, $"yaw 90 movement stays world-aligned +Z (Z moved {simYawMove.Fps.Z - moveStartZ})");
 
+// ---- Slice 6 Step 2: squad activity word + hunting target (0.29.0) ----
+// HoldGround reads by its rally: marching while away, holding at it, no prey ever.
+var actMarchWorld = new WorldZone(42);
+actMarchWorld.DeploySquad(20, 5, 16);
+var actMarch = OrbitalView.Snapshot(actMarchWorld)[0];
+Eq(SquadActivity.Marching, actMarch.Activity, "slice6 HoldGround marching squad reads MARCHING");
+Check(!actMarch.HasHuntingTarget, "slice6 marching squad has no hunting target");
+Check(actMarch.HuntingTargetX == null, "slice6 marching squad hunting target cell is null");
+var actHoldWorld = new WorldZone(42);
+actHoldWorld.DeploySquad(16, 5, 16);
+var actHold = OrbitalView.Snapshot(actHoldWorld)[0];
+Eq(SquadActivity.Holding, actHold.Activity, "slice6 HoldGround squad at rally reads HOLDING");
+// Advance with a living enemy reads HUNTING even beyond engagement
+// range (4 > 3): hunting is not firing, and the old rally-relative
+// word would have called this same squad MOVING toward a rally it
+// ignores. The target is the prey cell, not the rally.
+var actHuntWorld = new WorldZone(42);
+actHuntWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actHuntWorld.Enemies.Add(new Enemy(20, 5, 16));
+var actHunt = OrbitalView.Snapshot(actHuntWorld)[0];
+Eq(SquadActivity.Hunting, actHunt.Activity, "slice6 Advance squad beyond range reads HUNTING not MOVING");
+Check(actHunt.HasHuntingTarget, "slice6 hunting squad has a hunting target");
+Eq(20, actHunt.HuntingTargetX, "slice6 hunting target X is the prey cell");
+Eq(5, actHunt.HuntingTargetY, "slice6 hunting target Y is the prey cell");
+Eq(16, actHunt.HuntingTargetZ, "slice6 hunting target Z is the prey cell");
+// Advance adjacent to its prey also reads HUNTING: the old word
+// would have read HOLDING (at its rally) or MOVING (away from it)
+// for a squad that is, in fact, standing and firing.
+var actAdjWorld = new WorldZone(42);
+actAdjWorld.DeploySquad(16, 5, 16, TacticalDoctrine.Advance);
+actAdjWorld.Enemies.Add(new Enemy(17, 5, 16));
+Eq(SquadActivity.Hunting, OrbitalView.Snapshot(actAdjWorld)[0].Activity, "slice6 Advance adjacent to prey reads HUNTING");
+// Advance with no living enemy reads IDLE and stands still —
+// documented behaviour, not a bug to hide — and a dead enemy
+// alone does not make it hunt.
+var actIdleWorld = new WorldZone(42);
+actIdleWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+Eq(SquadActivity.Idle, OrbitalView.Snapshot(actIdleWorld)[0].Activity, "slice6 Advance with no enemy reads IDLE");
+var actDeadWorld = new WorldZone(42);
+actDeadWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+var actDeadEnemy = new Enemy(20, 5, 16);
+actDeadWorld.Enemies.Add(actDeadEnemy);
+actDeadWorld.AttackEnemy(actDeadEnemy, 30);
+Eq(SquadActivity.Idle, OrbitalView.Snapshot(actDeadWorld)[0].Activity, "slice6 Advance with only a dead enemy reads IDLE");
+// Hunting target ties go to the first enemy in list order, the
+// same rule movement and fire use, so display cannot disagree
+// with either about the prey.
+var actTieWorld = new WorldZone(42);
+actTieWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actTieWorld.Enemies.Add(new Enemy(12, 5, 16));
+actTieWorld.Enemies.Add(new Enemy(20, 5, 16));
+var actTie = OrbitalView.Snapshot(actTieWorld)[0];
+Eq(12, actTie.HuntingTargetX, "slice6 hunting tie goes to first enemy in list order");
+// The target is re-derived on every snapshot, not stored: kill
+// the first-listed prey (both prey are 4 away, so the first
+// wins the tie) and the next snapshot hunts the other one,
+// while the old snapshot still shows the old prey (copy, as
+// with position since 0.11.0).
+var actReWorld = new WorldZone(42);
+actReWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+var actPreyNear = new Enemy(20, 5, 16);
+var actPreyFar = new Enemy(12, 5, 16);
+actReWorld.Enemies.Add(actPreyNear);
+actReWorld.Enemies.Add(actPreyFar);
+var actBefore = OrbitalView.Snapshot(actReWorld)[0];
+Eq(20, actBefore.HuntingTargetX, "slice6 hunting target before kill is the nearest prey");
+actReWorld.AttackEnemy(actPreyNear, 30);
+var actAfter = OrbitalView.Snapshot(actReWorld)[0];
+Eq(12, actAfter.HuntingTargetX, "slice6 hunting target re-derived after prey dies");
+Eq(20, actBefore.HuntingTargetX, "slice6 old snapshot keeps its old hunting target");
+Eq(SquadActivity.Hunting, actAfter.Activity, "slice6 squad still hunting after retargeting");
+// Activity is derived, not saved: an Advance squad round-trips
+// through save/load and still reads HUNTING at the same prey,
+// with no new save field created for it.
+var actSaveWorld = new WorldZone(42);
+actSaveWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actSaveWorld.Enemies.Add(new Enemy(20, 5, 16));
+var actSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(actSaveWorld));
+var actSaveSnap = OrbitalView.Snapshot(actSaveLoaded)[0];
+Eq(SquadActivity.Hunting, actSaveSnap.Activity, "slice6 hunting activity survives save/load by derivation");
+Eq(20, actSaveSnap.HuntingTargetX, "slice6 hunting target survives save/load by derivation");
+// The old rally-relative words are gone from the core display
+// contract: AtRally / IsMoving remain as position facts (kept
+// for existing tests), but Activity is the display word, and a
+// hunting squad's Activity contradicts neither — it is simply
+// not a function of AtRally at all.
+Check(actHunt.AtRally == false && actHunt.Activity == SquadActivity.Hunting, "slice6 hunting word is independent of rally position");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

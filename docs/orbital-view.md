@@ -11,19 +11,72 @@ checklist below is completed there and recorded in DECISIONS.md.
 returns a copied, read-only list of one `SquadSnapshot` per live
 squad, in deploy order. Each snapshot carries: position, rally,
 health, living members, damage per tick, at-rally / moving state,
-doctrine, and kind. It is a copy, not a live reference: taking a
-snapshot, then advancing the world, leaves the old snapshot at
-its pre-tick position. That is deliberate — rendering must never
-mutate core state, and a frame's display must not change mid-frame
-because a tick ran.
+doctrine, kind, and — since Slice 6 Step 2 (0.29.0) — a display
+activity word and, for a hunting squad, its prey cell. It is a
+copy, not a live reference: taking a snapshot, then advancing
+the world, leaves the old snapshot at its pre-tick position and
+its pre-tick activity and prey. That is deliberate — rendering
+must never mutate core state, and a frame's display must not
+change mid-frame because a tick ran.
+
+## The activity word (Slice 6 Step 2, 0.29.0)
+
+The old display word was rally-relative (`MOVING` /
+`HOLDING`), and it lied about Advance: a hunting squad read
+`MOVING` while standing adjacent to its prey firing, or
+`HOLDING` at a rally it was ignoring. The word is now
+`SquadActivity`, derived in core, not in the adapter:
+
+- HoldGround: `MARCHING` while away from its rally,
+  `HOLDING` at it.
+- Advance: `HUNTING` whenever a living enemy exists —
+  moving toward it or standing adjacent firing — with
+  `HuntingTargetX/Y/Z` set to the nearest living enemy
+  (Manhattan, first in list order on ties, no range limit,
+  re-derived on every snapshot from the same rule movement
+  and fire already use, so the three can never disagree
+  about the prey); `IDLE` when no living enemy exists,
+  standing still and ignoring its rally, which is the
+  documented Advance behaviour, not a bug to hide.
+
+Activity and prey are derived, not saved: no save field
+exists for either, and a loaded Advance squad reads
+`HUNTING` at the same prey again because the world it loads
+still contains that prey. `AtRally` / `IsMoving` remain on
+the snapshot as position facts, but they are no longer the
+display word, and no second word is kept alongside that
+could contradict the first.
+
+## 3D markers (Slice 6 Step 2, 0.29.0)
+
+`ForgeborneUnity/Assets/Scripts/SquadMarkerDisplay.cs` is a
+thin adapter only: it renders the same snapshot as scene
+markers, one per live squad, one per squad rally, and one
+pending-rally marker while the picker is open — no more, so
+the scene gains no marker layer the HUD discipline in
+`docs/art-direction.md` would call clutter. Forms are
+original primitives built in the adapter, colours follow the
+art direction (neon cyan cubes for squads, orange flat cubes
+for rallies, an orange sphere for a pending rally so a pick
+in progress cannot be mistaken for a deployed rally), and
+markers are pooled (at most 3 + 3 + 1) with their colliders
+removed so they never block the picker raycast or movement.
+Markers do NOT show through walls, by decision: they are
+ordinary opaque primitives, so the voxel mesh occludes them
+honestly by depth. If Windows testing proves that makes
+them useless at FPS distance, that is a later step's
+evidence to revisit, not a silent shader change.
 
 `ForgeborneUnity/Assets/Scripts/OrbitalSquadDisplay.cs` is a thin
 adapter only: it renders the snapshot as one text line per squad
 (`VANGUARD HOLDGROUND - 3 MEMBERS 90 HP 30 DMG - HOLDING AT
-(16,5,16) -> RALLY (16,5,16)`), or `ORBITAL: NO SQUADS (press O
-to pick a rally)` when none are deployed, plus a picker prompt
-line while the picker is open (see `docs/orbital-command.md`).
-It contains no squad logic.
+(16,5,16) -> RALLY (16,5,16)`, or for a hunting squad
+`VANGUARD ADVANCE - 3 MEMBERS 90 HP 30 DMG - HUNTING PREY
+(20,5,16) AT (16,5,16) -> RALLY (24,5,16)`), or
+`ORBITAL: NO SQUADS (press O to pick a rally)` when none are
+deployed, plus a picker prompt line while the picker is open
+(see `docs/orbital-command.md`). It contains no squad logic:
+the activity word is rendered verbatim from the snapshot.
 
 ## Wiring (Unity 6000, Windows)
 
@@ -41,6 +94,14 @@ It contains no squad logic.
    under HoldGround, marches to the rally, and holds there.
    The display line appears; repeating the picker deploys
    another squad.
+5. Add `SquadMarkerDisplay` to a GameObject in the scene
+   (any empty object; it needs no mesh or collider of its
+   own), drag the scene's `GameManager` Simulation into its
+   `Simulation` field — the same Simulation, not a second
+   one — and drag an empty GameObject into `MarkerRoot`
+   (or leave it empty and markers parent to the scene root).
+   Markers appear from the same snapshot the text lines
+   render; no extra wiring per squad is needed.
 
 ## The provisional O key — replaced in 0.15.0
 
@@ -55,10 +116,10 @@ path, used by tests and the demo — not by the Unity adapter.
 
 ## Deliberately NOT in this step
 
-- No 3D squad markers, unit models, or Orbital camera. The view
-  is a text list; a player can see squads exist, where they are,
-  and whether they are moving or holding, but not as figures in
-  the voxel scene yet.
+- No unit models or Orbital camera. Markers (0.29.0) are
+  scene primitives, not figures: a player can see squads
+  and rallies in the scene, but squads are not rendered as
+  characters, and there is no second camera.
 - No deployment cost or squad cap (decided in 0.15.0, deferred
   to a Slice 3 economy step — see `docs/orbital-command.md`).
   The picker deploys unlimited squads for now, exactly as the
@@ -87,6 +148,33 @@ path, used by tests and the demo — not by the Unity adapter.
    `Simulation.LoadFromJson` + `GameManager.LoadFromJson`; this
    step checks the Unity load path shows them, including a mesh
    refresh from the restored chunk).
+7. [ ] Markers, added 0.29.0 (adapter code written, NOT yet
+   compiled or run in Unity on Windows; the core activity
+   word and prey derivation are headless-tested, the adapter
+   rendering is NOT): deploy a HoldGround squad — a cyan
+   cube appears at the squad and an orange flat marker at
+   its rally, and the text line reads MARCHING then HOLDING
+   as it arrives; deploy an Advance squad with a living
+   enemy — the text reads HUNTING with the prey cell, and
+   it keeps reading HUNTING while the squad stands adjacent
+   firing (the old word would have read MOVING or HOLDING
+   by rally); kill the last enemy — the Advance line reads
+   IDLE and the squad stands still. Markers move with
+   their squads, the pending-rally sphere appears only
+   while picking with a rally set, and markers disappear
+   when their squad dies or is removed.
+8. [ ] Marker occlusion, added 0.29.0: walk behind a wall so
+   a squad marker is on the far side — the marker is hidden
+   by the wall (no through-wall rendering), and reappears
+   when line of sight returns. If markers prove unreadable
+   at FPS distance because of this, record that as evidence
+   for a later step; do not silently change the material.
+9. [ ] Marker hygiene, added 0.29.0: markers never block
+   the picker (aim through a marker cell and the rally
+   still picks the voxel behind it) and never block player
+   movement (walk through a marker cell unimpeded), and
+   no marker remains after its squad is gone or the
+   picker is cancelled.
 
 Record the result of each step, with Unity version and GPU, in
 DECISIONS.md.

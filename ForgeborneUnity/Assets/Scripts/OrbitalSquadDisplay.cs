@@ -3,8 +3,13 @@
 // logic lives here: it renders OrbitalView.Snapshot, a copied
 // snapshot of the live squads, one line per squad, plus — while the
 // rally picker is open — one prompt line from Simulation.
-// OrbitalCommand (selected doctrine/kind, pending rally). Squad
-// markers in the 3D scene are a later step, not claimed here.
+// OrbitalCommand (selected doctrine/kind, pending rally). The
+// line's state word is the snapshot's core-derived Activity
+// (MARCHING / HOLDING / HUNTING / IDLE, Slice 6 Step 2), never
+// a rally-relative word computed here: an Advance squad hunting
+// a prey reads HUNTING whether it is moving or standing and
+// firing, and with no prey it reads IDLE. 3D scene markers are
+// rendered by SquadMarkerDisplay from the same snapshot.
 // Wire SquadText in the Inspector (a Text field on the HUD Canvas,
 // near the objective readout). Deploy with the picker: O opens it,
 // aim the crosshair at a rally cell, Enter deploys, Esc cancels.
@@ -45,8 +50,16 @@ public class OrbitalSquadDisplay : MonoBehaviour
         if (squads.Count > 0) sb.Append("ORBITAL SQUADS:\n");
         foreach (var s in squads)
         {
-            string state = s.AtRally ? "HOLDING" : "MOVING";
-            sb.Append($"{s.Kind} {s.Doctrine} - {s.AliveMembers} MEMBERS {s.Health} HP {s.DamagePerTick} DMG - {state} AT ({s.X},{s.Y},{s.Z}) -> RALLY ({s.RallyX},{s.RallyY},{s.RallyZ})\n");
+            // The rally-relative MOVING / HOLDING word is gone:
+            // Activity is derived in core (OrbitalView.Snapshot)
+            // and rendered here verbatim, so text and markers
+            // can never contradict each other. A hunting squad
+            // also shows its prey cell, re-derived each snapshot.
+            string state = s.Activity.ToString().ToUpperInvariant();
+            string prey = s.HasHuntingTarget
+                ? $" PREY ({s.HuntingTargetX},{s.HuntingTargetY},{s.HuntingTargetZ})"
+                : "";
+            sb.Append($"{s.Kind} {s.Doctrine} - {s.AliveMembers} MEMBERS {s.Health} HP {s.DamagePerTick} DMG - {state}{prey} AT ({s.X},{s.Y},{s.Z}) -> RALLY ({s.RallyX},{s.RallyY},{s.RallyZ})\n");
         }
         SquadText.text = sb.ToString().TrimEnd();
     }

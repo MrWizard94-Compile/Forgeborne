@@ -334,6 +334,26 @@ public sealed class OrbitalCommand
 }
 
 /// <summary>
+/// What a squad is doing, for display only — derived in the
+/// snapshot, never stored on the squad and never saved. This
+/// replaces the old rally-relative display word: a HoldGround
+/// squad marching to its rally is Marching and at its rally is
+/// Holding, while an Advance squad is Hunting whenever a living
+/// enemy exists (moving toward it or standing adjacent firing —
+/// the rally it ignores says nothing about that) and Idle when
+/// none does (standing still, ignoring its rally, exactly as
+/// Advance is documented to behave). The word is doctrine
+/// truth, not rally proximity.
+/// </summary>
+public enum SquadActivity
+{
+    Marching = 0,
+    Holding = 1,
+    Hunting = 2,
+    Idle = 3,
+}
+
+/// <summary>
 /// Snapshot of one squad, copied by value at snapshot time.
 /// The Unity view renders this, never the live squad objects,
 /// so rendering cannot mutate core state and a snapshot taken
@@ -355,6 +375,17 @@ public sealed class SquadSnapshot
     public SquadKind Kind { get; init; }
     /// <summary>True while the squad is still marching to its rally; false once it is holding and firing.</summary>
     public bool IsMoving => !AtRally;
+    /// <summary>Display activity, derived in OrbitalView.Snapshot (see SquadActivity).</summary>
+    public SquadActivity Activity { get; init; }
+    /// <summary>True only for a Hunting squad: the prey cell below is meaningful.</summary>
+    public bool HasHuntingTarget { get; init; }
+    /// <summary>Cell of the nearest living enemy, for a Hunting squad only; otherwise null.
+/// Re-derived on every snapshot from the same nearest-enemy rule Advance movement and fire
+/// already use (Manhattan, first in list order on ties), so movement, fire, and display can
+/// never disagree about the prey — and, like targeting, it is derived, not persisted.</summary>
+    public int? HuntingTargetX { get; init; }
+    public int? HuntingTargetY { get; init; }
+    public int? HuntingTargetZ { get; init; }
 }
 
 /// <summary>
@@ -373,6 +404,37 @@ public static class OrbitalView
         foreach (var s in world.Squads)
         {
             if (s.IsDead) continue;
+            // Activity is derived here, in core, not in the adapter,
+            // so the text display and the 3D markers read the same
+            // word from the same snapshot. HoldGround is rally truth
+            // (marching / holding); Advance is prey truth (hunting /
+            // idle). The hunting target is the nearest living enemy
+            // by the same Manhattan, first-on-ties rule
+            // MoveTowardNearestEnemy and FindTarget use — with NO
+            // range limit, because hunting is not engagement: a
+            // squad 10 cells from its prey is hunting it, not idle,
+            // even though it cannot fire yet. An unknown doctrine
+            // value falls back to the HoldGround reading rather
+            // than inventing a word for a doctrine that does not
+            // exist. Nothing here is saved: the next snapshot
+            // re-derives activity and target from the live world.
+            SquadActivity activity;
+            Enemy? prey = null;
+            if (s.Doctrine == TacticalDoctrine.Advance)
+            {
+                int best = int.MaxValue;
+                foreach (var e in world.Enemies)
+                {
+                    if (e.IsDead) continue;
+                    int d = Math.Abs(e.X - s.X) + Math.Abs(e.Y - s.Y) + Math.Abs(e.Z - s.Z);
+                    if (d < best) { best = d; prey = e; }
+                }
+                activity = prey == null ? SquadActivity.Idle : SquadActivity.Hunting;
+            }
+            else
+            {
+                activity = s.AtRally ? SquadActivity.Holding : SquadActivity.Marching;
+            }
             list.Add(new SquadSnapshot
             {
                 X = s.X, Y = s.Y, Z = s.Z,
@@ -380,6 +442,9 @@ public static class OrbitalView
                 Health = s.Health, AliveMembers = s.AliveMembers,
                 DamagePerTick = s.DamagePerTick, AtRally = s.AtRally,
                 Doctrine = s.Doctrine, Kind = s.Kind,
+                Activity = activity,
+                HasHuntingTarget = prey != null,
+                HuntingTargetX = prey?.X, HuntingTargetY = prey?.Y, HuntingTargetZ = prey?.Z,
             });
         }
         return list;

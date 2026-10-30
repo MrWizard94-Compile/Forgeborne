@@ -1,5 +1,79 @@
 # Forgeborne — Changelog
 
+## 0.29.0 — 2026-10-30 — Slice 6 Step 2: 3D squad / rally markers and the Advance display fix
+
+- 3D squad / rally markers, decided in this step (rationale
+  in DECISIONS.md): a new Unity adapter
+  `ForgeborneUnity/Assets/Scripts/SquadMarkerDisplay.cs`
+  renders `OrbitalView.Snapshot` only — one marker per live
+  squad, one per squad rally, and one pending-rally marker
+  while the picker is open, no more. Forms are original
+  primitives built in the adapter: a cyan cube (0.6 units)
+  at the squad cell centre, an orange flat cube
+  (0.9 x 0.12 x 0.9) at the bottom of the rally cell so it
+  stays visible under a squad standing on its own rally,
+  and an orange sphere (0.6 units) for a pending rally so
+  a pick in progress cannot be mistaken for a deployed
+  rally. Colours follow `docs/art-direction.md` (neon cyan
+  for squads, orange for rallies and objectives). Markers
+  are pooled (at most 3 + 3 + 1 for the 3-squad cap), their
+  colliders are removed on creation so they never block
+  the picker raycast or player movement, and they do NOT
+  show through walls: ordinary opaque URP Lit material
+  (Standard fallback), occluded honestly by the voxel mesh
+  by depth — a through-wall marker would be a wallhack
+  claim, not a readability aid, and the Windows checklist
+  records occlusion as a check, not an assumption.
+- The Advance display fix, decided in this step: the
+  rally-relative `MOVING` / `HOLDING` word is replaced, not
+  kept alongside, by a core-derived `SquadActivity` on the
+  snapshot — HoldGround reads `MARCHING` away from its
+  rally and `HOLDING` at it; Advance reads `HUNTING`
+  whenever a living enemy exists (moving toward it or
+  standing adjacent firing, with no range limit, because
+  hunting is not engagement) and `IDLE` when none does
+  (standing still, ignoring its rally, as Advance is
+  documented to behave). A hunting snapshot also carries
+  its prey cell, re-derived on every snapshot from the
+  same nearest-enemy rule (Manhattan, first in list order
+  on ties) that Advance movement and fire already use, so
+  movement, fire, and display can never disagree about the
+  prey. Activity and prey are derived, not saved: no save
+  field is created for either, and a loaded Advance squad
+  reads `HUNTING` at the same prey again because the world
+  it loads still contains that prey. The text display
+  renders the activity verbatim (a hunting line also shows
+  its prey cell), so text and markers read the same word
+  from the same snapshot. `AtRally` / `IsMoving` remain on
+  the snapshot as position facts, but they are no longer
+  the display word.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: see the new checklist items 7-9 in
+  `docs/orbital-view.md` (marker appearance and activity
+  words, occlusion, marker hygiene) and the marker wiring
+  step added to that doc. The test count below covers the
+  core activity and prey derivation only; it does not
+  cover adapter rendering, and this entry does not claim
+  otherwise. What must NOT change in this step is
+  unchanged: squad movement, fire, targeting, doctrine,
+  and kind rules; squad price and cap; the picker flow
+  and its keys; Dynamo and mill behaviour; and the save
+  format, which gains no field in this step.
+- Tests: **685 passed, 0 failed** (was 665; +20, with no
+  test failures during the run: HoldGround marching and
+  holding, Advance hunting beyond engagement range and
+  adjacent to its prey, Advance idle with no enemy and
+  with only a dead enemy, hunting tie to first in list
+  order, prey re-derived after a kill with the old
+  snapshot keeping its old prey, and hunting activity and
+  prey surviving save/load by derivation). Demo unchanged:
+  Slice 1 gathered 1, built 1, killed 2, save 43,881 chars;
+  Slice 2 save 43,908 chars; Step 1 scenario save 44,016
+  chars; Step 3 scenario save 44,103 chars; Slice 4
+  scenario save 44,026 chars; Slice 5 Step 2 scenario save
+  43,974 chars.
+  Next in order: Slice 6 Step 3, powered Unity presence.
+
 ## 0.28.0 — 2026-10-30 — Slice 6 Step 1: FPS pitch aiming
 
 - FPS pitch aiming, decided in this step (rationale in

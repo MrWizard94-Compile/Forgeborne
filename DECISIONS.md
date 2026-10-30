@@ -1378,6 +1378,117 @@ look inevitable.
 - Next, in order: Slice 6 Step 2, 3D squad / rally markers
   and the Advance display fix.
 
+## 2026-10-30 — Slice 6 Step 2: 3D squad / rally markers and the Advance display fix (0.29.0, under delegation)
+
+- Decision, on where the activity word lives: in core, on
+  the snapshot, confirming the scope hypothesis. The
+  alternative — an adapter-computed word — was rejected
+  because it would have given text and markers two chances
+  to disagree, and because the adapter cannot know the
+  prey without re-implementing the nearest-enemy rule.
+  OrbitalView.Snapshot already reads the world, so it
+  already has the enemies list; deriving activity there
+  adds no new data path and no second targeting rule.
+  The snapshot's existing copy semantics extend naturally:
+  activity and prey are copied values at snapshot time,
+  so a frame's display cannot change mid-frame.
+- Decision, on the activity definitions: HoldGround is
+  rally truth, Advance is prey truth, and the two are not
+  merged into one rule. A single rule ("moving vs at
+  target") cannot describe Advance, because Advance has
+  no holding point: its "target" for movement is the prey
+  while one lives and nothing at all when none does.
+  Hence Marching/Holding for HoldGround, Hunting/Idle for
+  Advance, as four words of one enum rather than two
+  parallel booleans that could combine into nonsense
+  (e.g. moving-and-idle). Idle is labelled as documented
+  behaviour, not a bug: an Advance squad with no prey
+  standing still is doing exactly what 0.22.0 decided it
+  should do, and hiding it behind HOLDING would have
+  been a second display lie replacing the first.
+- Decision, on the hunting range question: hunting has
+  NO range limit, deliberately, and this is where the
+  step departs from a naive reading of "in range". The
+  scope says Advance "with a living enemy reads as
+  hunting whether it is moving toward that enemy or
+  standing adjacent and firing" — a squad 10 cells from
+  its prey is moving toward it, so it is hunting, even
+  though EngagementRange 3 means it cannot fire yet.
+  Limiting Hunting to range 3 would have made a marching
+  hunter read Idle, which is worse than the old lie. The
+  test proves the distinction: an Advance squad 4 away
+  (outside range 3) reads HUNTING.
+- Decision, on the prey cell: included in the snapshot,
+  re-derived every snapshot, not stored on the squad and
+  not saved. The scope's "re-derived each tick" is
+  honoured in the stronger form "re-derived on every
+  snapshot": snapshots are the only consumer, and a
+  snapshot taken between ticks must already show the
+  current prey. Storing the prey on the squad would have
+  created a second targeting state that could go stale
+  (the squad moves, the prey dies, the stored cell
+  lingers) and a save-format question with no gameplay
+  answer. The save/load test proves the derivation: a
+  loaded Advance squad reads the same prey because the
+  loaded world still contains it, with no new field.
+- Decision, on the marker set: exactly one squad marker,
+  one rally marker, and (while picking) one pending
+  marker, confirming the scope hypothesis. No per-member
+  markers (a squad is one commanded unit, not three
+  figures), no enemy markers (enemies are already voxel
+  figures in the scene), no path lines (they would be a
+  second display system, not a marker). Marker form is
+  primitive-only by scope constraint, and shape, not just
+  colour, distinguishes pending from deployed: a sphere
+  cannot be mistaken for a flat rally marker even by a
+  player who cannot tell the two oranges apart, and the
+  flat rally marker sits at the bottom of its cell so it
+  is not hidden by a squad cube standing on the same
+  cell — the common case, since a holding squad is on its
+  rally by definition.
+- Decision, on through-wall markers: NO, confirming the
+  scope hypothesis, with the honest caveat recorded in
+  the checklist rather than hidden. Ordinary opaque
+  material means occlusion comes free from depth testing
+  — no shader work, no render-queue trick, no wallhack
+  claim. The counter-argument (markers exist to be found)
+  was considered and not dismissed: if Windows testing
+  shows occlusion makes markers unreadable at FPS
+  distance, that evidence, recorded against checklist
+  item 8, is what justifies revisiting the decision in a
+  later step. A readability aid that cannot be tested
+  headlessly must not be smuggled in as a shader default.
+- Decision, on marker hygiene: colliders removed on
+  creation, and pooling with deactivation rather than
+  per-frame rebuild. A marker with a collider would block
+  the picker raycast — the exact system markers exist to
+  serve — and could block player movement; removing it is
+  a one-line decision with a testable Windows check
+  (checklist item 9), not a physics-layer redesign.
+  Pooling caps allocation at the 3-squad cap (3 + 3 + 1
+  objects) and matches the existing adapter pattern of
+  rendering a snapshot without owning game state.
+- Decision, on the old word: replaced, not kept
+  alongside, per the scope. `AtRally` and `IsMoving` stay
+  because they are position facts with existing tests,
+  not display words — deleting them would have broken
+  unrelated tests for no display benefit — but the text
+  display no longer reads them, and no adapter code
+  computes a state word from them any more. Keeping both
+  words would have let a future edit show MARCHING in
+  text and HOLDING in a marker tooltip and call both
+  correct.
+- Deliberately NOT in this step: any change to squad
+  movement, fire, targeting, doctrine, or kind; squad
+  price or cap; the picker flow or keys; Dynamo or mill
+  behaviour; any save-format field; unit models, an
+  Orbital camera, enemy markers, or path lines; and any
+  claim about Windows Unity verification or the pending
+  Slice 1 director playtest gate — the adapter code is
+  written, the checklist items are added to
+  `docs/orbital-view.md` (items 7-9), and they remain open.
+- Next, in order: Slice 6 Step 3, powered Unity presence.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
