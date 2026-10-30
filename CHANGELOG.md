@@ -1,5 +1,88 @@
 # Forgeborne — Changelog
 
+## 0.65.0 — 2026-10-30 — Slice 15 Step 1: fourth doctrine Patrol, a rally loop walked and repeated
+
+- Doctrine, decided in this step (rationale in
+  DECISIONS.md): new TacticalDoctrine.Patrol = 3,
+  appended only, so HoldGround 0, Advance 1, and
+  Defend Core 2 are unchanged and old saves still
+  load. Patrol walks a closed loop derived from the
+  rally alone, in order: the rally itself, then 3
+  east, 3 south, 3 west, and 3 north of it
+  (PatrolLoopRadius 3, PatrolWaypointCount 5, flat at
+  rally height), then back to the rally, forever. A
+  squad deploys marching to waypoint 0 like
+  HoldGround, then keeps walking instead of holding.
+- Route storage and save answer, decided in this
+  step: the route is derived from the rally on every
+  tick, never stored and never saved — no save field
+  is added, moved, or reinterpreted, and the loader's
+  9-int squad array and its rejection of undefined
+  doctrines are unchanged. The only new state is the
+  live waypoint index (PatrolWaypointIndex), which
+  starts at 0 on deployment and resets to 0 on load,
+  so a loaded patrol marches to its rally first and
+  then resumes the loop from there. A spawn-derived
+  route was rejected because the squad does not
+  store its spawn, so it would have needed a new save
+  field for what the rally alone already defines; a
+  second picker point was rejected for the same
+  reason, plus a picker change no proof needed.
+- Endpoint and blocked-step behaviour, decided in
+  this step: at a waypoint the squad turns and
+  continues in the same tick (no dwell), through the
+  shared one-voxel-per-tick step rule (same axis
+  choice, tie-break, and solid / enemy-occupied
+  refusals as every other doctrine). A refused step
+  skips that waypoint for this circuit (index
+  advances, no move that tick) instead of holding at
+  a wall forever; the skipped waypoint is tried again
+  on the next circuit. No pathfinder is added: a wall
+  on the direct axis causes a skip, not a detour,
+  and a squad whose every waypoint is blocked cycles
+  its index without moving — stated as a limit, not
+  hidden as a hold.
+- Engagement, decided in this step: fire whenever an
+  enemy is in the kind's range (Advance's and Defend
+  Core's rule, not HoldGround's hold-only rule), and
+  shoot in passing without chasing — movement stays
+  route-bound, so a patrol that fires is still on
+  route on the next tick, and there is no chase to
+  return from. This is Advance's opposite on
+  engagement: Advance walks to its prey, Patrol walks
+  its route and shoots what the route brings into
+  range. FindTarget needed no new branch: only
+  HoldGround is restricted there, so Patrol already
+  fired whenever in range, and this step locks that
+  reading with tests instead of adding a rule.
+- Kinds, price, and cap, decided in this step: all
+  three kinds patrol (Vanguard, Recon, Heavy proved),
+  with no kind re-priced or re-ranged; deployment
+  stays the paid path, 10 EmberOre, cap 3 live
+  squads, through the picker and TryDeployPaidSquad
+  unchanged. Display: new SquadActivity.Patrolling =
+  5, appended only — its own word, not a reuse of
+  Marching (which already means both a HoldGround
+  rally march and a Defend Core return march) and
+  not Hunting (which would claim a prey the squad
+  never walks toward); a patrolling squad reads
+  Patrolling with no hunting target even with an
+  enemy in range. No new marker shape: the Slice 13
+  kind markers stand, the text line carries the
+  doctrine word. Adapter: Alpha7 selects Patrol while
+  picking (confirmed free: picker keys were 1–6 plus
+  Return / Esc / O, no builder fires while picking),
+  playtest-gate checklist item 29 and
+  orbital-command checklist item 13 (both
+  Windows-only).
+- Tests: 2069 passed, 0 failed (was 1988; +81, no
+  failures on the final runs). Demo unchanged: Slice
+  14 scenario save 43,974 chars, all earlier demo
+  saves as in the 0.64.0 entry.
+- Next, in order: Slice 15 Step 2, composed demo
+  scenario + documentation-only review, closing
+  Slice 15.
+
 ## 0.64.0 — 2026-10-30 — Slice 15 scope: the deferred doctrine, Patrol
 
 - Scope, decided in this step (rationale in

@@ -35,6 +35,24 @@ public enum TacticalDoctrine
     /// that target: movement stays core-bound. See
     /// MoveForDefendCore and DECISIONS.md.</summary>
     DefendCore = 2,
+    /// <summary>Slice 15 Step 1: walk a closed loop around the
+    /// rally and repeat it, one voxel per tick through the
+    /// shared step rule, firing in passing at any enemy in
+    /// its kind's engagement range without ever chasing one:
+    /// movement stays route-bound, so a patrolling squad is
+    /// Advance's opposite on engagement — Advance walks to
+    /// its prey, Patrol walks its route and shoots what the
+    /// route brings into range. The route is derived from
+    /// the rally alone, not stored and not saved: waypoint 0
+    /// is the rally itself, then east, south, west, and north
+    /// at PatrolLoopRadius, then back to the rally, in that
+    /// order, forever. A squad deploys marching to waypoint 0
+    /// like HoldGround, then keeps walking instead of holding.
+    /// At a waypoint it turns and continues in the same tick
+    /// (no dwell); a refused step skips that waypoint for
+    /// this circuit instead of holding at a wall forever.
+    /// See MoveForPatrol and DECISIONS.md.</summary>
+    Patrol = 3,
 }
 
 /// <summary>Squad types. Vanguard is the general-purpose
@@ -267,6 +285,114 @@ public sealed class TacticalSquad
             : MoveTowardPosition(coreX, coreY, coreZ, chunk, enemies);
     }
 
+    /// <summary>Slice 15 Step 1: the patrol loop's radius, in
+    /// voxels, from the rally: waypoints sit 3 east, south,
+    /// west, and north of the rally, on the rally's own Y
+    /// plane, so a patrol is a flat loop at rally height, not
+    /// a climb. 3 is a first-pass value, not a balance claim:
+    /// it is larger than every kind's engagement range
+    /// except Recon's 5 (so a patrolling Recon can shoot
+    /// across its own loop, while a Vanguard or Heavy
+    /// shoots what the loop brings close), and small
+    /// enough that a full circuit is 24 steps or fewer, so
+    /// a test can watch it repeat. The radius is measured
+    /// from the rally, never from the spawn, so the loop is
+    /// re-derived from the rally on every tick.</summary>
+    public const int PatrolLoopRadius = 3;
+    /// <summary>Slice 15 Step 1: waypoints in the loop, in
+    /// walking order: the rally itself, then east, south,
+    /// west, and north of it. Five, not four, because the
+    /// rally is a waypoint the squad returns to between
+    /// circuits: without it the loop would orbit the rally
+    /// without ever visiting it, and a patrol that never
+    /// visits its rally is a loop around a point, not a
+    /// route from it.</summary>
+    public const int PatrolWaypointCount = 5;
+
+    /// <summary>Slice 15 Step 1: the patrol waypoint the squad
+    /// is currently walking toward, as an index into the
+    /// loop (0 = rally, 1 = east, 2 = south, 3 = west,
+    /// 4 = north, then back to 0). This is live route
+    /// progress, not a saved field: it starts at 0 on
+    /// deployment and resets to 0 on load, so a loaded
+    /// patrol marches to its rally first and then resumes
+    /// the loop from there, whatever circuit it was on
+    /// before the save. Old saves load unchanged because
+    /// the save array already carries doctrine, kind,
+    /// position, and rally, and Patrol is an appended
+    /// enum value the loader already accepts once defined
+    /// — no save field is added, moved, or reinterpreted
+    /// here. See MoveForPatrol and DECISIONS.md.</summary>
+    public int PatrolWaypointIndex { get; private set; }
+
+    /// <summary>Slice 15 Step 1: the cell of the current
+    /// patrol waypoint, derived from the rally and
+    /// PatrolWaypointIndex on every call, never stored.
+    /// An out-of-bounds or solid waypoint is still a
+    /// waypoint: MoveForPatrol skips it when its step is
+    /// refused, rather than the derivation pretending
+    /// such a waypoint cannot exist.</summary>
+    public (int X, int Y, int Z) PatrolTarget => PatrolWaypointIndex switch
+    {
+        0 => (RallyX, RallyY, RallyZ),
+        1 => (RallyX + PatrolLoopRadius, RallyY, RallyZ),
+        2 => (RallyX, RallyY, RallyZ + PatrolLoopRadius),
+        3 => (RallyX - PatrolLoopRadius, RallyY, RallyZ),
+        _ => (RallyX, RallyY, RallyZ - PatrolLoopRadius),
+    };
+
+    /// <summary>Slice 15 Step 1: true while the squad stands
+    /// on its current patrol waypoint. Standing on a
+    /// waypoint is a turn, not a hold: MoveForPatrol
+    /// advances past it in the same tick.</summary>
+    public bool AtPatrolTarget
+    {
+        get
+        {
+            var t = PatrolTarget;
+            return X == t.X && Y == t.Y && Z == t.Z;
+        }
+    }
+
+    /// <summary>Slice 15 Step 1: one Patrol tick's single
+    /// move, decided once so the squad can never take two
+    /// steps in one tick. Standing on a waypoint advances
+    /// the index first (turn and continue, no dwell tick),
+    /// then the squad steps toward the next waypoint
+    /// through the shared MoveTowardPosition rule — same
+    /// axis choice, tie-break, and solid / enemy-occupied
+    /// refusals as every other doctrine, so a patrol step
+    /// never walks through a block or onto an enemy to
+    /// stay on route. A refused step skips that waypoint
+    /// for this circuit (index advances, no move that
+    /// tick) instead of holding at a wall forever: the
+    /// skipped waypoint is tried again on the next
+    /// circuit, and a squad whose every waypoint is
+    /// blocked cycles its index without moving, which is
+    /// still not a hold — it is waiting on no single
+    /// waypoint. No pathfinder is added here: a wall on
+    /// the direct axis causes a skip, not a detour, and
+    /// that limit is stated, not hidden. The squad never
+    /// chases: enemies are handled by FindTarget's
+    /// fire-in-range rule, not by movement, so a patrol
+    /// that shoots in passing is still walking its route
+    /// on the next tick. Returns true if the squad
+    /// moved.</summary>
+    public bool MoveForPatrol(VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
+    {
+        if (AtPatrolTarget) PatrolWaypointIndex = (PatrolWaypointIndex + 1) % PatrolWaypointCount;
+        var target = PatrolTarget;
+        bool moved = MoveTowardPosition(target.X, target.Y, target.Z, chunk, enemies);
+        if (!moved && (X != target.X || Y != target.Y || Z != target.Z))
+        {
+            // Refused step (solid, enemy-occupied, or out of
+            // bounds): skip this waypoint for this circuit.
+            PatrolWaypointIndex = (PatrolWaypointIndex + 1) % PatrolWaypointCount;
+            return false;
+        }
+        return moved;
+    }
+
     /// <summary>
     /// Advance movement: one voxel per tick toward the NEAREST
     /// living enemy, re-derived every call (Manhattan distance,
@@ -336,9 +462,14 @@ public sealed class TacticalSquad
     /// passes an enemy in range shoots it, but — movement is
     /// a separate decision — it does not chase a target that
     /// is not a core attacker; only MoveForDefendCore decides
-    /// where the squad walks. Returns null if dead, or nothing
-    /// is in range (or, for HoldGround, the squad is still
-    /// moving).
+    /// where the squad walks. Patrol fires whenever in range
+    /// too (Slice 15 Step 1), by the same branch: it shoots
+    /// in passing while walking its route, and — movement is
+    /// a separate decision — it never chases; only
+    /// MoveForPatrol decides where the squad walks, so a
+    /// firing patrol is still on route on the next tick.
+    /// Returns null if dead, or nothing is in range (or, for
+    /// HoldGround, the squad is still moving).
     /// </summary>
     public Enemy? FindTarget(IReadOnlyList<Enemy> enemies)
     {
@@ -531,7 +662,8 @@ public sealed class OrbitalCommand
 /// none does (standing still, ignoring its rally, exactly as
 /// Advance is documented to behave). A Defend Core squad is
 /// Guarding at its post, Hunting a core attacker, or Marching
-/// back to its post. The word is doctrine
+/// back to its post. A Patrol squad is Patrolling on its
+/// loop, firing in passing or not. The word is doctrine
 /// truth, not rally proximity.
 /// </summary>
 public enum SquadActivity
@@ -548,6 +680,23 @@ public enum SquadActivity
     /// so the word still says what the squad is doing, not
     /// merely which doctrine it holds.</summary>
     Guarding = 4,
+    /// <summary>Slice 15 Step 1: a Patrol squad walking its
+    /// loop, whatever waypoint it is on and whether or not
+    /// an enemy is in range. It is its own word, not a
+    /// reuse of Marching, because Marching already means
+    /// two different things (a HoldGround squad marching to
+    /// its rally, a Defend Core squad marching back to its
+    /// post) and a patrol is neither: it is not going to a
+    /// place it will hold, and it is not returning to a
+    /// post it left. A patrolling squad firing in passing
+    /// still reads Patrolling, not Hunting, because it
+    /// chases nothing — Hunting would claim a prey the
+    /// squad will never walk toward. The marker
+    /// distinction from Slice 13 Step 2 is by kind, not by
+    /// doctrine, so no new marker shape is added here:
+    /// the text line carries the doctrine word, the marker
+    /// carries the kind shape.</summary>
+    Patrolling = 5,
 }
 
 /// <summary>
@@ -644,6 +793,20 @@ public static class OrbitalView
                 bool atCore = s.X == world.CoreX && s.Y == world.CoreY && s.Z == world.CoreZ;
                 activity = prey != null ? SquadActivity.Hunting
                     : atCore ? SquadActivity.Guarding : SquadActivity.Marching;
+            }
+            else if (s.Doctrine == TacticalDoctrine.Patrol)
+            {
+                // Patrol activity is route truth, not prey
+                // truth: a patrolling squad reads Patrolling
+                // on every waypoint, firing in passing or
+                // not, and never Hunting, because it chases
+                // nothing — prey stays null, so the snapshot
+                // cannot claim a target the movement will
+                // never walk toward. Display and movement
+                // agree because both read the same doctrine:
+                // MoveForPatrol walks the loop, this branch
+                // names the loop.
+                activity = SquadActivity.Patrolling;
             }
             else
             {

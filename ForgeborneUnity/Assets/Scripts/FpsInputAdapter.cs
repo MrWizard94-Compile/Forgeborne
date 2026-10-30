@@ -205,6 +205,11 @@ public class FpsInputAdapter : MonoBehaviour
         // Defend Core doctrine key: picker keys are now
         // 1 / 2 / 3 / 4 / 5 plus Return / Esc / O, and no
         // builder key fires while picking.
+        // Since Slice 15 Step 1 the same holds for 7, the
+        // Patrol doctrine key: picker keys are now
+        // 1 / 2 / 3 / 4 / 5 / 6 plus Return / Esc / O, and no
+        // builder key fires while picking, so 7 cannot
+        // collide with a builder or with another picker key.
         // While picking, the mouse does not fire: Enter is the
         // confirm, so a click cannot shoot while the player is
         // aiming a rally.
@@ -247,6 +252,10 @@ public class FpsInputAdapter : MonoBehaviour
             else if (Input.GetKeyDown(KeyCode.Alpha6))
             {
                 Simulation.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha7))
+            {
+                Simulation.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
             }
             else
             {

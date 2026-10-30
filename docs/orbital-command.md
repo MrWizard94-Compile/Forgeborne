@@ -310,5 +310,22 @@ words (Marching / Holding / Hunting / Idle).
     on the return. Do not claim this verified in Unity until
     this item is completed there and recorded in DECISIONS.md.
 
+13. [ ] Fourth doctrine, added 0.65.0 (adapter code written, NOT
+    yet compiled or run in Unity on Windows; the core rally
+    loop, skip-on-block, fire-in-passing, and save/load reset
+    are headless-tested, the adapter binding is NOT):
+    press O, press 7 — the prompt shows PATROL with the
+    current kind; press 5 — the prompt shows HEAVY
+    PATROL, proving kind changed without changing doctrine;
+    Enter deploys the shown combination for 10 EmberOre; the
+    deployed squad marches to the picked rally, then walks
+    its loop (rally, east, south, west, north, rally again)
+    instead of holding, reads Patrolling on its text line
+    throughout, shoots an enemy in range in passing without
+    chasing it, and after save, close, reopen, and load
+    marches to its rally first and then resumes the loop.
+    Do not claim this verified in Unity until this item is
+    completed there and recorded in DECISIONS.md.
+
 Record the result of each step, with Unity version and GPU, in
 DECISIONS.md.

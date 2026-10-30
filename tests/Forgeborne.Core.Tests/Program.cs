@@ -5290,5 +5290,196 @@ Eq(12, s14Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice14 step2 com
 Eq(85, s14Loaded.World.Player.Shields, "slice14 step2 composed loaded shields capped at 85");
 Eq(0, s14Loaded.World.Enemies.Count, "slice14 step2 composed pylon kill stays dead after load");
 
+// ---- Slice 15 Step 1: fourth doctrine — Patrol (the deferred doctrine, from Slice 4 / Slice 11) ----
+// Patrol is a route doctrine, not HoldGround at a moving rally
+// and not Advance with a starting point: it walks a closed loop
+// derived from the rally alone — rally, then 3 east, south, west,
+// and north of it, then back to the rally, forever — one voxel
+// per tick through the shared step rule, firing in passing at any
+// enemy in its kind's range without ever chasing one. No new save
+// field exists: the waypoint index is live route progress that
+// starts at 0 on deployment and resets to 0 on load, so a loaded
+// patrol marches to its rally first and then resumes the loop.
+// Enum order: appended only, so old doctrines keep their values.
+Eq(0, (int)TacticalDoctrine.HoldGround, "slice15 patrol holdground value unchanged");
+Eq(1, (int)TacticalDoctrine.Advance, "slice15 patrol advance value unchanged");
+Eq(2, (int)TacticalDoctrine.DefendCore, "slice15 patrol defendcore value unchanged");
+Eq(3, (int)TacticalDoctrine.Patrol, "slice15 patrol appended as 3");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice15 patrol loop radius is 3");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice15 patrol waypoint count is 5");
+var p15UnknownWorld = new WorldZone(42);
+Check(p15UnknownWorld.DeploySquad(20, 5, 20, (TacticalDoctrine)99) == null, "slice15 patrol unknown doctrine 99 still rejected");
+Check(p15UnknownWorld.DeploySquad(20, 5, 20, (TacticalDoctrine)4) == null, "slice15 patrol next undefined doctrine 4 still rejected");
+// Route derivation: deployed AT its rally, the squad's first
+// waypoint is the rally itself, and its first step is east —
+// it does not hold at the rally the way HoldGround would.
+var p15RouteWorld = new WorldZone(42);
+p15RouteWorld.Player.X = 20; p15RouteWorld.Player.Z = 20;
+var p15Route = p15RouteWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Eq(0, p15Route.PatrolWaypointIndex, "slice15 patrol starts at waypoint 0");
+Eq(20, p15Route.PatrolTarget.X, "slice15 patrol waypoint 0 is the rally X");
+Eq(20, p15Route.PatrolTarget.Z, "slice15 patrol waypoint 0 is the rally Z");
+Check(p15Route.AtPatrolTarget, "slice15 patrol deployed at rally is on its waypoint");
+Check(p15Route.MoveForPatrol(p15RouteWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol at rally steps instead of holding");
+Eq(1, p15Route.PatrolWaypointIndex, "slice15 patrol at rally advances to waypoint 1");
+Eq(23, p15Route.PatrolTarget.X, "slice15 patrol waypoint 1 is rally plus radius east");
+Eq(21, p15Route.X, "slice15 patrol first step is east from the rally");
+Eq(20, p15Route.Z, "slice15 patrol first step does not drift south");
+// Full loop, call by call: east at call 3, south at call 9,
+// west at call 15, north at call 21, rally again at call 24 —
+// 3 + 6 + 6 + 6 + 3 steps, no dwell tick at any waypoint,
+// because arriving at a waypoint advances the index and steps
+// onward in the same call. Call 25 then steps east again,
+// proving the loop repeats rather than holding at the rally.
+for (int p15Call = 2; p15Call <= 24; p15Call++)
+{
+    p15Route.MoveForPatrol(p15RouteWorld.Chunk, Array.Empty<Enemy>());
+    if (p15Call == 3) { Eq(23, p15Route.X, "slice15 patrol loop east waypoint reached at call 3"); Eq(20, p15Route.Z, "slice15 patrol loop east waypoint Z"); }
+    if (p15Call == 9) { Eq(20, p15Route.X, "slice15 patrol loop south waypoint reached at call 9"); Eq(23, p15Route.Z, "slice15 patrol loop south waypoint Z"); }
+    if (p15Call == 15) { Eq(17, p15Route.X, "slice15 patrol loop west waypoint reached at call 15"); Eq(20, p15Route.Z, "slice15 patrol loop west waypoint Z"); }
+    if (p15Call == 21) { Eq(20, p15Route.X, "slice15 patrol loop north waypoint reached at call 21"); Eq(17, p15Route.Z, "slice15 patrol loop north waypoint Z"); }
+}
+Eq(20, p15Route.X, "slice15 patrol loop returns to rally X at call 24");
+Eq(20, p15Route.Z, "slice15 patrol loop returns to rally Z at call 24");
+Eq(0, p15Route.PatrolWaypointIndex, "slice15 patrol loop index wraps to 0 at the rally");
+Check(p15Route.MoveForPatrol(p15RouteWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol repeats after the rally instead of holding");
+Eq(21, p15Route.X, "slice15 patrol repeat step is east again");
+// Contrast, same rally: HoldGround at its rally does not move.
+var p15HoldWorld = new WorldZone(42);
+p15HoldWorld.Player.X = 20; p15HoldWorld.Player.Z = 20;
+var p15Hold = p15HoldWorld.DeploySquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
+Check(!p15Hold.MoveTowardRally(p15HoldWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol contrast holdground at rally does not move");
+// No chase: an enemy off the route does not divert the step.
+// The squad heads east toward its waypoint while the enemy
+// stands south of the route, and the step is east, not south.
+var p15NoChaseWorld = new WorldZone(42);
+p15NoChaseWorld.Player.X = 20; p15NoChaseWorld.Player.Z = 20;
+var p15NoChase = p15NoChaseWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+p15NoChase.MoveForPatrol(p15NoChaseWorld.Chunk, new[] { new Enemy(20, 5, 23) });
+Eq(21, p15NoChase.X, "slice15 patrol does not chase an off-route enemy");
+Eq(20, p15NoChase.Z, "slice15 patrol step stays on route with an enemy nearby");
+// Blocked path cell: the first east step is a solid block, so
+// the squad skips the east waypoint for this circuit (index 2,
+// no move that tick) and then walks south on the next call —
+// it does not march forever at the wall.
+var p15BlockedWorld = new WorldZone(42);
+p15BlockedWorld.Player.X = 20; p15BlockedWorld.Player.Z = 20;
+var p15Blocked = p15BlockedWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(p15BlockedWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice15 patrol blocked test stages a solid step cell");
+Check(!p15Blocked.MoveForPatrol(p15BlockedWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol blocked step does not move");
+Eq(2, p15Blocked.PatrolWaypointIndex, "slice15 patrol blocked step skips to the south waypoint");
+Eq(20, p15Blocked.X, "slice15 patrol blocked step holds its cell that tick");
+Check(p15Blocked.MoveForPatrol(p15BlockedWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol after a skip walks south");
+Eq(21, p15Blocked.Z, "slice15 patrol after a skip steps toward the south waypoint");
+// Blocked waypoint cell: the rally itself is solid, so a squad
+// stepping toward it skips it and heads east instead.
+var p15SolidWpWorld = new WorldZone(42);
+p15SolidWpWorld.Player.X = 22; p15SolidWpWorld.Player.Z = 20;
+var p15SolidWp = p15SolidWpWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(p15SolidWpWorld.Chunk.TrySet(20, 5, 20, BlockType.Stone), "slice15 patrol blocked test stages a solid rally cell");
+Check(p15SolidWp.MoveForPatrol(p15SolidWpWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol steps west toward a solid rally first");
+Eq(21, p15SolidWp.X, "slice15 patrol solid-rally approach steps west once");
+Check(!p15SolidWp.MoveForPatrol(p15SolidWpWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol step into a solid waypoint is refused");
+Eq(1, p15SolidWp.PatrolWaypointIndex, "slice15 patrol solid waypoint is skipped to east");
+Eq(21, p15SolidWp.X, "slice15 patrol solid waypoint skip holds its cell that tick");
+// Firing in passing, through WorldZone.Advance: a Vanguard
+// patrol steps east, its on-route enemy closes and dies to the
+// 30-damage passing shot on tick 1, and on tick 2 the squad
+// still steps east along its route — it neither chased the
+// enemy (it was already on the route) nor stops after the kill.
+var p15FireWorld = new WorldZone(42);
+p15FireWorld.Player.X = 20; p15FireWorld.Player.Z = 20;
+var p15Fire = p15FireWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+p15FireWorld.Player.X = 0; p15FireWorld.Player.Z = 0;
+p15FireWorld.Enemies.Add(new Enemy(24, 5, 20));
+p15FireWorld.Advance();
+Eq(0, p15FireWorld.Enemies.Count, "slice15 patrol firing in passing kills the on-route enemy on tick 1");
+Eq(21, p15Fire.X, "slice15 patrol firing tick still steps east");
+p15FireWorld.Advance();
+Eq(22, p15Fire.X, "slice15 patrol route continues east after the kill");
+// Fire rule, direct: a patrol NOT at its rally still fires,
+// where HoldGround moving to its rally does not.
+var p15FireRuleWorld = new WorldZone(42);
+p15FireRuleWorld.Player.X = 20; p15FireRuleWorld.Player.Z = 20;
+var p15FireRule = p15FireRuleWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+p15FireRule.MoveForPatrol(p15FireRuleWorld.Chunk, Array.Empty<Enemy>());
+Check(p15FireRule.FindTarget(new[] { new Enemy(21, 5, 23) }) != null, "slice15 patrol mid-route fires at an enemy in range");
+var p15HoldFireWorld = new WorldZone(42);
+p15HoldFireWorld.Player.X = 16; p15HoldFireWorld.Player.Z = 16;
+var p15HoldFire = p15HoldFireWorld.DeploySquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
+Check(p15HoldFire.FindTarget(new[] { new Enemy(16, 5, 19) }) == null, "slice15 patrol contrast holdground moving does not fire");
+// Kinds: all three patrol, with their own shapes — Recon
+// (2 x 20 HP, 6 damage, range 5) and Heavy (2 x 50 HP, 8
+// damage, range 2) step east from the rally like Vanguard.
+var p15ReconWorld = new WorldZone(42);
+p15ReconWorld.Player.X = 20; p15ReconWorld.Player.Z = 20;
+var p15Recon = p15ReconWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+Check(p15Recon.MoveForPatrol(p15ReconWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol recon steps east from the rally");
+Eq(12, p15Recon.DamagePerTick, "slice15 patrol recon damage");
+Eq(5, p15Recon.EngagementRange, "slice15 patrol recon range");
+var p15HeavyWorld = new WorldZone(42);
+p15HeavyWorld.Player.X = 20; p15HeavyWorld.Player.Z = 20;
+var p15Heavy = p15HeavyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(p15Heavy.MoveForPatrol(p15HeavyWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol heavy steps east from the rally");
+Eq(16, p15Heavy.DamagePerTick, "slice15 patrol heavy damage");
+Eq(2, p15Heavy.EngagementRange, "slice15 patrol heavy range");
+// Picker and economy, unchanged: Patrol deploys through the
+// paid path (10 EmberOre, cap 3 live squads), and a fourth
+// deploy at the cap is refused with no charge.
+var p15PickWorld = new WorldZone(42);
+p15PickWorld.Player.Inventory.Add(BlockType.EmberOre, 40);
+var p15Cmd = new OrbitalCommand();
+Check(p15Cmd.SelectDoctrine(TacticalDoctrine.Patrol), "slice15 patrol picker selects patrol");
+Check(!p15Cmd.SelectDoctrine((TacticalDoctrine)99), "slice15 patrol picker rejects an unknown doctrine");
+Eq(TacticalDoctrine.Patrol, p15Cmd.Doctrine, "slice15 patrol picker rejection leaves patrol selected");
+p15Cmd.BeginPick();
+Check(p15Cmd.SetRally(20, 5, 20), "slice15 patrol picker rally set");
+p15Cmd.SelectKind(SquadKind.Heavy);
+var p15Paid = p15Cmd.Confirm(p15PickWorld);
+Check(p15Paid != null, "slice15 patrol paid deploy succeeds");
+Eq(TacticalDoctrine.Patrol, p15Paid!.Doctrine, "slice15 patrol paid deploy doctrine");
+Eq(SquadKind.Heavy, p15Paid.Kind, "slice15 patrol paid deploy kind");
+Eq(30, p15PickWorld.Player.Inventory.Get(BlockType.EmberOre), "slice15 patrol paid deploy charges 10 ore");
+Check(p15PickWorld.TryDeployPaidSquad(20, 5, 20, TacticalDoctrine.Patrol) != null, "slice15 patrol second paid deploy succeeds");
+Check(p15PickWorld.TryDeployPaidSquad(20, 5, 20, TacticalDoctrine.Patrol) != null, "slice15 patrol third paid deploy succeeds");
+Check(p15PickWorld.TryDeployPaidSquad(20, 5, 20, TacticalDoctrine.Patrol) == null, "slice15 patrol fourth deploy refused at cap");
+Eq(10, p15PickWorld.Player.Inventory.Get(BlockType.EmberOre), "slice15 patrol cap refusal charges nothing");
+// Snapshot: a patrolling squad reads Patrolling — not
+// Marching, not Hunting — with no hunting target, even with
+// an enemy in range, because it chases nothing; and it still
+// reads Patrolling mid-route.
+var p15SnapWorld = new WorldZone(42);
+p15SnapWorld.Player.X = 20; p15SnapWorld.Player.Z = 20;
+var p15Snap = p15SnapWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+p15SnapWorld.Enemies.Add(new Enemy(21, 5, 20));
+var p15Snap0 = OrbitalView.Snapshot(p15SnapWorld)[0];
+Eq(SquadActivity.Patrolling, p15Snap0.Activity, "slice15 patrol snapshot at rally reads patrolling");
+Check(!p15Snap0.HasHuntingTarget, "slice15 patrol snapshot has no hunting target with an enemy in range");
+Eq(TacticalDoctrine.Patrol, p15Snap0.Doctrine, "slice15 patrol snapshot doctrine");
+p15SnapWorld.Enemies.Clear();
+p15Snap.MoveForPatrol(p15SnapWorld.Chunk, Array.Empty<Enemy>());
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(p15SnapWorld)[0].Activity, "slice15 patrol snapshot mid-route reads patrolling");
+// Save / load: doctrine, kind, health, position, and rally
+// survive, but the waypoint index resets to 0 — the loaded
+// patrol marches to its rally first, then resumes the loop.
+// No save field was added, so old saves load unchanged.
+var p15SaveWorld = new WorldZone(42);
+p15SaveWorld.Player.X = 20; p15SaveWorld.Player.Z = 20;
+var p15Save = p15SaveWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+p15Save.MoveForPatrol(p15SaveWorld.Chunk, Array.Empty<Enemy>());
+p15Save.MoveForPatrol(p15SaveWorld.Chunk, Array.Empty<Enemy>());
+p15Save.MoveForPatrol(p15SaveWorld.Chunk, Array.Empty<Enemy>());
+Eq(1, p15Save.PatrolWaypointIndex, "slice15 patrol save source is mid-route at waypoint 1");
+var p15SaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(p15SaveWorld));
+Eq(1, p15SaveLoaded.Squads.Count, "slice15 patrol save/load keeps the squad");
+var p15Loaded = p15SaveLoaded.Squads[0];
+Eq(TacticalDoctrine.Patrol, p15Loaded.Doctrine, "slice15 patrol save/load doctrine preserved");
+Eq(SquadKind.Recon, p15Loaded.Kind, "slice15 patrol save/load kind preserved");
+Eq(23, p15Loaded.X, "slice15 patrol save/load position preserved");
+Eq(20, p15Loaded.RallyX, "slice15 patrol save/load rally preserved");
+Eq(0, p15Loaded.PatrolWaypointIndex, "slice15 patrol save/load waypoint index resets to 0");
+Check(p15Loaded.MoveForPatrol(p15SaveLoaded.Chunk, Array.Empty<Enemy>()), "slice15 patrol loaded squad steps toward its rally");
+Eq(22, p15Loaded.X, "slice15 patrol loaded squad steps west to its rally first");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

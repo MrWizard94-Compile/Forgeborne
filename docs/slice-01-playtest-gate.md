@@ -372,6 +372,25 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     Unity until it is observed there and recorded in
     DECISIONS.md.
 
+29. [ ] Patrol key, added 0.65.0 (adapter code written,
+    NOT yet compiled or run in Unity on Windows; the core
+    rally loop, skip-on-block, fire-in-passing, and
+    save/load reset are headless-tested): press O, press
+    7 — the prompt shows PATROL with the current kind;
+    press 3 — the prompt shows VANGUARD PATROL, proving
+    kind changed without changing doctrine; Enter deploys
+    the shown combination for 10 EmberOre; the deployed
+    squad marches to the picked rally, then keeps walking
+    east, south, west, and north around it instead of
+    holding there, and its text line reads Patrolling
+    throughout, never Hunting, even while it shoots an
+    enemy in range in passing. Observe honestly that a
+    blocked waypoint is skipped, not waited on: put a
+    wall on the squad's east step and watch it turn
+    south on the next circuit leg rather than stand at
+    the wall. Do not claim this verified in Unity until
+    it is observed there and recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

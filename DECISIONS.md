@@ -5059,6 +5059,148 @@ look inevitable.
 - Next step: Slice 15 Step 1, exactly one fourth
   doctrine, decided in that step.
 
+## 0.65.0 — Slice 15 Step 1: fourth doctrine Patrol, a rally loop (2026-10-30, silent scheduled run)
+
+- Previous state verified from GitHub before work:
+  main head 05b52bc1f5b610d49146c8c62661fc249ea560c0,
+  CHANGELOG 0.64.0 (Slice 15 scope) — local working
+  copy matched and the sync record's last entry was
+  that commit, so no step was repeated: the 0.64.0
+  decision named Slice 15 Step 1, exactly one fourth
+  doctrine, decided in that step, and this run did
+  exactly that. Tests 1988 baseline re-run passing;
+  demo Slice 14 save 43,974 chars.
+- Doctrine decision: Patrol, the deferred doctrine
+  itself, not a substitute. The scope's escape clause
+  (another original doctrine only if Patrol still
+  could not be defined) was not needed, because the
+  route question it named has a clean answer: a
+  closed loop derived from the rally alone. A
+  back-and-forth between two endpoints was rejected
+  because it needs a second endpoint the squad does
+  not store (its spawn is not a field, only its
+  starting position at construction, lost once it
+  moves); a saved waypoint list was rejected because
+  it adds a save field, a picker change, or both, for
+  a route the rally already defines. The loop is the
+  rally itself plus 3 east, south, west, and north
+  of it, in that order, repeated — five waypoints,
+  not four, because without the rally as a waypoint
+  the squad would orbit its rally without ever
+  visiting it, and a patrol that never visits its
+  rally is a loop around a point, not a route from
+  it. Radius 3 and the flat rally-height plane are
+  first-pass values, not balance claims: 3 keeps a
+  full circuit to 24 steps or fewer so a test can
+  watch it repeat, and a flat loop avoids a climb
+  rule no doctrine has needed.
+- Route storage and save decision, stated openly:
+  derived, not stored, not saved. The waypoint index
+  is live progress only (starts 0, resets 0 on load),
+  so a loaded patrol marches to its rally first and
+  then resumes the loop — a mid-route save therefore
+  loses circuit position, and that loss is a stated
+  cost of the no-new-field choice, not a bug found
+  later. Old saves load unchanged because the save
+  array is untouched (9 ints, doctrine as int 3 once
+  defined) and the loader's undefined-doctrine
+  rejection is untouched; a save with doctrine 4 or
+  99 is still skipped the same way.
+- Endpoint and blocked-step decisions: turn and
+  continue, no dwell tick — arriving at a waypoint
+  advances the index and steps onward in the same
+  call, so the loop's 24 steps are exactly the
+  Manhattan circuit (3 + 6 + 6 + 6 + 3) with no
+  wasted ticks, proved call by call (east at call 3,
+  south at 9, west at 15, north at 21, rally at 24,
+  east again at 25). A refused step skips the
+  waypoint for this circuit, proved twice: a solid
+  step cell on the way east, and a solid rally cell
+  as the waypoint itself. Hold-and-retry was rejected
+  because it is the failure the scope warned about —
+  a squad holding at a wall forever while claiming
+  to patrol — and reverse-on-block was rejected
+  because reversing a loop is a second route, not a
+  blocked-step answer. Limits stated, not hidden: no
+  pathfinder, so a wall on the direct axis skips
+  rather than detours; a fully enclosed patrol cycles
+  its index without moving, which is waiting on no
+  single waypoint but is still stationary, like
+  HoldGround holding short.
+- Engagement decision: fire whenever in range,
+  shoot in passing, never chase. The scope's
+  return-to-route proof is therefore proved in its
+  strongest form: there is no chase to return from,
+  and the tests prove the route continues after a
+  passing kill (tick 1 kill on route, tick 2 still
+  steps east) and that an off-route enemy does not
+  divert a step. Chase-and-return (Defend Core's
+  shape) was rejected because a patrol that chases
+  once and returns is Advance with a rally loop, and
+  hold-only fire (HoldGround's shape) was rejected
+  because a patrol that cannot shoot while moving is
+  a march, not a patrol. FindTarget's existing
+  structure already gave Patrol fire-whenever (only
+  HoldGround is restricted there); this step records
+  that as reuse and locks it with tests, rather than
+  adding a branch that would imply a new rule.
+- Display and adapter decisions: Patrolling as its
+  own activity word (appended 5), not Marching and
+  not Hunting, for the reasons in the code comment —
+  Marching already covers two different marches, and
+  Hunting would claim a prey the movement never
+  seeks. Snapshot prey stays null for Patrol, so the
+  snapshot cannot disagree with movement about a
+  target. No new marker shape, because the Slice 13
+  distinction is by kind, not doctrine, and a
+  doctrine marker would be a kind marker in
+  disguise; the text line carries the word. Adapter
+  key Alpha7, confirmed free at step time (picker
+  keys 1–6 plus Return / Esc / O, no builder fires
+  while picking), with gate item 29 and
+  orbital-command item 13, both Windows-only. The
+  prompt line needs no change: it prints the doctrine
+  enum name, so it already reads PATROL.
+- Verification, stated honestly: this step adds
+  headless tests and one adapter binding; the
+  binding is not compiled or run in Unity here, and
+  no scene claim is made for it. Existing doctrines
+  are unchanged in behaviour: RunSquads gains a
+  Patrol branch before the HoldGround fallback, and
+  no HoldGround, Advance, or Defend Core movement,
+  fire, or snapshot line moves — the 1988 prior
+  tests pass unchanged inside the 2069 total, and
+  every earlier demo save length is unchanged.
+- Test note: the solid-waypoint test was first
+  written with the squad one cell from a solid rally
+  and expected a successful approach step; the step
+  into the solid cell is itself the refusal, so the
+  staging was corrected to start two cells away (one
+  free step, then the refusal and skip). The code
+  was not changed for it.
+- Deliberately not in this step: a fifth doctrine, a
+  fourth kind, a price or cap change, a movement
+  rule change, a pathfinder, a balance pass, a save
+  field, a marker change, a demo scenario, or Slice
+  15 review (that is Step 2's work).
+- Queue note, not a decision of this step: the
+  director's 2026-10-30 queue decision — graphics
+  next after Slice 15 closes, ahead of the Slice 16
+  candidates this scope carries — is left for the
+  Slice 15 review to record in DECISIONS.md, as the
+  schedule directs; this step does not reorder the
+  Slice 16 candidates, and the scope's ranking stands
+  until that review records the queue.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 15 Step 2, composed demo scenario
+  + documentation-only review, closing Slice 15.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
