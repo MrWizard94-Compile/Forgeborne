@@ -232,6 +232,32 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     DECISIONS.md.
     observed there and recorded in DECISIONS.md.
 
+24. [ ] Pre-destruction / pre-disablement warning, added
+    0.57.0 (adapter code written, NOT yet compiled or run
+    in Unity on Windows; the core warned counts are
+    headless-tested): wire WarningText in the Inspector to
+    a HUD line and observe it stay empty with no mismatched
+    machine; wire a workstation to HV and observe the line
+    read 0 MILLS WILL BE DESTROYED, 1 WORKSTATIONS WILL BE
+    DISABLED, 0 PYLONS WILL BE DISABLED, persisting until
+    the workstation is rewired to LV, when the line clears;
+    wire a pylon to LV and observe the same persistence and
+    clearing on rewiring to HV. For a mill, observe honestly
+    and record what actually happened: the headless proof is
+    a snapshot taken between placement and tick, but in
+    Unity a tick runs every frame, so a mill wired to HV is
+    expected to show its warning for at most one frame
+    before destruction — record whether that flash was
+    seen, and do NOT claim the mill warning is usable in
+    live play until tick pacing is decided; that pacing
+    question is carried, not answered, by this step, and a
+    warning must never be quoted as a grace period. Note
+    explicitly that the line is a HUD readout, not a scene
+    tint and not a mesh refresh: a warned machine is not
+    thereby visible in the scene. Do not claim this
+    verified in Unity until it is observed there and
+    recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

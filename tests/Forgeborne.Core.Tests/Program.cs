@@ -4460,6 +4460,126 @@ Eq(10, s12Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice12 step3 com
 Eq(85, s12Loaded.World.Player.Shields, "slice12 step3 composed loaded bench regen caps shields at 85");
 Eq(0, s12Loaded.World.Enemies.Count, "slice12 step3 composed pylon kill stays dead after load");
 
+// ---- Slice 13 Step 1: pre-destruction / pre-disablement warning (0.57.0) ----
+// The warning is a derived HudState readout of the three existing
+// mismatch predicates, taken on a snapshot between placement and
+// tick — never a delay, grace period, or salvage rule. Staged
+// with TrySet on the y=20 plane, as the Slice 12 tests stage
+// theirs; aim placement was proved in its own step's tests.
+var s13Fresh = new Simulation(42);
+var s13FreshHud = s13Fresh.Hud();
+Eq(0, s13FreshHud.WarnedMills, "slice13 step1 fresh world warns no mills");
+Eq(0, s13FreshHud.WarnedWorkstations, "slice13 step1 fresh world warns no workstations");
+Eq(0, s13FreshHud.WarnedPylons, "slice13 step1 fresh world warns no pylons");
+// Mill: HV warns before the tick, destruction removes the warning.
+var s13Mill = new Simulation(42);
+s13Mill.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13Mill.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+Check(s13Mill.World.IsMismatched(10, 20, 10), "slice13 step1 HV mill is mismatched before the tick");
+var s13MillHud = s13Mill.Hud();
+Eq(1, s13MillHud.WarnedMills, "slice13 step1 HV mill warns one mill before the tick");
+Eq(0, s13MillHud.WarnedWorkstations, "slice13 step1 HV mill warns no workstation");
+Eq(0, s13MillHud.WarnedPylons, "slice13 step1 HV mill warns no pylon");
+Eq(0, s13MillHud.PoweredMills, "slice13 step1 HV mill is not counted powered");
+s13Mill.World.Advance();
+Eq(BlockType.Air, s13Mill.World.Chunk.Get(10, 20, 10), "slice13 step1 warned mill is destroyed on the tick, warning postpones nothing");
+Eq(1, s13Mill.World.DestroyedMills, "slice13 step1 warned mill destruction counter advances");
+Eq(0, s13Mill.Hud().WarnedMills, "slice13 step1 destroyed mill warns no more");
+// Workstation: HV warns before the tick, survives disabled, clears on rewiring.
+var s13Bench = new Simulation(42);
+s13Bench.World.Chunk.TrySet(10, 20, 10, BlockType.Workstation);
+s13Bench.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+Eq(1, s13Bench.Hud().WarnedWorkstations, "slice13 step1 HV workstation warns one workstation before the tick");
+s13Bench.World.Advance();
+Eq(BlockType.Workstation, s13Bench.World.Chunk.Get(10, 20, 10), "slice13 step1 warned workstation survives its disablement tick");
+Eq(1, s13Bench.Hud().WarnedWorkstations, "slice13 step1 warned workstation still warns while it stays mismatched");
+s13Bench.World.Chunk.TrySet(11, 20, 10, BlockType.Air);
+s13Bench.World.Chunk.TrySet(11, 20, 10, BlockType.Dynamo);
+Eq(0, s13Bench.Hud().WarnedWorkstations, "slice13 step1 rewired workstation warning clears on the next snapshot");
+Eq(1, s13Bench.Hud().PoweredWorkstations, "slice13 step1 rewired workstation counts powered again");
+// Pylon: LV warns before the tick, survives disabled, clears on rewiring.
+var s13Pylon = new Simulation(42);
+s13Pylon.World.Chunk.TrySet(10, 20, 10, BlockType.ShockPylon);
+s13Pylon.World.Chunk.TrySet(11, 20, 10, BlockType.Dynamo);
+Eq(1, s13Pylon.Hud().WarnedPylons, "slice13 step1 LV pylon warns one pylon before the tick");
+s13Pylon.World.Advance();
+Eq(BlockType.ShockPylon, s13Pylon.World.Chunk.Get(10, 20, 10), "slice13 step1 warned pylon survives its disablement tick");
+Eq(1, s13Pylon.Hud().WarnedPylons, "slice13 step1 warned pylon still warns while it stays mismatched");
+s13Pylon.World.Chunk.TrySet(11, 20, 10, BlockType.Air);
+s13Pylon.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+Eq(0, s13Pylon.Hud().WarnedPylons, "slice13 step1 rewired pylon warning clears on the next snapshot");
+Eq(1, s13Pylon.Hud().PoweredPylons, "slice13 step1 rewired pylon counts powered again");
+// Rewiring a mill before the tick saves it: the warning is a
+// readout of current wiring, not a sentence already passed.
+var s13Save = new Simulation(42);
+s13Save.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13Save.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+Eq(1, s13Save.Hud().WarnedMills, "slice13 step1 mill warns before rewiring");
+s13Save.World.Chunk.TrySet(11, 20, 10, BlockType.Air);
+Eq(0, s13Save.Hud().WarnedMills, "slice13 step1 mill warning clears when its HV source is removed");
+s13Save.World.Advance();
+Eq(BlockType.KineticMill, s13Save.World.Chunk.Get(10, 20, 10), "slice13 step1 rewired mill survives the tick");
+Eq(0, s13Save.World.DestroyedMills, "slice13 step1 rewired mill destroys nothing");
+// All three outcomes together, beside powered, lone, and
+// conflicted machines that must not warn: the split counts,
+// not one folded number, are what the player reads.
+var s13All = new Simulation(42);
+s13All.World.Chunk.TrySet(6, 20, 10, BlockType.KineticMill);
+s13All.World.Chunk.TrySet(7, 20, 10, BlockType.Alternator);
+s13All.World.Chunk.TrySet(6, 20, 16, BlockType.Workstation);
+s13All.World.Chunk.TrySet(7, 20, 16, BlockType.Alternator);
+s13All.World.Chunk.TrySet(6, 20, 22, BlockType.ShockPylon);
+s13All.World.Chunk.TrySet(7, 20, 22, BlockType.Dynamo);
+s13All.World.Chunk.TrySet(14, 20, 10, BlockType.KineticMill);
+s13All.World.Chunk.TrySet(15, 20, 10, BlockType.Dynamo);
+s13All.World.Chunk.TrySet(14, 20, 16, BlockType.Workstation);
+s13All.World.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+s13All.World.Chunk.TrySet(14, 20, 22, BlockType.ShockPylon);
+s13All.World.Chunk.TrySet(15, 20, 22, BlockType.Alternator);
+s13All.World.Chunk.TrySet(22, 20, 10, BlockType.KineticMill);
+s13All.World.Chunk.TrySet(22, 20, 16, BlockType.Workstation);
+s13All.World.Chunk.TrySet(22, 20, 22, BlockType.ShockPylon);
+s13All.World.Chunk.TrySet(28, 20, 10, BlockType.KineticMill);
+s13All.World.Chunk.TrySet(27, 20, 10, BlockType.Dynamo);
+s13All.World.Chunk.TrySet(29, 20, 10, BlockType.Alternator);
+Eq(Voltage.None, s13All.World.DeliveredVoltage(28, 20, 10), "slice13 step1 Dynamo-plus-Alternator mill delivers None, conflicted not mismatched");
+var s13AllHud = s13All.Hud();
+Eq(1, s13AllHud.WarnedMills, "slice13 step1 mixed world warns exactly one mill");
+Eq(1, s13AllHud.WarnedWorkstations, "slice13 step1 mixed world warns exactly one workstation");
+Eq(1, s13AllHud.WarnedPylons, "slice13 step1 mixed world warns exactly one pylon");
+Eq(4, s13AllHud.TotalMills, "slice13 step1 mixed world totals four mills");
+Eq(1, s13AllHud.PoweredMills, "slice13 step1 mixed world powers exactly one mill");
+Eq(3, s13AllHud.TotalWorkstations, "slice13 step1 mixed world totals three workstations");
+Eq(1, s13AllHud.PoweredWorkstations, "slice13 step1 mixed world powers exactly one workstation");
+Eq(3, s13AllHud.TotalPylons, "slice13 step1 mixed world totals three pylons");
+Eq(1, s13AllHud.PoweredPylons, "slice13 step1 mixed world powers exactly one pylon");
+// Cable-fed mismatch warns too: the readout follows
+// DeliveredVoltage, not just face-adjacent sources.
+var s13Cable = new Simulation(42);
+s13Cable.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13Cable.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s13Cable.World.Chunk.TrySet(12, 20, 10, BlockType.Alternator);
+Eq(Voltage.HV, s13Cable.World.DeliveredVoltage(10, 20, 10), "slice13 step1 cable-fed mill delivers HV");
+Eq(1, s13Cable.Hud().WarnedMills, "slice13 step1 cable-fed HV mill warns");
+// Non-consumers never warn, however live their wiring looks.
+var s13None = new Simulation(42);
+s13None.World.Chunk.TrySet(10, 20, 10, BlockType.Dynamo);
+s13None.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s13None.World.Chunk.TrySet(12, 20, 10, BlockType.Transformer);
+s13None.World.Chunk.TrySet(20, 20, 20, BlockType.Alternator);
+var s13NoneHud = s13None.Hud();
+Eq(0, s13NoneHud.WarnedMills, "slice13 step1 source and cable world warns no mills");
+Eq(0, s13NoneHud.WarnedWorkstations, "slice13 step1 source and cable world warns no workstations");
+Eq(0, s13NoneHud.WarnedPylons, "slice13 step1 source and cable world warns no pylons");
+// Warning re-derives after save/load: it is never saved.
+var s13Load = new Simulation(42);
+s13Load.World.Chunk.TrySet(10, 20, 10, BlockType.Workstation);
+s13Load.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+var s13LoadJson = s13Load.SaveToJson();
+var s13Loaded = new Simulation(99);
+Check(s13Loaded.LoadFromJson(s13LoadJson), "slice13 step1 warned world loads");
+Eq(1, s13Loaded.Hud().WarnedWorkstations, "slice13 step1 warning re-derives after load");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

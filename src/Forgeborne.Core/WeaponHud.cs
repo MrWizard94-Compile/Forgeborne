@@ -112,6 +112,32 @@ public sealed class HudState
     /// the next snapshot, like the consumer counts.</summary>
     public int LiveNetworks { get; set; }
     public int LoneSources { get; set; }
+    /// <summary>Slice 13 Step 1 warning readout, derived from
+    /// placement and delivered voltage on every snapshot, never
+    /// saved, in the pattern of PoweredMills / TotalMills — but
+    /// split per outcome, not folded into one number, because a
+    /// mill about to be destroyed and a workstation about to be
+    /// disabled are not the same loss, and one number would hide
+    /// which machine the player built. WarnedMills counts mills
+    /// where IsMismatched is true (delivered HV: destroyed on
+    /// the next tick if the wiring stays); WarnedWorkstations
+    /// counts workstations where IsWorkstationMismatched is true
+    /// (delivered HV: disabled that tick, recoverable on
+    /// rewiring); WarnedPylons counts pylons where
+    /// IsPylonMismatched is true (delivered LV: disabled that
+    /// tick, recoverable on rewiring). A powered, unpowered, or
+    /// conflicted (None) machine never warns: it loses nothing
+    /// on the next tick, so warning for it would cry wolf every
+    /// snapshot, and None is neither powered nor mismatched by
+    /// the existing predicates. Rewiring clears a warning on the
+    /// next snapshot; destroying a mill removes its warning
+    /// because the mill is gone. This is a readout only: no
+    /// delivery, precedence, conflict, rating, cost, or phase
+    /// rule moves, and a warning postpones nothing — a warned
+    /// mill still dies on the next tick if it stays wired.</summary>
+    public int WarnedMills { get; set; }
+    public int WarnedWorkstations { get; set; }
+    public int WarnedPylons { get; set; }
     /// <summary>Mini-map: top-down solid / enemy presence, 32x32, for Slice 1 placeholder rendering.</summary>
     public bool[,] MiniMapSolid { get; set; } = new bool[32, 32];
 
@@ -152,16 +178,19 @@ public sealed class HudState
             {
                 hud.TotalMills++;
                 if (world.IsPowered(x, y, z)) hud.PoweredMills++;
+                if (world.IsMismatched(x, y, z)) hud.WarnedMills++;
             }
             else if (block == BlockType.Workstation)
             {
                 hud.TotalWorkstations++;
                 if (world.IsWorkstationPowered(x, y, z)) hud.PoweredWorkstations++;
+                if (world.IsWorkstationMismatched(x, y, z)) hud.WarnedWorkstations++;
             }
             else if (block == BlockType.ShockPylon)
             {
                 hud.TotalPylons++;
                 if (world.IsPylonPowered(x, y, z)) hud.PoweredPylons++;
+                if (world.IsPylonMismatched(x, y, z)) hud.WarnedPylons++;
             }
         }
         // Live-power display (Slice 12 Step 1): one counting

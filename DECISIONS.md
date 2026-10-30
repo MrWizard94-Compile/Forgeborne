@@ -4191,6 +4191,114 @@ look inevitable.
   pre-destruction / pre-disablement warning, decided
   in that step.
 
+## 0.57.0 — Slice 13 Step 1: pre-destruction / pre-disablement warning
+
+- Decision, on coverage: all three mismatch outcomes
+  together, as the scope's starting hypothesis
+  proposed, because all three already have a mismatch
+  predicate in core and a mill-only warning would
+  leave the two disablements exactly as silent as
+  they are today. The hypothesis survived the step's
+  test: a single world holding a mismatched mill, a
+  mismatched workstation, and a mismatched pylon
+  reads (1, 1, 1) while powered, lone, and conflicted
+  machines in the same world read no warning at all.
+- Decision, on shape: three counts, not one folded
+  number, and not one line per outcome either. One
+  number would hide which loss the player built — a
+  mill destroyed is a rebuild, a bench disabled is
+  lost regen, a pylon disabled is a lane left
+  undefended — while three separate adapter lines
+  would spend three HUD lines on one question. So
+  core carries three fields and the adapter renders
+  one line carrying all three numbers, with the line
+  empty while all three are zero: a permanent "0
+  warned" line would be noise, not a warning, and
+  the empty state is itself the all-clear.
+- Decision, on None and on unpowered: neither warns,
+  following the predicates rather than inventing a
+  new rule for the warning. None (no source, a broken
+  cable, or a Dynamo-plus-Alternator conflict) is
+  neither powered nor mismatched by the slices that
+  defined it, and an unpowered machine loses nothing
+  on the next tick — warning for either would cry
+  wolf every snapshot and teach the player to ignore
+  the line before a real loss ever arrives. The
+  conflicted-mill test pins this: Dynamo on one side
+  and Alternator on the other delivers None and warns
+  zero.
+- Decision, on timing, and why this is a warning
+  rather than a death notice: the readout is derived
+  on every snapshot from placement and delivered
+  voltage, so a snapshot taken after wiring and
+  before the next tick already shows it — proved by
+  tests that snapshot, advance, and snapshot again,
+  for all three outcomes. It is not a delay, a grace
+  period, or a salvage rule, and it must not be
+  quoted as one: a warned mill still dies on the
+  next tick if it stays wired, and rewiring before
+  that tick is what saves it, which the rewiring
+  tests prove for the mill as well as for the
+  workstation and pylon.
+- Decision, on the adapter line: a fifth Text field,
+  WarningText, with its own line, not folded into an
+  existing POWER line, because folding a warning
+  into a powered/total line would make the danger
+  disappear into a count the player already reads as
+  routine. The line format is fixed in the adapter
+  comment ("WARNING: n MILLS WILL BE DESTROYED, n
+  WORKSTATIONS WILL BE DISABLED, n PYLONS WILL BE
+  DISABLED") in the existing plural style of the
+  POWER lines. No new key binding is needed or
+  assumed: the warning is a readout, not a control,
+  and builder keys still run T / Y / U / I / B / N /
+  P with picker Alpha1-6.
+- Honesty limit, carried not hidden: in Unity a tick
+  runs every frame (FpsInputAdapter calls
+  Simulation.Tick every Update, and Tick calls
+  World.Advance), so a mill wired to HV in live play
+  is expected to show its warning for at most one
+  frame before destruction, while a mismatched
+  workstation or pylon, which survives disabled,
+  warns persistently until rewired. The headless
+  proof is therefore a proof of the readout, not a
+  proof that the mill warning is usable at 60 fps —
+  and this step does not fix that by slowing ticks,
+  because slowing ticks would be a rule change
+  smuggled in as a display step. Tick pacing for a
+  readable mill warning is a question for the Slice
+  13 review (or a later slice that owns tick pacing
+  explicitly), and playtest-gate item 24 records
+  whether the mill flash was actually seen rather
+  than claiming it was usable. Until then, the
+  workstation and pylon warnings are the usable
+  fairness gain of this step, and the mill warning
+  is a correct readout with a known visibility
+  window.
+- Decision, on what stays open: Gap 5 (mesh tint and
+  mesh refresh) stays open after this step, by
+  decision — a HUD warning line is not a tint and
+  not a refresh, and no sentence in this step claims
+  the threatened machine is visible in the scene
+  because it is warned about in the HUD. Step 3 must
+  make its tint agree with this warning: a machine
+  warned here must be the machine tinted there, and
+  a rewired machine must lose its tint on the next
+  refresh, or Step 3 must say why they differ.
+- Deliberately NOT in this step: any delivery,
+  precedence, conflict, rating, cost, or phase rule
+  change; any tick-rate, grace-period, or salvage
+  rule; a new block type, save field, or key binding;
+  a demo scenario (the warning's proof is the
+  snapshot-before/after-tick tests, and a demo
+  scenario that printed a warning would not prove a
+  visible line); or any claim about Windows Unity
+  verification or the pending Slice 1 director
+  playtest gate.
+- Next, in order: Slice 13 Step 2, a scene-marker
+  distinction for the squad kinds, decided in that
+  step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

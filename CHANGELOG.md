@@ -1,5 +1,68 @@
 # Forgeborne — Changelog
 
+## 0.57.0 — 2026-10-30 — Slice 13 Step 1: pre-destruction / pre-disablement warning
+
+- Warning readout, decided in this step (rationale in
+  DECISIONS.md): HudState gains three derived counts,
+  never saved — WarnedMills, WarnedWorkstations,
+  WarnedPylons — counted in the same snapshot scan as
+  the powered/total counts, from the three existing
+  mismatch predicates (IsMismatched, IsWorkstation-
+  Mismatched, IsPylonMismatched). The counts are split
+  per outcome, not folded into one number, because a
+  mill about to be destroyed and a workstation about
+  to be disabled are not the same loss, and one number
+  would hide which machine the player built. A powered,
+  unpowered, or conflicted (None) machine never warns:
+  it loses nothing on the next tick, so warning for it
+  would cry wolf every snapshot, and None is neither
+  powered nor mismatched by the existing predicates.
+  Rewiring clears a warning on the next snapshot; a
+  destroyed mill's warning disappears because the mill
+  is gone, while a disabled workstation or pylon keeps
+  warning while it stays mismatched, because it
+  survives to be rewired.
+- Timing, stated so the warning is not a death notice
+  in disguise: the readout is a snapshot taken between
+  placement and tick, proved by tests that snapshot
+  before Advance, then advance, then snapshot again.
+  No delivery, precedence, conflict, rating, cost, or
+  phase rule moves in this step, and no save-format
+  change: warnings re-derive after load, and a warned
+  mill still dies on the next tick if it stays wired —
+  the warning postpones nothing, which is what makes
+  it a readout and not a grace period smuggled in as
+  a display step. Cable-fed mismatches warn too,
+  because the readout follows DeliveredVoltage, not
+  just face-adjacent sources; non-consumer cells
+  (sources, cables, transformers) never warn.
+- Adapter, decided in this step: HudDisplay gains a
+  fifth Text field, WarningText, with its own line,
+  not folded into an existing POWER line — "WARNING:
+  n MILLS WILL BE DESTROYED, n WORKSTATIONS WILL BE
+  DISABLED, n PYLONS WILL BE DISABLED" — and the line
+  is empty, not a zero warning, while no machine
+  warns, so a wired HUD shows nothing until there is
+  danger. Playtest-gate checklist item 24 (Windows-
+  only) added. Honesty limit, recorded in DECISIONS.md
+  and in that item, not hidden: in Unity a tick runs
+  every frame, so a mill wired to HV is expected to
+  show its warning for at most one frame before
+  destruction, while workstation and pylon warnings
+  persist until rewiring — the mill warning is
+  headless-proved but is NOT claimed usable in live
+  play until tick pacing is decided, and that pacing
+  question is carried, not answered, here. The line
+  is also not a scene tint and not a mesh refresh: a
+  warned machine is warned about in the HUD, not
+  thereby visible in the scene — Gap 5 stays open
+  after this step, by decision, for Step 3.
+- Tests: 1664 passed, 0 failed (was 1622; +42, no
+  failures on the final runs). Demo unchanged: Slice
+  11 scenario save 44,038 chars, Slice 12 scenario
+  save 43,974 chars, all earlier demo saves as in the
+  0.56.0 entry.
+
 ## 0.56.0 — 2026-10-30 — Slice 13 scope: adapter visibility and fairness, warning first, then marker distinction, then mesh tint and refresh
 
 - Scope, documentation only, no code changed, by design:
