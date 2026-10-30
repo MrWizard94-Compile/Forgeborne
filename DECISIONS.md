@@ -6059,6 +6059,119 @@ documentation-only
   step, chosen from the ranked candidates this review
   carries, decided in that step.
 
+## 0.73.0 — Slice 17 scope: electrical display-query remainders,
+documentation-only
+
+- State found on entry: remote main head
+  d072e99cb89dfe467a2c3c77a03613998644895d,
+  CHANGELOG 0.72.0 (Slice 16 Step 5, review closing
+  Slice 16), sync record ending at that commit,
+  local working copy matched — no step was repeated:
+  the 0.72.0 decision named scoping Slice 17 as its
+  own decision step, chosen from the ranked
+  candidates the review carries, and this run did
+  exactly that. (The local run log's top entry was
+  still 0.69.0, but the sync record and the remote
+  head both confirmed 0.70.0, 0.71.0, and 0.72.0 as
+  pushed, so no step was re-implemented; this entry
+  records that check, as the 0.72.0 entry did for
+  0.70.0 and 0.71.0.) Tests 2130 baseline re-run
+  passing; demo Slice 15 save 44,016 chars.
+- Theme decision: Slice 17 is the two Slice 14
+  remainders, each as its own decision step with
+  its own tests, then a demo plus review. The
+  Slice 16 review carried them as gaps 5 and 6
+  with the queue decision spent, and this scope
+  takes them in that order rather than re-ranking
+  them: the review's priority order is the order,
+  unless a reason overturns it, and no reason
+  overturned it here. The scope deliberately does
+  not decide either query answer — a scope that
+  answered the tint or the count question would
+  leave its step with nothing to decide and no
+  proof set of its own, and would hide the
+  reasoning the step is supposed to record.
+- Order decision: tint before count, for the
+  rendered-misread reason stated in the scope, with
+  the reversal honesty stated alongside it: the
+  count step does not depend on the tint step, so
+  tint-first is a priority choice, not a dependency
+  claim. The scope requires Step 2 to state its
+  independence explicitly, because the two steps
+  share words ("live", "lone", "delivers") whose
+  meanings could drift between steps if neither
+  step is forced to pin them.
+- Boundary decision: display-query steps only, with
+  the delivery boundary drawn before either step
+  runs. This matters because the tint question
+  tempts a delivery-shaped fix: changing
+  DeliveredVoltage so the single cable "delivers"
+  would also change what its mill does, what its
+  warnings say, and what its save re-derives, and
+  calling that a display fix would be exactly the
+  smuggling the Slice 16 scope forbade for the
+  material step (a material step must not move
+  the query it renders; here, a query step must
+  not move the delivery it displays). The scope
+  therefore tells a step that needs a delivery move
+  to defer it openly, and tells Step 1 to prove
+  delivery unchanged case by case if it changes
+  PowerState alone.
+- Grounding decision: the scope's ground facts
+  were verified against the code this run, not
+  copied from the review's prose — PowerState's
+  cable branch (DeliveredVoltage != None), the
+  absent Conduit branch in DeliveredVoltage's
+  direct set, CableNetworkVoltage's component-wide
+  Conduit source, LivePowerCounts' lone rule
+  (no cable, transformer, or consumer neighbour),
+  the POWER line's wording, and the next free
+  checklist number 35. Verifying them matters
+  because the scope's whole proof-set design
+  follows from them: the single-cable case exists
+  only because the cell query and the component
+  query diverge exactly when the cell's neighbours
+  are all non-direct, non-transformer, non-cable
+  blocks, and the count case exists only because
+  the lone rule disqualifies on adjacency rather
+  than on delivery.
+- Carried-not-closed decision: Windows verification,
+  the director playtest gate, Slice 13 observations,
+  patrol limits, and the free deploy primitive are
+  named in the scope with their dispositions, not
+  silently dropped. In particular, first-pass
+  graphics values are carried as retune-only-on-
+  Windows-evidence, so no Slice 17 step may move
+  a light or model value to flatter a tint or a
+  count — the surface is settled, and the queries
+  are judged against it, not the other way round.
+  Slice 18 candidates are ranked in the scope
+  (patrol / free deploy first, observations as
+  observations second, graphics retuning third)
+  as a starting point for the Slice 17 review,
+  not as promises.
+- Deliberately-not list: no code, no demo
+  scenario, no test, no checklist item, no query
+  answer, no scene, shader, or imported asset
+  file, no HUD, marker, tint, light, or core
+  change, and no Slice 18 scope. The Slice 17
+  review, unlike Slice 16's, is scoped with a
+  demo scenario, because both queries are
+  headless-testable — the documentation-only
+  review form was Slice 16's honest difference,
+  not a new default, and copying it here would
+  have hidden testable claims behind a review
+  form built for untestable ones.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 17 Step 1, the single-cable tint
+  query, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

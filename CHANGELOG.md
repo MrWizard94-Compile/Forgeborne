@@ -1,5 +1,73 @@
 # Forgeborne — Changelog
 
+## 0.73.0 — 2026-10-30 — Slice 17 scope: electrical display-query remainders
+Slice 17, documentation-only
+
+- Scope, decided in this step (rationale in
+  DECISIONS.md): new docs/slice-17-scope.md scopes
+  Slice 17 as the two carried Slice 14 remainders
+  from the Slice 16 review, in order — Step 1, the
+  single-cable tint query (whether a cable cell's
+  power state should also count its own component's
+  voltage, so a single cable touching a Conduit
+  reads Energised when its component carries HV);
+  Step 2, the direct-Conduit count query (whether
+  the HUD counts should distinguish a source beside
+  a consumer that delivers nothing from one that
+  delivers); Step 3, a composed demo scenario plus
+  a documentation-only review, which unlike the
+  Slice 16 review is accompanied by a demo because
+  both queries are headless-testable. The scope
+  decides theme, order, and the questions each step
+  must answer — it decides neither query answer:
+  Step 1 must choose between a cell-delivery
+  reading and a component-liveness reading for
+  Energised, and Step 2 must choose among keeping
+  the lone definition, counting a non-delivering
+  consumer-adjacent source as lone, or adding a
+  distinct readout, each with a stated proof set.
+- Order rationale, decided in this step (rationale
+  in DECISIONS.md): tint before count because the
+  tint is the visible misread in the scene — a live
+  wire rendering dead, already observed by item 32's
+  combined scene — while the count is a HUD-number
+  invisibility one step removed from the rendered
+  wire; reversing the order would not break either
+  step, and the scope says so, but the rendered
+  misread outranks the counted one. Step 2's cases
+  have no cable, so Step 1's answer does not change
+  them, and Step 2 must state that independence
+  (and any shared-word adoption) explicitly rather
+  than inheriting Step 1's vocabulary by accident.
+- Boundary, decided in this step (rationale in
+  DECISIONS.md): both steps are display-query steps
+  only. No delivery, precedence, conflict, rating,
+  cost, or phase rule moves in Slice 17; if a step
+  finds its honest answer needs a delivery move, it
+  records and defers that move, not smuggles it in.
+  No material, shader, marker, light, fog, or view
+  model value moves — the Slice 16 surface renders
+  whatever Slice 17 decides — and no HUD redesign
+  beyond the count step's single POWER line question.
+  Slice 13 observations, Windows Unity verification,
+  the director playtest gate, patrol limits, and the
+  free deploy primitive are carried, not closed or
+  re-scoped here; the next free playtest-gate number
+  is 35.
+- Deliberately not moved in this step: no code, no
+  demo scenario, no test, no checklist item, no
+  query answer, no scene file, no shader file, no
+  imported asset, no HUD, marker, tint, light, or
+  core change, and no Slice 18 scope. This step is
+  documentation-only by the scope pattern, so the
+  test suite must stand unchanged.
+- Tests: 2130 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 15
+  scenario save 44,016 chars, all earlier demo saves
+  as in the 0.72.0 entry.
+- Next, in order: Slice 17 Step 1, the single-cable
+  tint query, decided in that step.
+
 ## 0.72.0 — 2026-10-30 — Slice 16 Step 5: review closing
 Slice 16, documentation-only
 
