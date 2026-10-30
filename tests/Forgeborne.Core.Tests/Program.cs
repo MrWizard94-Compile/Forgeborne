@@ -4580,6 +4580,119 @@ var s13Loaded = new Simulation(99);
 Check(s13Loaded.LoadFromJson(s13LoadJson), "slice13 step1 warned world loads");
 Eq(1, s13Loaded.Hud().WarnedWorkstations, "slice13 step1 warning re-derives after load");
 
+// ---- Slice 13 Step 3: mesh tint and mesh refresh for power state (0.59.0) ----
+// The query is tested; the tint and the refresh wiring are adapter
+// code, so their proof is playtest-gate items 26-27, not these
+// tests — but the query, the tint channel, and the tint/warning
+// agreement are all headless claims, and they are proved here.
+var s13Tint = new Simulation(42);
+s13Tint.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13Tint.World.Chunk.TrySet(11, 20, 10, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(10, 20, 16, BlockType.KineticMill);
+s13Tint.World.Chunk.TrySet(11, 20, 16, BlockType.Alternator);
+s13Tint.World.Chunk.TrySet(10, 20, 22, BlockType.KineticMill);
+s13Tint.World.Chunk.TrySet(16, 20, 10, BlockType.KineticMill);
+s13Tint.World.Chunk.TrySet(15, 20, 10, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(17, 20, 10, BlockType.Alternator);
+s13Tint.World.Chunk.TrySet(20, 20, 10, BlockType.Workstation);
+s13Tint.World.Chunk.TrySet(21, 20, 10, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(20, 20, 16, BlockType.Workstation);
+s13Tint.World.Chunk.TrySet(21, 20, 16, BlockType.Alternator);
+s13Tint.World.Chunk.TrySet(20, 20, 22, BlockType.ShockPylon);
+s13Tint.World.Chunk.TrySet(21, 20, 22, BlockType.Alternator);
+s13Tint.World.Chunk.TrySet(26, 20, 10, BlockType.ShockPylon);
+s13Tint.World.Chunk.TrySet(27, 20, 10, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(26, 20, 16, BlockType.Cable);
+s13Tint.World.Chunk.TrySet(27, 20, 16, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(26, 20, 22, BlockType.Cable);
+s13Tint.World.Chunk.TrySet(16, 20, 22, BlockType.Cable);
+s13Tint.World.Chunk.TrySet(15, 20, 22, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(17, 20, 22, BlockType.Alternator);
+s13Tint.World.Chunk.TrySet(6, 20, 10, BlockType.Transformer);
+s13Tint.World.Chunk.TrySet(5, 20, 10, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(6, 20, 16, BlockType.Dynamo);
+s13Tint.World.Chunk.TrySet(6, 20, 22, BlockType.Stone);
+Eq(CellPowerState.Powered, s13Tint.World.PowerState(10, 20, 10), "slice13 step3 LV mill is Powered");
+Eq(CellPowerState.Mismatched, s13Tint.World.PowerState(10, 20, 16), "slice13 step3 HV mill is Mismatched");
+Eq(CellPowerState.None, s13Tint.World.PowerState(10, 20, 22), "slice13 step3 unpowered mill is None");
+Eq(CellPowerState.None, s13Tint.World.PowerState(16, 20, 10), "slice13 step3 conflicted mill is None, not Mismatched");
+Eq(CellPowerState.Powered, s13Tint.World.PowerState(20, 20, 10), "slice13 step3 LV workstation is Powered");
+Eq(CellPowerState.Mismatched, s13Tint.World.PowerState(20, 20, 16), "slice13 step3 HV workstation is Mismatched");
+Eq(CellPowerState.Powered, s13Tint.World.PowerState(20, 20, 22), "slice13 step3 HV pylon is Powered");
+Eq(CellPowerState.Mismatched, s13Tint.World.PowerState(26, 20, 10), "slice13 step3 LV pylon is Mismatched");
+Eq(CellPowerState.Energised, s13Tint.World.PowerState(26, 20, 16), "slice13 step3 Dynamo-fed cable is Energised");
+Eq(CellPowerState.None, s13Tint.World.PowerState(26, 20, 22), "slice13 step3 dead cable is None");
+Eq(CellPowerState.None, s13Tint.World.PowerState(16, 20, 22), "slice13 step3 conflicted cable is None");
+Eq(CellPowerState.None, s13Tint.World.PowerState(6, 20, 10), "slice13 step3 converting transformer is None, not Energised");
+Eq(CellPowerState.None, s13Tint.World.PowerState(6, 20, 16), "slice13 step3 lone source is None, not Energised");
+Eq(CellPowerState.None, s13Tint.World.PowerState(6, 20, 22), "slice13 step3 stone is None");
+Eq(CellPowerState.None, s13Tint.World.PowerState(0, 20, 0), "slice13 step3 air is None");
+// Tint and warning agree, because both read the same predicates:
+// exactly the one mismatched machine of each kind warns.
+var s13TintHud = s13Tint.Hud();
+Eq(1, s13TintHud.WarnedMills, "slice13 step3 tint world warns exactly one mill");
+Eq(1, s13TintHud.WarnedWorkstations, "slice13 step3 tint world warns exactly one workstation");
+Eq(1, s13TintHud.WarnedPylons, "slice13 step3 tint world warns exactly one pylon");
+// Rewiring clears the tint state on the next query, exactly as
+// it clears the warning on the next snapshot — tint is derived,
+// never saved, and never a grace period.
+var s13Rewire = new Simulation(42);
+s13Rewire.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13Rewire.World.Chunk.TrySet(11, 20, 10, BlockType.Alternator);
+Eq(CellPowerState.Mismatched, s13Rewire.World.PowerState(10, 20, 10), "slice13 step3 HV mill tinted Mismatched before rewiring");
+Eq(1, s13Rewire.Hud().WarnedMills, "slice13 step3 HV mill warns before rewiring");
+s13Rewire.World.Chunk.TrySet(11, 20, 10, BlockType.Air);
+Eq(CellPowerState.None, s13Rewire.World.PowerState(10, 20, 10), "slice13 step3 mill tint clears when its HV source is removed");
+Eq(0, s13Rewire.Hud().WarnedMills, "slice13 step3 mill warning clears with its tint");
+// Colour channel: one colour per vertex, tint values as decided,
+// untinted builds all white, and the tinted build carries all
+// three tints for the mixed world above.
+Eq((0.25f, 0.9f, 0.25f, 1f), PowerTint.ColorFor(CellPowerState.Powered), "slice13 step3 Powered tint is green, not cyan");
+Eq((1f, 0.15f, 0.15f, 1f), PowerTint.ColorFor(CellPowerState.Mismatched), "slice13 step3 Mismatched tint is red, not orange");
+Eq((1f, 0.85f, 0.1f, 1f), PowerTint.ColorFor(CellPowerState.Energised), "slice13 step3 Energised tint is yellow");
+Eq((1f, 1f, 1f, 1f), PowerTint.ColorFor(CellPowerState.None), "slice13 step3 None tint is white");
+var s13Quads = Mesher.GreedyMesh(s13Tint.World.Chunk, s13Tint.World.PowerState);
+var s13Mesh = MeshBuilder.Build(s13Quads);
+Eq(s13Mesh.Vertices.Count, s13Mesh.Colors.Count, "slice13 step3 colours count equals vertices count");
+Check(s13Quads.Any(q => q.Type == BlockType.KineticMill && q.PowerState == CellPowerState.Powered), "slice13 step3 tinted quads carry a Powered mill");
+Check(s13Quads.Any(q => q.Type == BlockType.KineticMill && q.PowerState == CellPowerState.Mismatched), "slice13 step3 tinted quads carry a Mismatched mill");
+Check(s13Quads.Any(q => q.Type == BlockType.Workstation && q.PowerState == CellPowerState.Powered), "slice13 step3 tinted quads carry a Powered workstation");
+Check(s13Quads.Any(q => q.Type == BlockType.ShockPylon && q.PowerState == CellPowerState.Mismatched), "slice13 step3 tinted quads carry a Mismatched pylon");
+Check(s13Quads.Any(q => q.Type == BlockType.Cable && q.PowerState == CellPowerState.Energised), "slice13 step3 tinted quads carry an Energised cable");
+var s13Untinted = MeshBuilder.BuildFromChunk(s13Tint.World.Chunk);
+Check(s13Untinted.Colors.All(c => c == (1f, 1f, 1f, 1f)), "slice13 step3 untinted build is all white");
+var s13TintedMesh = MeshBuilder.BuildFromChunk(s13Tint.World.Chunk, s13Tint.World.PowerState);
+Eq(s13Quads.Count, s13TintedMesh.QuadCount, "slice13 step3 tinted BuildFromChunk quad count matches tinted mesher");
+Check(s13TintedMesh.Colors.Contains((0.25f, 0.9f, 0.25f, 1f)), "slice13 step3 tinted mesh contains green");
+Check(s13TintedMesh.Colors.Contains((1f, 0.15f, 0.15f, 1f)), "slice13 step3 tinted mesh contains red");
+Check(s13TintedMesh.Colors.Contains((1f, 0.85f, 0.1f, 1f)), "slice13 step3 tinted mesh contains yellow");
+// Merge separation: two adjacent mills, one powered and one
+// mismatched, must NOT merge their top faces into one quad.
+var s13Merge = new Simulation(42);
+s13Merge.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13Merge.World.Chunk.TrySet(9, 20, 10, BlockType.Dynamo);
+s13Merge.World.Chunk.TrySet(11, 20, 10, BlockType.KineticMill);
+s13Merge.World.Chunk.TrySet(12, 20, 10, BlockType.Alternator);
+var s13MergeTinted = Mesher.GreedyMesh(s13Merge.World.Chunk, s13Merge.World.PowerState)
+    .Where(q => q.Type == BlockType.KineticMill && q.Axis == 1 && q.Slice == 20 && q.Positive).ToList();
+var s13MergeUntinted = Mesher.GreedyMesh(s13Merge.World.Chunk)
+    .Where(q => q.Type == BlockType.KineticMill && q.Axis == 1 && q.Slice == 20 && q.Positive).ToList();
+Eq(2, s13MergeTinted.Count, "slice13 step3 adjacent powered and mismatched mills keep separate top quads");
+Eq(1, s13MergeUntinted.Count, "slice13 step3 same mills merge to one top quad without a power provider");
+Check(s13MergeTinted.Any(q => q.PowerState == CellPowerState.Powered), "slice13 step3 separated top quads include Powered");
+Check(s13MergeTinted.Any(q => q.PowerState == CellPowerState.Mismatched), "slice13 step3 separated top quads include Mismatched");
+// Power state re-derives after save/load, like the warning.
+var s13TintLoad = new Simulation(42);
+s13TintLoad.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s13TintLoad.World.Chunk.TrySet(11, 20, 10, BlockType.Dynamo);
+s13TintLoad.World.Chunk.TrySet(20, 20, 10, BlockType.ShockPylon);
+s13TintLoad.World.Chunk.TrySet(21, 20, 10, BlockType.Dynamo);
+var s13TintLoadJson = s13TintLoad.SaveToJson();
+var s13TintLoaded = new Simulation(99);
+Check(s13TintLoaded.LoadFromJson(s13TintLoadJson), "slice13 step3 tinted world loads");
+Eq(CellPowerState.Powered, s13TintLoaded.World.PowerState(10, 20, 10), "slice13 step3 Powered re-derives after load");
+Eq(CellPowerState.Mismatched, s13TintLoaded.World.PowerState(20, 20, 10), "slice13 step3 Mismatched re-derives after load");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

@@ -1,5 +1,85 @@
 # Forgeborne — Changelog
 
+## 0.59.0 — 2026-10-30 — Slice 13 Step 3: mesh tint and mesh refresh for power state
+
+- Power-state query, decided in this step (rationale in
+  DECISIONS.md): new WorldZone.PowerState, derived from
+  placement and delivered voltage on every call, never
+  saved — Powered for a consumer delivered its rated
+  voltage (mill LV, workstation LV, pylon HV), Mismatched
+  for a consumer delivered a non-None voltage that is not
+  its rating, Energised for a Cable cell in a component
+  carrying a non-None voltage, and None for everything
+  else (unpowered, conflicted, sources, transformers,
+  non-electrical blocks, air). Sources and transformers
+  are deliberately None, not Energised: a lone source
+  feeds nothing, and tinting it would claim a delivery
+  that reaches no cell. Agreement with Step 1 is by
+  construction, not a second rule: Mismatched here is
+  exactly the predicate that makes HudState warn, so a
+  machine the HUD warns about is the machine tinted
+  Mismatched, and rewiring clears both together.
+- Tint channel, decided in this step: vertex colours,
+  not a per-machine material split. MeshData gains a
+  Colors list parallel to Vertices (one RGBA per vertex,
+  always the same count), MeshQuad gains a PowerState
+  set by Mesher.GreedyMesh when a provider is passed,
+  and that state joins the greedy merge key, so quads
+  never merge across a tint boundary — two adjacent
+  mills, one powered and one mismatched, keep separate
+  top quads instead of one ambiguously coloured quad.
+  With no provider every quad is None and merge
+  behaviour is exactly as before, so every earlier
+  quad-count test stands. New MeshBuilder.BuildFromChunk
+  overload takes the provider (VoxelMeshRenderer passes
+  WorldZone.PowerState). Tints, first-pass values, named
+  against the marker palette: Powered green (0.25, 0.9,
+  0.25), never cyan, so it cannot read as a squad
+  marker; Mismatched red (1, 0.15, 0.15), never orange,
+  so it cannot read as a rally marker; Energised yellow
+  (1, 0.85, 0.1), brighter and greener than orange, on
+  cable cells, never as a floating marker; None white,
+  which leaves a material's own colour unchanged.
+- Refresh event set, decided in this step, named, not
+  "always": VoxelMeshRenderer.RefreshMesh now builds
+  the tinted mesh and assigns mesh.colors, and
+  FpsInputAdapter gains a MeshRenderer field (wire it
+  to the same renderer GameManager links) and refreshes
+  only on a successful gather, a successful build key
+  (E, Q, T, Y, U, I, B, N, P), a mill destruction on a
+  tick (DestroyedMills rose across Simulation.Tick),
+  load, or Start — never every frame, and never on a
+  failed key, a reload, a shot, or a squad deploy, none
+  of which changes a voxel. This event set is complete
+  for chunk and wiring changes, because power state is
+  placement-derived: the only tick-time voxel change is
+  a destruction, and every placement change arrives
+  through a key, a gather, or a load. Honest material
+  limit, not hidden: mesh.colors only shows if the
+  chunk material multiplies vertex colours, so the
+  scene must wire a vertex-colour material, and
+  playtest-gate item 26 is the observation that
+  settles which material the scene actually uses.
+- Verification, stated honestly, not inflated: the
+  query, the colour channel, the merge separation, the
+  tint/warning agreement, and the save/load re-derivation
+  are headless-tested (44 new tests). The tint itself
+  and the refresh wiring are adapter-only Unity code,
+  so their verification is the written adapter code
+  plus playtest-gate checklist items 26 (tint) and 27
+  (refresh), Windows-only — the tests do not prove a
+  tint reads in the scene, and no demo scenario is
+  added, because a printed power state would not prove
+  a visible tint. No delivery, precedence, conflict,
+  rating, cost, or phase rule changes in this step, and
+  no new save field: tint and refresh are derived and
+  rendered, never saved.
+- Tests: 1708 passed, 0 failed (was 1664; +44, no
+  failures on the final runs). Demo unchanged: Slice 11
+  scenario save 44,038 chars, Slice 12 scenario save
+  43,974 chars, all earlier demo saves as in the
+  0.58.0 entry.
+
 ## 0.58.0 — 2026-10-30 — Slice 13 Step 2: scene-marker distinction for the squad kinds
 
 - Marker distinction, decided in this step (rationale in

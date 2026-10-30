@@ -456,6 +456,52 @@ public sealed class WorldZone
         return delivered != Voltage.None && delivered != VoltageRules.PylonRated;
     }
 
+    /// <summary>
+    /// Slice 13 Step 3: the per-cell power state for mesh tint,
+    /// derived from placement and delivered voltage on every
+    /// call, never saved, so rewiring re-derives it and a
+    /// destroyed mill stops having a state because it is gone.
+    /// The block-type check comes first, so a stone face costs
+    /// no delivery walk: only cables and the three consumers
+    /// ever call DeliveredVoltage or a powered / mismatched
+    /// predicate. Agreement with Step 1 is by construction,
+    /// not by a second rule: a consumer is Mismatched here
+    /// exactly when the same predicate that makes HudState
+    /// warn about it is true, Powered exactly when its powered
+    /// predicate is true, and a cable is Energised exactly
+    /// when its delivered voltage is not None — so a machine
+    /// the HUD warns about is the machine the mesh tints red,
+    /// and a rewired machine loses both on the next snapshot
+    /// and the next refresh together. No delivery, precedence,
+    /// conflict, rating, cost, or phase rule moves: this method
+    /// only reads the rules the slices already test.</summary>
+    public CellPowerState PowerState(int x, int y, int z)
+    {
+        var block = Chunk.Get(x, y, z);
+        if (block == BlockType.Cable)
+            return DeliveredVoltage(x, y, z) != Voltage.None
+                ? CellPowerState.Energised : CellPowerState.None;
+        if (block == BlockType.KineticMill)
+        {
+            if (IsPowered(x, y, z)) return CellPowerState.Powered;
+            if (IsMismatched(x, y, z)) return CellPowerState.Mismatched;
+            return CellPowerState.None;
+        }
+        if (block == BlockType.Workstation)
+        {
+            if (IsWorkstationPowered(x, y, z)) return CellPowerState.Powered;
+            if (IsWorkstationMismatched(x, y, z)) return CellPowerState.Mismatched;
+            return CellPowerState.None;
+        }
+        if (block == BlockType.ShockPylon)
+        {
+            if (IsPylonPowered(x, y, z)) return CellPowerState.Powered;
+            if (IsPylonMismatched(x, y, z)) return CellPowerState.Mismatched;
+            return CellPowerState.None;
+        }
+        return CellPowerState.None;
+    }
+
     /// <summary>Slice 12 Step 2 pylon fire rule, first-pass values
     /// labelled as such, not balance claims: Manhattan range 5
     /// (the Recon squad's engagement range, so a pylon reaches

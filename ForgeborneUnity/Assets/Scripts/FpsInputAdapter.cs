@@ -7,6 +7,13 @@ using Forgeborne.Core;
 public class FpsInputAdapter : MonoBehaviour
 {
     public Simulation? Simulation;
+    // Slice 13 Step 3: wire this to the same VoxelMeshRenderer
+    // GameManager links, in the scene. It is the refresh trigger:
+    // a null renderer makes every refresh call below a no-op,
+    // so an unwired scene renders the first mesh and never
+    // refreshes it — playtest-gate item 27 names that wiring
+    // as a step, not an assumption.
+    public VoxelMeshRenderer? MeshRenderer;
     public float MouseSensitivity = 2f;
 
     void Update()
@@ -41,12 +48,39 @@ public class FpsInputAdapter : MonoBehaviour
         Vector3 lookForward = new Vector3(
             Simulation.Look.ForwardX, Simulation.Look.ForwardY, Simulation.Look.ForwardZ);
         transform.rotation = Quaternion.LookRotation(lookForward);
+        // Slice 13 Step 3 refresh event set, named, not "always":
+        // a tick refreshes the mesh only when a mill was destroyed
+        // on that tick (DestroyedMills rose), never every frame —
+        // a full 32^3 re-mesh every frame would spend the Slice 1
+        // budget for no visible change on frames where nothing
+        // changed, and power state itself changes only when
+        // placement changes, which the build / gather events
+        // below already cover. This check also answers, in
+        // playtest-gate item 27, the item-17 question of whether
+        // a destruction is visible on its tick or only after a
+        // later refresh: with this hook it should be on its tick,
+        // and item 27 is the observation that proves or refutes
+        // that expectation.
+        int destroyedBefore = Simulation.World.DestroyedMills;
         Simulation.Tick(Time.deltaTime, forward, strafe, jump);
+        if (Simulation.World.DestroyedMills != destroyedBefore && MeshRenderer != null) MeshRenderer.RefreshMesh();
         // Camera follows the FPS controller's feet position + eye height.
         transform.position = new Vector3(Simulation.Fps.X, Simulation.Fps.Y + 1.6f, Simulation.Fps.Z);
 
-        if (Input.GetKeyDown(KeyCode.E)) Simulation.GatherAhead();
-        if (Input.GetKeyDown(KeyCode.Q)) Simulation.BuildWallAhead();
+        // Slice 13 Step 3 refresh event set, continued: a
+        // successful gather or build refreshes the mesh at once,
+        // because that key press is exactly what changed the
+        // chunk or the wiring — a failed key (no resources, no
+        // target, floating, not air) refreshes nothing, so a
+        // wasted press costs no re-mesh. Reload and fire change
+        // no voxel, so they never refresh; a squad deploy changes
+        // markers, not voxels, so it never refreshes either.
+        // Together with the destruction check above, load, and
+        // Start, this is the whole event set: every chunk or
+        // wiring change in the game reaches a refresh through
+        // one of these paths, and no path refreshes blindly.
+        if (Input.GetKeyDown(KeyCode.E) && Simulation.GatherAhead() == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+        if (Input.GetKeyDown(KeyCode.Q) && Simulation.BuildWallAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
         if (Input.GetKeyDown(KeyCode.R)) Simulation.Weapon.Reload();
         // Powered Unity presence (Slice 6 Step 3): T builds a
         // Kinetic Mill (front-left, via BuildKineticMillAhead) and
@@ -71,11 +105,13 @@ public class FpsInputAdapter : MonoBehaviour
         // EmberOre, so they cannot break a pending Confirm's
         // affordability, and changing them would be a second
         // modal change bundled into a powered-presence step.
-        // Mesh visibility of a key build follows the scene's
-        // pre-existing refresh path (see docs/powered-presence.md):
-        // this step adds no refresh hook, and the live HUD power
-        // line (HudDisplay) is the presence proof that updates
-        // every frame regardless of mesh refresh.
+        // Mesh visibility of a key build: Slice 13 Step 3
+        // supersedes the pre-Step-3 statement that this step
+        // adds no refresh hook (see docs/powered-presence.md
+        // item 6, now answered by playtest-gate item 27) — a
+        // successful key build refreshes the mesh at once, by
+        // the event set above, and the live HUD power line
+        // (HudDisplay) still updates every frame regardless.
         // Slice 9 Step 1: U builds a Transformer (via
         // BuildTransformerAhead, 5 EmberOre), next to Y on the
         // keyboard so the electrical trio sits together, and
@@ -96,15 +132,17 @@ public class FpsInputAdapter : MonoBehaviour
         // cable cell, by aim, like every other builder.
         if (!Simulation.OrbitalCommand.IsPicking)
         {
-            if (Input.GetKeyDown(KeyCode.T)) Simulation.BuildKineticMillAhead();
-            if (Input.GetKeyDown(KeyCode.Y)) Simulation.BuildDynamoAhead();
-            if (Input.GetKeyDown(KeyCode.U)) Simulation.BuildTransformerAhead();
-            if (Input.GetKeyDown(KeyCode.I)) Simulation.BuildCableAhead();
+            // Slice 13 Step 3: each builder refreshes on success
+            // only, by the event set above — see the E / Q note.
+            if (Input.GetKeyDown(KeyCode.T) && Simulation.BuildKineticMillAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.Y) && Simulation.BuildDynamoAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.U) && Simulation.BuildTransformerAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.I) && Simulation.BuildCableAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
             // Slice 10 Step 1: B builds a workstation by aim, closing
             // the workstation's missing adapter key. B is free: see
             // the key list above. Same picker guard as the other
             // builders, for the same ore reason.
-            if (Input.GetKeyDown(KeyCode.B)) Simulation.BuildWorkstationAhead();
+            if (Input.GetKeyDown(KeyCode.B) && Simulation.BuildWorkstationAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
             // Slice 10 Step 2: N builds an Alternator by aim, via
             // BuildAlternatorAhead (10 Stone, no EmberOre). N is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -118,7 +156,7 @@ public class FpsInputAdapter : MonoBehaviour
             // No HUD source count rides along: the existing
             // powered-mill and powered-workstation counts are
             // the Alternator's display, as decided in core.
-            if (Input.GetKeyDown(KeyCode.N)) Simulation.BuildAlternatorAhead();
+            if (Input.GetKeyDown(KeyCode.N) && Simulation.BuildAlternatorAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
             // Slice 12 Step 2: P builds a Shock Pylon by aim, via
             // BuildShockPylonAhead (5 Stone + 10 EmberOre). P is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -127,7 +165,7 @@ public class FpsInputAdapter : MonoBehaviour
             // the other builders, for the same ore reason — a
             // pylon key while picking could spend the ore a
             // pending Confirm needs.
-            if (Input.GetKeyDown(KeyCode.P)) Simulation.BuildShockPylonAhead();
+            if (Input.GetKeyDown(KeyCode.P) && Simulation.BuildShockPylonAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's

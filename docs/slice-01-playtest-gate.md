@@ -286,6 +286,66 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     existed. Do not claim this verified in Unity until it
     is observed there and recorded in DECISIONS.md.
 
+26. [ ] Mesh tint for power state, added 0.59.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core power-state query, colour channel, merge
+    separation, and tint/warning agreement are
+    headless-tested): wire a vertex-colour material to the
+    chunk mesh — record explicitly which material the scene
+    uses and whether it multiplies vertex colours, because
+    with a material that ignores vertex colours the mesh
+    renders untinted and that is a material finding, not a
+    tint-code finding. With a vertex-colour material, build
+    a powered mill (Dynamo beside it) and observe its faces
+    green; build a mismatched workstation (Alternator beside
+    it) and observe its faces red, and the HUD warning line
+    (item 24) reading the same workstation at the same time;
+    lay a Dynamo-fed cable and observe its faces yellow;
+    leave a mill unpowered and a mill conflicted (Dynamo and
+    Alternator both touching it) and observe both untinted,
+    white, exactly as ordinary stone. Rewire the mismatched
+    workstation to LV and observe the red tint clear on the
+    next refresh, together with the warning line clearing.
+    Observe explicitly that no tint reads as a marker: green
+    is not the cyan squad cube, red is not the orange rally
+    flat cube or pending sphere, and yellow sits on ground
+    cable cells, never as a floating marker. Note honestly
+    that a converting transformer and a lone source render
+    untinted, by decision — if either reads as dead in play,
+    record that as evidence to revisit, not as a bug in the
+    query. This item supersedes item 7 of
+    `docs/powered-presence.md` (a Dynamo and a mill render
+    as ordinary blocks with no distinct tint) — that was
+    the decided behaviour before this tint existed. Do not
+    claim this verified in Unity until it is observed there
+    and recorded in DECISIONS.md.
+
+27. [ ] Mesh refresh event set, added 0.59.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    the core query is headless-tested, the refresh wiring
+    is not): wire FpsInputAdapter.MeshRenderer to the same
+    VoxelMeshRenderer GameManager links — record explicitly
+    that the wiring is done, because an unwired field makes
+    every refresh call a no-op and a stale mesh is then a
+    wiring failure, not a refresh-code failure. Press T, Y,
+    U, I, B, N, and P in turn and observe each built block
+    appear in the scene at once, with no save/load and no
+    scene reload; press a builder key with insufficient
+    resources and observe no refresh is needed, because
+    nothing changed. Press E to gather a block and observe
+    it disappear at once. Then answer the item-17 question
+    this step was built to settle: feed a mill HV and
+    observe whether the mill disappears from the scene on
+    its destruction tick, now that a destruction refreshes
+    the mesh — record whether the disappearance is on the
+    tick, and if it is not, record what actually happened
+    rather than claiming the hook worked. Note explicitly
+    that no refresh runs every frame: the mesh refreshes
+    on a successful key, a gather, a destruction, a load,
+    or Start, and on nothing else. Do not claim this
+    verified in Unity until it is observed there and
+    recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

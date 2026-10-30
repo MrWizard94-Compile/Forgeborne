@@ -11,6 +11,16 @@ public sealed class MeshQuad
     public int V1 { get; set; } // exclusive
     public BlockType Type { get; set; }
     public bool Positive { get; set; }
+    /// <summary>Slice 13 Step 3: the power state of this quad's
+    /// source cell, set by GreedyMesh when a provider is given,
+    /// None otherwise. MeshBuilder colours every vertex of the
+    /// quad from this value, so a quad's colour is uniform by
+    /// construction — and, because the merge key below includes
+    /// this value, a quad never spans cells of different power
+    /// states, so two adjacent mills, one powered and one
+    /// mismatched, keep separate top quads in different tints
+    /// instead of merging into one ambiguously coloured quad.</summary>
+    public CellPowerState PowerState { get; set; } = CellPowerState.None;
 
     public (float, float, float)[] Corners()
     {
@@ -36,7 +46,21 @@ public sealed class MeshQuad
 /// </summary>
 public static class Mesher
 {
-    public static List<MeshQuad> GreedyMesh(VoxelChunk chunk)
+    /// <summary>Greedy mesh, with an optional per-cell power-state
+    /// provider (Slice 13 Step 3: pass WorldZone.PowerState).
+    /// With no provider every quad's PowerState is None and the
+    /// merge behaviour is exactly the pre-Step-3 behaviour, so
+    /// every earlier quad-count test stands. With a provider,
+    /// the provider is asked only for a face's source cell —
+    /// the solid cell the face belongs to, a for a positive
+    /// face and b for a negative one — and that state joins
+    /// the merge key, so quads never merge across a tint
+    /// boundary. The provider is not stored and no second
+    /// chunk representation is created: the quads are still
+    /// the single chunk representation, now carrying a tint
+    /// attribute per quad.</summary>
+    public static List<MeshQuad> GreedyMesh(VoxelChunk chunk,
+        Func<int, int, int, CellPowerState>? powerState = null)
     {
         var quads = new List<MeshQuad>();
         int s = VoxelChunk.Size;
@@ -48,6 +72,7 @@ public static class Mesher
                 // mask[u, v] = 0 for no face, else (type, positive) encoded as type byte + sign in a parallel array.
                 var maskType = new BlockType[s, s];
                 var maskPos = new bool[s, s];
+                var maskPower = new CellPowerState[s, s];
                 var hasFace = new bool[s, s];
                 for (int u = 0; u < s; u++)
                 for (int v = 0; v < s; v++)
@@ -61,10 +86,12 @@ public static class Mesher
                     if (BlockInfo.IsSolid(blockA) && !BlockInfo.IsSolid(blockB))
                     {
                         maskType[u, v] = blockA; maskPos[u, v] = true; hasFace[u, v] = true;
+                        maskPower[u, v] = powerState == null ? CellPowerState.None : powerState(a[0], a[1], a[2]);
                     }
                     else if (!BlockInfo.IsSolid(blockA) && BlockInfo.IsSolid(blockB))
                     {
                         maskType[u, v] = blockB; maskPos[u, v] = false; hasFace[u, v] = true;
+                        maskPower[u, v] = powerState == null ? CellPowerState.None : powerState(b[0], b[1], b[2]);
                     }
                 }
                 // Greedy rectangle merge.
@@ -74,19 +101,20 @@ public static class Mesher
                     if (!hasFace[u, v]) continue;
                     var type = maskType[u, v];
                     var pos = maskPos[u, v];
+                    var power = maskPower[u, v];
                     int w = 1;
-                    while (u + w < s && hasFace[u + w, v] && maskType[u + w, v] == type && maskPos[u + w, v] == pos) w++;
+                    while (u + w < s && hasFace[u + w, v] && maskType[u + w, v] == type && maskPos[u + w, v] == pos && maskPower[u + w, v] == power) w++;
                     int h = 1;
                     bool done = false;
                     while (v + h < s && !done)
                     {
                         for (int k = 0; k < w; k++)
                         {
-                            if (!hasFace[u + k, v + h] || maskType[u + k, v + h] != type || maskPos[u + k, v + h] != pos) { done = true; break; }
+                            if (!hasFace[u + k, v + h] || maskType[u + k, v + h] != type || maskPos[u + k, v + h] != pos || maskPower[u + k, v + h] != power) { done = true; break; }
                         }
                         if (!done) h++;
                     }
-                    quads.Add(new MeshQuad { Axis = axis, Slice = slice, U0 = u, V0 = v, U1 = u + w, V1 = v + h, Type = type, Positive = pos });
+                    quads.Add(new MeshQuad { Axis = axis, Slice = slice, U0 = u, V0 = v, U1 = u + w, V1 = v + h, Type = type, Positive = pos, PowerState = power });
                     for (int dv = 0; dv < h; dv++)
                     for (int du = 0; du < w; du++)
                         hasFace[u + du, v + dv] = false;

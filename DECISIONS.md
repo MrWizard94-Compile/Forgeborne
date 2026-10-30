@@ -4400,6 +4400,145 @@ look inevitable.
   3, and a rewired machine must lose its tint on the
   next refresh, or Step 3 must say why they differ.
 
+## 0.59.0 — Slice 13 Step 3: mesh tint and mesh refresh for power state
+
+- Decision, on which cells tint: all three of the scope's
+  candidate sets together, and nothing else. Energised
+  cables answer "is power reaching this run", powered
+  machines answer "is this machine running at rated
+  voltage", mismatched machines answer "is this machine
+  about to be lost or disabled" — three different player
+  questions, and tinting only one set would have left
+  the other two invisible in the scene, which is the gap
+  Slice 13 exists to close. Tinting everything was
+  refused for the scope's own reason: a tint on every
+  block would make the tint meaningless, and a tint on a
+  source or a transformer would be a fourth, confusing
+  answer — a lone Dynamo tinted as live would claim a
+  delivery that reaches no consumer, and a transformer
+  tinted as energised would hide whether its conversion
+  actually reaches anything, since its neighbours already
+  show that. Sources and transformers therefore stay
+  white, by decision, and that limit is recorded here
+  rather than discovered as a surprise: if Windows
+  testing shows players read a converting transformer
+  as dead because it is untinted, that is item 26's
+  evidence to revisit, not a silent gap.
+- Decision, on the tint's relationship to the warning:
+  agreement, carried forward from Step 2's next-step
+  note, by construction. PowerState reuses the exact
+  powered and mismatched predicates Step 1's warning
+  counts reuse, so there is no second definition that
+  could drift from the first: a machine warned in Step 1
+  is the machine tinted Mismatched here, a rewired
+  machine loses its warning and its tint on the next
+  snapshot and the next refresh together, and a
+  destroyed mill loses both because it is gone. The one
+  asymmetry is honest, not a disagreement: the HUD
+  warning counts a machine before its destruction tick,
+  while the tint exists only while the machine exists
+  to be tinted, so after the tick there is nothing left
+  to tint — the warning's one-frame mill limit from
+  Step 1 (item 24) applies to the tint as well, and
+  item 26 says so.
+- Decision, on the colour channel: vertex colours on
+  the single MeshData, not a per-machine material split
+  and not a second mesh. A material split would have
+  multiplied materials by power state and broken the
+  "MeshBuilder is the single chunk representation"
+  rule the scope set; a second tint mesh would have
+  been a second representation by another name. Vertex
+  colours keep one mesh, one build, one collider, with
+  one more parallel buffer, and white as the untinted
+  value means ordinary stone, ore, and wood render
+  exactly as before under a vertex-colour material.
+  The alternative of tinting by BlockType alone was
+  refused because it cannot work: greedy merging merges
+  same-type faces, so two adjacent mills of different
+  power states would have merged into one quad with one
+  colour and no correct answer — hence PowerState
+  joining the merge key, which is the step's one
+  mesher change, and the merge-separation test that
+  proves it (2 top quads tinted, 1 untinted).
+- Decision, on the palette against the markers, named
+  against both, not in isolation: Powered green is
+  never cyan, so it cannot read as a squad marker;
+  Mismatched red is never orange, so it cannot read
+  as a rally or pending marker; Energised yellow is
+  brighter and greener than orange and sits on cable
+  cells in the ground, never as a floating marker, so
+  it cannot be mistaken for a rally state by shape or
+  by location even before hue is considered. The art
+  direction's orange-for-warnings rule is deliberately
+  NOT followed for the tint, because the scope forbids
+  an orange mismatched tint for exactly the rally
+  confusion above — the HUD warning line keeps the
+  orange-accent warning language in text, while the
+  scene tint uses red, and that split is recorded here
+  so a later reader does not "fix" the tint to orange
+  and reintroduce the confusion. Colour is second to
+  location and to the HUD counts, as shape was primary
+  for markers: a tinted block is the machine itself at
+  its own cell, and the Step 1 counts say the same
+  outcome in numbers, so red/green as a first-pass pair
+  is not asked to carry the distinction alone.
+- Decision, on the refresh event set: a dirty event
+  set, not every frame and not a version counter. A
+  full 32^3 re-mesh every frame would spend the Slice 1
+  budget for no visible change on frames where nothing
+  changed, and the scope forbids refreshing blindly;
+  a chunk version counter was refused because it would
+  have touched every chunk write path (generation,
+  gather, build, destruction, load) for a fact the
+  adapter already knows — which key succeeded, and
+  whether DestroyedMills rose on this tick. Power state
+  is placement-derived, so those two facts plus load
+  and Start are complete: no tick-time voxel change
+  exists except a destruction, and no placement change
+  exists except a key, a gather, or a load. A failed
+  key refreshes nothing, because a failed key changed
+  nothing and a wasted press should not cost a re-mesh;
+  reload, fire, and squad deploy refresh nothing,
+  because they change no voxel. The one wiring risk is
+  stated, not assumed: FpsInputAdapter.MeshRenderer
+  must be wired to the same renderer GameManager links,
+  and a null field makes refresh a no-op — item 27
+  names that wiring as a step, so an unwired scene is
+  a checklist failure, not a silent stale mesh.
+- Verification, stated without inflation: the query,
+  the colour channel (Colours.Count equals Vertices.
+  Count), the merge separation, the tint/warning
+  agreement, and the save/load re-derivation are
+  headless-tested, 44 new tests, 1708 total, and the
+  demo saves stand (44,038 and 43,974). The tint and
+  the refresh wiring are adapter-only Unity code, not
+  compiled headlessly, so no test count proves a tint
+  reads or a refresh fires in the scene — the proof is
+  playtest-gate items 26 (tint, including the
+  vertex-colour material observation and the
+  powered-presence item 7 supersession) and 27
+  (refresh, including the item-17 destruction-tick
+  question and the MeshRenderer wiring), Windows-only.
+  No demo scenario is added: a printed power state
+  would not prove a visible tint, by the scope's own
+  instruction for Step 3's adapter parts.
+- Deliberately NOT in this step: any delivery,
+  precedence, conflict, rating, cost, or phase rule
+  change; a new block type, save field, or key binding;
+  a per-machine material split or a second mesh; a
+  through-wall tint or marker change; a balance pass
+  (the tints are first-pass values, not final feel);
+  a demo scenario; any claim about Windows Unity
+  verification or the pending Slice 1 director playtest
+  gate; or closing Slice 13 — Step 4 (demo scenario +
+  review) is still to come.
+- Next, in order: Slice 13 Step 4, the composed demo
+  scenario and documentation-only review, decided in
+  that step — with the Step 1 warning, the Step 2
+  snapshot kinds, and this step's power-state query
+  proved together in one Simulation, not as separate
+  proofs, and with Slice 14 NOT scoped by that review.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
