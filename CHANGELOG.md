@@ -1,5 +1,75 @@
 # Forgeborne — Changelog
 
+## 0.55.0 — 2026-10-30 — Slice 12 Step 3: composed demo + review, closing Slice 12
+
+- Demo, decided in this step (rationale in
+  DECISIONS.md): one composed Slice 12 scenario
+  appended to demo/Forgeborne.Demo, after the Slice
+  11 scenario — not three separate proofs. On the
+  y=20 plane: a live network (Dynamo -> cable ->
+  cable, free end, feeding nothing), an LV mill fed
+  directly by a Dynamo with a five-stone pocket, and
+  a lone Alternator with nothing adjacent to it. On
+  the y=5 plane: a Shock Pylon fed HV directly by an
+  Alternator, and a powered workstation fed LV
+  through an Alternator -> transformer step-down.
+  The player parks far away for the pylon's three
+  firing ticks (so no bench regen confounds them)
+  and then walks to the bench to read its regen,
+  because regen is player-centred while pylon fire
+  is machine-centred and one position cannot prove
+  both — stated openly, as in Slice 10. The layout
+  is staged directly with TrySet, as the Step 1-2
+  tests stage theirs; aim placement of each block
+  was proved in its own step's tests.
+- Demo numbers, in full: before any tick, voltages
+  mill LV, pylon HV, workstation LV, and the HUD
+  reads 1/1 MILLS POWERED, 1/1 WORKSTATIONS
+  POWERED, 1/1 PYLONS POWERED, and POWER: 1 LIVE
+  NETWORKS, 1 LONE SOURCES — the live network and
+  the lone source appear in no older count, and the
+  pylon's own Alternator is counted as neither,
+  because the pylon count already shows that
+  delivery. An enemy staged 5 from the pylon steps
+  player-ward and is fired on at ranges 4, 3, then 2,
+  dying on tick 3 (30 -> 20 -> 10 -> 0); shields stay
+  65 through the pylon ticks, then the bench walk
+  reads regen 10 and, after 5 ticks total, the mill
+  has gathered 5 (pocket exhausted), nothing is
+  destroyed, stone is 5, and shields are capped at
+  85. Save/load round-trip: the live cable, the lone
+  Alternator, the mill, the pylon, and the
+  workstation all load; the HUD re-derives to the
+  same counts (derived, not saved); session counters
+  reset; stone stays 5; the player is back at the
+  bench reading regen 10. Loaded phase (20 damage,
+  pocket re-seeded): 5 ticks gather 5 again, nothing
+  destroyed, stone 10 (5 + 5, no refund on load),
+  shields capped at 85 again, enemies stay 0.
+- Review: new docs/slice-12-review.md, documentation
+  only, checking the slice against its scope with
+  the verdict stated honestly (tested display and
+  widening core plus written adapters, not
+  playtested, balanced, or Unity-verified), the
+  staging facts pinned so they are not over-claimed
+  (TrySet staging; parked-player bench walk; the
+  pylon's first demo shot is at range 4, not 5,
+  because enemies move before the pylon phase, so
+  the stationary range-5 boundary rests on Step 2's
+  tests, not on this demo), the Slice 11 live-network
+  invisibility gap recorded as closed by Step 1, and
+  the remaining gaps carried in priority order.
+  Slice 13 is NOT scoped by this review. No new
+  playtest-gate checklist item: the demo exercises
+  no adapter binding items 22 and 23 do not already
+  cover. No core system rides along with this step.
+- Tests: 1622 passed, 0 failed (was 1575; +47
+  composed-integration tests mirroring the demo, no
+  failures on the final runs). Demo unchanged except
+  the new scenario: Slice 11 save 44,038 chars, all
+  earlier demo saves as in the 0.54.0 entry. New
+  scenario save 43,974 chars.
+
 ## 0.54.0 — 2026-10-30 — Slice 12 Step 2: third consumer, HV-rated Shock Pylon
 
 - Consumer, decided in this step (rationale in

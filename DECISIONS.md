@@ -3623,6 +3623,114 @@ look inevitable.
   first, adapter visibility and fairness second),
   with Slice 11's composition evidence in hand.
 
+## 0.55.0 — Slice 12 Step 3: composed demo + review, closing Slice 12
+
+- Decision, on composition: one Simulation, not
+  three proofs. The Step 3 brief from Step 2 was a
+  powered pylon beside a live network feeding no
+  consumer, read through both HUD lines, and this
+  step composes that literally: the live network
+  and the lone source sit on the y=20 plane beside
+  an existing LV mill, and the pylon sits on the
+  y=5 plane beside an existing powered workstation,
+  so the reader sees the widening as a choice among
+  choices (a third consumer beside the first two,
+  a second source feeding it beside the first) and
+  the display as the only readout for the two
+  things no older count shows. Splitting the demo
+  into a display run and a pylon run would have
+  proved each system alone and composition never;
+  the scope's Step 3 sentence forbids that split
+  by naming one composed run, and this step follows
+  it.
+- Decision, on the parked player and the bench walk:
+  a measurement procedure, stated, not a play
+  pattern smuggled in. Workstation regen is
+  player-centred (Manhattan distance 3) while pylon
+  fire is machine-centred, so one player position
+  cannot prove both; the demo therefore parks the
+  player at (10,5,10) for the three pylon ticks
+  (shields provably flat at 65, no regen confound)
+  and then walks to (16,5,28) to read regen 10, the
+  same procedure Slice 10 used for its three
+  benches. A demo that parked the player at the
+  bench for all five ticks would have let regen
+  cap the shields before the pylon's ticks finished
+  and hidden whether the pylon ticks themselves
+  touched the player; a demo that never walked
+  would have left the existing consumer unproved
+  in composition.
+- Decision, on the range-5 honesty: the demo stages
+  the enemy at range 5 but does not claim a
+  stationary range-5 kill, because enemies move
+  before the pylon phase and the first shot lands
+  at range 4. The demo's claim is therefore a
+  3-tick kill at shrinking range (5 staged, then 4,
+  3, 2 at firing time), and the stationary boundary
+  — fires at 5, silent at 6 — rests on Step 2's
+  tests, which is where it was proved, not on this
+  demo. Quoting the demo as a range-5 proof would
+  be a category error about tick order, and the
+  review pins it so a later sentence cannot make
+  it.
+- Decision, on staging: TrySet, stated, not aim
+  placement re-proved. Aim placement of a cable, a
+  mill, a pylon, a workstation, a transformer, a
+  Dynamo, and an Alternator was each proved in its
+  own step's tests; walking this layout in by aim
+  would prove walking, not wiring, and the demo
+  claims composition of core rules, not placement
+  of this exact layout. The same staging honesty
+  Slice 9, Slice 10, and Slice 11 used, applied
+  unchanged.
+- Decision, on no new checklist item: the review
+  adds none, because the demo exercises no adapter
+  binding items 22 (live line) and 23 (P key) do not
+  already cover. A review that invented a checklist
+  item for its own demo would be claiming adapter
+  coverage the demo cannot give — the demo is
+  headless, and its numbers prove core rules and
+  HUD numbers, not key feel or scene visibility.
+  The live-in-scene question stays gap 5, not a
+  demo claim.
+- Decision, on gaps closed and carried: the Slice 11
+  gap 6 (a live network feeding no consumer shows
+  nothing) is recorded as closed by Step 1, with
+  Step 2's extension of the anti-double-count rule
+  to the pylon as part of the same closure — the
+  pylon's own Alternator counts as neither a live
+  network nor a lone source, proved in the demo's
+  (1,1) reading. Everything else Slice 11 and Slice
+  12 named stays carried, in priority order, with
+  the Slice 13 ranking taken unchanged from the
+  0.52.0 scope: adapter visibility and fairness
+  first, the deferred third source second, Patrol
+  third. The Step 3 evidence gives no reason to
+  reorder them, and reordering on review instinct
+  alone would be a decision without evidence.
+- Decision, on not scoping Slice 13 here: the scope
+  forbids it ("Slice 13 is scoped afterwards, the
+  same way this document follows the Slice 11
+  review's candidates rather than preceding them")
+  and this review obeys it. Scoping Slice 13 inside
+  its own review would let the review choose its
+  successor before the composition evidence is
+  read, which is exactly the guessing the slice
+  order exists to prevent.
+- Deliberately not in this step: no new core system;
+  no second consumer or source; no warning, tint,
+  or mesh refresh; no squad-marker distinction; no
+  Patrol, fourth kind, or second doctrine; no
+  balance pass on the pylon's range, damage, or
+  cost; no save-format change; no delivery,
+  transformer, or cable rule change; no claim about
+  Windows Unity verification or the pending Slice 1
+  director playtest gate.
+- Next step, decided in this step: scoping Slice 13
+  as its own decision step, chosen from the ranked
+  candidates this review carries, with Slice 12's
+  composition evidence in hand.
+
 ## 0.54.0 — Slice 12 Step 2: third consumer, HV-rated Shock Pylon
 
 - Decision, on the widening itself: the scope's

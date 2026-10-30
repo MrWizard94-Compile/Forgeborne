@@ -725,3 +725,83 @@ Console.WriteLine($"Slice 11 loaded: squads {simS11Loaded.World.Squads.Count} (d
 simS11Loaded.World.Advance();
 PrintS11("Slice 11 loaded tick 1", simS11Loaded);
 Console.WriteLine($"Slice 11 done: Heavy {simS11Loaded.World.Squads[0].Kind} {simS11Loaded.World.Squads[0].Doctrine} {simS11Loaded.World.Squads[0].Health} HP at core, Vanguard {simS11Loaded.World.Squads[1].Kind} {simS11Loaded.World.Squads[1].Doctrine} {simS11Loaded.World.Squads[1].Health} HP at rally, enemies left {simS11Loaded.World.Enemies.Count}, save JSON length: {saveS11.Length} chars");
+
+// Slice 12 Step 3 scenario: Slice 12 composed in one run —
+// the Step 1 display reading a live network with no consumer
+// and a lone source, beside the Step 2 widening (an HV-rated
+// Shock Pylon) running beside an existing LV consumer (a
+// powered mill) and existing sources (Dynamo and Alternator),
+// not three separate proofs. On the y=20 plane: a live
+// network (Dynamo -> cable -> cable, free end, feeding
+// nothing), an LV mill fed directly by a Dynamo with a
+// five-stone pocket, and a lone Alternator with nothing
+// adjacent to it. On the y=5 plane: a Shock Pylon fed HV
+// directly by an Alternator, and a powered workstation fed
+// LV through an Alternator -> transformer step-down, whose
+// regen is player-centred (Manhattan distance 3) while the
+// pylon's fire is machine-centred, so the demo parks the
+// player far away for the pylon's three firing ticks and
+// then walks to the bench to read its regen, and states
+// that walk openly instead of pretending one position
+// proves both. The enemy starts 5 from the pylon (its
+// maximum range) and walks player-ward, so it stays in
+// range while the pylon fires 10 per tick and dies on
+// tick 3. The layout is staged directly with TrySet,
+// exactly as the Step 1-2 tests stage theirs: aim
+// placement of a cable, a mill, a pylon, a workstation,
+// a transformer, a Dynamo, and an Alternator was each
+// proved in its own step's tests, and walking this
+// layout in by aim would prove walking, not wiring.
+// What this demo cannot show, by construction, is any
+// adapter feel or scene visibility: no P key press, no
+// LivePowerText or PylonPowerText line, and no visible
+// distinction between a live cable and a dead one appear
+// in a headless run, so those claims stay in their
+// Windows checklist items (22 for the live line, 23 for
+// the P key), not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 12 Step 3 scenario — live network + lone source beside an HV pylon, an LV mill, and a powered workstation, save/load round-trip");
+var simS12 = new Simulation(42);
+void SeedPocketS12(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+simS12.World.Chunk.TrySet(14, 20, 10, BlockType.Dynamo);
+simS12.World.Chunk.TrySet(13, 20, 10, BlockType.Cable);
+simS12.World.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+simS12.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+simS12.World.Chunk.TrySet(11, 20, 14, BlockType.Dynamo);
+SeedPocketS12(simS12.World, 10, 14);
+simS12.World.Chunk.TrySet(10, 20, 18, BlockType.Alternator);
+simS12.World.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+simS12.World.Chunk.TrySet(18, 5, 16, BlockType.Alternator);
+simS12.World.Chunk.TrySet(17, 5, 28, BlockType.Workstation);
+simS12.World.Chunk.TrySet(18, 5, 28, BlockType.Transformer);
+simS12.World.Chunk.TrySet(19, 5, 28, BlockType.Alternator);
+simS12.World.Player.TakeDamage(20);
+simS12.World.Player.X = 10; simS12.World.Player.Z = 10;
+simS12.World.Enemies.Add(new Enemy(17, 5, 21));
+Console.WriteLine($"Slice 12 voltages before any tick: LV mill {simS12.World.DeliveredVoltage(10, 20, 14)}, HV pylon {simS12.World.DeliveredVoltage(17, 5, 16)}, LV workstation {simS12.World.DeliveredVoltage(17, 5, 28)}");
+var s12HudBefore = simS12.Hud();
+Console.WriteLine($"Slice 12 HUD before: {s12HudBefore.PoweredMills}/{s12HudBefore.TotalMills} MILLS POWERED, {s12HudBefore.PoweredWorkstations}/{s12HudBefore.TotalWorkstations} WORKSTATIONS POWERED, {s12HudBefore.PoweredPylons}/{s12HudBefore.TotalPylons} PYLONS POWERED, POWER: {s12HudBefore.LiveNetworks} LIVE NETWORKS, {s12HudBefore.LoneSources} LONE SOURCES (the live network and the lone source appear in no older count)");
+Console.WriteLine($"Slice 12 shields before: {simS12.World.Player.Shields} (65 after 20 damage, no bench in range while parked at (10,5,10))");
+for (int tick = 1; tick <= 3; tick++)
+{
+    simS12.World.Advance();
+    Console.WriteLine($"Slice 12 tick {tick}: enemies {simS12.World.Enemies.Count}{(simS12.World.Enemies.Count > 0 ? $" at ({simS12.World.Enemies[0].X},5,{simS12.World.Enemies[0].Z}) {simS12.World.Enemies[0].Health} HP" : " (pylon kill, 10 per tick for 3 ticks)")}, powered gathered {simS12.World.PoweredBlocksGathered}, shields {simS12.World.Player.Shields} (no regen while parked far from the bench)");
+}
+var s12Walk = simS12.World.Player.MoveTo(16, 5, 28, simS12.World.Chunk);
+Console.WriteLine($"Slice 12 walk to powered bench -> {s12Walk}, effective regen there: {simS12.World.EffectiveWorkstationRegen()} (base 5 + powered 5)");
+for (int tick = 4; tick <= 5; tick++) simS12.World.Advance();
+Console.WriteLine($"Slice 12 after 5 ticks: powered gathered {simS12.World.PoweredBlocksGathered} (pocket exhausted), destroyed {simS12.World.DestroyedMills}, stone {simS12.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS12.World.Player.Shields} (65 + 10 per bench tick, capped at 85)");
+var saveS12 = simS12.SaveToJson();
+var simS12Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS12Loaded.LoadFromJson(saveS12)}");
+var s12LoadedHud = simS12Loaded.Hud();
+Console.WriteLine($"Slice 12 after load: live network cable {simS12Loaded.World.Chunk.Get(12, 20, 10)}, lone Alternator {simS12Loaded.World.Chunk.Get(10, 20, 18)}, LV mill {simS12Loaded.World.Chunk.Get(10, 20, 14)}, pylon {simS12Loaded.World.Chunk.Get(17, 5, 16)}, workstation {simS12Loaded.World.Chunk.Get(17, 5, 28)}, power {s12LoadedHud.PoweredMills}/{s12LoadedHud.TotalMills} mills, {s12LoadedHud.PoweredWorkstations}/{s12LoadedHud.TotalWorkstations} workstations, {s12LoadedHud.PoweredPylons}/{s12LoadedHud.TotalPylons} pylons, POWER: {s12LoadedHud.LiveNetworks} LIVE NETWORKS, {s12LoadedHud.LoneSources} LONE SOURCES (counts re-derived, not saved), session counters reset: powered {simS12Loaded.World.PoweredBlocksGathered}, destroyed {simS12Loaded.World.DestroyedMills}, stone {simS12Loaded.World.Player.Inventory.Get(BlockType.Stone)}, player back at bench ({simS12Loaded.World.Player.X},{simS12Loaded.World.Player.Y},{simS12Loaded.World.Player.Z}), effective regen {simS12Loaded.World.EffectiveWorkstationRegen()}");
+simS12Loaded.World.Player.TakeDamage(20);
+SeedPocketS12(simS12Loaded.World, 10, 14);
+for (int i = 0; i < 5; i++) simS12Loaded.World.Advance();
+Console.WriteLine($"Slice 12 loaded phase after 5 ticks: powered gathered {simS12Loaded.World.PoweredBlocksGathered} (5 again), destroyed {simS12Loaded.World.DestroyedMills} (no new destruction), stone {simS12Loaded.World.Player.Inventory.Get(BlockType.Stone)}, shields {simS12Loaded.World.Player.Shields} (65 + 10 per bench tick, capped at 85), enemies {simS12Loaded.World.Enemies.Count} (the pylon kill stays dead)");
+Console.WriteLine($"Slice 12 done: powered {simS12.World.PoweredBlocksGathered} + loaded {simS12Loaded.World.PoweredBlocksGathered}, destroyed {simS12.World.DestroyedMills}, save JSON length: {saveS12.Length} chars");

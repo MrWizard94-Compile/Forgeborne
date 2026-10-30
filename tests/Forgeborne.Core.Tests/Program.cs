@@ -4158,6 +4158,308 @@ var s12LiveHud = HudState.FromWorld(s12LiveLoaded.World, new Weapon());
 Eq(1, s12LiveHud.LiveNetworks, "slice12 step1 hud carries live networks");
 Eq(1, s12LiveHud.LoneSources, "slice12 step1 hud carries lone sources");
 
+// ---- Slice 12 Step 2: third consumer, HV-rated Shock Pylon ----
+// Rating, decided in this step: HV is the first consumer rating
+// that is not LV, so the Alternator gains a safe direct use.
+Eq(Voltage.HV, VoltageRules.PylonRated, "slice12 step2 pylon rated HV not LV");
+var s12pDirectHv = new WorldZone(42);
+s12pDirectHv.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pDirectHv.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+Eq(Voltage.HV, s12pDirectHv.DeliveredVoltage(16, 20, 16), "slice12 step2 direct alternator delivers HV to pylon");
+Check(s12pDirectHv.IsPylonPowered(16, 20, 16), "slice12 step2 direct alternator pylon is powered");
+Check(!s12pDirectHv.IsPylonMismatched(16, 20, 16), "slice12 step2 HV pylon is not mismatched");
+var s12pDirectLv = new WorldZone(42);
+s12pDirectLv.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pDirectLv.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+Eq(Voltage.LV, s12pDirectLv.DeliveredVoltage(16, 20, 16), "slice12 step2 direct dynamo delivers LV to pylon");
+Check(!s12pDirectLv.IsPylonPowered(16, 20, 16), "slice12 step2 LV pylon is not powered");
+Check(s12pDirectLv.IsPylonMismatched(16, 20, 16), "slice12 step2 LV pylon is mismatched");
+var s12pNone = new WorldZone(42);
+s12pNone.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+Check(!s12pNone.IsPylonPowered(16, 20, 16), "slice12 step2 lone pylon is not powered");
+Check(!s12pNone.IsPylonMismatched(16, 20, 16), "slice12 step2 lone pylon is not mismatched");
+var s12pNonPylon = new WorldZone(42);
+s12pNonPylon.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s12pNonPylon.Chunk.TrySet(17, 20, 16, BlockType.Workstation);
+Check(!s12pNonPylon.IsPylonPowered(16, 20, 16), "slice12 step2 mill cell is not a powered pylon");
+Check(!s12pNonPylon.IsPylonMismatched(17, 20, 16), "slice12 step2 workstation cell is not a mismatched pylon");
+// Conversion both ways: step-up Dynamo -> transformer -> pylon
+// is HV and powered; step-down Alternator -> transformer ->
+// pylon is LV and mismatched, the mirror of the mill proofs.
+var s12pStepUp = new WorldZone(42);
+s12pStepUp.Chunk.TrySet(14, 20, 16, BlockType.Dynamo);
+s12pStepUp.Chunk.TrySet(15, 20, 16, BlockType.Transformer);
+s12pStepUp.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+Check(s12pStepUp.IsPylonPowered(16, 20, 16), "slice12 step2 stepped-up dynamo powers a pylon");
+var s12pStepDown = new WorldZone(42);
+s12pStepDown.Chunk.TrySet(14, 20, 16, BlockType.Alternator);
+s12pStepDown.Chunk.TrySet(15, 20, 16, BlockType.Transformer);
+s12pStepDown.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+Check(!s12pStepDown.IsPylonPowered(16, 20, 16), "slice12 step2 stepped-down alternator does not power a pylon");
+Check(s12pStepDown.IsPylonMismatched(16, 20, 16), "slice12 step2 stepped-down alternator mismatches a pylon");
+// Cable delivery both ways, like the conversion proofs.
+var s12pCableHv = new WorldZone(42);
+s12pCableHv.Chunk.TrySet(14, 20, 16, BlockType.Alternator);
+s12pCableHv.Chunk.TrySet(15, 20, 16, BlockType.Cable);
+s12pCableHv.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+Check(s12pCableHv.IsPylonPowered(16, 20, 16), "slice12 step2 cable-fed HV powers a pylon");
+var s12pCableLv = new WorldZone(42);
+s12pCableLv.Chunk.TrySet(14, 20, 16, BlockType.Dynamo);
+s12pCableLv.Chunk.TrySet(15, 20, 16, BlockType.Cable);
+s12pCableLv.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+Check(!s12pCableLv.IsPylonPowered(16, 20, 16), "slice12 step2 cable-fed LV does not power a pylon");
+Check(s12pCableLv.IsPylonMismatched(16, 20, 16), "slice12 step2 cable-fed LV mismatches a pylon");
+// Conflict: two distinct direct sources resolve to None, so the
+// pylon is neither powered nor mismatched, and it survives.
+var s12pConflict = new WorldZone(42);
+s12pConflict.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+s12pConflict.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pConflict.Chunk.TrySet(17, 20, 16, BlockType.Alternator);
+Eq(Voltage.None, s12pConflict.DeliveredVoltage(16, 20, 16), "slice12 step2 conflicting direct sources deliver nothing to pylon");
+Check(!s12pConflict.IsPylonPowered(16, 20, 16), "slice12 step2 conflicted pylon is not powered");
+Check(!s12pConflict.IsPylonMismatched(16, 20, 16), "slice12 step2 conflicted pylon is not mismatched");
+// Fire phase: a powered pylon deals 10 per tick to one enemy.
+// Enemies are pocketed by a Wall under their move cell, so the
+// enemy phase cannot move them out of range before the pylon
+// phase fires: the player stands far below at (16,5,16), so an
+// unblocked enemy would step down in Y first.
+var s12pFire = new WorldZone(42);
+s12pFire.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pFire.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pFire.Chunk.TrySet(19, 19, 16, BlockType.Wall);
+s12pFire.Enemies.Add(new Enemy(19, 20, 16));
+s12pFire.Advance();
+Eq(20, s12pFire.Enemies[0].Health, "slice12 step2 powered pylon deals 10 in one tick");
+s12pFire.Advance();
+Eq(10, s12pFire.Enemies[0].Health, "slice12 step2 powered pylon deals 10 again on tick two");
+s12pFire.Advance();
+Eq(0, s12pFire.Enemies.Count, "slice12 step2 pylon kills a 30-HP enemy in 3 ticks and removes it");
+Eq(BlockType.ShockPylon, s12pFire.Chunk.Get(16, 20, 16), "slice12 step2 pylon survives its own kills");
+// Range boundary: Manhattan 5 fires, Manhattan 6 does not.
+var s12pRange5 = new WorldZone(42);
+s12pRange5.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pRange5.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pRange5.Chunk.TrySet(21, 19, 16, BlockType.Wall);
+s12pRange5.Enemies.Add(new Enemy(21, 20, 16));
+s12pRange5.Advance();
+Eq(20, s12pRange5.Enemies[0].Health, "slice12 step2 enemy at range 5 takes pylon damage");
+var s12pRange6 = new WorldZone(42);
+s12pRange6.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pRange6.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pRange6.Chunk.TrySet(22, 19, 16, BlockType.Wall);
+s12pRange6.Enemies.Add(new Enemy(22, 20, 16));
+s12pRange6.Advance();
+Eq(30, s12pRange6.Enemies[0].Health, "slice12 step2 enemy at range 6 takes no pylon damage");
+// Nearest only, and ties to the first in list order.
+var s12pNearest = new WorldZone(42);
+s12pNearest.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pNearest.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pNearest.Chunk.TrySet(19, 19, 16, BlockType.Wall);
+s12pNearest.Chunk.TrySet(21, 19, 16, BlockType.Wall);
+s12pNearest.Enemies.Add(new Enemy(19, 20, 16));
+s12pNearest.Enemies.Add(new Enemy(21, 20, 16));
+s12pNearest.Advance();
+Eq(20, s12pNearest.Enemies[0].Health, "slice12 step2 pylon hits only the nearest enemy");
+Eq(30, s12pNearest.Enemies[1].Health, "slice12 step2 farther enemy in range is untouched when a nearer one exists");
+var s12pTie = new WorldZone(42);
+s12pTie.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pTie.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pTie.Chunk.TrySet(16, 19, 19, BlockType.Wall);
+s12pTie.Chunk.TrySet(19, 19, 16, BlockType.Wall);
+s12pTie.Enemies.Add(new Enemy(16, 20, 19));
+s12pTie.Enemies.Add(new Enemy(19, 20, 16));
+s12pTie.Advance();
+Eq(20, s12pTie.Enemies[0].Health, "slice12 step2 tied enemies resolve to the first in list order");
+Eq(30, s12pTie.Enemies[1].Health, "slice12 step2 tied second enemy is untouched");
+// Two pylons stack on one enemy: 20 in a tick.
+var s12pStack = new WorldZone(42);
+s12pStack.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pStack.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pStack.Chunk.TrySet(16, 20, 19, BlockType.Alternator);
+s12pStack.Chunk.TrySet(16, 20, 18, BlockType.ShockPylon);
+s12pStack.Chunk.TrySet(19, 19, 17, BlockType.Wall);
+s12pStack.Enemies.Add(new Enemy(19, 20, 17));
+s12pStack.Advance();
+Eq(10, s12pStack.Enemies[0].Health, "slice12 step2 two pylons stack 20 damage in one tick");
+// Mismatch disables, never destroys, and rewiring recovers:
+// LV-fed pylon leaves its enemy untouched and survives, then
+// the same pylon fed HV fires on the next tick.
+var s12pRewire = new WorldZone(42);
+s12pRewire.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+s12pRewire.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pRewire.Chunk.TrySet(19, 19, 16, BlockType.Wall);
+s12pRewire.Enemies.Add(new Enemy(19, 20, 16));
+s12pRewire.Advance();
+Eq(30, s12pRewire.Enemies[0].Health, "slice12 step2 mismatched pylon fires nothing");
+Eq(BlockType.ShockPylon, s12pRewire.Chunk.Get(16, 20, 16), "slice12 step2 mismatched pylon survives its disabled tick");
+s12pRewire.Chunk.TrySet(15, 20, 16, BlockType.Air);
+s12pRewire.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+Check(s12pRewire.IsPylonPowered(16, 20, 16), "slice12 step2 rewired pylon is powered before its next tick");
+s12pRewire.Advance();
+Eq(20, s12pRewire.Enemies[0].Health, "slice12 step2 rewired pylon fires on the next tick");
+// Unpowered pylon idles and survives, like an unpowered bench.
+var s12pIdle = new WorldZone(42);
+s12pIdle.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pIdle.Chunk.TrySet(19, 19, 16, BlockType.Wall);
+s12pIdle.Enemies.Add(new Enemy(19, 20, 16));
+s12pIdle.Advance();
+Eq(30, s12pIdle.Enemies[0].Health, "slice12 step2 unpowered pylon fires nothing");
+Eq(BlockType.ShockPylon, s12pIdle.Chunk.Get(16, 20, 16), "slice12 step2 unpowered pylon survives");
+// Build cost: 5 Stone + 10 EmberOre, check before spend.
+var s12pBuild = new WorldZone(42);
+s12pBuild.Chunk.TrySet(16, 19, 16, BlockType.Stone);
+s12pBuild.Player.Inventory.Add(BlockType.Stone, 5);
+s12pBuild.Player.Inventory.Add(BlockType.EmberOre, 10);
+Eq(BuildResult.Success, s12pBuild.Build(16, 20, 16, BlockType.ShockPylon), "slice12 step2 pylon builds at its cost");
+Eq(BlockType.ShockPylon, s12pBuild.Chunk.Get(16, 20, 16), "slice12 step2 pylon placed by build");
+Eq(0, s12pBuild.Player.Inventory.Get(BlockType.Stone), "slice12 step2 pylon spends its stone");
+Eq(0, s12pBuild.Player.Inventory.Get(BlockType.EmberOre), "slice12 step2 pylon spends its ore");
+var s12pPoor = new WorldZone(42);
+s12pPoor.Chunk.TrySet(16, 19, 16, BlockType.Stone);
+s12pPoor.Player.Inventory.Add(BlockType.Stone, 5);
+s12pPoor.Player.Inventory.Add(BlockType.EmberOre, 9);
+Eq(BuildResult.InsufficientResources, s12pPoor.Build(16, 20, 16, BlockType.ShockPylon), "slice12 step2 pylon refused one ore short");
+Eq(BlockType.Air, s12pPoor.Chunk.Get(16, 20, 16), "slice12 step2 refused pylon places nothing");
+Eq(9, s12pPoor.Player.Inventory.Get(BlockType.EmberOre), "slice12 step2 refused pylon spends nothing");
+// Aimed builder: same aim as the Slice 10 Step 2 alternator build.
+var s12pSim = new Simulation(42);
+s12pSim.Tick(0.1f, 0, 0, false);
+s12pSim.World.Player.Inventory.Add(BlockType.Stone, 5);
+s12pSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+s12pSim.ApplyLook(-18.4f, -53f);
+Eq(BuildResult.Success, s12pSim.BuildShockPylonAhead(), "slice12 step2 simulation build pylon ahead succeeds");
+Eq(BlockType.ShockPylon, s12pSim.World.Chunk.Get(15, 4, 17), "slice12 step2 simulation pylon placed by aim");
+Eq(0, s12pSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice12 step2 simulation pylon spends its ore");
+// A pylon is not gatherable: a gather attempt refuses it.
+var s12pGather = new WorldZone(42);
+s12pGather.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+Eq(GatherResult.NotGatherable, s12pGather.Gather(16, 20, 16), "slice12 step2 pylon is not gatherable");
+// HUD counts: one powered pylon beside one lone pylon.
+var s12pHudWorld = new WorldZone(42);
+s12pHudWorld.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pHudWorld.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pHudWorld.Chunk.TrySet(20, 20, 16, BlockType.ShockPylon);
+var s12pHud = HudState.FromWorld(s12pHudWorld, new Weapon());
+Eq(2, s12pHud.TotalPylons, "slice12 step2 hud counts both pylons");
+Eq(1, s12pHud.PoweredPylons, "slice12 step2 hud counts only the HV-fed pylon as powered");
+// Live-power anti-double-count, Step 1 rule extended: a network
+// feeding a pylon is shown by the pylon count, not counted again;
+// a lone pylon is not a source and counts as nothing live.
+var s12pLiveFed = new WorldZone(42);
+s12pLiveFed.Chunk.TrySet(14, 20, 16, BlockType.Alternator);
+s12pLiveFed.Chunk.TrySet(15, 20, 16, BlockType.Cable);
+s12pLiveFed.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+Eq((0, 0), s12pLiveFed.LivePowerCounts(), "slice12 step2 network feeding a pylon is not counted twice");
+Eq((0, 0), s12pNone.LivePowerCounts(), "slice12 step2 lone pylon counts as no live network and no lone source");
+var s12pLiveMixed = new WorldZone(42);
+s12pLiveMixed.Chunk.TrySet(14, 20, 16, BlockType.Alternator);
+s12pLiveMixed.Chunk.TrySet(15, 20, 16, BlockType.Cable);
+s12pLiveMixed.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+s12pLiveMixed.Chunk.TrySet(20, 20, 16, BlockType.Alternator);
+s12pLiveMixed.Chunk.TrySet(21, 20, 16, BlockType.Cable);
+Eq((1, 0), s12pLiveMixed.LivePowerCounts(), "slice12 step2 one fed plus one free network reads exactly one live network");
+// Save/load: chunk bytes carry the pylon, power re-derives,
+// and the loaded pylon fires on its first tick.
+var s12pSaveWorld = new WorldZone(42);
+s12pSaveWorld.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+s12pSaveWorld.Chunk.TrySet(16, 20, 16, BlockType.ShockPylon);
+var s12pSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(s12pSaveWorld));
+Check(s12pSaveLoaded.Chunk.ToBytes().SequenceEqual(s12pSaveWorld.Chunk.ToBytes()), "slice12 step2 save/load chunk equal with pylon");
+Check(s12pSaveLoaded.IsPylonPowered(16, 20, 16), "slice12 step2 loaded pylon is powered from placement");
+s12pSaveLoaded.Chunk.TrySet(19, 19, 16, BlockType.Wall);
+s12pSaveLoaded.Enemies.Add(new Enemy(19, 20, 16));
+s12pSaveLoaded.Advance();
+Eq(20, s12pSaveLoaded.Enemies[0].Health, "slice12 step2 loaded pylon fires on its first tick");
+
+// ---- Slice 12 Step 3: composed demo scenario (0.55.0) ----
+// Mirrors the Slice 12 demo scenario step for step: a live
+// network feeding no consumer and a lone source read only
+// through the Step 1 counts, beside an HV pylon, an LV mill,
+// and a powered workstation, through a save/load round-trip.
+// Staged with TrySet, exactly as the Step 1-2 tests stage
+// theirs; aim placement of each block was proved in its own
+// step's tests and is not re-proved here.
+var s12Sim = new Simulation(42);
+void SeedPocketS12Test(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+s12Sim.World.Chunk.TrySet(14, 20, 10, BlockType.Dynamo);
+s12Sim.World.Chunk.TrySet(13, 20, 10, BlockType.Cable);
+s12Sim.World.Chunk.TrySet(12, 20, 10, BlockType.Cable);
+s12Sim.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+s12Sim.World.Chunk.TrySet(11, 20, 14, BlockType.Dynamo);
+SeedPocketS12Test(s12Sim.World, 10, 14);
+s12Sim.World.Chunk.TrySet(10, 20, 18, BlockType.Alternator);
+s12Sim.World.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+s12Sim.World.Chunk.TrySet(18, 5, 16, BlockType.Alternator);
+s12Sim.World.Chunk.TrySet(17, 5, 28, BlockType.Workstation);
+s12Sim.World.Chunk.TrySet(18, 5, 28, BlockType.Transformer);
+s12Sim.World.Chunk.TrySet(19, 5, 28, BlockType.Alternator);
+Eq(Voltage.LV, s12Sim.World.DeliveredVoltage(10, 20, 14), "slice12 step3 composed LV mill voltage");
+Eq(Voltage.HV, s12Sim.World.DeliveredVoltage(17, 5, 16), "slice12 step3 composed HV pylon voltage");
+Eq(Voltage.LV, s12Sim.World.DeliveredVoltage(17, 5, 28), "slice12 step3 composed LV workstation voltage");
+var s12HudBefore = s12Sim.Hud();
+Eq(1, s12HudBefore.PoweredMills, "slice12 step3 composed one mill powered");
+Eq(1, s12HudBefore.TotalMills, "slice12 step3 composed one mill total");
+Eq(1, s12HudBefore.PoweredWorkstations, "slice12 step3 composed one workstation powered");
+Eq(1, s12HudBefore.TotalWorkstations, "slice12 step3 composed one workstation total");
+Eq(1, s12HudBefore.PoweredPylons, "slice12 step3 composed one pylon powered");
+Eq(1, s12HudBefore.TotalPylons, "slice12 step3 composed one pylon total");
+Eq(1, s12HudBefore.LiveNetworks, "slice12 step3 composed one live network feeding no consumer");
+Eq(1, s12HudBefore.LoneSources, "slice12 step3 composed one lone source");
+Check(s12Sim.World.IsPylonPowered(17, 5, 16), "slice12 step3 composed pylon is powered, not just placed");
+Check(!s12Sim.World.IsPylonMismatched(17, 5, 16), "slice12 step3 composed pylon is not mismatched");
+s12Sim.World.Player.TakeDamage(20);
+Eq(65, s12Sim.World.Player.Shields, "slice12 step3 composed shields 65 after 20 damage");
+s12Sim.World.Player.X = 10; s12Sim.World.Player.Z = 10;
+s12Sim.World.Enemies.Add(new Enemy(17, 5, 21));
+s12Sim.World.Advance();
+Eq(20, s12Sim.World.Enemies[0].Health, "slice12 step3 composed pylon fires 10 on tick 1 at range 4 after the enemy step");
+Eq(65, s12Sim.World.Player.Shields, "slice12 step3 composed no bench regen while parked far from the workstation");
+s12Sim.World.Advance();
+Eq(10, s12Sim.World.Enemies[0].Health, "slice12 step3 composed pylon fires 10 on tick 2");
+s12Sim.World.Advance();
+Eq(0, s12Sim.World.Enemies.Count, "slice12 step3 composed pylon kills the 30-HP enemy in 3 ticks");
+Eq(3, s12Sim.World.PoweredBlocksGathered, "slice12 step3 composed LV mill gathers 3 in 3 ticks");
+Check(s12Sim.World.Player.MoveTo(16, 5, 28, s12Sim.World.Chunk), "slice12 step3 composed player walks to the powered bench");
+Eq(10, s12Sim.World.EffectiveWorkstationRegen(), "slice12 step3 composed powered bench regen is base 5 plus powered 5");
+s12Sim.World.Advance();
+s12Sim.World.Advance();
+Eq(5, s12Sim.World.PoweredBlocksGathered, "slice12 step3 composed LV mill gathers 5 in 5 ticks, pocket exhausted");
+Eq(0, s12Sim.World.DestroyedMills, "slice12 step3 composed no mill destroyed by the HV pylon wiring");
+Eq(5, s12Sim.World.Player.Inventory.Get(BlockType.Stone), "slice12 step3 composed stone is the mill pocket only, no refund or extra");
+Eq(85, s12Sim.World.Player.Shields, "slice12 step3 composed bench regen caps shields at 85 after two bench ticks");
+var s12Save = s12Sim.SaveToJson();
+var s12Loaded = new Simulation(99);
+Check(s12Loaded.LoadFromJson(s12Save), "slice12 step3 composed save loads");
+Eq(BlockType.Cable, s12Loaded.World.Chunk.Get(12, 20, 10), "slice12 step3 composed live network cable loads");
+Eq(BlockType.Alternator, s12Loaded.World.Chunk.Get(10, 20, 18), "slice12 step3 composed lone Alternator loads");
+Eq(BlockType.KineticMill, s12Loaded.World.Chunk.Get(10, 20, 14), "slice12 step3 composed LV mill loads");
+Eq(BlockType.ShockPylon, s12Loaded.World.Chunk.Get(17, 5, 16), "slice12 step3 composed pylon loads");
+Eq(BlockType.Workstation, s12Loaded.World.Chunk.Get(17, 5, 28), "slice12 step3 composed workstation loads");
+var s12LoadedHud = s12Loaded.Hud();
+Eq(1, s12LoadedHud.PoweredMills, "slice12 step3 composed loaded mill still powered");
+Eq(1, s12LoadedHud.PoweredWorkstations, "slice12 step3 composed loaded workstation still powered");
+Eq(1, s12LoadedHud.PoweredPylons, "slice12 step3 composed loaded pylon still powered");
+Eq(1, s12LoadedHud.LiveNetworks, "slice12 step3 composed live network count re-derives after load");
+Eq(1, s12LoadedHud.LoneSources, "slice12 step3 composed lone source count re-derives after load");
+Eq(0, s12Loaded.World.PoweredBlocksGathered, "slice12 step3 composed session gather counter resets after load");
+Eq(0, s12Loaded.World.DestroyedMills, "slice12 step3 composed session destruction counter resets after load");
+Eq(16, s12Loaded.World.Player.X, "slice12 step3 composed loaded player back at the bench");
+Eq(28, s12Loaded.World.Player.Z, "slice12 step3 composed loaded player bench lane");
+Eq(10, s12Loaded.World.EffectiveWorkstationRegen(), "slice12 step3 composed loaded bench regen re-derives");
+s12Loaded.World.Player.TakeDamage(20);
+Eq(65, s12Loaded.World.Player.Shields, "slice12 step3 composed loaded shields 65 after 20 damage");
+SeedPocketS12Test(s12Loaded.World, 10, 14);
+for (int i = 0; i < 5; i++) s12Loaded.World.Advance();
+Eq(5, s12Loaded.World.PoweredBlocksGathered, "slice12 step3 composed loaded mill gathers 5 again in 5 ticks");
+Eq(0, s12Loaded.World.DestroyedMills, "slice12 step3 composed loaded phase destroys nothing");
+Eq(10, s12Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice12 step3 composed loaded stone is 5 plus 5, no refund on load");
+Eq(85, s12Loaded.World.Player.Shields, "slice12 step3 composed loaded bench regen caps shields at 85");
+Eq(0, s12Loaded.World.Enemies.Count, "slice12 step3 composed pylon kill stays dead after load");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
