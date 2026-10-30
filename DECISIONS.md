@@ -3623,6 +3623,94 @@ look inevitable.
   first, adapter visibility and fairness second),
   with Slice 11's composition evidence in hand.
 
+## 0.52.0 — Slice 12 scope: electrical widening, display first, then one widening
+
+- Decision, on the theme: Slice 12 is further
+  electrical widening, because that is the Slice 11
+  review's first-ranked candidate and Slice 11's
+  composition evidence gives no reason to reorder
+  it. The squad side is closed for this slice, so
+  a scope that also added a kind, a doctrine, or a
+  marker distinction would make the electrical
+  work untestable in isolation. The theme is taken
+  from the review's candidate list, not invented
+  here: "a third consumer, a third source, or a
+  display for live networks feeding no consumer".
+- Decision, on ordering display first: the scope
+  orders that list rather than treating it as a
+  menu, because a display step is the smallest step
+  that closes a named gap (review gap 6) on its
+  own, and because a widening built first would be
+  proved only through consumer counts it already
+  has, while a display built first gives the
+  widening step a second readout for its own
+  proof. The cost of this order is stated, not
+  hidden: Step 1 adds no new gameplay, only a
+  readout, and a reader who wants new power
+  gameplay must wait for Step 2.
+- Decision, on what "live" means as a hypothesis,
+  not a decision: a network is live when it carries
+  a voltage that is not None, including a lone
+  source generating with no cable and no consumer.
+  A cable component with no source and a mixed
+  component resolving to None are not live under
+  it, however many cable cells they contain. Step
+  1 may overturn this hypothesis with evidence —
+  for example if counting a lone source as a
+  network of one confuses the count — but it must
+  say so, not silently count placed blocks.
+- Decision, on the Step 2 hypothesis: a third
+  consumer first, because both existing consumers
+  are rated LV and HV therefore has no safe direct
+  use — a mill fed HV is destroyed, a workstation
+  fed HV is disabled, and safe HV use always costs
+  a transformer step-down. An HV-rated consumer
+  would prove itself the way the Alternator did,
+  by a test an LV-rated consumer cannot pass. A
+  third source on a two-level ladder would need a
+  distinctness beyond voltage, which would be a
+  second system to invent. The hypothesis is not
+  the decision: Step 2 may choose a third source
+  if it finds the HV-consumer case collapses into
+  a rating constant, with the evidence recorded.
+- Decision, on what Step 1 is not: a HUD count is
+  not a warning, not a mesh tint, and not a mesh
+  refresh. Gap 4 (destruction/disablement warning)
+  and gap 5 (tint/refresh) stay open after Step 1
+  by decision, and Step 1's review must say so, so
+  no later sentence can quote the new HUD line as
+  if it warned anyone or made a cable visible in
+  the scene. Likewise Step 1 displays power, not
+  squads: the three-kind shared marker (gap 7)
+  is not fixed, renamed, or quietly decided here.
+- Decision, on the counting path: Step 1 must reuse
+  the existing network walk (`CableComponent` /
+  `CableNetworkVoltage`, private to `WorldZone`
+  today) rather than re-walking cables in the HUD,
+  or record why a new walk is genuinely needed. A
+  duplicated walk would be duplicate logic of the
+  kind this project forbids in adapters, moved into
+  the HUD instead.
+- Decision, on adapter grounding: `HudDisplay`
+  renders two POWER lines from two Text fields, so
+  Step 1 needs a third field or a stated reason to
+  fold into an existing line, plus a Windows-only
+  checklist item. The builder keys the scope names
+  for Step 2 (T / Y / U / I / N / B) are a memory
+  to check against the actual adapter, not a fact
+  Step 2 may assume.
+- Deliberately NOT in this step: a second consumer
+  or source, a warning / tint / refresh system, a
+  squad-marker distinction, Patrol, a fourth kind,
+  a second doctrine, a balance pass, a camera, a
+  save-format change, a delivery / transformer /
+  cable rule change, or any claim about Windows
+  Unity verification or the pending Slice 1
+  director playtest gate.
+- Next, in order: Slice 12 Step 1, a display for
+  live networks and lone sources, decided in that
+  step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

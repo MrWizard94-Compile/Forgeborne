@@ -1,5 +1,45 @@
 # Forgeborne — Changelog
 
+## 0.52.0 — 2026-10-30 — Slice 12 scope: electrical widening, display first, then one widening
+
+- Scoping, decided in this step (rationale in
+  DECISIONS.md): Slice 12 is electrical widening,
+  taken from the Slice 11 review's ranked
+  candidates in their order, not re-ranked on this
+  run's preference. Documentation only, no code
+  changed, by design.
+- Order, decided in this step: (1) a display for
+  live networks feeding no consumer and for lone
+  sources — the Slice 11 review's gap 6, which no
+  earlier slice closed, because the HUD counts
+  only consumers and a live network with no
+  consumer, and a lone Dynamo or Alternator, read
+  nothing; (2) exactly one further electrical
+  widening, decided in its step, with a third
+  consumer as starting hypothesis (both existing
+  consumers are LV-rated, so HV has no safe direct
+  use) and a third source as the deferred
+  alternative; (3) Slice 12 demo scenario +
+  documentation-only review, closing Slice 12.
+- Gaps, handled openly: Unity verification and the
+  Slice 1 director playtest gate stay open and are
+  not Slice 12 work; warning, mesh tint, and mesh
+  refresh stay named gaps, not fixed by a HUD
+  count; the three-kind shared scene marker stays
+  a Slice 13 visibility question, not a Slice 12
+  extra; Patrol stays deferred with its route
+  question intact. Ranked Slice 13 candidates
+  recorded in the scope, not promised: adapter
+  visibility and fairness first, the deferred
+  electrical widening second, Patrol third.
+- Tests: 1485 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice
+  1 save 43,881 chars, Slice 2 43,921, Slice 3
+  Step 1 44,016, Slice 3 Step 3 44,103, Slice 4
+  44,026, Slice 5 43,974, Slice 6 44,024, Slice 7
+  44,013, Slice 8 43,974, Slice 9 43,975, Slice 10
+  43,974, Slice 11 44,038.
+
 ## 0.51.0 — 2026-10-30 — Slice 11 Step 3: demo scenario + documentation-only review, closing Slice 11
 
 - Composed demo, decided in this step (rationale in
