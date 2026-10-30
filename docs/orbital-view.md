@@ -67,6 +67,21 @@ honestly by depth. If Windows testing proves that makes
 them useless at FPS distance, that is a later step's
 evidence to revisit, not a silent shader change.
 
+Marker distinction (Slice 13 Step 2, 0.58.0): the shared cyan
+cube above is superseded — Vanguard keeps the cyan cube 0.6
+units, Recon renders as a magenta capsule 0.5 wide x 0.8 tall,
+and Heavy as a light-grey cylinder 0.8 wide x 0.7 tall, so
+kind is read from shape first and colour second, never from
+colour alone. Rally and pending markers are unchanged, and
+the pooled budget is unchanged (at most 3 squad slots, each
+holding one child primitive for its current kind, swapped
+only when a slot is reused by a different kind). No squad
+rule changes with the markers, and the text display still
+reads kind from the same snapshot. This distinction is
+adapter-only Unity code: no headless test proves it reads
+in the scene, and the Windows checklist for it is
+playtest-gate item 25.
+
 `ForgeborneUnity/Assets/Scripts/OrbitalSquadDisplay.cs` is a thin
 adapter only: it renders the snapshot as one text line per squad
 (`VANGUARD HOLDGROUND - 3 MEMBERS 90 HP 30 DMG - HOLDING AT

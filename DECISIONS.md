@@ -4299,6 +4299,107 @@ look inevitable.
   distinction for the squad kinds, decided in that
   step.
 
+## 0.58.0 — Slice 13 Step 2: scene-marker distinction for the squad kinds
+
+- Decision, on shape versus colour: both, with shape
+  primary. A colour-only distinction fails a player who
+  cannot tell those colours apart, and the scope named
+  that failure explicitly — so the step does not ask
+  colour to carry the distinction at all. Cube, capsule,
+  and cylinder differ in silhouette at any distance a
+  0.6-unit marker reads at all, and colour reinforces
+  the shape: cyan for Vanguard, magenta for Recon,
+  light grey for Heavy. If Windows testing proves the
+  shapes do not read at FPS distance, that is item 25's
+  evidence to revisit, not a reason to have shipped
+  colour alone and hoped.
+- Decision, on varying rather than replacing: Vanguard
+  keeps the exact 0.29.0 marker, cyan cube 0.6 units,
+  because it is the one marker players already
+  recognise, and a replacement of all three would have
+  thrown that recognition away for no gain. Recon and
+  Heavy vary from it, so the shared-marker history is
+  preserved as the anchor rather than erased. The
+  Slice 11 Step 1 decision (one shared cube, kind from
+  the text line) is superseded, not silently edited:
+  item 20's marker statement is superseded by item 25,
+  and the adapter header says so.
+- Decision, on palette against the untouched markers:
+  rally is an orange flat cube and pending is an orange
+  sphere, so any kind colour near orange would be
+  mistaken for a rally state — the step names its
+  colours against those two, not in isolation. Magenta
+  is already a neon-sign colour in docs/art-direction.md
+  (cyan, magenta, orange neon), so it extends the
+  palette rather than inventing one; light grey is the
+  dark-metal palette lightened for the anchor kind,
+  whose role is metal mass, not energy. Recon's
+  capsule is not a pending sphere by another colour:
+  it is taller, thinner, and a different primitive,
+  and pending exists only while picking, while a
+  deployed Recon marker exists only after deploying.
+- Decision, on the pool: the scope's budget (at most 3
+  squad markers, 3 rally markers, 1 pending marker,
+  pooled, not rebuilt per frame) is kept exactly, by
+  pooling slots instead of primitives. A squad slot is
+  a parent GameObject; its one child primitive is the
+  kind's shape. Because a deployed squad's kind never
+  changes, the child swap runs only when a slot is
+  reused by a later deployment of a different kind
+  after the previous squad is gone — a kind-change
+  rebuild, not a per-frame rebuild, and the pool never
+  grows past 3 squad slots. The alternative, one pool
+  per kind, would have tripled the squad pool to 9 and
+  broken the budget the scope set; the alternative of
+  reusing one primitive and re-scaling it per kind
+  would have made shape a scale trick, not a shape.
+  An unknown kind falls back to the Vanguard cube:
+  disappearing would be worse than a provisional
+  marker, and a future kind's distinction is that
+  kind's own step to decide.
+- Decision, on what does not change: no core file is
+  touched, because SquadSnapshot already carries Kind
+  and SquadMarkerDisplay already read the snapshot —
+  inventing a core mapping to justify a display step
+  would have been a rule smuggled in as a marker.
+  No kind shape, cost, cap, movement, targeting, or
+  doctrine rule moves; OrbitalSquadDisplay is untouched
+  and keeps reading kind from the same snapshot, so
+  text and markers cannot disagree unless the snapshot
+  itself does. Rally and pending markers are untouched
+  except by the sentence that says they are.
+- Verification, stated without inflation: this step
+  adds no test and no demo scenario, by the scope's
+  own instruction — a headless test cannot prove a
+  colour or a shape reads in the scene, and a demo
+  scenario printing a kind would pretend a printed
+  kind proves a visible marker. The test count is
+  therefore unchanged at 1664, and that number is
+  cited only as "no regression", never as marker
+  evidence. The cited headless evidence is the
+  existing snapshot Kind coverage: deploy, picker,
+  save/load, and view tests already pin Kind for all
+  three kinds. The marker proof is playtest-gate item
+  25 in Unity on Windows, including the slot-reuse
+  observation, the rally/pending-unchanged observation,
+  and the occlusion observation — and until item 25 is
+  observed, the distinction is written adapter code,
+  not a verified scene.
+- Deliberately NOT in this step: any core rule change;
+  any rally or pending marker change; a per-kind pool
+  or a shape-by-scale trick; a through-wall marker
+  shader; a demo scenario; any claim about Windows
+  Unity verification or the pending Slice 1 director
+  playtest gate; or closing Slice 13 — Step 3 (mesh
+  tint and mesh refresh) and the Slice 13 review are
+  still to come.
+- Next, in order: Slice 13 Step 3, mesh tint and mesh
+  refresh for power state, decided in that step — with
+  the Step 1 agreement carried forward: a machine
+  warned in Step 1 must be the machine tinted in Step
+  3, and a rewired machine must lose its tint on the
+  next refresh, or Step 3 must say why they differ.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

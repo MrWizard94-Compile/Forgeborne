@@ -1,5 +1,46 @@
 # Forgeborne — Changelog
 
+## 0.58.0 — 2026-10-30 — Slice 13 Step 2: scene-marker distinction for the squad kinds
+
+- Marker distinction, decided in this step (rationale in
+  DECISIONS.md): shape first, colour second. Vanguard keeps
+  the recognised cyan cube, 0.6 units; Recon renders as a
+  magenta capsule, 0.5 wide x 0.8 tall; Heavy renders as a
+  light-grey cylinder, 0.8 wide x 0.7 tall. All three shapes
+  differ, so the kinds stay apart for a player who cannot
+  tell the colours apart, and no kind colour reads as
+  orange, so no squad marker is mistaken for an orange
+  rally or pending marker. Rally (orange flat cube) and
+  pending (orange sphere) markers are unchanged.
+- Adapter only, by the scope's own terms: SquadMarkerDisplay
+  already read SquadSnapshot.Kind and ignored it; it now
+  renders that Kind, with no core rule change — no kind
+  shape, cost, cap, movement, targeting, or doctrine rule
+  moves, and OrbitalSquadDisplay keeps reading kind from
+  the same snapshot, so text and markers agree word for
+  word. The pooled budget is preserved, not grown: squad
+  markers are 3 slots, each a parent holding one child
+  primitive for its current kind, swapped only when a slot
+  is reused by a later deployment of a different kind
+  (a deployed squad's kind never changes), never every
+  frame; an unknown kind falls back to the Vanguard cube
+  rather than disappearing. Playtest-gate checklist item
+  25 (Windows-only) added; it supersedes item 20's
+  statement that a Heavy marker is the same cyan cube.
+- Verification, stated honestly, not inflated: this step
+  adds no headless test and no demo scenario, because no
+  test or printed kind can prove a colour or a shape reads
+  in the scene. The cited headless evidence is only the
+  existing snapshot Kind coverage (deploy, picker, save,
+  and view tests), and the marker proof is item 25 in
+  Unity on Windows. Occlusion stays honest: markers do
+  not show through walls.
+- Tests: 1664 passed, 0 failed (unchanged, adapter-only
+  step — Unity code is not compiled headlessly). Demo
+  unchanged: Slice 11 scenario save 44,038 chars, Slice
+  12 scenario save 43,974 chars, all earlier demo saves
+  as in the 0.57.0 entry.
+
 ## 0.57.0 — 2026-10-30 — Slice 13 Step 1: pre-destruction / pre-disablement warning
 
 - Warning readout, decided in this step (rationale in

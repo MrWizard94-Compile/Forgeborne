@@ -258,6 +258,34 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     verified in Unity until it is observed there and
     recorded in DECISIONS.md.
 
+25. [ ] Squad-kind scene markers, added 0.58.0 (adapter code
+    written, NOT yet compiled or run in Unity on Windows;
+    NO headless test proves a colour or a shape reads in
+    the scene — the cited headless evidence is only that
+    OrbitalView.Snapshot carries Kind for every live
+    squad, proved by the existing deploy, picker, save,
+    and view snapshot tests): deploy one squad of each
+    kind (the cap is 3 live squads, so all three fit at
+    once) and observe three distinct markers — a cyan
+    cube 0.6 units for Vanguard, a magenta capsule 0.5
+    wide x 0.8 tall for Recon, a light-grey cylinder 0.8
+    wide x 0.7 tall for Heavy — each at its squad's cell
+    centre, and each squad's text line reading the same
+    kind as its marker, word for word; dismiss one squad
+    and deploy a different kind in its place and observe
+    that slot's marker change shape and colour, proving
+    slot reuse rather than a stale marker; open the
+    picker and observe the rally marker still an orange
+    flat cube and the pending marker still an orange
+    sphere, unchanged; walk behind a wall so a marker is
+    on the far side and observe it hidden, proving
+    occlusion is still honest. This item supersedes item
+    20's statement that a Heavy squad's scene marker is
+    the same cyan cube as a Vanguard's or Recon's — that
+    was the decided behaviour before this distinction
+    existed. Do not claim this verified in Unity until it
+    is observed there and recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.
