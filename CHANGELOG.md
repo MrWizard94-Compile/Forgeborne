@@ -1,5 +1,71 @@
 # Forgeborne — Changelog
 
+## 0.25.0 — 2026-10-29 — Slice 5 Step 1: automation tier 2, first electrical loop
+
+- The first powered loop, decided in this step (rationale in
+  DECISIONS.md): exactly one power source, one distribution
+  rule, and one powered behaviour. The source is a new block,
+  `BlockType.Dynamo` (value 8, appended only — earlier values
+  unchanged, so old saves still load), built for 5 EmberOre
+  only under the same air / support rules as other machines.
+  Distribution is face-adjacency only: a cell is powered when
+  at least one of its six face neighbours holds a Dynamo —
+  no cables, no network walk, no chaining through another
+  mill, no diagonals. The powered behaviour is a powered
+  variant of an existing machine, not a new machine family:
+  a Kinetic Mill face-adjacent to a Dynamo runs every tick
+  instead of every 5th tick, through the same reused
+  `World.Gather` path into the same player inventory, so
+  there is still one block-gathering rule and no second
+  inventory system. Power replaces the kinetic cadence, it
+  does not stack with it: a powered mill is handled only by
+  the powered phase, so it excavates once per tick, not
+  twice on a 5th tick, and it counts in a separate session
+  counter (`PoweredBlocksGathered`, not saved) so the two
+  rates stay separable. A Dynamo is solid and not gatherable,
+  so no mill — powered or kinetic — ever excavates its own
+  power source, and a full inventory consumes nothing, as
+  with kinetic mills.
+- Decisions this step closes, per the Slice 5 scope: voltage
+  is a single voltage, always on while placed — no fuel, no
+  voltage tiers, no transformers, no mismatch destruction
+  yet, because a first loop must prove power on / off changes
+  gameplay before failure modes punish wiring it wrong; the
+  tier 1 inventory question is decided as KEEP the player-
+  inventory rule (no machine buffer — the powered behaviour
+  produces ordinary gathered blocks the inventory already
+  holds, so a buffer would add size, pickup, and overflow
+  rules for no new capability); the save format gains no new
+  field, because powered state is derived at load from the
+  Dynamo blocks themselves, exactly as targeting is derived
+  each tick — remove a Dynamo and the mill falls back to
+  kinetic cadence on the next tick, and a loaded powered
+  mill gathers on its first tick. The build cost (5 EmberOre)
+  deliberately competes with workstations (also 5 EmberOre)
+  and squads (10 EmberOre = two Dynamos), not with walls or
+  mills for Stone and Wood, so power is a deliberate ore
+  investment, not a free upgrade to a mill already owned.
+- Also: `Simulation.BuildDynamoAhead` (front-centre at feet
+  level, distinct from the wall front-right and mill
+  front-left builders). Core owns the power rule; no Unity
+  adapter was touched, so no new Windows Unity verification
+  item rides along — the Unity verification checklist and
+  the Slice 1 director playtest gate remain open, as before.
+  Kinetic mill behaviour in zones without power is unchanged;
+  squads, loot, skills, and core health are unchanged.
+- Tests: **610 passed, 0 failed** (was 579; +31: Dynamo cost
+  / failure / floating rules, face-only / diagonal / chaining
+  distribution, powered 5-in-5 vs kinetic 1-in-5 in identical
+  pockets, no double activation on tick 5, power loss falling
+  back to kinetic cadence, full-inventory no-consume, Dynamo
+  survival and powered-first-tick after save/load, and the
+  Simulation Dynamo builder). Demo unchanged: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars; Slice 2
+  save 43,908 chars; Step 1 scenario save 44,016 chars;
+  Step 3 scenario save 44,103 chars; Slice 4 scenario save
+  44,026 chars. Next in order: Slice 5 Step 2, demo scenario
+  + documentation-only review.
+
 ## 0.24.0 — 2026-10-29 — Slice 5 scope: powered automation
 
 - New `docs/slice-05-scope.md` (documentation only, no new

@@ -1442,6 +1442,113 @@ Eq(10, s4Loaded.World.Squads[1].Health, "slice 4 demo tick 6 Advance takes singl
 var s4LoadedSnap = OrbitalView.Snapshot(s4Loaded.World);
 Eq(TacticalDoctrine.Advance, s4LoadedSnap[1].Doctrine, "slice 4 demo snapshot carries Advance doctrine after load");
 
+// ---- Slice 5 Step 1: automation tier 2, first electrical loop ----
+// Source, distribution, and powered behaviour are each exactly one
+// choice: one Dynamo source, face-adjacency distribution, and one
+// powered behaviour (a powered Kinetic Mill runs every tick instead
+// of every 5th). Cost: 5 EmberOre only.
+var dynWorld = new WorldZone(42);
+dynWorld.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Success, dynWorld.Build(15, 4, 15, BlockType.Dynamo), "dynamo builds with 5 ember ore");
+Eq(BlockType.Dynamo, dynWorld.Chunk.Get(15, 4, 15), "dynamo placed");
+Eq(0, dynWorld.Player.Inventory.Get(BlockType.EmberOre), "dynamo consumes 5 ember ore");
+Eq(GatherResult.NotGatherable, dynWorld.Gather(15, 4, 15), "dynamo itself is not gatherable");
+var poorDynWorld = new WorldZone(42);
+poorDynWorld.Player.Inventory.Add(BlockType.EmberOre, 4);
+Eq(BuildResult.InsufficientResources, poorDynWorld.Build(15, 4, 15, BlockType.Dynamo), "dynamo without 5 ore fails");
+Eq(BlockType.Air, poorDynWorld.Chunk.Get(15, 4, 15), "failed dynamo leaves air");
+Eq(4, poorDynWorld.Player.Inventory.Get(BlockType.EmberOre), "failed dynamo does not spend ore");
+var floatDynWorld = new WorldZone(42);
+floatDynWorld.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Floating, floatDynWorld.Build(16, 20, 16, BlockType.Dynamo), "dynamo floating in air fails like other machines");
+// Distribution: face-adjacent only, no diagonals, no chaining.
+var powWorld = new WorldZone(42);
+powWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+powWorld.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+Check(powWorld.IsPowered(16, 20, 16), "mill face-adjacent to dynamo is powered");
+var diagWorld = new WorldZone(42);
+diagWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+diagWorld.Chunk.TrySet(17, 21, 16, BlockType.Dynamo);
+Check(!diagWorld.IsPowered(16, 20, 16), "mill diagonally adjacent to dynamo is not powered");
+var chainWorld = new WorldZone(42);
+chainWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+chainWorld.Chunk.TrySet(11, 20, 10, BlockType.KineticMill);
+chainWorld.Chunk.TrySet(12, 20, 10, BlockType.Dynamo);
+Check(!chainWorld.IsPowered(10, 20, 10), "mill two cells from dynamo is not powered through another mill");
+Check(chainWorld.IsPowered(11, 20, 10), "mill face-adjacent to dynamo is powered in chain setup");
+// Rate proof, controlled pocket: a powered mill with 5 stone
+// neighbours excavates one per tick (5 in 5 ticks); the same pocket
+// without a Dynamo excavates one per 5 ticks (1 in 5 ticks).
+var poweredWorld = new WorldZone(42);
+poweredWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+poweredWorld.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+poweredWorld.Chunk.TrySet(15, 20, 16, BlockType.Stone);
+poweredWorld.Chunk.TrySet(16, 21, 16, BlockType.Stone);
+poweredWorld.Chunk.TrySet(16, 19, 16, BlockType.Stone);
+poweredWorld.Chunk.TrySet(16, 20, 17, BlockType.Stone);
+poweredWorld.Chunk.TrySet(16, 20, 15, BlockType.Stone);
+int powStoneBefore = poweredWorld.Player.Inventory.Get(BlockType.Stone);
+for (int i = 0; i < 5; i++) poweredWorld.Advance();
+Eq(5, poweredWorld.PoweredBlocksGathered, "powered mill gathers 5 blocks in 5 ticks");
+Eq(0, poweredWorld.KineticBlocksGathered, "powered mill counts nothing in kinetic counter (no double activation on tick 5)");
+Eq(powStoneBefore + 5, poweredWorld.Player.Inventory.Get(BlockType.Stone), "powered mill output reaches player inventory, no buffer");
+Eq(BlockType.Dynamo, poweredWorld.Chunk.Get(17, 20, 16), "powered mill never excavates its dynamo");
+var unpoweredWorld = new WorldZone(42);
+unpoweredWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+unpoweredWorld.Chunk.TrySet(15, 20, 16, BlockType.Stone);
+unpoweredWorld.Chunk.TrySet(16, 21, 16, BlockType.Stone);
+unpoweredWorld.Chunk.TrySet(16, 19, 16, BlockType.Stone);
+unpoweredWorld.Chunk.TrySet(16, 20, 17, BlockType.Stone);
+unpoweredWorld.Chunk.TrySet(16, 20, 15, BlockType.Stone);
+for (int i = 0; i < 5; i++) unpoweredWorld.Advance();
+Eq(1, unpoweredWorld.KineticBlocksGathered, "unpowered mill gathers 1 block in 5 ticks");
+Eq(0, unpoweredWorld.PoweredBlocksGathered, "unpowered mill counts nothing powered");
+// Power is derived, not stored: removing the Dynamo drops the mill
+// back to kinetic cadence on the next tick.
+var lossWorld = new WorldZone(42);
+lossWorld.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+lossWorld.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+lossWorld.Chunk.TrySet(15, 20, 16, BlockType.Stone);
+lossWorld.Chunk.TrySet(16, 21, 16, BlockType.Stone);
+lossWorld.Chunk.TrySet(16, 19, 16, BlockType.Stone);
+lossWorld.Chunk.TrySet(16, 20, 17, BlockType.Stone);
+lossWorld.Chunk.TrySet(16, 20, 15, BlockType.Stone);
+lossWorld.Advance(); lossWorld.Advance();
+Eq(2, lossWorld.PoweredBlocksGathered, "powered mill gathers 2 in 2 ticks before dynamo removal");
+lossWorld.Chunk.TrySet(17, 20, 16, BlockType.Air);
+Check(!lossWorld.IsPowered(16, 20, 16), "mill is unpowered after dynamo removal");
+for (int i = 0; i < 3; i++) lossWorld.Advance();
+Eq(2, lossWorld.PoweredBlocksGathered, "no powered gathers after dynamo removal");
+Eq(1, lossWorld.KineticBlocksGathered, "mill falls back to kinetic cadence, gathering once on tick 5");
+// Full inventory: a powered mill consumes nothing, like a kinetic one.
+var fullPowWorld = new WorldZone(42);
+fullPowWorld.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+fullPowWorld.Chunk.TrySet(11, 20, 10, BlockType.Dynamo);
+fullPowWorld.Chunk.TrySet(9, 20, 10, BlockType.Stone);
+fullPowWorld.Player.Inventory.Add(BlockType.Stone, Inventory.MaxStack);
+for (int i = 0; i < 5; i++) fullPowWorld.Advance();
+Eq(BlockType.Stone, fullPowWorld.Chunk.Get(9, 20, 10), "powered mill with full inventory leaves the block");
+Eq(0, fullPowWorld.PoweredBlocksGathered, "powered mill with full inventory gathers 0");
+// Save/load: the Dynamo block survives as a chunk byte (no new save
+// field), and the loaded mill is powered again from its placement.
+var savePowWorld = new WorldZone(42);
+savePowWorld.Chunk.TrySet(15, 4, 15, BlockType.KineticMill);
+savePowWorld.Chunk.TrySet(16, 4, 15, BlockType.Dynamo);
+savePowWorld.Chunk.TrySet(14, 4, 15, BlockType.Stone);
+var savePowLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(savePowWorld));
+Eq(BlockType.KineticMill, savePowLoaded.Chunk.Get(15, 4, 15), "mill survives save/load");
+Eq(BlockType.Dynamo, savePowLoaded.Chunk.Get(16, 4, 15), "dynamo survives save/load");
+Check(savePowLoaded.IsPowered(15, 4, 15), "loaded mill is powered from placement, no flag needed");
+savePowLoaded.Advance();
+Eq(1, savePowLoaded.PoweredBlocksGathered, "loaded powered mill gathers on its first tick");
+// Simulation helper: a Dynamo builds ahead, front-centre.
+var simDyn = new Simulation(42);
+simDyn.Tick(0.1f, 0, 0, false);
+simDyn.World.Player.Inventory.Add(BlockType.EmberOre, 5);
+Eq(BuildResult.Success, simDyn.BuildDynamoAhead(), "simulation build dynamo ahead succeeds");
+Eq(BlockType.Dynamo, simDyn.World.Chunk.Get(16, 4, 17), "simulation dynamo placed front-centre");
+Eq(0, simDyn.World.Player.Inventory.Get(BlockType.EmberOre), "simulation dynamo spends its ore");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

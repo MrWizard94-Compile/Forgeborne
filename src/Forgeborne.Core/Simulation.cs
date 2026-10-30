@@ -245,6 +245,25 @@ public sealed class Simulation
         return r;
     }
 
+    /// <summary>
+    /// Slice 5 Step 1: build a Dynamo ahead of the player, front-centre
+    /// at feet level — distinct from the wall (front-right) and the mill
+    /// (front-left) builders, so the three do not collide in tests or
+    /// in play. Supported by the ground below, like a wall. A Dynamo
+    /// built here is face-adjacent to a mill built front-left only if
+    /// the player has not moved between the two builds; tests that need
+    /// a guaranteed powered pair place both blocks directly instead.
+    /// </summary>
+    public BuildResult BuildDynamoAhead()
+    {
+        int x = (int)Math.Floor(Fps.X);
+        int y = (int)Math.Floor(Fps.Y);
+        int z = (int)Math.Floor(Fps.Z) + 1;
+        var r = World.Build(x, y, z, BlockType.Dynamo);
+        if (r == BuildResult.Success) BlocksBuilt++;
+        return r;
+    }
+
     public bool FireAtNearestEnemy()
     {
         if (!Weapon.Fire()) return false;

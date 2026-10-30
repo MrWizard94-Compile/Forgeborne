@@ -82,6 +82,8 @@ public sealed class WorldZone
     public int WorkstationRegenPerTick { get; set; } = 5;
     /// <summary>Blocks gathered by Kinetic Mills this session (not saved: a loaded world starts at 0, like Simulation's session counters).</summary>
     public int KineticBlocksGathered { get; private set; }
+    /// <summary>Blocks gathered by powered Kinetic Mills this session (not saved, same session-counter rule as KineticBlocksGathered). A powered mill's output counts here, never in KineticBlocksGathered, so the two rates stay separable in tests.</summary>
+    public int PoweredBlocksGathered { get; private set; }
     /// <summary>Kinetic automation interval: mills act once every 5 ticks, so automation is real-time pressure relief, not instant or turn-based.</summary>
     public const int KineticIntervalTicks = 5;
     // Slice 1 objective core, from the reference image: DESTROY CORE.
@@ -117,9 +119,31 @@ public sealed class WorldZone
     private static readonly (int, int, int)[] Neighbours =
         { (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1) };
 
+    /// <summary>
+    /// Slice 5 Step 1 power rule, derived every tick, never persisted:
+    /// a cell is powered exactly when at least one face-adjacent
+    /// cell (not diagonal) holds a Dynamo. There is no cable, no
+    /// network walk, and no chaining: a mill next to another mill
+    /// next to a Dynamo is NOT powered, and a Dynamo powers only
+    /// its six direct neighbours. Power is therefore recomputed
+    /// from the blocks on every tick — remove the Dynamo and the
+    /// mill falls back to kinetic cadence on the next tick — and
+    /// the save format needs no powered flag, because the Dynamo
+    /// block itself is saved as a chunk byte like every block.
+    /// </summary>
+    public bool IsPowered(int x, int y, int z)
+    {
+        foreach (var (dx, dy, dz) in Neighbours)
+        {
+            int nx = x + dx, ny = y + dy, nz = z + dz;
+            if (VoxelChunk.InBounds(nx, ny, nz) && Chunk.Get(nx, ny, nz) == BlockType.Dynamo) return true;
+        }
+        return false;
+    }
+
     public BuildResult Build(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill)) return BuildResult.InvalidType;
+        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
@@ -143,6 +167,20 @@ public sealed class WorldZone
                 return BuildResult.InsufficientResources;
             Player.Inventory.Remove(BlockType.Stone, 10);
             Player.Inventory.Remove(BlockType.Wood, 5);
+        }
+        else if (type == BlockType.Dynamo)
+        {
+            // Slice 5 Step 1 Dynamo: 5 EmberOre only, no Stone or Wood,
+            // so it never competes with walls or mills for their frame
+            // materials. It does compete, deliberately, with workstations
+            // (also 5 EmberOre) and squads (10 EmberOre = two Dynamos):
+            // power is a deliberate ore investment, not a free upgrade
+            // to a mill the player already owns. The failed-build rule
+            // matches the other machines: check before spending, so a
+            // refused build spends nothing.
+            if (!Player.Inventory.Has(BlockType.EmberOre, 5))
+                return BuildResult.InsufficientResources;
+            Player.Inventory.Remove(BlockType.EmberOre, 5);
         }
         else // Workstation: 10 Stone + 5 EmberOre
         {
@@ -264,8 +302,12 @@ public sealed class WorldZone
     /// damage the player, then the workstation effect applies, then
     /// squads move / engage / take adjacent-enemy damage (in that
     /// order, so a squad that kills its attacker that tick is not
-    /// hit by it), then — every 5th tick — Kinetic Mills act. Dead
-    /// enemies and squads are removed.
+    /// hit by it), then — every 5th tick — Kinetic Mills act, then
+    /// — every tick — powered mills act (Slice 5 Step 1). A powered
+    /// mill is handled ONLY by the powered phase, never by both:
+    /// power replaces the 5-tick cadence, it does not stack with
+    /// it, so a powered mill excavates once per tick, not twice
+    /// on a 5th tick. Dead enemies and squads are removed.
     /// Damage reconciliation (Slice 4 Step 1): squad damage has
     /// exactly ONE path, the squad phase's "10 per surviving
     /// adjacent enemy, after the squad fires". The enemy phase
@@ -292,6 +334,7 @@ public sealed class WorldZone
         if (IsNearWorkstation()) Player.RestoreShields(WorkstationRegenPerTick);
         RunSquads();
         if (Tick % KineticIntervalTicks == 0) RunKineticAutomation();
+        RunPoweredAutomation();
     }
 
     /// <summary>
@@ -329,10 +372,49 @@ public sealed class WorldZone
     /// and a full inventory consumes nothing. Mills are scanned in
     /// chunk-index order, so two mills reaching for the same block
     /// resolve deterministically — the first in scan order wins.
-    /// No separate machine inventory yet: tier 1 output goes to the
-    /// player's inventory, to be revisited when digital storage
-    /// (tier 3) arrives.
+    /// No separate machine inventory: tier 1 output goes to the
+    /// player's inventory, and Slice 5 Step 1 decided the powered
+    /// behaviour keeps that rule rather than gaining a buffer.
     /// </summary>
+    /// <summary>
+    /// Slice 5 Step 1 powered automation: every tick, each powered
+    /// Kinetic Mill (face-adjacent to a Dynamo, per IsPowered)
+    /// excavates at most one adjacent gatherable block, in the same
+    /// fixed neighbour order and through the same reused
+    /// <see cref="Gather(int, int, int)"/> as kinetic mills, into the
+    /// same player inventory — so there is still one block-gathering
+    /// rule, not a kinetic rule and an electrical rule that can
+    /// drift apart, and no second inventory system: a full inventory
+    /// consumes nothing, and a Dynamo, wall, workstation, or another
+    /// mill is never excavated. The powered behaviour is cadence,
+    /// not a new excavation: a powered mill runs every tick instead
+    /// of every 5th tick, which is exactly what makes power visible
+    /// against the proven kinetic baseline. A mill that loses its
+    /// Dynamo falls back to the kinetic phase on the next tick,
+    /// because power is derived, not stored. One voltage, always on
+    /// while placed: no fuel, no mismatch, no destruction in this
+    /// first loop — a first loop must prove power on / off changes
+    /// gameplay before failure modes punish wiring it wrong.
+    /// </summary>
+    private void RunPoweredAutomation()
+    {
+        for (int y = 0; y < VoxelChunk.Size; y++)
+        for (int z = 0; z < VoxelChunk.Size; z++)
+        for (int x = 0; x < VoxelChunk.Size; x++)
+        {
+            if (Chunk.Get(x, y, z) != BlockType.KineticMill) continue;
+            if (!IsPowered(x, y, z)) continue;
+            foreach (var (dx, dy, dz) in Neighbours)
+            {
+                if (Gather(x + dx, y + dy, z + dz) == GatherResult.Success)
+                {
+                    PoweredBlocksGathered++;
+                    break;
+                }
+            }
+        }
+    }
+
     private void RunKineticAutomation()
     {
         for (int y = 0; y < VoxelChunk.Size; y++)
@@ -340,6 +422,10 @@ public sealed class WorldZone
         for (int x = 0; x < VoxelChunk.Size; x++)
         {
             if (Chunk.Get(x, y, z) != BlockType.KineticMill) continue;
+            // Powered mills are handled by RunPoweredAutomation every
+            // tick; running them here too would excavate twice on a
+            // 5th tick. Power replaces the kinetic cadence.
+            if (IsPowered(x, y, z)) continue;
             foreach (var (dx, dy, dz) in Neighbours)
             {
                 if (Gather(x + dx, y + dy, z + dz) == GatherResult.Success)

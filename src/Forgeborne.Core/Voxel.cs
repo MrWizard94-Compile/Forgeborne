@@ -12,6 +12,8 @@ public enum BlockType : byte
     Bedrock = 6,
     /// <summary>Slice 2 automation tier 1 (Kinetic): a crank-driven mill that excavates one adjacent gatherable block per activation. Appended in 0.8.0; earlier values unchanged, so old saves still load.</summary>
     KineticMill = 7,
+    /// <summary>Slice 5 automation tier 2 (Electrical, first loop only): the single power source. A Dynamo generates power for face-adjacent Kinetic Mills only — no cables, no network propagation, no voltage tiers yet. Appended in 0.25.0; earlier values unchanged, so old saves still load.</summary>
+    Dynamo = 8,
 }
 
 public static class BlockInfo

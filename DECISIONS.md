@@ -1059,6 +1059,107 @@ look inevitable.
 - Next, in order: Slice 5 Step 1, automation tier 2, first
   small electrical loop only.
 
+## 2026-10-29 — Slice 5 Step 1 (0.25.0, under delegation)
+
+- Decision, on the power source: one Dynamo block, not a
+  blueprint alternator and not a cable network. The scope's
+  blueprint vocabulary ("alternators, insulated cables,
+  transformers") was names, not a design, and the smallest
+  source that proves a loop is a block that generates power
+  where it stands. Naming it Dynamo (a generic word, not a
+  borrowed trademark or lore name) keeps the first loop
+  about placement, not about a wiring system that does not
+  exist yet. A second source, a cable block, and any network
+  walk are deferred — if the next electrical step needs
+  range, it must prove adjacency is insufficient, not just
+  add cables because the blueprint names them.
+- Decision, on distribution: face-adjacency only, derived
+  every tick, never persisted. A mill next to a mill next
+  to a Dynamo is deliberately NOT powered: chaining would
+  smuggle a network rule (propagation order, cycles, range)
+  into a step whose job is to prove power changes one
+  machine. Diagonals are excluded for the same reason — the
+  game's movement, squad, and targeting rules are all
+  Manhattan / face-based, and a diagonal power rule would
+  be the one rule in the game that is not. Derivation, not
+  a flag, is what makes power loss and save/load honest:
+  the tests remove a Dynamo and watch the mill fall back,
+  and load a Dynamo and watch the mill power up, with no
+  flag to go stale between the two.
+- Decision, on the powered behaviour: cadence, not a new
+  excavation. A powered Kinetic Mill runs every tick instead
+  of every 5th, through the same Gather path, into the same
+  inventory. This follows the scope's hypothesis, and the
+  evidence for keeping it is the baseline: kinetic mills
+  already prove excavation works, so the only new claim is
+  the rate change, and the tests can isolate it in identical
+  pockets (5 in 5 ticks powered, 1 in 5 unpowered). A new
+  consumer would have needed its own baseline proved at the
+  same time, and a powered workstation (faster regen) would
+  have proved power changes a defensive effect, not the
+  building pillar Slice 5 exists to move. Power replaces the
+  kinetic cadence rather than stacking with it, because a
+  mill that fired twice on a 5th tick would make the powered
+  rate 6-in-5, not 5-in-5, and would hide whether the
+  powered phase or the kinetic phase did the work — the
+  separate PoweredBlocksGathered counter exists so the two
+  phases can never be confused in a test.
+- Decision, on voltage: one voltage, always on, no fuel, no
+  mismatch, no destruction — the scope's hypothesis kept,
+  not because voltage is uninteresting, but because a first
+  loop that destroys machines for wrong wiring would prove
+  punishment before it proves power. The failure rule belongs
+  to a later tier 2 step, once a second voltage exists to
+  mismatch against; with one voltage there is nothing to
+  mismatch, and inventing a fake second voltage just to
+  destroy machines would be theatre, not a system.
+- Decision, on the tier 1 inventory question — CLOSED, as
+  the scope required: keep the player-inventory rule, no
+  machine buffer. The buffer case the scope named (a powered
+  machine must keep working while output has nowhere to go,
+  or output is not a block the inventory already holds)
+  does not arise here: a powered mill produces exactly the
+  blocks a kinetic mill produces, the inventory already
+  holds them, and when it is full the mill stops consuming,
+  exactly as a kinetic mill does. A buffer would therefore
+  add size, pickup, and overflow rules — and a save format
+  for its contents — to solve a problem this behaviour
+  does not have. This closes the question for this loop
+  only; a future powered behaviour whose output is not an
+  inventory block must re-argue it, not inherit this answer
+  silently. Kinetic mill output is unchanged by this decision.
+- Decision, on cost: 5 EmberOre only. Stone / Wood pricing
+  was rejected because it would compete with the mills and
+  walls whose materials define the basic build loop, while
+  EmberOre pricing competes with workstations (5 ore) and
+  squads (10 ore) — a real tradeoff, but a bounded one: one
+  Dynamo costs one workstation's ore, or half a squad, so
+  the player feels power as an investment without it
+  starving basic building. A mixed Stone + EmberOre cost was
+  rejected as complexity without a reason: the Dynamo is
+  not a frame machine, and a single-resource price is the
+  same shape as the squad price, which the game already
+  proves is readable. All costs remain first-pass values
+  for determinism and testability, not final balance.
+- Decision, on save format: no new field. The Dynamo is a
+  chunk byte (value 8, appended only), so old saves load
+  unchanged — they simply contain no byte 8 — and powered
+  state is recomputed from placement on the first tick
+  after load. Session counters (KineticBlocksGathered,
+  PoweredBlocksGathered) are not saved, matching the tier 1
+  rule. If a future buffer decision creates contents that
+  must survive, that step must add its field under the same
+  old-save / malformed-entry rules; this step creates none.
+- Deliberately NOT in this step: cables, networks, voltage
+  tiers, transformers, mismatch destruction, a second source
+  or consumer, crafting, fuel, a machine buffer, any Unity
+  adapter change, any balance claim, and any change to squad
+  price / cap, loot, skills, or core health. The Unity
+  verification checklist and the Slice 1 director playtest
+  gate remain open, untouched by this headless step.
+- Next, in order: Slice 5 Step 2, demo scenario +
+  documentation-only review.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
