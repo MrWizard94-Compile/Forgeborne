@@ -1950,6 +1950,167 @@ Eq(5, simS6Loaded.World.PoweredBlocksGathered, "slice 6 demo loaded powered mill
 // Slice 6 save carries two squads, a mill, and a Dynamo.
 Eq(44024, saveS6.Length, "slice 6 demo save JSON length matches the demo run");
 
+// ---- Slice 7 Step 1: second squad type — Recon (chosen from recon / heavy / flyer) ----
+// Recon is the long-range screen Vanguard cannot be: it engages
+// from range 5, but pays with fragility (2 x 20 HP = 40, against
+// Vanguard's 3 x 30 = 90) and low firepower (2 x 6 = 12 per tick,
+// against Vanguard's 30). It is better than Vanguard in exactly
+// one dimension (range) and worse in the other two, so it is a
+// choice, not a replacement. Heavy was not chosen: a tougher
+// anchor under HoldGround is Vanguard with more HP, not a new
+// tactical choice. Flyer was not chosen: it would need a new
+// movement rule (ignoring solids / air) with targeting and
+// occupancy consequences, which would make the kind untestable
+// in isolation — the scope's own warning. Movement stays the
+// shared one-voxel rule for both kinds.
+// Per-kind shape table: Vanguard's numbers are unchanged since 0.9.0.
+Eq(3, SquadShapes.For(SquadKind.Vanguard).Members, "slice7 vanguard shape members unchanged");
+Eq(30, SquadShapes.For(SquadKind.Vanguard).MemberHealth, "slice7 vanguard shape member health unchanged");
+Eq(10, SquadShapes.For(SquadKind.Vanguard).MemberDamage, "slice7 vanguard shape member damage unchanged");
+Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice7 vanguard shape range unchanged");
+Eq(2, SquadShapes.For(SquadKind.Recon).Members, "slice7 recon shape members");
+Eq(20, SquadShapes.For(SquadKind.Recon).MemberHealth, "slice7 recon shape member health");
+Eq(6, SquadShapes.For(SquadKind.Recon).MemberDamage, "slice7 recon shape member damage");
+Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice7 recon shape range");
+bool shapeThrows = false;
+try { SquadShapes.For((SquadKind)99); } catch (ArgumentOutOfRangeException) { shapeThrows = true; }
+Check(shapeThrows, "slice7 unknown kind has no shape, throws rather than falling back to Vanguard");
+// A deployed Recon squad reads its own shape, not Vanguard's.
+var reconWorld = new WorldZone(42);
+var recon = reconWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+Eq(SquadKind.Recon, recon.Kind, "slice7 recon deploy kind");
+Eq(40, recon.Health, "slice7 recon full health is 40, not 90");
+Eq(40, recon.MaxHealth, "slice7 recon max health is 40");
+Eq(2, recon.AliveMembers, "slice7 recon full members");
+Eq(12, recon.DamagePerTick, "slice7 recon full damage per tick");
+var vanWorld = new WorldZone(42);
+var van = vanWorld.DeploySquad(20, 5, 16)!;
+Eq(90, van.Health, "slice7 vanguard full health still 90");
+Eq(3, van.AliveMembers, "slice7 vanguard full members still 3");
+Eq(30, van.DamagePerTick, "slice7 vanguard full damage still 30");
+// Firepower drops in member steps, per kind: Recon 40 -> 20 HP
+// is 1 member dealing 6, and 40 damage kills it outright.
+recon.TakeDamage(20);
+Eq(20, recon.Health, "slice7 recon wounded health");
+Eq(1, recon.AliveMembers, "slice7 recon wounded has 1 member");
+Eq(6, recon.DamagePerTick, "slice7 recon wounded damage per tick");
+recon.TakeDamage(20);
+Check(recon.IsDead, "slice7 recon at 0 health is dead");
+Eq(0, recon.DamagePerTick, "slice7 dead recon deals nothing");
+// Recon fires at range 5: enemy starts 6 away, steps to 5 in the
+// enemy phase (player far, so the squad is the nearer target),
+// then the holding Recon fires 12. Vanguard at the same geometry
+// stays silent, and no kind fires at range 6.
+var reconRangeWorld = new WorldZone(42);
+var reconRange = reconRangeWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+reconRangeWorld.Player.X = 28; reconRangeWorld.Player.Z = 28;
+reconRangeWorld.Enemies.Add(new Enemy(22, 5, 16));
+reconRangeWorld.Advance();
+Eq(21, reconRangeWorld.Enemies[0].X, "slice7 recon range enemy steps to distance 5");
+Eq(18, reconRangeWorld.Enemies[0].Health, "slice7 recon fires at range 5 for 12");
+var reconFarWorld = new WorldZone(42);
+reconFarWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+reconFarWorld.Player.X = 28; reconFarWorld.Player.Z = 28;
+reconFarWorld.Enemies.Add(new Enemy(23, 5, 16));
+reconFarWorld.Advance();
+Eq(22, reconFarWorld.Enemies[0].X, "slice7 recon range-6 enemy steps to distance 6");
+Eq(30, reconFarWorld.Enemies[0].Health, "slice7 recon does not fire at range 6");
+var vanRangeWorld = new WorldZone(42);
+vanRangeWorld.DeploySquad(16, 5, 16);
+vanRangeWorld.Player.X = 28; vanRangeWorld.Player.Z = 28;
+vanRangeWorld.Enemies.Add(new Enemy(21, 5, 16));
+vanRangeWorld.Advance();
+Eq(20, vanRangeWorld.Enemies[0].X, "slice7 vanguard range enemy steps to distance 4");
+Eq(30, vanRangeWorld.Enemies[0].Health, "slice7 vanguard does not fire at range 4, range still 3");
+// Movement is the shared rule: a Recon HoldGround squad marches
+// one voxel per tick toward its rally, exactly like Vanguard.
+var reconMarchWorld = new WorldZone(42);
+var reconMarch = reconMarchWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+reconMarchWorld.Advance();
+Eq(17, reconMarch.X, "slice7 recon marches one voxel toward rally");
+// Both doctrines work for Recon: an Advance Recon hunts west
+// toward its enemy, not east toward its rally, and fires.
+var reconAdvWorld = new WorldZone(42);
+var reconAdv = reconAdvWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance, SquadKind.Recon)!;
+reconAdvWorld.Player.X = 28; reconAdvWorld.Player.Z = 28;
+reconAdvWorld.Enemies.Add(new Enemy(12, 5, 16));
+reconAdvWorld.Advance();
+Eq(15, reconAdv.X, "slice7 advance recon moves toward enemy, not rally");
+Eq(13, reconAdvWorld.Enemies[0].X, "slice7 advance recon enemy pursues squad");
+Eq(18, reconAdvWorld.Enemies[0].Health, "slice7 advance recon fires 12 in range");
+// Economy: one price, total cap. CostForKind is 10 for both
+// kinds, so the prompt's COST 10 line stays true; the cap is
+// 3 live squads in total, not 3 per kind.
+Eq(10, SquadEconomy.CostForKind(SquadKind.Vanguard), "slice7 vanguard price is 10");
+Eq(10, SquadEconomy.CostForKind(SquadKind.Recon), "slice7 recon price is 10");
+var econWorld = new WorldZone(42);
+econWorld.Player.Inventory.Add(BlockType.EmberOre, 40);
+var econRecon = econWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+Eq(SquadKind.Recon, econRecon.Kind, "slice7 paid recon deploy kind");
+Eq(40, econRecon.Health, "slice7 paid recon deploy health");
+Eq(30, econWorld.Player.Inventory.Get(BlockType.EmberOre), "slice7 paid recon deploy charges exactly 10");
+econWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+econWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+Eq(3, SquadEconomy.LiveSquadCount(econWorld), "slice7 mixed kinds count toward one total cap");
+Check(econWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon) == null, "slice7 fourth squad refused at total cap, not per-kind cap");
+Eq(10, econWorld.Player.Inventory.Get(BlockType.EmberOre), "slice7 refused over-cap deploy charges nothing");
+var econPoorWorld = new WorldZone(42);
+Check(econPoorWorld.TryDeployPaidSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon) == null, "slice7 unfunded recon deploy refused");
+Eq(0, econPoorWorld.Squads.Count, "slice7 unfunded recon deploy adds no squad");
+// Picker: doctrine and kind are independent choices now. A kind
+// selection survives a doctrine change, an unknown kind is
+// rejected, and a Confirm deploys the selected combination.
+var reconPickSim = new Simulation(42);
+reconPickSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+reconPickSim.BeginOrbitalPick();
+Check(reconPickSim.OrbitalCommand.SelectKind(SquadKind.Recon), "slice7 picker selects recon kind");
+Check(reconPickSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround), "slice7 picker selects doctrine after kind");
+Eq(SquadKind.Recon, reconPickSim.OrbitalCommand.Kind, "slice7 doctrine change keeps selected kind");
+Check(!reconPickSim.OrbitalCommand.SelectKind((SquadKind)99), "slice7 picker rejects unknown kind");
+Eq(SquadKind.Recon, reconPickSim.OrbitalCommand.Kind, "slice7 rejected kind leaves selection unchanged");
+reconPickSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+reconPickSim.SetOrbitalRally(20, 5, 16);
+var reconPicked = reconPickSim.ConfirmOrbitalDeploy()!;
+Eq(SquadKind.Recon, reconPicked.Kind, "slice7 picker confirm deploys recon");
+Eq(TacticalDoctrine.Advance, reconPicked.Doctrine, "slice7 picker confirm deploys advance");
+Eq(0, reconPickSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice7 picker recon deploy charges 10");
+// Save/load: the load clamp is per-kind, not Vanguard-shaped.
+// A 999-HP Recon loads at 40, a 999-HP Vanguard at 90, and a
+// mixed save round-trips both kinds with their own health.
+var clampRecon = new TacticalSquad(16, 5, 16, 20, 5, 16, 999, TacticalDoctrine.HoldGround, SquadKind.Recon);
+Eq(40, clampRecon.Health, "slice7 recon load clamp is 40, not vanguard 90");
+var clampVan = new TacticalSquad(16, 5, 16, 20, 5, 16, 999, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+Eq(90, clampVan.Health, "slice7 vanguard load clamp still 90");
+var saveMixedWorld = new WorldZone(42);
+saveMixedWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+var saveRecon = saveMixedWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+saveRecon.TakeDamage(5); // 40 -> 35, still 2 members
+var saveMixedLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveMixedWorld));
+Eq(2, saveMixedLoaded.Squads.Count, "slice7 mixed save loads both squads");
+Eq(SquadKind.Vanguard, saveMixedLoaded.Squads[0].Kind, "slice7 mixed save vanguard kind preserved");
+Eq(90, saveMixedLoaded.Squads[0].Health, "slice7 mixed save vanguard health preserved");
+Eq(SquadKind.Recon, saveMixedLoaded.Squads[1].Kind, "slice7 mixed save recon kind preserved");
+Eq(35, saveMixedLoaded.Squads[1].Health, "slice7 mixed save recon health preserved");
+Eq(2, saveMixedLoaded.Squads[1].AliveMembers, "slice7 mixed save recon members preserved");
+// Targeting stays kind-blind: an enemy pursues the nearer Recon
+// squad, not the farther player, with no kind priority in the rule.
+var targetWorld = new WorldZone(42);
+targetWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+targetWorld.Player.X = 28; targetWorld.Player.Z = 28;
+targetWorld.Enemies.Add(new Enemy(20, 5, 16));
+targetWorld.Advance();
+Eq(19, targetWorld.Enemies[0].X, "slice7 enemy pursues nearer recon squad over farther player");
+// Snapshot carries the kind and its shape: a holding Recon
+// reads Holding with 2 members, 40 HP, 12 damage.
+var snapWorld = new WorldZone(42);
+snapWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+var snapRecon = OrbitalView.Snapshot(snapWorld)[0];
+Eq(SquadKind.Recon, snapRecon.Kind, "slice7 snapshot recon kind");
+Eq(2, snapRecon.AliveMembers, "slice7 snapshot recon members");
+Eq(40, snapRecon.Health, "slice7 snapshot recon health");
+Eq(12, snapRecon.DamagePerTick, "slice7 snapshot recon damage");
+Eq(SquadActivity.Holding, snapRecon.Activity, "slice7 snapshot recon at rally is holding");
+
 // ---- Silence instruction (recorded, not a test) ----
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");

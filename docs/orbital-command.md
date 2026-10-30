@@ -14,8 +14,8 @@ is gone: in play, a deploy is now always a picked rally.
 menu state, in pure C# core — no rendering, no second copy of
 squad rules. It holds the selected doctrine (HoldGround by
 default, Advance since Slice 4 Step 2) and squad kind
-(Vanguard, still the only kind), and a pending rally while
-picking. Flow:
+(Vanguard by default, Recon since Slice 7 Step 1), and a
+pending rally while picking. Flow:
 
 1. `BeginPick()` opens the picker and clears any stale pending
    rally, so Enter cannot deploy yesterday's point.
@@ -59,8 +59,16 @@ no longer uses it.
   only — and movement stays world-aligned.
 - **Enter** — deploy the selected squad at the pending rally.
 - **Esc** — cancel the pick, no squad.
-- **1** — re-select HoldGround / Vanguard.
-- **2** — select Advance / Vanguard (Slice 4 Step 2).
+- **1** — select the HoldGround doctrine (kind unchanged).
+- **2** — select the Advance doctrine (kind unchanged).
+- **3** — select the Vanguard kind (doctrine unchanged).
+- **4** — select the Recon kind (doctrine unchanged).
+  Since Slice 7 Step 1, doctrine and kind are two
+  independent choices: before it, 1 and 2 also forced
+  Vanguard, so the fourth combinations were unreachable;
+  now all four doctrine-kind combinations deploy through
+  the picker. The prompt line already shows the selected
+  kind verbatim, so it reads e.g. `RECON ADVANCE`.
 - While picking, the mouse does not fire: Enter is the confirm,
   so a click cannot shoot while the player is aiming a rally.
 
@@ -91,7 +99,8 @@ not HoldGround at a moving rally:
   the squad phase, after the squad fires.
 - Pricing is settled, not reopened: Advance deploys through
   the Slice 3 paid path, 10 EmberOre, cap 3 live squads, no
-  new price. Vanguard is still the only squad kind.
+  new price. Since Slice 7 Step 1 both kinds work under
+  both doctrines, at the same price and cap.
 - Display note, not a core rule: `OrbitalSquadDisplay` still
   words a squad MOVING / HOLDING by its rally position, so for
   an Advance squad that word is rally-relative, not a hunting
@@ -114,8 +123,10 @@ Cost and cap now exist, decided in the Slice 3 economy step
 (rationale in DECISIONS.md, values labelled first-pass, not
 final balance):
 
-- **Cost: 10 EmberOre per Vanguard squad**, paid from the
-  player inventory at deploy time. Pricing basis: gathered
+- **Cost: 10 EmberOre per squad, either kind**, paid from the
+  player inventory at deploy time. Slice 7 Step 1 keeps one
+  price for Vanguard and Recon alike (see below), so the
+  picker prompt's COST 10 line stays true for both kinds. Pricing basis: gathered
   resources, not a new currency. EmberOre only, not Stone, so
   squads do not compete with walls and mills for the
   gather -> build loop's core material; the competition is
@@ -139,6 +150,54 @@ final balance):
   and the demo only; it is not the play path and Unity play
   must never call it. The demo's Slice 2 squad now deploys
   through the paid path.
+
+## Second squad type — Recon (Slice 7 Step 1, 0.33.0)
+
+Chosen in that step from the recon / heavy / flyer pool the
+code already named, with the reasoning in DECISIONS.md.
+Recon is a fragile long-range screen: 2 members, 20 HP
+each (40 total), 6 damage per living member (12 at full
+strength), engagement range 5 — against Vanguard's 3
+members, 30 HP each (90), 10 damage each (30), range 3.
+It is better than Vanguard in exactly one dimension
+(reach) and worse in the other two (health, damage), so
+it is a choice, not a replacement: it fires from cells
+Vanguard cannot reach, but it cannot hold ground under
+fire the way Vanguard can. Movement is the shared rule
+(one voxel per tick, largest-gap axis, solid and
+enemy-occupied cells refused) for both kinds, and both
+kinds work under both doctrines with the same activity
+words (Marching / Holding / Hunting / Idle).
+
+- Stats live in a per-kind shape (`SquadShape` /
+  `SquadShapes.For` in `Orbital.cs`), read from the
+  squad's kind by every rule — movement, fire, snapshot,
+  and load — instead of a second set of shared constants
+  or a branch in each rule. Vanguard's numbers are
+  unchanged by the refactor.
+- Price: 10 EmberOre for both kinds, cap 3 live squads
+  in total (not 3 per kind), so the prompt's COST 10 and
+  MAX 3 lines stay true with no display change.
+- Binding: keys 3 / 4 select kind independently of
+  doctrine (see above); keys 1 / 2 no longer force
+  Vanguard. All four doctrine-kind combinations deploy.
+- Save: no new field — kind was already index 8 of the
+  saved squad array. The load clamp is now per-kind
+  (Vanguard 0..90, Recon 0..40); a Recon squad is never
+  trimmed to Vanguard's health, or vice versa, on load.
+  Malformed and unknown kinds are still skipped, never
+  fatal.
+- Targeting: kind-blind, unchanged — `ChooseTarget`
+  picks the nearest live target regardless of kind, so a
+  Recon screen draws fire exactly as a Vanguard would
+  from the same cell, and dies faster for it.
+- Markers: unchanged — the same cyan squad cube for
+  both kinds, kind readable from the text line, per the
+  Slice 6 one-marker-per-squad discipline. A distinct
+  marker shape is not added on a hypothetical confusion;
+  it would need a play-observed reason.
+- Adapter code is written, NOT compiled or run in Unity
+  on Windows: see checklist item 10 below.
 
 ## Deliberately NOT in this step
 
@@ -194,6 +253,19 @@ final balance):
    cells while pitched; and movement stays world-aligned
    while yawed. Do not claim this verified in Unity until
    this item is completed there and recorded in DECISIONS.md.
+10. [ ] Second kind, added 0.33.0 (adapter code written, NOT
+    yet compiled or run in Unity on Windows; the core kind
+    rules are headless-tested, the adapter binding is NOT):
+    press O, press 4 — the prompt shows RECON with the
+    current doctrine; press 1 — the prompt shows RECON
+    HOLDGROUND, proving doctrine changed without changing
+    kind; press 2, then 3 — the prompt shows VANGUARD
+    ADVANCE; Enter deploys the shown combination for 10
+    EmberOre; a deployed Recon squad's text line reads its
+    kind, members, health, and damage, and its scene
+    marker is the same cyan cube as a Vanguard's. Do not
+    claim this verified in Unity until this item is
+    completed there and recorded in DECISIONS.md.
 
 Record the result of each step, with Unity version and GPU, in
 DECISIONS.md.

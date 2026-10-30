@@ -1727,6 +1727,156 @@ look inevitable.
 - Next, in order: Slice 7 Step 1, exactly one second
   squad type, decided in that step.
 
+## 0.33.0 — 2026-10-30 — Slice 7 Step 1: second squad type, Recon
+
+- Decision, on the kind: Recon, from the scope's recon /
+  heavy / flyer pool. The choice names the tactical choice
+  Vanguard cannot make: engaging from range 4-5, outside
+  Vanguard's range 3 and outside the enemy's adjacent-only
+  damage, so a Recon screen can fire while the enemy is
+  still walking toward it. Heavy was rejected, not
+  deferred silently, because its role collapses: a tougher
+  anchor under HoldGround is Vanguard with more HP and
+  less damage, and the test that would prove it distinct
+  from Vanguard is just a numbers test, not a new choice
+  a player makes on the field. Flyer was rejected for
+  this step, not as a bad idea, because the scope's own
+  warning holds: flight is a movement decision (ignoring
+  solids, or moving in the air), with targeting and
+  occupancy consequences that cannot be proved by a stat
+  table alone, and bundling it into the first second-kind
+  step would make the kind untestable in isolation. Recon
+  needs no movement change at all, so its step proves a
+  kind, not a kind plus a movement system.
+- Decision, on the shape: 2 members, 20 HP each, 6 damage
+  each, range 5. Each number is a trade stated against
+  Vanguard, not a tune: range 5 is the only dimension
+  where Recon beats Vanguard, and it pays for it with
+  less than half the health (40 vs 90) and less than half
+  the full-strength damage (12 vs 30). A Recon squad that
+  also kept Vanguard's health or damage would be a
+  replacement, not a choice, and the tests prove the
+  trade in both directions (fires at 5, silent at 6,
+  Vanguard silent at 4). The numbers are first-pass for
+  determinism and testability, not final balance, exactly
+  as Vanguard's were — the Slice 7 gate still forbids a
+  balance pass from riding along.
+- Decision, on representation: a per-kind shape table
+  (`SquadShape` / `SquadShapes.For`), read from Kind by
+  every rule. The alternative — a second set of shared
+  constants, or a branch in every rule that reads
+  Vanguard's numbers — was rejected because it makes the
+  next kind a rewrite of every rule it touches, while a
+  table makes it one new row. The old constants are
+  removed, not kept as aliases, so there is no second
+  source of Vanguard's numbers to drift from the table;
+  the cost is that any outside reader of those constants
+  must read the shape instead, and the repo has no such
+  reader outside Orbital.cs (verified by search before
+  the refactor). Unknown kinds throw from For rather
+  than falling back to Vanguard, because a silent
+  fallback would deploy a Vanguard wearing a Recon name.
+- Decision, on price: 10 EmberOre for both kinds, via an
+  explicit `CostForKind` that returns the same value for
+  both. Keeping one price is itself the decision: the
+  kinds trade role for role, and a price gap would claim
+  an economy distinction (Recon worth more, or less,
+  ore than Vanguard) that no play evidence yet supports.
+  The explicit method, rather than leaving the old
+  single constant to imply the answer, is deliberate: a
+  later step that does price kinds differently changes
+  one method with its own rationale and tests, instead
+  of discovering the price was never per-kind at all.
+  The prompt's COST 10 line staying true is a
+  consequence, not the reason — the reason is that an
+  invented price gap would be a balance claim disguised
+  as an economy rule.
+- Decision, on cap: 3 live squads in total, not 3 per
+  kind. The 0.18.0 cap was decided as a fielded-squad
+  limit, and a per-kind cap would let this step double
+  the field to 6 by adding one kind — a cap change
+  disguised as a kind addition. The total cap is proved
+  by a mixed-kind test (Vanguard + Recon + Recon, then a
+  4th Recon refused with ore untouched), not just by
+  re-asserting the old Vanguard-only cap test.
+- Decision, on binding: independent kind selection, keys
+  3 / 4, with keys 1 / 2 reduced to doctrine-only. The
+  scope's hypothesis is accepted as stated: coupling
+  kind to doctrine again (a 3rd preset) would leave the
+  fourth combination unreachable and repeat the 1 / 2
+  pattern that made this step necessary. Changing 1 / 2
+  semantics is a behaviour change to existing keys, and
+  it is recorded here rather than hidden: a player who
+  learned 1 = HoldGround+Vanguard now gets HoldGround
+  with whatever kind is selected, which is the point —
+  doctrine and kind are two choices, and a key that
+  silently resets one choice while making the other is
+  not a menu, it is a preset list. The binding is
+  adapter code, written not compiled headlessly, so it
+  rides with checklist item 10, not with the test count.
+- Decision, on doctrine interaction: both kinds under
+  both doctrines, with no restriction and no refusal
+  rule invented. A restricted kind would have needed a
+  picker refusal for the forbidden combination (not a
+  silent Vanguard fallback), and no such restriction has
+  a tactical reason yet: a long-range Advance squad is
+  a hunting screen, and a long-range HoldGround squad is
+  a rally guard that fires early — both are coherent,
+  and both are proved (Advance Recon hunts west and
+  fires; HoldGround Recon holds and fires at range 5).
+- Decision, on save: no new field, per-kind clamp. Kind
+  was already index 8, so the format question is only
+  the clamp — and the clamp had to change, because the
+  old 0..90 bound is Vanguard's maximum, not a generic
+  bound: it would not trim a legitimate Recon squad,
+  but it would let a corrupt Recon save claim 90 HP and
+  therefore 5 apparent members. The clamp is now the
+  kind's own maximum, assigned after Kind in the load
+  constructor for exactly that reason; the ordering is
+  load-bearing and is commented as such. Malformed and
+  unknown kinds keep the skip-never-fatal rule, and the
+  unknown-kind skip logic itself is unchanged — only the
+  defined set grew by one.
+- Decision, on targeting: kind-blind, unchanged. No
+  priority rule (no scout-ignored, no heavy-taunt) was
+  invented, because targeting priority is a combat rule
+  change, not a stat, and Recon's fragility already
+  expresses its risk through the existing rule: an enemy
+  that pursues a Recon screen kills it faster than a
+  Vanguard from the same cell, which is the trade the
+  player accepted when deploying it. The test proves
+  pursuit of the nearer Recon squad, not a priority.
+- Decision, on markers: same cyan cube, kind from the
+  text line, per the Slice 6 discipline of one marker
+  per squad and no extra layer. Two kinds sharing a
+  marker is a real readability question, but it is not
+  yet a play-observed confusion — and adding a distinct
+  shape or colour on a guess would spend the marker
+  discipline on a hypothetical. If a Windows playtest
+  shows players mistaking a Recon for a Vanguard in the
+  scene, that observation, not this step, justifies a
+  distinction, with its own checklist item.
+- Decision, on what this step does not do, stated
+  plainly so the review can check it: it does not change
+  Vanguard in any number or rule (every pre-existing
+  Vanguard test passes unchanged, and the shape tests
+  pin Vanguard's numbers); it does not add a third kind,
+  a doctrine, a voltage tier, or a balance pass; it does
+  not change Dynamo, mill, loot, skill, or core-health
+  rules; it does not add a save field; and it does not
+  claim Unity verification for keys 3 / 4, the prompt,
+  or the marker — those are checklist item 10, to be
+  completed on Windows and recorded here.
+- Test-authoring note, not a code fix: the first test
+  run failed to compile because two new top-level test
+  variable names (`pickSim`, `picked`) collided with
+  variables from the 0.15.0 picker tests in the same
+  file. They were renamed (`reconPickSim`,
+  `reconPicked`); no core code changed for the collision,
+  and the full suite then passed 810 / 810.
+- Next, in order: Slice 7 Step 2, demo scenario +
+  documentation-only review.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

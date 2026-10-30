@@ -257,10 +257,11 @@ public sealed class WorldZone
         if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return null;
         if (!Enum.IsDefined(doctrine) || !Enum.IsDefined(kind)) return null;
         if (SquadEconomy.LiveSquadCount(this) >= SquadEconomy.MaxConcurrentSquads) return null;
-        if (!Player.Inventory.Has(BlockType.EmberOre, SquadEconomy.EmberOreCost)) return null;
-        if (!Player.Inventory.Remove(BlockType.EmberOre, SquadEconomy.EmberOreCost)) return null;
+        int price = SquadEconomy.CostForKind(kind);
+        if (!Player.Inventory.Has(BlockType.EmberOre, price)) return null;
+        if (!Player.Inventory.Remove(BlockType.EmberOre, price)) return null;
         var squad = DeploySquad(rallyX, rallyY, rallyZ, doctrine, kind);
-        if (squad == null) Player.Inventory.Add(BlockType.EmberOre, SquadEconomy.EmberOreCost);
+        if (squad == null) Player.Inventory.Add(BlockType.EmberOre, price);
         return squad;
     }
 

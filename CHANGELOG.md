@@ -1,5 +1,117 @@
 # Forgeborne — Changelog
 
+## 0.33.0 — 2026-10-30 — Slice 7 Step 1: second squad type, Recon
+
+- Exactly one second squad type, decided in this step
+  (rationale in DECISIONS.md): Recon, chosen from the
+  recon / heavy / flyer pool the code already named.
+  Recon is a fragile long-range screen — 2 members, 20 HP
+  each (40 total), 6 damage per living member (12 at full
+  strength), engagement range 5 — against Vanguard's
+  unchanged 3 members, 30 HP each (90 total), 10 damage
+  each (30), range 3. Recon is better than Vanguard in
+  exactly one dimension (reach) and worse in the other
+  two (health, damage), so it is a choice, not a
+  replacement: it fires from cells Vanguard cannot reach
+  (proved at range 5, silent at range 6, Vanguard silent
+  at the same range-4 geometry), but it cannot hold
+  ground under fire the way Vanguard can. Heavy was not
+  chosen (a tougher anchor under HoldGround is Vanguard
+  with more HP, not a new tactical choice); flyer was
+  not chosen (it would need a new movement rule with
+  targeting and occupancy consequences, untestable in
+  isolation in this step).
+- Stats representation, decided in this step: a per-kind
+  shape (`SquadShape` / `SquadShapes.For` in
+  `src/Forgeborne.Core/Orbital.cs`), read from the
+  squad's kind by movement, fire, snapshot, and load
+  alike — not a second set of shared constants, and not
+  a branch in every rule. The old Vanguard constants are
+  gone; every rule that read them now reads the shape,
+  and Vanguard's numbers are unchanged (proved by the
+  shape tests and by every pre-existing Vanguard test
+  passing unchanged). Movement stays the shared rule:
+  one voxel per tick, largest-gap axis, solid and
+  enemy-occupied cells refused, for both kinds and both
+  doctrines. Unknown kinds have no shape and throw at
+  the boundary, rather than silently returning Vanguard.
+- Price and cap, decided in this step: 10 EmberOre for
+  both kinds (`SquadEconomy.CostForKind`, charged through
+  the existing paid path), and the cap stays 3 live
+  squads in total, not 3 per kind — a 4th squad is
+  refused at the total cap even when it is a different
+  kind, and a refused deploy charges nothing. The
+  picker prompt's COST 10 / MAX 3 lines therefore stay
+  true for both kinds with no display change, and the
+  text display already renders kind verbatim, so no
+  text change was needed. A price difference was
+  refused for now: the kinds trade role for role, not
+  price for power, and a price gap with no balance
+  evidence behind it would invent an economy
+  distinction, not express one.
+- Picker binding, decided in this step: doctrine and
+  kind are now two independent choices. Adapter keys 1
+  / 2 select doctrine only (HoldGround / Advance) and
+  keys 3 / 4 select kind only (Vanguard / Recon); before
+  this step 1 and 2 also forced Vanguard, so the
+  doctrine-kind combinations with a second kind were
+  unreachable. All four combinations now deploy through
+  the paid picker (proved in core via SelectKind /
+  SelectDoctrine / Confirm; the adapter keys themselves
+  are written, NOT compiled or run in Unity on Windows
+  — see checklist item 10 in docs/orbital-command.md).
+  Doctrine interaction: both kinds work under both
+  doctrines, with the same activity words, and a kind
+  restricted to one doctrine would have needed its own
+  refusal rule — none was invented.
+- Save and targeting, decided in this step: no new save
+  field, since kind was already index 8 of the saved
+  squad array — but the load clamp is now per-kind
+  (Vanguard 0..90, Recon 0..40), because the old 0..90
+  clamp would have been a save bug for a 40-HP kind
+  only in the other direction (it would not trim Recon,
+  but it would let a corrupt Recon save claim Vanguard
+  health — now clamped to its own maximum). Malformed
+  and unknown kinds keep the existing rule: skipped,
+  never fatal. Targeting stays kind-blind and unchanged:
+  `ChooseTarget` picks the nearest live target
+  regardless of kind, proved by an enemy pursuing a
+  nearer Recon squad over the farther player.
+- Markers, decided in this step: unchanged — the same
+  cyan squad cube for both kinds, kind readable from
+  the text line, per the Slice 6 one-marker-per-squad
+  discipline. No distinct marker shape is added on a
+  hypothetical confusion; that would need a
+  play-observed reason, not a guess.
+- Adapter code is written, NOT compiled or run in Unity on
+  Windows: see the new checklist item 10 in
+  docs/orbital-command.md (kind keys 3 / 4, doctrine-kind
+  independence, prompt kind word, Recon text line, same
+  cyan marker). The test count below covers the core
+  kind rules only; it does not cover adapter keys or
+  rendering, and this entry does not claim otherwise.
+  What must NOT change in this step is unchanged:
+  Vanguard's stats, movement, fire, targeting, and save
+  behaviour; the two doctrines and their rules; Dynamo
+  cost, distribution, and cadence; kinetic mill
+  behaviour; loot, skills, and core health; the gather /
+  build / survive loop; and the save format, which gains
+  no field in this step. No third kind, no new doctrine,
+  no voltage ladder, no balance pass, and no licence /
+  monetisation / release change rides along.
+- Tests: **810 passed, 0 failed** (was 746; +64, with one
+  test-authoring fix during the run, not a code fix: two
+  new variable names collided with earlier top-level test
+  variables and were renamed). Demo unchanged: Slice 1
+  gathered 1, built 1, killed 2, save 43,881 chars;
+  Slice 2 save 43,908 chars; Step 1 scenario save
+  44,016 chars; Step 3 scenario save 44,103 chars;
+  Slice 4 scenario save 44,026 chars; Slice 5 Step 2
+  scenario save 43,974 chars; Slice 6 Step 4 scenario
+  save 44,024 chars.
+  Next in order: Slice 7 Step 2, demo scenario +
+  documentation-only review.
+
 ## 0.32.0 — 2026-10-30 — Slice 7 scope: second squad type
 
 - Scoped Slice 7, plus `docs/slice-07-scope.md`

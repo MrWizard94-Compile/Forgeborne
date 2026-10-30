@@ -49,7 +49,7 @@ public class FpsInputAdapter : MonoBehaviour
         // wiring keys to builders that are already proved in core
         // — no core build rule is added or changed here. T and Y
         // are free: existing keys are WASD / Space / E / Q / R /
-        // O / Return / Esc / 1 / 2 / mouse click, and T/Y sit
+        // O / Return / Esc / 1 / 2 / 3 / 4 / mouse click, and T/Y sit
         // together as the build pair, next to each other on the
         // keyboard, so a mill and its Dynamo are built as a pair
         // without moving between them (which is also what makes
@@ -83,16 +83,24 @@ public class FpsInputAdapter : MonoBehaviour
         // camera updates the pending rally to the voxel cell hit
         // (the voxel mesh carries a MeshCollider for this — see
         // VoxelMeshRenderer); Return deploys the selected squad at
-        // that rally, Escape cancels, 1 re-selects HoldGround /
-        // Vanguard, and 2 selects Advance / Vanguard (Slice 4 Step
-        // 2; an Advance squad ignores its rally after deployment
-        // and hunts the nearest enemy — see docs/orbital-command.md).
+        // that rally, Escape cancels, 1 selects the HoldGround
+        // doctrine and 2 selects Advance (Slice 4 Step 2; an
+        // Advance squad ignores its rally after deployment and
+        // hunts the nearest enemy — see docs/orbital-command.md),
+        // and 3 / 4 select the squad kind independently of
+        // doctrine (Slice 7 Step 1: 3 Vanguard, 4 Recon), so all
+        // four doctrine-kind combinations are reachable and no
+        // key couples a doctrine to a kind. Before Slice 7, 1 and
+        // 2 forced Vanguard as well as a doctrine; they no longer
+        // do, so changing doctrine keeps the selected kind.
         // While picking, the mouse does not fire: Enter is the
         // confirm, so a click cannot shoot while the player is
         // aiming a rally.
         // Since 0.18.0 a picker deploy costs 10 EmberOre and at
         // most 3 live squads may be fielded, enforced in core by
-        // Confirm — see docs/orbital-command.md.
+        // Confirm — see docs/orbital-command.md. Since Slice 7
+        // Step 1 the 10-ore price and 3-squad cap hold for both
+        // kinds, so the prompt's COST 10 / MAX 3 line stays true.
         if (Input.GetKeyDown(KeyCode.O))
         {
             if (Simulation.OrbitalCommand.IsPicking) Simulation.CancelOrbitalPick();
@@ -105,12 +113,18 @@ public class FpsInputAdapter : MonoBehaviour
             else if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 Simulation.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
-                Simulation.OrbitalCommand.SelectKind(SquadKind.Vanguard);
             }
             else if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 Simulation.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
                 Simulation.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha4))
+            {
+                Simulation.OrbitalCommand.SelectKind(SquadKind.Recon);
             }
             else
             {
