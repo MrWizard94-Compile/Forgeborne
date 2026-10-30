@@ -3188,6 +3188,84 @@ look inevitable.
   step, from the ranked candidates carried in
   `docs/slice-10-review.md`.
 
+## 0.48.0 — Slice 11 scope: squad widening, kind then doctrine then review
+- Decision, on theme and order: Slice 11 takes the
+  Slice 10 review's top-ranked candidate (a third
+  squad type and the deferred doctrines) and orders
+  it kind first, doctrine second, demo + review
+  third. Kind first because its questions are the
+  smaller, already-patterned ones — a shape in
+  `SquadShapes.For`, a picker key, a price/cap
+  answer, a marker answer — proved once by Slice 7
+  Step 1, while the doctrine step must answer
+  movement and engagement questions that interact
+  with every kind it serves. Ordering doctrine
+  first would force that step to prove itself on two
+  kinds and then re-prove itself on three after the
+  kind step; ordering kind first makes the doctrine
+  step inherit the full field. The two widenings are
+  independent axes (kind = who, doctrine = order),
+  so neither step may smuggle the other in as an
+  extra.
+- Decision, on the kind pool: heavy and flyer only,
+  carried from Slice 7's pool with Recon spent, or
+  another original role only if the step records why
+  neither fits. The scope does not pick between
+  heavy and flyer, because that choice is the step's
+  evidence question — what tactical choice does it
+  add that Vanguard and Recon cannot make — not a
+  scope vote. The shared one-voxel-per-tick movement
+  rule is a scope hypothesis, not a decision: a
+  flyer choice must confront it directly, with tests
+  for targeting and occupancy, rather than asserting
+  flight as a stat.
+- Decision, on the doctrine pool and hypothesis:
+  Defend Core and Patrol only, carried from Slice 4's
+  deferred pair. Defend Core is the starting
+  hypothesis because the core objective already
+  exists at (28,5,28) with 100 HP and no squad today
+  orders itself to it, while Patrol needs a route
+  definition the game does not yet have. The
+  hypothesis is explicitly reversible: if Defend Core
+  collapses into HoldGround at the core cell, or
+  Patrol's route is already answered by the rally
+  picker, the step must say so and choose otherwise
+  with evidence. The doctrine step must also prove
+  itself against more than one kind, because a
+  doctrine proved only on Vanguard in a slice that
+  just added a third kind leaves the pairing unproved.
+- Decision, on the B-key gap: gap 7 from the Slice 10
+  review is assigned to Step 1, not left floating and
+  not fixed by this scope document itself. The 0.47.0
+  rule was that the next step touching the gate doc
+  for its own reason closes it; Step 1 adds a
+  checklist item for its own kind key, so Step 1 is
+  that step. Naming the assignment here, rather than
+  in Step 1 alone, keeps the gap from being quoted as
+  closed by a scope that adds no checklist item
+  itself. The shared-marker gap (gap 8) is likewise
+  named as a Step 1 decision, because a third kind
+  grows it from two kinds sharing a marker to three.
+- Decision, on the binding question: the scope names
+  the collision openly instead of leaving it to the
+  steps to discover — doctrines occupy Alpha1 /
+  Alpha2 and kinds Alpha3 / Alpha4 today, so a third
+  kind and a third doctrine cannot both take "the
+  next number key" without colliding. Each step must
+  name a binding that does not collide while picking;
+  Alpha5 is noted as the next free number key for
+  Step 1 to confirm, not as a decided binding.
+- Deliberately NOT in this scope decision: picking the
+  kind, picking the doctrine, changing any existing
+  shape, price, or cap, adding a fourth kind or a
+  second doctrine, any electrical widening, any
+  balance pass, any warning / tint / refresh system,
+  any camera, any save-format change, or any claim
+  about Windows Unity verification or the pending
+  Slice 1 director playtest gate.
+- Next, in order: Slice 11 Step 1, exactly one third
+  squad kind, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

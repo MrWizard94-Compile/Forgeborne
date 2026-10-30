@@ -1,5 +1,63 @@
 # Forgeborne — Changelog
 
+## 0.48.0 — 2026-10-30 — Slice 11 scope: squad widening — third kind, then one deferred doctrine, then demo + review
+
+- Scoping Slice 11 as its own decision step, decided in
+  this step (rationale in DECISIONS.md): Slice 11 is
+  squad widening, in order — (1) exactly one third
+  squad kind, decided in that step from the pool the
+  code already names (heavy, flyer, Recon already
+  spent), proved as a distinct tactical choice with
+  its own shape and not as a Vanguard or Recon
+  reskin, with Vanguard's and Recon's numbers
+  unchanged and the 10-ore price and 3-squad cap held
+  as the starting hypothesis; (2) exactly one deferred
+  doctrine, decided in that step from Defend Core and
+  Patrol, with Defend Core as the starting hypothesis
+  because the core objective already exists and no
+  squad today orders itself to it, proved against more
+  than one kind; (3) demo scenario + documentation-
+  only review composing the kind and the doctrine in
+  one Simulation. Kind first, then doctrine, so the
+  doctrine step inherits a three-kind field to prove
+  against instead of a two-kind field it must later
+  re-prove.
+- Scope grounded in current code facts verified this
+  run: SquadKind has Vanguard (3 members, 30 HP each,
+  10 damage each, range 3) and Recon (2 members, 20 HP
+  each, 6 damage each, range 5); TacticalDoctrine has
+  HoldGround (march one voxel per tick to a rally,
+  fire only once holding) and Advance (hunt the
+  nearest living enemy one voxel per tick, fire
+  whenever in range, rally ignored after deployment);
+  the picker uses Alpha1 / Alpha2 for doctrines and
+  Alpha3 / Alpha4 for kinds, so both Step 1 and Step 2
+  must name non-colliding bindings; saves already
+  store kind and doctrine as ints with undefined
+  values rejected on load, so new enum values are
+  appended only; the headless display already prints
+  kind, doctrine, members, health, damage, range, and
+  activity.
+- Gap handling, decided in this step: the Slice 10
+  review's gap 7 (the workstation B key has no
+  playtest-gate checklist item) is assigned to Step 1,
+  because Step 1 adds a checklist item for its own
+  kind key and therefore touches the gate doc for its
+  own reason — the 0.47.0 rule for closing that gap.
+  The shared scene marker (gap 8) is a stated Step 1
+  decision, not an inherited silence, since a third
+  kind grows it. Ranked Slice 12 candidates recorded,
+  not promised: further electrical widening first,
+  adapter visibility and fairness (warning, tint /
+  refresh, marker distinction) second.
+- No core system rides along with this step: no new
+  kind, doctrine, block type, voltage level, consumer,
+  source, price, cap, or balance pass, no warning,
+  tint, refresh, camera, or save-format change.
+- Tests: 1300 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 10
+  Step 3 scenario save 43,974 chars.
+
 ## 0.47.0 — 2026-10-30 — Slice 10 Step 3: demo scenario + review, closing Slice 10
 
 - Composed Slice 10 demo, decided in this step (rationale
