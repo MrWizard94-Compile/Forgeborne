@@ -6453,5 +6453,196 @@ Eq(20, s18PaidStuck.Z, "slice18 deploy paid patrol stuck squad holds its Z");
 // otherwise. What is testable — refused-before-charge charges
 // nothing — is proved by the matrix and cap tests above.
 
+// ---- Slice 18 Step 3: composed demo + review, closing Slice 18 (0.80.0) ----
+// One Simulation composing both Slice 18 decisions through the
+// paid path only, mirroring the demo scenario exactly: a Recon
+// Patrol that sidesteps a diagonal march block, skips a
+// single-axis loop block, and resets its refusal counter on
+// moving again; then a Vanguard Patrol deployed later, after
+// the first has marched away, whose rally is the player cell
+// enclosed on all four sides after it deploys, so it cycles
+// through five consecutive refusals and reads Stuck, unmoved,
+// while the first patrol keeps walking; then a save/load
+// round-trip under Step 1's load rule (index and counter
+// reset to 0, so the enclosed patrol reads Patrolling on
+// arrival and reaches Stuck again only after a fresh full
+// circuit). No free deploy path is used here — Step 2
+// removed it — and no enemy is staged, so no fire, chase,
+// or damage claim is smuggled into a route composition.
+var s18Step3Sim = new Simulation(42);
+s18Step3Sim.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+Check(s18Step3Sim.World.Chunk.TrySet(18, 5, 17, BlockType.Stone), "slice18 step3 composed test stages the diagonal march block");
+Check(s18Step3Sim.World.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 step3 composed test stages the loop east block");
+s18Step3Sim.BeginOrbitalPick();
+Check(s18Step3Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol), "slice18 step3 composed patrol doctrine selected");
+Check(s18Step3Sim.OrbitalCommand.SelectKind(SquadKind.Recon), "slice18 step3 composed patrol kind selected");
+Check(s18Step3Sim.SetOrbitalRally(20, 5, 20), "slice18 step3 composed patrol rally set");
+var s18Step3Patrol = s18Step3Sim.ConfirmOrbitalDeploy();
+Check(s18Step3Patrol != null, "slice18 step3 composed patrol deploys paid");
+Eq(TacticalDoctrine.Patrol, s18Step3Patrol!.Doctrine, "slice18 step3 composed patrol keeps patrol doctrine");
+Eq(SquadKind.Recon, s18Step3Patrol.Kind, "slice18 step3 composed patrol keeps recon kind");
+Eq(10, s18Step3Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice18 step3 composed patrol charges 10 ore");
+Eq(16, s18Step3Patrol.X, "slice18 step3 composed patrol deploys at the player X");
+Eq(16, s18Step3Patrol.Z, "slice18 step3 composed patrol deploys at the player Z");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Sim.World)[0].Activity, "slice18 step3 composed patrol reads patrolling before any tick");
+s18Step3Sim.World.Advance();
+Eq(17, s18Step3Patrol.X, "slice18 step3 composed tick 1 patrol X");
+Eq(16, s18Step3Patrol.Z, "slice18 step3 composed tick 1 patrol Z");
+Eq(0, s18Step3Patrol.PatrolWaypointIndex, "slice18 step3 composed tick 1 patrol waypoint");
+s18Step3Sim.World.Advance();
+Eq(17, s18Step3Patrol.X, "slice18 step3 composed tick 2 patrol X");
+Eq(17, s18Step3Patrol.Z, "slice18 step3 composed tick 2 patrol Z");
+Eq(0, s18Step3Patrol.PatrolWaypointIndex, "slice18 step3 composed tick 2 patrol waypoint");
+s18Step3Sim.World.Advance();
+Eq(17, s18Step3Patrol.X, "slice18 step3 composed tick 3 sidestep patrol X");
+Eq(18, s18Step3Patrol.Z, "slice18 step3 composed tick 3 sidestep patrol Z");
+Eq(0, s18Step3Patrol.PatrolWaypointIndex, "slice18 step3 composed tick 3 sidestep keeps the waypoint");
+Eq(0, s18Step3Patrol.PatrolConsecutiveRefusals, "slice18 step3 composed tick 3 sidestep counts no refusal");
+Eq(5, Math.Abs(20 - s18Step3Patrol.X) + Math.Abs(20 - s18Step3Patrol.Z), "slice18 step3 composed tick 3 sidestep distance is 5, down from 6");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Sim.World)[0].Activity, "slice18 step3 composed tick 3 sidestep still reads patrolling");
+s18Step3Sim.World.Advance();
+Eq(18, s18Step3Patrol.X, "slice18 step3 composed tick 4 patrol X");
+Eq(18, s18Step3Patrol.Z, "slice18 step3 composed tick 4 patrol Z");
+s18Step3Sim.World.Advance();
+Eq(19, s18Step3Patrol.X, "slice18 step3 composed tick 5 patrol X");
+Eq(18, s18Step3Patrol.Z, "slice18 step3 composed tick 5 patrol Z");
+s18Step3Sim.World.Advance();
+Eq(19, s18Step3Patrol.X, "slice18 step3 composed tick 6 patrol X");
+Eq(19, s18Step3Patrol.Z, "slice18 step3 composed tick 6 patrol Z");
+s18Step3Sim.World.Advance();
+Eq(20, s18Step3Patrol.X, "slice18 step3 composed tick 7 patrol X");
+Eq(19, s18Step3Patrol.Z, "slice18 step3 composed tick 7 patrol Z");
+s18Step3Sim.World.Advance();
+Eq(20, s18Step3Patrol.X, "slice18 step3 composed tick 8 patrol reaches the rally X");
+Eq(20, s18Step3Patrol.Z, "slice18 step3 composed tick 8 patrol reaches the rally Z");
+Eq(0, s18Step3Patrol.PatrolWaypointIndex, "slice18 step3 composed tick 8 patrol waypoint at the rally");
+s18Step3Sim.World.Advance();
+Eq(20, s18Step3Patrol.X, "slice18 step3 composed tick 9 skipped east leg patrol X");
+Eq(20, s18Step3Patrol.Z, "slice18 step3 composed tick 9 skipped east leg patrol Z");
+Eq(2, s18Step3Patrol.PatrolWaypointIndex, "slice18 step3 composed tick 9 skipped east leg waypoint is south");
+Eq(1, s18Step3Patrol.PatrolConsecutiveRefusals, "slice18 step3 composed tick 9 skipped east leg counts one refusal");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Sim.World)[0].Activity, "slice18 step3 composed tick 9 one refusal still reads patrolling");
+s18Step3Sim.World.Advance();
+Eq(20, s18Step3Patrol.X, "slice18 step3 composed tick 10 patrol X");
+Eq(21, s18Step3Patrol.Z, "slice18 step3 composed tick 10 patrol walks south");
+Eq(2, s18Step3Patrol.PatrolWaypointIndex, "slice18 step3 composed tick 10 patrol waypoint stays south");
+Eq(0, s18Step3Patrol.PatrolConsecutiveRefusals, "slice18 step3 composed tick 10 a move resets the refusal counter");
+// Second patrol, deployed only after the first has marched
+// away, with its rally on the player cell — and the
+// enclosure staged only after this deploy, because staging
+// it first would trap the first patrol at its own spawn.
+s18Step3Sim.BeginOrbitalPick();
+Check(s18Step3Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol), "slice18 step3 composed enclosed doctrine selected");
+Check(s18Step3Sim.OrbitalCommand.SelectKind(SquadKind.Vanguard), "slice18 step3 composed enclosed kind selected");
+Check(s18Step3Sim.SetOrbitalRally(16, 5, 16), "slice18 step3 composed enclosed rally set");
+var s18Step3Enclosed = s18Step3Sim.ConfirmOrbitalDeploy();
+Check(s18Step3Enclosed != null, "slice18 step3 composed enclosed deploys paid");
+Eq(TacticalDoctrine.Patrol, s18Step3Enclosed!.Doctrine, "slice18 step3 composed enclosed keeps patrol doctrine");
+Eq(SquadKind.Vanguard, s18Step3Enclosed.Kind, "slice18 step3 composed enclosed keeps vanguard kind");
+Eq(0, s18Step3Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice18 step3 composed enclosed charges the last 10 ore");
+Eq(2, s18Step3Sim.World.Squads.Count, "slice18 step3 composed two paid patrols fielded");
+Check(s18Step3Sim.World.Chunk.TrySet(17, 5, 16, BlockType.Stone), "slice18 step3 composed test stages the east enclosure wall");
+Check(s18Step3Sim.World.Chunk.TrySet(15, 5, 16, BlockType.Stone), "slice18 step3 composed test stages the west enclosure wall");
+Check(s18Step3Sim.World.Chunk.TrySet(16, 5, 17, BlockType.Stone), "slice18 step3 composed test stages the south enclosure wall");
+Check(s18Step3Sim.World.Chunk.TrySet(16, 5, 15, BlockType.Stone), "slice18 step3 composed test stages the north enclosure wall");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Sim.World)[1].Activity, "slice18 step3 composed enclosed reads patrolling before its circuit");
+s18Step3Sim.World.Advance();
+Eq(20, s18Step3Patrol.X, "slice18 step3 composed enclosed tick 1 patrol X");
+Eq(22, s18Step3Patrol.Z, "slice18 step3 composed enclosed tick 1 patrol Z");
+Eq(16, s18Step3Enclosed.X, "slice18 step3 composed enclosed tick 1 enclosed X");
+Eq(16, s18Step3Enclosed.Z, "slice18 step3 composed enclosed tick 1 enclosed Z");
+Eq(2, s18Step3Enclosed.PatrolWaypointIndex, "slice18 step3 composed enclosed tick 1 enclosed waypoint is south");
+Eq(1, s18Step3Enclosed.PatrolConsecutiveRefusals, "slice18 step3 composed enclosed tick 1 one refusal counted");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Sim.World)[1].Activity, "slice18 step3 composed enclosed tick 1 one refusal still reads patrolling");
+s18Step3Sim.World.Advance();
+Eq(20, s18Step3Patrol.X, "slice18 step3 composed enclosed tick 2 patrol X");
+Eq(23, s18Step3Patrol.Z, "slice18 step3 composed enclosed tick 2 patrol reaches the south waypoint");
+Eq(16, s18Step3Enclosed.X, "slice18 step3 composed enclosed tick 2 enclosed X");
+Eq(16, s18Step3Enclosed.Z, "slice18 step3 composed enclosed tick 2 enclosed Z");
+Eq(3, s18Step3Enclosed.PatrolWaypointIndex, "slice18 step3 composed enclosed tick 2 enclosed waypoint is west");
+Eq(2, s18Step3Enclosed.PatrolConsecutiveRefusals, "slice18 step3 composed enclosed tick 2 two refusals counted");
+s18Step3Sim.World.Advance();
+Eq(19, s18Step3Patrol.X, "slice18 step3 composed enclosed tick 3 patrol turns west X");
+Eq(23, s18Step3Patrol.Z, "slice18 step3 composed enclosed tick 3 patrol Z");
+Eq(16, s18Step3Enclosed.X, "slice18 step3 composed enclosed tick 3 enclosed X");
+Eq(16, s18Step3Enclosed.Z, "slice18 step3 composed enclosed tick 3 enclosed Z");
+Eq(4, s18Step3Enclosed.PatrolWaypointIndex, "slice18 step3 composed enclosed tick 3 enclosed waypoint is north");
+Eq(3, s18Step3Enclosed.PatrolConsecutiveRefusals, "slice18 step3 composed enclosed tick 3 three refusals counted");
+s18Step3Sim.World.Advance();
+Eq(19, s18Step3Patrol.X, "slice18 step3 composed enclosed tick 4 patrol X");
+Eq(22, s18Step3Patrol.Z, "slice18 step3 composed enclosed tick 4 patrol steps north");
+Eq(16, s18Step3Enclosed.X, "slice18 step3 composed enclosed tick 4 enclosed X");
+Eq(16, s18Step3Enclosed.Z, "slice18 step3 composed enclosed tick 4 enclosed Z");
+Eq(0, s18Step3Enclosed.PatrolWaypointIndex, "slice18 step3 composed enclosed tick 4 enclosed waypoint is the rally");
+Eq(4, s18Step3Enclosed.PatrolConsecutiveRefusals, "slice18 step3 composed enclosed tick 4 four refusals counted");
+Check(!s18Step3Enclosed.IsPatrolStuck, "slice18 step3 composed enclosed tick 4 four refusals is not yet stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Sim.World)[1].Activity, "slice18 step3 composed enclosed tick 4 four refusals still reads patrolling");
+s18Step3Sim.World.Advance();
+Eq(18, s18Step3Patrol.X, "slice18 step3 composed enclosed tick 5 patrol steps west X");
+Eq(22, s18Step3Patrol.Z, "slice18 step3 composed enclosed tick 5 patrol Z");
+Eq(16, s18Step3Enclosed.X, "slice18 step3 composed enclosed tick 5 enclosed X");
+Eq(16, s18Step3Enclosed.Z, "slice18 step3 composed enclosed tick 5 enclosed Z");
+Eq(2, s18Step3Enclosed.PatrolWaypointIndex, "slice18 step3 composed enclosed tick 5 enclosed waypoint is south again");
+Eq(5, s18Step3Enclosed.PatrolConsecutiveRefusals, "slice18 step3 composed enclosed tick 5 five refusals counted");
+Check(s18Step3Enclosed.IsPatrolStuck, "slice18 step3 composed enclosed tick 5 five refusals is stuck");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18Step3Sim.World)[1].Activity, "slice18 step3 composed enclosed tick 5 five refusals reads stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Sim.World)[0].Activity, "slice18 step3 composed enclosed tick 5 walking patrol still reads patrolling beside it");
+// Save/load round-trip under Step 1's load rule: both
+// indices and both counters reset, so the enclosed patrol
+// reads Patrolling on arrival and reaches Stuck again only
+// after a fresh full circuit, while the walking patrol
+// marches to its rally first and re-proves the blocked
+// east leg once it stands on its rally.
+var s18Step3Save = s18Step3Sim.SaveToJson();
+Eq(44015, s18Step3Save.Length, "slice18 step3 composed save JSON length matches the demo run");
+var s18Step3Loaded = new Simulation(99);
+Check(s18Step3Loaded.LoadFromJson(s18Step3Save), "slice18 step3 composed save loads");
+Eq(2, s18Step3Loaded.World.Squads.Count, "slice18 step3 composed loaded squads count");
+var s18Step3LoadedPatrol = s18Step3Loaded.World.Squads[0];
+var s18Step3LoadedEnclosed = s18Step3Loaded.World.Squads[1];
+Eq(18, s18Step3LoadedPatrol.X, "slice18 step3 composed loaded patrol X");
+Eq(22, s18Step3LoadedPatrol.Z, "slice18 step3 composed loaded patrol Z");
+Eq(0, s18Step3LoadedPatrol.PatrolWaypointIndex, "slice18 step3 composed loaded patrol waypoint resets to 0");
+Eq(0, s18Step3LoadedPatrol.PatrolConsecutiveRefusals, "slice18 step3 composed loaded patrol counter resets to 0");
+Eq(16, s18Step3LoadedEnclosed.X, "slice18 step3 composed loaded enclosed X");
+Eq(16, s18Step3LoadedEnclosed.Z, "slice18 step3 composed loaded enclosed Z");
+Eq(0, s18Step3LoadedEnclosed.PatrolWaypointIndex, "slice18 step3 composed loaded enclosed waypoint resets to 0");
+Eq(0, s18Step3LoadedEnclosed.PatrolConsecutiveRefusals, "slice18 step3 composed loaded enclosed counter resets to 0");
+Check(!s18Step3LoadedEnclosed.IsPatrolStuck, "slice18 step3 composed loaded enclosed is not stuck on arrival");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Loaded.World)[1].Activity, "slice18 step3 composed loaded enclosed reads patrolling on arrival");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Loaded.World)[0].Activity, "slice18 step3 composed loaded patrol reads patrolling on arrival");
+s18Step3Loaded.World.Advance();
+Eq(19, s18Step3LoadedPatrol.X, "slice18 step3 composed loaded tick 1 patrol steps east X");
+Eq(22, s18Step3LoadedPatrol.Z, "slice18 step3 composed loaded tick 1 patrol Z");
+Eq(2, s18Step3LoadedEnclosed.PatrolWaypointIndex, "slice18 step3 composed loaded tick 1 enclosed waypoint is south");
+Eq(1, s18Step3LoadedEnclosed.PatrolConsecutiveRefusals, "slice18 step3 composed loaded tick 1 enclosed one refusal counted");
+s18Step3Loaded.World.Advance();
+Eq(19, s18Step3LoadedPatrol.X, "slice18 step3 composed loaded tick 2 patrol X");
+Eq(21, s18Step3LoadedPatrol.Z, "slice18 step3 composed loaded tick 2 patrol steps north");
+Eq(3, s18Step3LoadedEnclosed.PatrolWaypointIndex, "slice18 step3 composed loaded tick 2 enclosed waypoint is west");
+Eq(2, s18Step3LoadedEnclosed.PatrolConsecutiveRefusals, "slice18 step3 composed loaded tick 2 enclosed two refusals counted");
+s18Step3Loaded.World.Advance();
+Eq(20, s18Step3LoadedPatrol.X, "slice18 step3 composed loaded tick 3 patrol steps east X");
+Eq(21, s18Step3LoadedPatrol.Z, "slice18 step3 composed loaded tick 3 patrol Z");
+Eq(4, s18Step3LoadedEnclosed.PatrolWaypointIndex, "slice18 step3 composed loaded tick 3 enclosed waypoint is north");
+Eq(3, s18Step3LoadedEnclosed.PatrolConsecutiveRefusals, "slice18 step3 composed loaded tick 3 enclosed three refusals counted");
+s18Step3Loaded.World.Advance();
+Eq(20, s18Step3LoadedPatrol.X, "slice18 step3 composed loaded tick 4 patrol reaches the rally X");
+Eq(20, s18Step3LoadedPatrol.Z, "slice18 step3 composed loaded tick 4 patrol reaches the rally Z");
+Eq(0, s18Step3LoadedEnclosed.PatrolWaypointIndex, "slice18 step3 composed loaded tick 4 enclosed waypoint is the rally");
+Eq(4, s18Step3LoadedEnclosed.PatrolConsecutiveRefusals, "slice18 step3 composed loaded tick 4 enclosed four refusals counted");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18Step3Loaded.World)[1].Activity, "slice18 step3 composed loaded tick 4 enclosed four refusals still reads patrolling");
+s18Step3Loaded.World.Advance();
+Eq(20, s18Step3LoadedPatrol.X, "slice18 step3 composed loaded tick 5 patrol X");
+Eq(20, s18Step3LoadedPatrol.Z, "slice18 step3 composed loaded tick 5 patrol Z");
+Eq(2, s18Step3LoadedPatrol.PatrolWaypointIndex, "slice18 step3 composed loaded tick 5 patrol skips the blocked east leg again");
+Eq(1, s18Step3LoadedPatrol.PatrolConsecutiveRefusals, "slice18 step3 composed loaded tick 5 patrol counts one refusal again");
+Eq(16, s18Step3LoadedEnclosed.X, "slice18 step3 composed loaded tick 5 enclosed X");
+Eq(16, s18Step3LoadedEnclosed.Z, "slice18 step3 composed loaded tick 5 enclosed Z");
+Eq(2, s18Step3LoadedEnclosed.PatrolWaypointIndex, "slice18 step3 composed loaded tick 5 enclosed waypoint is south again");
+Eq(5, s18Step3LoadedEnclosed.PatrolConsecutiveRefusals, "slice18 step3 composed loaded tick 5 enclosed five refusals counted again");
+Check(s18Step3LoadedEnclosed.IsPatrolStuck, "slice18 step3 composed loaded tick 5 enclosed is stuck again");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18Step3Loaded.World)[1].Activity, "slice18 step3 composed loaded tick 5 enclosed reads stuck again");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

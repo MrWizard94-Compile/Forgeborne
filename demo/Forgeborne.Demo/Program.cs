@@ -1165,3 +1165,89 @@ SeedPocketS17(simS17Loaded.World, 10, 26);
 for (int i = 0; i < 5; i++) simS17Loaded.World.Advance();
 Console.WriteLine($"Slice 17 loaded phase after 5 ticks: powered gathered {simS17Loaded.World.PoweredBlocksGathered} (5 again, pocket re-seeded), kinetic gathered {simS17Loaded.World.KineticBlocksGathered} (1 again), destroyed {simS17Loaded.World.DestroyedMills} (no new destruction), stone {simS17Loaded.World.Player.Inventory.Get(BlockType.Stone)}");
 Console.WriteLine($"Slice 17 done: powered {simS17.World.PoweredBlocksGathered} + loaded {simS17Loaded.World.PoweredBlocksGathered}, kinetic {simS17.World.KineticBlocksGathered} + loaded {simS17Loaded.World.KineticBlocksGathered}, destroyed {simS17.World.DestroyedMills}, save JSON length: {saveS17.Length} chars");
+
+// Slice 18 Step 3 scenario: Slice 18 composed in one run —
+// the two decided orbital remainders together, through the
+// paid path only, on routes that are actually blocked. One
+// Simulation carries a Recon Patrol whose march to its rally
+// is diagonally blocked (so Step 1's sidestep, not a skip,
+// is exercised on tick 3), whose loop leg east is
+// single-axis blocked (so the skip, not a sidestep, is
+// exercised on tick 9), and then a second, Vanguard Patrol
+// deployed later, after the first has marched away, whose
+// rally is the player cell itself — enclosed on all four
+// sides after it deploys, so it cycles through five
+// consecutive refusals and reads Stuck, unmoved, while the
+// first patrol keeps walking its loop beside it. The
+// enclosure walls are staged only after the second deploy,
+// because both patrols deploy at the player cell: staging
+// them first would trap the first patrol at its own spawn
+// and prove nothing about either route. No free deploy
+// path is used anywhere in this demo — Step 2 removed it —
+// and no enemy is staged, so no fire, chase, or damage
+// claim is smuggled into a route demo: the demo proves
+// movement, refusal counting, and the stuck word, and
+// nothing else. What this demo cannot show, by
+// construction, is any adapter feel: no Alpha7 key press,
+// no kind marker shape, and no scene visibility appear in
+// a headless run, so the blocked-route behaviour stays in
+// playtest-gate checklist item 37 (Windows-only), not in
+// the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 18 Step 3 scenario — paid Patrol sidestepping, skipping, and reading Stuck beside a second paid Patrol, save/load round-trip");
+var simS18 = new Simulation(42);
+simS18.World.Player.Inventory.Add(BlockType.EmberOre, 20);
+simS18.World.Chunk.TrySet(18, 5, 17, BlockType.Stone);
+simS18.World.Chunk.TrySet(21, 5, 20, BlockType.Stone);
+simS18.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS18.OrbitalCommand.SelectKind(SquadKind.Recon);
+simS18.BeginOrbitalPick();
+simS18.SetOrbitalRally(20, 5, 20);
+var s18Patrol = simS18.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Recon Patrol {(s18Patrol == null ? "REJECTED" : "rally (20,5,20)")}, ore left {simS18.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches to its rally; stone at (18,5,17) blocks a diagonal march step, stone at (21,5,20) blocks the loop leg east)");
+foreach (var sq in OrbitalView.Snapshot(simS18.World))
+    Console.WriteLine($"Slice 18 snapshot before: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 10; tick++)
+{
+    simS18.World.Advance();
+    var patrol = simS18.World.Squads[0];
+    var snaps = OrbitalView.Snapshot(simS18.World);
+    Console.WriteLine($"Slice 18 tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} target ({patrol.PatrolTarget.X},5,{patrol.PatrolTarget.Z}) refusals {patrol.PatrolConsecutiveRefusals} reads {snaps[0].Activity}");
+}
+Console.WriteLine($"Slice 18 after 10 ticks: patrol at ({simS18.World.Squads[0].X},5,{simS18.World.Squads[0].Z}) waypoint {simS18.World.Squads[0].PatrolWaypointIndex} refusals {simS18.World.Squads[0].PatrolConsecutiveRefusals} (sidestepped on tick 3, skipped the blocked east leg on tick 9, walking south again on tick 10)");
+simS18.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS18.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS18.BeginOrbitalPick();
+simS18.SetOrbitalRally(16, 5, 16);
+var s18Enclosed = simS18.ConfirmOrbitalDeploy();
+simS18.World.Chunk.TrySet(17, 5, 16, BlockType.Stone);
+simS18.World.Chunk.TrySet(15, 5, 16, BlockType.Stone);
+simS18.World.Chunk.TrySet(16, 5, 17, BlockType.Stone);
+simS18.World.Chunk.TrySet(16, 5, 15, BlockType.Stone);
+Console.WriteLine($"Paid squads deployed: Vanguard Patrol {(s18Enclosed == null ? "REJECTED" : "rally (16,5,16), the player cell")}, ore left {simS18.World.Player.Inventory.Get(BlockType.EmberOre)} (enclosure staged after this deploy: east, west, south, and north walls around the rally cell)");
+foreach (var sq in OrbitalView.Snapshot(simS18.World))
+    Console.WriteLine($"Slice 18 snapshot before enclosed phase: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS18.World.Advance();
+    var patrol = simS18.World.Squads[0];
+    var enclosed = simS18.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS18.World);
+    Console.WriteLine($"Slice 18 enclosed tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[0].Activity}, enclosed at ({enclosed.X},5,{enclosed.Z}) waypoint {enclosed.PatrolWaypointIndex} refusals {enclosed.PatrolConsecutiveRefusals} reads {snaps[1].Activity}");
+}
+Console.WriteLine($"Slice 18 after enclosed phase: patrol at ({simS18.World.Squads[0].X},5,{simS18.World.Squads[0].Z}) waypoint {simS18.World.Squads[0].PatrolWaypointIndex}, enclosed at ({simS18.World.Squads[1].X},5,{simS18.World.Squads[1].Z}) waypoint {simS18.World.Squads[1].PatrolWaypointIndex} refusals {simS18.World.Squads[1].PatrolConsecutiveRefusals} reads Stuck, unmoved");
+var saveS18 = simS18.SaveToJson();
+var simS18Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS18Loaded.LoadFromJson(saveS18)}");
+foreach (var sq in OrbitalView.Snapshot(simS18Loaded.World))
+    Console.WriteLine($"Slice 18 snapshot after load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 18 loaded waypoint indices: patrol {simS18Loaded.World.Squads[0].PatrolWaypointIndex}, enclosed {simS18Loaded.World.Squads[1].PatrolWaypointIndex} (both reset to 0 on load, and both refusal counters reset to 0, so the enclosed patrol reads Patrolling on arrival, not Stuck)");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS18Loaded.World.Advance();
+    var patrol = simS18Loaded.World.Squads[0];
+    var enclosed = simS18Loaded.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS18Loaded.World);
+    Console.WriteLine($"Slice 18 loaded tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} target ({patrol.PatrolTarget.X},5,{patrol.PatrolTarget.Z}) reads {snaps[0].Activity}, enclosed at ({enclosed.X},5,{enclosed.Z}) waypoint {enclosed.PatrolWaypointIndex} refusals {enclosed.PatrolConsecutiveRefusals} reads {snaps[1].Activity}");
+}
+Console.WriteLine($"Slice 18 done: patrol {simS18.World.Squads[0].Kind} {simS18.World.Squads[0].Doctrine} + loaded patrol, enclosed {simS18.World.Squads[1].Kind} {simS18.World.Squads[1].Doctrine} stuck and stuck again after load, save JSON length: {saveS18.Length} chars");

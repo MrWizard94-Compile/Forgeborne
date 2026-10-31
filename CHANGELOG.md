@@ -1,5 +1,68 @@
 # Forgeborne — Changelog
 
+## 0.80.0 — 2026-10-31 — Slice 18 Step 3: composed demo
+plus review, closing Slice 18, decided
+
+- Composition, decided in this step (rationale in
+  DECISIONS.md): one Simulation, two paid patrols, no
+  enemy, no free deploy path anywhere — a Recon Patrol
+  to rally (20,5,20) that sidesteps a diagonal march
+  block at (18,5,17) on tick 3, skips the single-axis
+  loop leg east blocked at (21,5,20) on tick 9, and
+  resets its refusal counter on walking south again on
+  tick 10; then a Vanguard Patrol to rally (16,5,16),
+  the player cell, deployed only after the first
+  patrol has marched away, enclosed on all four sides
+  after it deploys, so it cycles through five
+  consecutive refusals and reads Stuck, unmoved, while
+  the first patrol keeps walking beside it; then a
+  save/load round-trip under Step 1's load rule, in
+  which both patrols reset waypoint index and refusal
+  counter to 0, the enclosed patrol reads Patrolling
+  on arrival and earns Stuck again only after a fresh
+  full circuit, and the walking patrol marches to its
+  rally first and skips the blocked east leg again.
+- Composed numbers pinned: phase 1 ticks 1–10, march
+  (17,16), (17,17), sidestep (17,18) with distance 6
+  to 5, (18,18), (19,18), (19,19), (20,19), rally
+  (20,20), skip unmoved at (20,20) with waypoint 2
+  and 1 refusal, then (20,21) with counter 0;
+  enclosed phase, walking patrol (20,22), (20,23),
+  (19,23), (19,22), (18,22) while the enclosed patrol
+  stays at (16,16) through waypoints 2, 3, 4, 0, 2
+  and refusals 1–5, Patrolling through 4 and Stuck
+  at 5; loaded phase, walking patrol (19,22),
+  (19,21), (20,21), rally (20,20), then skip again
+  unmoved at (20,20) with waypoint 2 and 1 refusal,
+  while the enclosed patrol repeats waypoints 2, 3,
+  4, 0, 2 and refusals 1–5, Stuck again at 5. Ore:
+  20 in, 10 left after the first patrol, 0 after
+  the second — the paid cost is visible in the
+  demo's numbers, not asserted beside it.
+- Review: new docs/slice-18-review.md checks the
+  slice against docs/slice-18-scope.md step by step,
+  states the verdict honestly (two orbital remainders
+  decided with tests and proved together in one demo,
+  not playtested, not Unity-verified), separates
+  headless-tested route and boundary claims from the
+  Windows-checklist patrol observation (item 37,
+  still unmade), carries the gaps that remain in
+  priority order, and does NOT scope Slice 19.
+- Checklist relation: no new playtest-gate item —
+  the review exercises no behaviour item 37 does not
+  already cover, and Step 2's boundary takes no item
+  because a compile error is not a scene behaviour,
+  so the next free gate number remains 38. No core
+  file, no adapter file, no material, marker, light,
+  fog, model, or HUD rule moves in this step. Demo
+  unchanged except for the new scenario: every
+  earlier demo save length stands (Slice 15 44,016
+  chars, Slice 17 43,974 chars, and all others as in
+  the 0.79.0 entry's run); new Slice 18 scenario save
+  44,015 chars, quoted as its own entry — one char
+  shorter than the Slice 15 save, a different save,
+  not a change to it.
+
 ## 0.79.0 — 2026-10-31 — Slice 18 Step 2: free deploy
 primitive enforcement, hard removal plus internal
 test seam, decided

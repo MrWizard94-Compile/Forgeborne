@@ -7407,6 +7407,158 @@ seam, decided
   this step's enforcement, never the removed
   free path.
 
+## 0.80.0 — Slice 18 Step 3: composed demo plus
+documentation-only review, closing Slice 18
+
+- State found on entry: remote main head
+  d04213a1725e0ccbb6967ca06b6373f191833aaf,
+  CHANGELOG 0.79.0 (Slice 18 Step 2), sync record
+  81 entries ending at that commit, local working
+  copy matched — no step was repeated: the 0.79.0
+  decision named Slice 18 Step 3, the composed demo
+  scenario plus documentation-only review closing
+  Slice 18, decided in that step, and this run did
+  exactly that. Tests 2556 baseline re-run passing;
+  demo Slice 15 save 44,016 chars, Slice 17 save
+  43,974 chars.
+- Composition, decided in this step: one Simulation,
+  two paid patrols, no enemy, no free deploy path.
+  A Recon Patrol to rally (20,5,20) proves the
+  sidestep, the skip, and the counter reset in one
+  patrol's first ten ticks, because those three
+  behaviours are one route's story, not three
+  worlds: a diagonal march block at (18,5,17) forces
+  the tick-3 sidestep south to (17,5,18), keeping
+  waypoint 0 and counting no refusal, with distance
+  6 to 5; a loop-east block at (21,5,20) forces the
+  tick-9 single-axis skip to waypoint 2 with 1
+  refusal, still Patrolling; the tick-10 south step
+  resets the counter to 0. Recon, not Vanguard,
+  because Recon's loop was already the Slice 15
+  composed kind, and reusing it keeps the composed
+  claim continuous with the doctrine's first demo
+  rather than introducing a kind change beside a
+  route claim.
+- Why the second patrol is a Vanguard Patrol to the
+  player cell, deployed late, enclosed late. The
+  scope demands a fully blocked case in the same
+  Simulation, and a fully blocked case that is
+  honest requires a squad standing on its rally
+  with every neighbour solid — a squad marching
+  toward an enclosed rally can walk around the
+  walls to reach a waypoint beyond them, so it is
+  not enclosed at all. The only rally a squad
+  stands on at deploy time is the player cell, so
+  the second patrol's rally is (16,5,16), and it
+  must deploy after the first patrol has marched
+  away, with its enclosure staged only after it
+  deploys: staging the walls first would trap the
+  first patrol at its own spawn, since both
+  patrols deploy at the player cell. Vanguard,
+  not a second Recon, because the stuck reading is
+  kind-independent in code and the composition
+  should show that — a Vanguard reading Stuck
+  beside a walking Recon proves the word follows
+  the route, not the kind. The enclosed phase
+  prints the threshold honesty Step 1 decided:
+  four refusals still Patrolling, five Stuck.
+- Why no enemy, and why that is not a hole. The
+  scope's composed minimum is a paid patrol on a
+  blocked route, a fully blocked case, and a
+  save/load round-trip; fire while stuck for all
+  three kinds is already proved in Step 1's tests,
+  and an enemy in this demo would stage a second
+  claim (engagement) beside the route claim while
+  also moving each tick and threatening the very
+  positions the route assertions pin. The demo
+  therefore proves movement, refusal counting, and
+  the stuck word, and claims nothing about fire —
+  and the review says so, rather than letting a
+  reader assume the demo proves engagement too.
+- Loaded phase, decided in this step: the save is
+  taken with the walking patrol at (18,5,22) on
+  waypoint 3 and the enclosed patrol at (16,5,16)
+  with 5 refusals, so the load proof is a
+  discrimination, not a restatement. Both patrols
+  load with index 0 and counter 0: the walking
+  patrol marches to its rally first — (19,22),
+  (19,21), (20,21), (20,20) — instead of resuming
+  its loop from (18,22), and on loaded tick 5 it
+  skips the blocked east leg again, because the
+  stone at (21,5,20) survives in the save; the
+  enclosed patrol must earn Stuck again over five
+  fresh refusals, instead of arriving with it.
+  A loaded patrol that arrived Stuck would have
+  proved the counter was saved, which Step 1
+  decided it is not.
+- Test-file placement, as in Step 3s before it:
+  the 134 composed assertions were inserted before
+  the test runner's summary, not after its return,
+  so they execute — the suite rise 2556 to 2690
+  is the check, and the final runs show no
+  failures. The save-length assertion (44,015
+  chars) pins the new scenario's save exactly as
+  the Slice 6 demo test pins its own; it is a
+  format pin, not a claim that 44,015 is better
+  than 44,016.
+- Save-length note, stated so a later reader does
+  not miscount it: the new Slice 18 save is
+  44,015 chars, one char shorter than the Slice 15
+  scenario's 44,016, and it is quoted in the review
+  and the changelog as its own entry, never as a
+  change to the Slice 15 entry. Every earlier save
+  length was read from the same demo run and is
+  unchanged (Slice 1 43,881; Slice 2 43,921; Step 1
+  scenario 44,016; Step 3 scenario 44,103; Slice 4
+  44,026; Slice 5 43,974; Slice 6 44,024; Slice 7
+  44,013; Slice 8 43,974; Slice 9 43,975; Slice 10
+  43,974; Slice 11 44,038; Slice 12 43,974; Slice 13
+  44,045; Slice 14 43,974; Slice 15 44,016; Slice 17
+  43,974), so no save rule moved in this step and
+  the one-char difference is a property of a
+  different save, not a moved old one. No cause
+  for the single char is claimed here: digit counts
+  in saved positions and rallies differ between
+  the two scenarios, but this entry does not
+  present that as a verified explanation.
+- Checklist relation: no new playtest-gate item is
+  taken in this step. Item 37 already covers the
+  decided patrol behaviour as a Windows observation
+  (enclosed patrol, singly blocked waypoint, block
+  clears), and this review exercises no behaviour
+  item 37 does not cover; Step 2's boundary takes
+  no item because a compile error is not a scene
+  behaviour. Next free gate number remains 38.
+  Item 37 itself is still unmade as an observation,
+  and the review carries it in its gaps, not as a
+  closed item.
+- Deliberately not in this step: a new core system,
+  a new query, an adapter edit (other than none —
+  the text line already renders Stuck), a checklist
+  item, a price, cap, radius, waypoint, fire,
+  targeting, delivery, precedence, conflict,
+  rating, cost, or phase rule change, a material,
+  marker, light, fog, model, or HUD change, a
+  recall or re-rally action for a stuck patrol
+  (a new decision, named as a gap in the review,
+  not smuggled in as a demo feature), or a Slice 19
+  scope — that belongs to the next scoping step,
+  chosen from the ranked candidates the review
+  carries, not promised here.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 19 as its own decision
+  step, chosen from the ranked candidates the Slice 18
+  review carries (transformer-adjacency invisibility
+  first, then Slice 13 remainder observations, then
+  first-pass graphics retuning on Windows evidence),
+  not promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
