@@ -1,5 +1,57 @@
 # Forgeborne — Changelog
 
+## 0.83.0 — 2026-10-31 — Slice 19 Step 2:
+composed demo + review, closing Slice 19
+
+- Step taken, decided in this step: Slice 19 Step 2, the
+  composed demo scenario plus the documentation-only
+  review closing Slice 19. No new core system, no new
+  query, no adapter edit, no checklist item, by design;
+  Slice 20 is NOT scoped here.
+- Composition, decided in this step: demo/Forgeborne.Demo
+  gains a Slice 19 Step 2 scenario after the Slice 18
+  scenario — one Simulation, six rows on the y=20 plane
+  four cells apart in z, carrying the Step 1 case (a
+  Conduit beside a transformer alone), the two live
+  controls (a Dynamo beside a transformer alone and an
+  Alternator beside a transformer alone), the lone control
+  (a lone Conduit), the Slice 17 Step 2 control (a mill
+  beside a Conduit), and the dead-cable consistency case
+  (a Dynamo-plus-Conduit mixed-voltage cable component)
+  alongside the decided transformer case, with the POWER
+  line read before and after a tick and a save/load
+  round-trip proving the reading re-derives on load.
+- Composed numbers pinned: before any tick 0 of 1 MILLS
+  POWERED, WARNED 0 MILLS, POWER 2 LIVE NETWORKS, 3 LONE
+  SOURCES; every staged cell's power state None; tick 1
+  leaves the Step 2 mill standing, all counters 0, and
+  the POWER line still 2 / 3; after load every staged cell
+  loads, the POWER line re-derives as 2 / 3, counters
+  reset, player at (16,5,16); loaded tick 1 re-proves the
+  same stability. The stability is the composition's
+  point: no mill here is mismatched, so nothing is
+  destroyed and nothing starts feeding.
+- Review: new docs/slice-19-review.md (gate checked
+  against the scope, verdict: reviewed and closed as one
+  display-query remainder decided with tests and proved
+  together in one demo, not playtested, not
+  Unity-verified, gaps carried in priority order, no new
+  playtest-gate checklist item — next free number remains
+  39); CHANGELOG 0.83.0 and DECISIONS.md entries
+  (composition, stability rationale, claim split,
+  deliberately-not list, next step: scoping Slice 20 as
+  its own decision step).
+- Tests: 2810 passed, 0 failed (was 2733; +77, no failures
+  on the final runs). Demo: all earlier demo saves as in
+  the 0.82.0 entry (Slice 1 43,881; Slice 2 43,921; Step 1
+  44,016; Step 3 44,103; Slice 4 44,026; Slice 5 43,974;
+  Slice 6 44,024; Slice 7 44,013; Slice 8 43,974; Slice 9
+  43,975; Slice 10 43,974; Slice 11 44,038; Slice 12 43,974;
+  Slice 13 44,045; Slice 14 43,974; Slice 15 44,016; Slice
+  17 43,974; Slice 18 44,015). New scenario save 43,965
+  chars, quoted as its own entry, not as a change to any
+  earlier save.
+
 ## 0.82.0 — 2026-10-31 — Slice 19 Step 1:
 transformer-adjacency count query, decided
 

@@ -7898,6 +7898,100 @@ count query, decided
   its controls in one Simulation, per
   docs/slice-19-scope.md.
 
+## 0.83.0 — Slice 19 Step 2: composed demo + review,
+closing Slice 19
+
+- Step, decided in this step: the composed demo plus
+  documentation-only review closing Slice 19, per
+  docs/slice-19-scope.md. No new core system, no new
+  query, no adapter edit, no checklist item, by design.
+  Slice 20 is NOT scoped here; it is scoped afterwards,
+  the same way the Slice 19 scope followed the Slice 18
+  review rather than preceding it.
+- Composition, decided in this step: one Simulation,
+  six rows on the y=20 plane four cells apart in z, so
+  no row can leak voltage into another through a
+  face-adjacent neighbour — the Step 1 case (Conduit
+  beside a transformer alone), the two live controls
+  (Dynamo and Alternator each beside a transformer
+  alone), the lone control (a lone Conduit), the Slice
+  17 Step 2 control (a mill beside a Conduit), and the
+  dead-cable consistency case (a Dynamo-plus-Conduit
+  mixed-voltage cable component) alongside the decided
+  transformer case. The demo stages the rows directly
+  with TrySet, exactly as Step 1's tests stage theirs:
+  aim placement was proved in Slice 14 Step 1, and
+  walking this layout in by aim would prove walking,
+  not counting. No enemy, no squad, no pocket seeded —
+  the demo proves counting, and nothing else.
+- Why tick stability is the composition's point, not a
+  missing phase: no mill in this wiring is mismatched,
+  so none is destroyed; none is powered, so powered
+  gathered stays 0; the Step 2 mill is not due a kinetic
+  gather on tick 1, so kinetic gathered stays 0 and
+  stone stays 0. The POWER line reads 2 LIVE NETWORKS,
+  3 LONE SOURCES before the tick, after tick 1, after
+  load, and after loaded tick 1 alike — the decided
+  count, the live controls, and the lone controls agree
+  in one field, and the save/load round-trip proves the
+  reading re-derives on load (counts are derived, never
+  saved, so a changed save length would mean a save
+  rule moved). A demo that staged a mismatched mill
+  would prove destruction, not counting, and Slice 17
+  already proved destruction beside its own counts.
+- Why the dead-cable row reads differently in the same
+  field, stated again rather than left to the Step 1
+  entry alone: the dead-cable row contributes 0 / 0
+  beside the Step 1 row's 0 / 1, and the composition
+  exists so a reader sees both dead wirings at once.
+  The distinction is the branch, not a preference: the
+  Conduit feeds the cable component (CableNetworkVoltage
+  lists all three kinds), so cable adjacency is genuine
+  wiring for it, while TransformerOutput lists no
+  Conduit branch, so transformer adjacency is not
+  wiring for it at all. The review states this in its
+  demo section, not only in Step 1's rationale, so the
+  asymmetry cannot be misread later as an oversight.
+- Claim split, stated plainly: the headless evidence is
+  count pairs for staged layouts, cell power states,
+  delivery and powered/mismatched predicates for the one
+  staged mill, counter values across ticks, and a
+  save/load round-trip that re-derives the counts, plus
+  a demo that prints those values for six rows in one
+  field. None of that proves a Conduit beside a
+  transformer alone reads 0 LIVE, 1 LONE on a HUD line
+  in a built scene, or that a player understands the lone
+  number as a placement that went nowhere while looking
+  at the wiring. That is item 38, a Windows observation,
+  recorded in DECISIONS.md when observed, not closed by
+  a test count or by this review.
+- Checklist relation, decided in this step: this review
+  adds no new item, because it exercises no behaviour
+  item 38 does not already cover. Item 38 extends item 36
+  and item 22 and supersedes neither, as Step 1 recorded.
+  Next free gate number remains 39.
+- Save-length honesty: the new scenario's save is 43,965
+  chars, quoted as its own entry, not as a change to any
+  earlier save; every earlier demo save length was read
+  from the same demo run and is unchanged, so no save
+  rule moved in this step. Slice 19 adds no save field.
+- Deliberately not in this step: a delivery, precedence,
+  conflict, rating, cost, or phase rule change; a
+  material, marker, light, fog, model, or tint value
+  move; a HUD redesign; a new block, kind, doctrine,
+  source, or consumer; a patrol recall, re-rally, radius,
+  or waypoint decision; a Slice 20 scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 20 as its own decision step,
+  chosen from the ranked candidates the Slice 19 review
+  carries, not promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

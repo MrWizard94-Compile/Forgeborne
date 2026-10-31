@@ -6855,5 +6855,115 @@ Eq((0, 1), s19Loaded.World.LivePowerCounts(), "slice19 step1 dead transformer co
 Eq(1, s19Loaded.Hud().LoneSources, "slice19 step1 hud carries the dead transformer conduit lone count after load");
 Eq(0, s19Loaded.Hud().LiveNetworks, "slice19 step1 hud carries no live network for the dead transformer case after load");
 
+// ---- Slice 19 Step 2: composed demo + review, closing Slice 19 (0.83.0) ----
+// One Simulation composing the Step 1 count with its
+// controls, mirroring the demo scenario exactly: a Conduit
+// beside a transformer alone (the decided case), a Dynamo
+// and an Alternator each beside a transformer alone (the
+// live controls), a lone Conduit (the lone control), a mill
+// beside a Conduit (the Slice 17 Step 2 control), and a
+// Dynamo-plus-Conduit mixed-voltage cable component (the
+// dead-cable consistency case, reading differently from the
+// decided case by the branch distinction Step 1 recorded).
+// Rows are four cells apart in z, so no row can leak
+// voltage into another, and every aggregate below is a
+// total over all six rows — the composed claim is exactly
+// that the decided reading agrees with the live, lone, and
+// dead-cable controls in one wiring, stays stable across a
+// tick (no mill here is mismatched, so nothing is
+// destroyed and nothing starts feeding), and re-derives on
+// load. No new core system, no adapter edit, no checklist
+// item: the review exercises no behaviour item 38 does not
+// already cover.
+var s19Step3Sim = new Simulation(42);
+Check(s19Step3Sim.World.Chunk.TrySet(11, 20, 10, BlockType.Transformer), "slice19 step3 composed test stages the step1 transformer");
+Check(s19Step3Sim.World.Chunk.TrySet(12, 20, 10, BlockType.Conduit), "slice19 step3 composed test stages the step1 conduit");
+Check(s19Step3Sim.World.Chunk.TrySet(10, 20, 14, BlockType.Dynamo), "slice19 step3 composed test stages the dynamo live control source");
+Check(s19Step3Sim.World.Chunk.TrySet(11, 20, 14, BlockType.Transformer), "slice19 step3 composed test stages the dynamo live control transformer");
+Check(s19Step3Sim.World.Chunk.TrySet(10, 20, 18, BlockType.Alternator), "slice19 step3 composed test stages the alternator live control source");
+Check(s19Step3Sim.World.Chunk.TrySet(11, 20, 18, BlockType.Transformer), "slice19 step3 composed test stages the alternator live control transformer");
+Check(s19Step3Sim.World.Chunk.TrySet(10, 20, 22, BlockType.Conduit), "slice19 step3 composed test stages the lone conduit control");
+Check(s19Step3Sim.World.Chunk.TrySet(10, 20, 26, BlockType.KineticMill), "slice19 step3 composed test stages the step2 control mill");
+Check(s19Step3Sim.World.Chunk.TrySet(11, 20, 26, BlockType.Conduit), "slice19 step3 composed test stages the step2 control conduit");
+Check(s19Step3Sim.World.Chunk.TrySet(10, 20, 30, BlockType.Dynamo), "slice19 step3 composed test stages the dead cable dynamo");
+Check(s19Step3Sim.World.Chunk.TrySet(11, 20, 30, BlockType.Cable), "slice19 step3 composed test stages the dead cable cell");
+Check(s19Step3Sim.World.Chunk.TrySet(12, 20, 30, BlockType.Conduit), "slice19 step3 composed test stages the dead cable conduit");
+Eq(BlockType.Transformer, s19Step3Sim.World.Chunk.Get(11, 20, 10), "slice19 step3 composed step1 transformer cell");
+Eq(BlockType.Conduit, s19Step3Sim.World.Chunk.Get(12, 20, 10), "slice19 step3 composed step1 conduit cell");
+Eq(BlockType.Dynamo, s19Step3Sim.World.Chunk.Get(10, 20, 14), "slice19 step3 composed dynamo live control cell");
+Eq(BlockType.Transformer, s19Step3Sim.World.Chunk.Get(11, 20, 14), "slice19 step3 composed dynamo transformer cell");
+Eq(BlockType.Alternator, s19Step3Sim.World.Chunk.Get(10, 20, 18), "slice19 step3 composed alternator live control cell");
+Eq(BlockType.Transformer, s19Step3Sim.World.Chunk.Get(11, 20, 18), "slice19 step3 composed alternator transformer cell");
+Eq(BlockType.Conduit, s19Step3Sim.World.Chunk.Get(10, 20, 22), "slice19 step3 composed lone conduit cell");
+Eq(BlockType.KineticMill, s19Step3Sim.World.Chunk.Get(10, 20, 26), "slice19 step3 composed step2 mill cell");
+Eq(BlockType.Conduit, s19Step3Sim.World.Chunk.Get(11, 20, 26), "slice19 step3 composed step2 conduit cell");
+Eq(BlockType.Dynamo, s19Step3Sim.World.Chunk.Get(10, 20, 30), "slice19 step3 composed dead cable dynamo cell");
+Eq(BlockType.Cable, s19Step3Sim.World.Chunk.Get(11, 20, 30), "slice19 step3 composed dead cable cell");
+Eq(BlockType.Conduit, s19Step3Sim.World.Chunk.Get(12, 20, 30), "slice19 step3 composed dead cable conduit cell");
+Eq((2, 3), s19Step3Sim.World.LivePowerCounts(), "slice19 step3 composed counts before the tick are 2 live, 3 lone");
+var s19Step3HudBefore = s19Step3Sim.Hud();
+Eq(0, s19Step3HudBefore.PoweredMills, "slice19 step3 composed no mill powered before the tick");
+Eq(1, s19Step3HudBefore.TotalMills, "slice19 step3 composed one mill total before the tick");
+Eq(0, s19Step3HudBefore.WarnedMills, "slice19 step3 composed no mill warned before the tick");
+Eq(2, s19Step3HudBefore.LiveNetworks, "slice19 step3 composed two live networks before the tick: the two fed transformer groups");
+Eq(3, s19Step3HudBefore.LoneSources, "slice19 step3 composed three lone sources before the tick: step1 conduit, lone conduit, step2 conduit");
+Eq(Voltage.None, s19Step3Sim.World.DeliveredVoltage(10, 20, 26), "slice19 step3 composed step2 mill delivery None");
+Check(!s19Step3Sim.World.IsPowered(10, 20, 26), "slice19 step3 composed step2 mill is not powered");
+Check(!s19Step3Sim.World.IsMismatched(10, 20, 26), "slice19 step3 composed step2 mill is not mismatched");
+Eq(CellPowerState.None, s19Step3Sim.World.PowerState(12, 20, 10), "slice19 step3 composed step1 conduit state None by decision");
+Eq(CellPowerState.None, s19Step3Sim.World.PowerState(11, 20, 10), "slice19 step3 composed step1 transformer state None by decision");
+Eq(CellPowerState.None, s19Step3Sim.World.PowerState(11, 20, 14), "slice19 step3 composed dynamo transformer state None by decision");
+Eq(CellPowerState.None, s19Step3Sim.World.PowerState(11, 20, 18), "slice19 step3 composed alternator transformer state None by decision");
+Eq(CellPowerState.None, s19Step3Sim.World.PowerState(10, 20, 22), "slice19 step3 composed lone conduit state None by decision");
+Eq(CellPowerState.None, s19Step3Sim.World.PowerState(10, 20, 26), "slice19 step3 composed step2 mill state None");
+Eq(CellPowerState.None, s19Step3Sim.World.PowerState(11, 20, 30), "slice19 step3 composed dead cable state None: a mixed component carries no voltage");
+s19Step3Sim.World.Advance();
+Eq(BlockType.KineticMill, s19Step3Sim.World.Chunk.Get(10, 20, 26), "slice19 step3 composed step2 mill survives tick 1");
+Eq(0, s19Step3Sim.World.PoweredBlocksGathered, "slice19 step3 composed powered gathered 0 after tick 1");
+Eq(0, s19Step3Sim.World.KineticBlocksGathered, "slice19 step3 composed kinetic gathered 0 after tick 1");
+Eq(0, s19Step3Sim.World.DestroyedMills, "slice19 step3 composed destroyed 0 after tick 1");
+Eq(0, s19Step3Sim.World.Player.Inventory.Get(BlockType.Stone), "slice19 step3 composed stone 0 after tick 1");
+Eq((2, 3), s19Step3Sim.World.LivePowerCounts(), "slice19 step3 composed counts still 2 live, 3 lone after tick 1");
+var s19Step3HudAfter1 = s19Step3Sim.Hud();
+Eq(2, s19Step3HudAfter1.LiveNetworks, "slice19 step3 composed still two live networks after tick 1");
+Eq(3, s19Step3HudAfter1.LoneSources, "slice19 step3 composed still three lone sources after tick 1");
+// Save/load round-trip: the counts are derived, never
+// saved, so the loaded field must read them again, and the
+// loaded tick must re-prove the same stability rather than
+// arriving with a saved count.
+var s19Step3Save = s19Step3Sim.SaveToJson();
+Eq(43965, s19Step3Save.Length, "slice19 step3 composed save JSON length matches the demo run");
+var s19Step3Loaded = new Simulation(99);
+Check(s19Step3Loaded.LoadFromJson(s19Step3Save), "slice19 step3 composed save loads");
+Eq(BlockType.Transformer, s19Step3Loaded.World.Chunk.Get(11, 20, 10), "slice19 step3 composed step1 transformer loads");
+Eq(BlockType.Conduit, s19Step3Loaded.World.Chunk.Get(12, 20, 10), "slice19 step3 composed step1 conduit loads");
+Eq(BlockType.Transformer, s19Step3Loaded.World.Chunk.Get(11, 20, 14), "slice19 step3 composed dynamo transformer loads");
+Eq(BlockType.Transformer, s19Step3Loaded.World.Chunk.Get(11, 20, 18), "slice19 step3 composed alternator transformer loads");
+Eq(BlockType.Conduit, s19Step3Loaded.World.Chunk.Get(10, 20, 22), "slice19 step3 composed lone conduit loads");
+Eq(BlockType.KineticMill, s19Step3Loaded.World.Chunk.Get(10, 20, 26), "slice19 step3 composed step2 mill loads");
+Eq(BlockType.Cable, s19Step3Loaded.World.Chunk.Get(11, 20, 30), "slice19 step3 composed dead cable loads");
+Eq((2, 3), s19Step3Loaded.World.LivePowerCounts(), "slice19 step3 composed counts re-derive as 2 live, 3 lone after load");
+var s19Step3LoadedHud = s19Step3Loaded.Hud();
+Eq(0, s19Step3LoadedHud.PoweredMills, "slice19 step3 composed no mill powered after load");
+Eq(1, s19Step3LoadedHud.TotalMills, "slice19 step3 composed one mill total after load");
+Eq(0, s19Step3LoadedHud.WarnedMills, "slice19 step3 composed no mill warned after load");
+Eq(2, s19Step3LoadedHud.LiveNetworks, "slice19 step3 composed two live networks after load");
+Eq(3, s19Step3LoadedHud.LoneSources, "slice19 step3 composed three lone sources after load");
+Eq(CellPowerState.None, s19Step3Loaded.World.PowerState(12, 20, 10), "slice19 step3 composed step1 conduit state None after load");
+Eq(CellPowerState.None, s19Step3Loaded.World.PowerState(11, 20, 30), "slice19 step3 composed dead cable state None after load");
+Eq(CellPowerState.None, s19Step3Loaded.World.PowerState(10, 20, 26), "slice19 step3 composed step2 mill state None after load");
+Eq(0, s19Step3Loaded.World.PoweredBlocksGathered, "slice19 step3 composed powered counter resets on load");
+Eq(0, s19Step3Loaded.World.KineticBlocksGathered, "slice19 step3 composed kinetic counter resets on load");
+Eq(0, s19Step3Loaded.World.DestroyedMills, "slice19 step3 composed destroyed counter resets on load");
+Eq(0, s19Step3Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice19 step3 composed stone stays 0 on load");
+Eq(16, s19Step3Loaded.World.Player.X, "slice19 step3 composed player X after load");
+Eq(16, s19Step3Loaded.World.Player.Z, "slice19 step3 composed player Z after load");
+s19Step3Loaded.World.Advance();
+Eq(BlockType.KineticMill, s19Step3Loaded.World.Chunk.Get(10, 20, 26), "slice19 step3 composed step2 mill survives loaded tick 1");
+Eq((2, 3), s19Step3Loaded.World.LivePowerCounts(), "slice19 step3 composed counts still 2 live, 3 lone after loaded tick 1");
+Eq(0, s19Step3Loaded.World.PoweredBlocksGathered, "slice19 step3 composed powered gathered 0 after loaded tick 1");
+Eq(0, s19Step3Loaded.World.KineticBlocksGathered, "slice19 step3 composed kinetic gathered 0 after loaded tick 1");
+Eq(0, s19Step3Loaded.World.DestroyedMills, "slice19 step3 composed destroyed 0 after loaded tick 1");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

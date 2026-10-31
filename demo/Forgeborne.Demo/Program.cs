@@ -1251,3 +1251,73 @@ for (int tick = 1; tick <= 5; tick++)
     Console.WriteLine($"Slice 18 loaded tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} target ({patrol.PatrolTarget.X},5,{patrol.PatrolTarget.Z}) reads {snaps[0].Activity}, enclosed at ({enclosed.X},5,{enclosed.Z}) waypoint {enclosed.PatrolWaypointIndex} refusals {enclosed.PatrolConsecutiveRefusals} reads {snaps[1].Activity}");
 }
 Console.WriteLine($"Slice 18 done: patrol {simS18.World.Squads[0].Kind} {simS18.World.Squads[0].Doctrine} + loaded patrol, enclosed {simS18.World.Squads[1].Kind} {simS18.World.Squads[1].Doctrine} stuck and stuck again after load, save JSON length: {saveS18.Length} chars");
+
+// Slice 19 Step 2 scenario: Slice 19 composed in one run —
+// the decided transformer-adjacency count agreeing with
+// its controls in one wiring, not just in Step 1's separate
+// proof worlds. On the y=20 plane, in rows four cells apart
+// so no row can leak voltage into another through a
+// face-adjacent neighbour, one Simulation carries: a Conduit
+// beside a transformer alone (the Step 1 case, 0 LIVE, 1
+// LONE, with the POWER line read before and after a tick);
+// a Dynamo beside a transformer alone and an Alternator
+// beside a transformer alone (the live controls, 1 LIVE
+// each, 0 LONE, no double count); a lone Conduit with no
+// neighbour at all (the lone control, 1 LONE); a mill
+// standing directly beside a Conduit (the Slice 17 Step 2
+// control, its mill None, surviving, its Conduit counting
+// as 1 LONE); and a Dynamo-plus-Conduit mixed-voltage cable
+// component with no consumer (the dead-cable consistency
+// case, 0 LIVE, 0 LONE, staged alongside the decided
+// transformer case so a reader can see the two dead
+// wirings read differently under the decided rule — and why:
+// the Conduit feeds the cable component, so cable adjacency
+// is genuine wiring for it, while TransformerOutput lists
+// no Conduit branch, so transformer adjacency is not).
+// The layout is staged directly with TrySet, exactly as
+// the Step 1 tests stage theirs: aim placement of a Conduit
+// was proved in Slice 14 Step 1, and walking this layout in
+// by aim would prove walking, not counting. No mill in
+// this wiring is mismatched, so no tick destroys anything
+// and the counts are the same before and after the tick —
+// that stability is the composition's point, not a missing
+// phase: the decided count, the live controls, and the lone
+// controls agree in one field, and the save/load round-trip
+// proves the reading re-derives on load (the counts are
+// derived, never saved, so a changed save length would
+// mean a save rule moved). What this demo cannot show, by
+// construction, is any adapter feel: no POWER line read
+// aloud in a scene appears in a headless run, so the
+// decided count stays in playtest-gate checklist item 38
+// (Windows-only), not in the numbers below — the numbers
+// prove the count, the item proves the reading.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 19 Step 2 scenario — transformer-adjacency count and its live, lone, and dead-cable controls in one wiring, save/load round-trip");
+var simS19 = new Simulation(42);
+simS19.World.Chunk.TrySet(11, 20, 10, BlockType.Transformer);
+simS19.World.Chunk.TrySet(12, 20, 10, BlockType.Conduit);
+simS19.World.Chunk.TrySet(10, 20, 14, BlockType.Dynamo);
+simS19.World.Chunk.TrySet(11, 20, 14, BlockType.Transformer);
+simS19.World.Chunk.TrySet(10, 20, 18, BlockType.Alternator);
+simS19.World.Chunk.TrySet(11, 20, 18, BlockType.Transformer);
+simS19.World.Chunk.TrySet(10, 20, 22, BlockType.Conduit);
+simS19.World.Chunk.TrySet(10, 20, 26, BlockType.KineticMill);
+simS19.World.Chunk.TrySet(11, 20, 26, BlockType.Conduit);
+simS19.World.Chunk.TrySet(10, 20, 30, BlockType.Dynamo);
+simS19.World.Chunk.TrySet(11, 20, 30, BlockType.Cable);
+simS19.World.Chunk.TrySet(12, 20, 30, BlockType.Conduit);
+var s19HudBefore = simS19.Hud();
+Console.WriteLine($"Slice 19 HUD before: {s19HudBefore.PoweredMills}/{s19HudBefore.TotalMills} MILLS POWERED, WARNED: {s19HudBefore.WarnedMills} MILLS, POWER: {s19HudBefore.LiveNetworks} LIVE NETWORKS, {s19HudBefore.LoneSources} LONE SOURCES (2 live: the Dynamo-fed and Alternator-fed transformer groups, each feeding no consumer; 3 lone: the Conduit beside the dead transformer alone, Step 1, the lone Conduit, and the Conduit beside its mill, Step 2; the dead cable counts neither)");
+Console.WriteLine($"Slice 19 cells before: Step 1 Conduit {simS19.World.PowerState(12, 20, 10)} and its transformer {simS19.World.PowerState(11, 20, 10)} (both None by decision: sources and transformers are never tinted), Dynamo transformer {simS19.World.PowerState(11, 20, 14)} (None, the live control's conversion shows in the count, not the tint), Alternator transformer {simS19.World.PowerState(11, 20, 18)} (None, likewise), lone Conduit {simS19.World.PowerState(10, 20, 22)} (None), Step 2 mill {simS19.World.PowerState(10, 20, 26)} (None: it is never fed, delivery {simS19.World.DeliveredVoltage(10, 20, 26)}), dead cable {simS19.World.PowerState(11, 20, 30)} (None: a mixed component carries no voltage)");
+simS19.World.Advance();
+var s19HudAfter1 = simS19.Hud();
+Console.WriteLine($"Slice 19 tick 1: Step 2 mill still {simS19.World.Chunk.Get(10, 20, 26)} (survives: it was never fed), powered gathered {simS19.World.PoweredBlocksGathered}, kinetic gathered {simS19.World.KineticBlocksGathered}, destroyed {simS19.World.DestroyedMills}, stone {simS19.World.Player.Inventory.Get(BlockType.Stone)} (all zero: no mill is powered, mismatched, or due a kinetic gather on tick 1), POWER still {s19HudAfter1.LiveNetworks} LIVE NETWORKS, {s19HudAfter1.LoneSources} LONE SOURCES (the counts are stable across the tick because nothing was destroyed and nothing started feeding)");
+var saveS19 = simS19.SaveToJson();
+var simS19Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS19Loaded.LoadFromJson(saveS19)}");
+var s19LoadedHud = simS19Loaded.Hud();
+Console.WriteLine($"Slice 19 after load: Step 1 Conduit {simS19Loaded.World.Chunk.Get(12, 20, 10)}, its transformer {simS19Loaded.World.Chunk.Get(11, 20, 10)}, Dynamo transformer {simS19Loaded.World.Chunk.Get(11, 20, 14)}, Alternator transformer {simS19Loaded.World.Chunk.Get(11, 20, 18)}, lone Conduit {simS19Loaded.World.Chunk.Get(10, 20, 22)}, Step 2 mill {simS19Loaded.World.Chunk.Get(10, 20, 26)}, dead cable {simS19Loaded.World.Chunk.Get(11, 20, 30)} (every cell loads), POWER: {s19LoadedHud.LiveNetworks} LIVE NETWORKS, {s19LoadedHud.LoneSources} LONE SOURCES (both readings re-derived, not saved: the Step 1 Conduit still {simS19Loaded.World.PowerState(12, 20, 10)}, the dead cable still {simS19Loaded.World.PowerState(11, 20, 30)}, the Step 2 mill still {simS19Loaded.World.PowerState(10, 20, 26)}), session counters reset: powered {simS19Loaded.World.PoweredBlocksGathered}, kinetic {simS19Loaded.World.KineticBlocksGathered}, destroyed {simS19Loaded.World.DestroyedMills}, stone {simS19Loaded.World.Player.Inventory.Get(BlockType.Stone)}, player at ({simS19Loaded.World.Player.X},{simS19Loaded.World.Player.Y},{simS19Loaded.World.Player.Z})");
+simS19Loaded.World.Advance();
+var s19LoadedHudAfter1 = simS19Loaded.Hud();
+Console.WriteLine($"Slice 19 loaded tick 1: Step 2 mill still {simS19Loaded.World.Chunk.Get(10, 20, 26)}, POWER still {s19LoadedHudAfter1.LiveNetworks} LIVE NETWORKS, {s19LoadedHudAfter1.LoneSources} LONE SOURCES, powered gathered {simS19Loaded.World.PoweredBlocksGathered}, kinetic gathered {simS19Loaded.World.KineticBlocksGathered}, destroyed {simS19Loaded.World.DestroyedMills} (the loaded field re-proves the same stability, it does not arrive with a saved count)");
+Console.WriteLine($"Slice 19 done: powered {simS19.World.PoweredBlocksGathered} + loaded {simS19Loaded.World.PoweredBlocksGathered}, kinetic {simS19.World.KineticBlocksGathered} + loaded {simS19Loaded.World.KineticBlocksGathered}, destroyed {simS19.World.DestroyedMills}, save JSON length: {saveS19.Length} chars");
