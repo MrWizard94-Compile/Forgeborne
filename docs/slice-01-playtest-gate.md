@@ -770,6 +770,50 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     Unity until it is observed there and recorded
     in DECISIONS.md.
 
+39. [ ] Stuck-patrol re-rally, decided 0.85.0 (core action
+    changed, adapter binding PROPOSED ONLY and not yet
+    implemented — no headless test proves a binding reads
+    in the scene, and no headless test proves a proposed
+    key works, so the cited headless evidence is only the
+    Slice 20 Step 1 proof set: a route-blocked patrol
+    reading Stuck accepts a free re-rally and marches to
+    the new rally with its loop re-derived at radius 3
+    and five waypoints, a fully cell-enclosed patrol
+    re-rallied to an outside rally reads Stuck again
+    after a full circuit on the new loop instead of
+    marching through a wall, a non-stuck Patrol and
+    HoldGround, Advance, and Defend Core squads refuse
+    the action with nothing changed, and the paid path
+    is unchanged with the cap still full after a
+    re-rally): once the proposed binding is implemented
+    on Windows — K while not picking, crosshair on the
+    stuck squad's marker, reusing the picker's raycast
+    rally selection, Return to confirm, Escape to cancel,
+    doing nothing while picking and nothing when the
+    raycast hits no stuck marker — in one scene, against
+    dark voxel, enclose a patrol on all four sides and
+    observe its text line change from PATROLLING to STUCK
+    after a full circuit; apply the re-rally to a new
+    rally in open ground and observe the text line return
+    to PATROLLING at once, the squad walk (not teleport)
+    to the new rally, and its orange rally marker move
+    to the new rally cell; then re-rally a second
+    enclosed patrol to a rally it still cannot reach and
+    observe it read STUCK again after a full circuit;
+    finally, attempt the action on a moving, non-stuck
+    patrol and on a HoldGround squad and observe
+    nothing change for either. This item EXTENDS item
+    37's patrol-route observation and orbital-command
+    item 13: item 37's sidestep, stuck, and block-clears
+    readings stand unchanged, item 29's and item 13's
+    patrol observations stand unchanged, and this item
+    adds only the decided re-rally readings. It does NOT
+    supersede item 37, item 29, or item 13, and it does
+    not claim any tint, count, dusk, or view model
+    observation. Do not claim this verified in Unity
+    until the binding is implemented, the observation is
+    made there, and both are recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

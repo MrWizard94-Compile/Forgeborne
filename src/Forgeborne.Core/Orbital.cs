@@ -133,9 +133,16 @@ public sealed class TacticalSquad
     public int X { get; private set; }
     public int Y { get; private set; }
     public int Z { get; private set; }
-    public int RallyX { get; }
-    public int RallyY { get; }
-    public int RallyZ { get; }
+    /// <summary>Slice 20 Step 1: the rally is mutable only
+    /// through TacticalSquad.ReRally, which WorldZone
+    /// calls after its stuck-Patrol gate — never by a
+    /// direct setter, so no caller can move a squad's
+    /// loop without passing that gate. The save array
+    /// already carries the rally, so a re-rally persists
+    /// on the next save with no new save field.</summary>
+    public int RallyX { get; private set; }
+    public int RallyY { get; private set; }
+    public int RallyZ { get; private set; }
     public TacticalDoctrine Doctrine { get; }
     public SquadKind Kind { get; }
     public int Health { get; private set; }
@@ -357,6 +364,43 @@ public sealed class TacticalSquad
     /// refused in turn.</summary>
     public bool IsPatrolStuck => Doctrine == TacticalDoctrine.Patrol
         && PatrolConsecutiveRefusals >= PatrolWaypointCount;
+
+    /// <summary>Slice 20 Step 1: move a squad's patrol loop
+    /// to a new rally, without moving the squad itself.
+    /// Internal, called only by
+    /// WorldZone.TryReRallyStuckPatrol after that method
+    /// has checked the squad is a live, stuck Patrol and
+    /// the new rally is in bounds and different from the
+    /// old one — this method performs no gate of its
+    /// own, so a caller that reached it has already
+    /// passed the gate, and a caller that must not
+    /// re-rally must never call it directly. The new
+    /// rally re-derives the whole loop through
+    /// PatrolTarget (rally, then east, south, west,
+    /// and north at PatrolLoopRadius, unchanged), so
+    /// the radius and waypoint count never move with
+    /// a re-rally, only the loop's centre does. The
+    /// waypoint index and the refusal counter both
+    /// reset to 0: the loop is new, so its progress
+    /// is new too, and the snapshot reads Patrolling
+    /// at once, not Stuck — honestly, because the
+    /// squad is no longer on the failed loop, not
+    /// because the block vanished. If the new loop
+    /// is itself fully blocked, the counter climbs
+    /// again and the squad reads Stuck after a full
+    /// circuit on the new loop, proved in tests, so
+    /// a rescue that cannot fail again is not smuggled
+    /// in here. Position, health, doctrine, and kind
+    /// are untouched: a re-rally is not a teleport,
+    /// not a heal, and not a redeploy, and it costs
+    /// no EmberOre and frees no cap slot — see
+    /// TryReRallyStuckPatrol and DECISIONS.md.</summary>
+    internal void ReRally(int rallyX, int rallyY, int rallyZ)
+    {
+        RallyX = rallyX; RallyY = rallyY; RallyZ = rallyZ;
+        PatrolWaypointIndex = 0;
+        PatrolConsecutiveRefusals = 0;
+    }
 
     /// <summary>Slice 15 Step 1: the cell of the current
     /// patrol waypoint, derived from the rally and
@@ -625,7 +669,13 @@ public sealed class TacticalSquad
 /// because recall would silently destroy a paid investment and
 /// its position. Deployment is a sunk cost: no refund exists,
 /// on death or otherwise, because there is no recall mechanic
-/// to refund through. Both values are first-pass values for
+/// to refund through. Slice 20 Step 1 adds no refund and
+/// no price change: a stuck patrol's re-rally (see
+/// WorldZone.TryReRallyStuckPatrol) costs 0 EmberOre
+/// because it moves a squad already paid for, it does
+/// not deploy a new one, and it frees no cap slot —
+/// a rescue priced like a deploy would charge twice
+/// for one presence. Both values are first-pass values for
 /// determinism and testability, not final balance (see the
 /// Slice 3 scope's no-balance-pass rule). Enforcement lives in
 /// WorldZone.TryDeployPaidSquad, which checks cap and

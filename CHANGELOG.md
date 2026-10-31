@@ -1,5 +1,188 @@
 # Forgeborne — Changelog
 
+## 0.85.0 — 2026-10-31 — Slice 20 Step 1:
+stuck-patrol player action decided — free re-rally,
+stuck Patrol only
+
+- Step taken, decided in this step: Slice 20 Step 1,
+  the stuck-patrol player action. In one quotable
+  sentence: a stuck patrol gets a FREE re-rally, for
+  a stuck Patrol only — not a recall, not both, not
+  neither.
+- Decision, with its rejected hypotheses: recall
+  rejected, because it destroys a paid investment and
+  its position and would need a refund and a
+  confirmation design (a refund plus a freed cap slot
+  would be two gifts, and a recall without a refund
+  is a punitive disposal, not a rescue), and because
+  it is a general dismiss system, not a stuck rescue;
+  a general recall or dismiss is carried after Slice
+  20, not patched in here. Both rejected, because
+  adding dismiss beside rescue doubles the slice into
+  a general command system the scope forbids. Neither
+  rejected, because a permanently blocked route is a
+  placement the player cannot currently correct, and
+  leaving death as the only exit turns a placement
+  mistake into a permanent loss of route function —
+  that is a trap, not skill. Re-rally chosen, because
+  a patrol's task is its route, and a route that
+  cannot be walked is exactly what a loop-centre
+  correction answers, without creating a squad,
+  destroying one, or repricing anything.
+- Scope, decided in this step: stuck Patrol only.
+  A non-stuck Patrol is refused fail-closed, and
+  HoldGround, Advance, and Defend Core squads are
+  refused alike, because no other doctrine has a
+  route failure to correct — a general re-rally
+  would let the player reposition any squad without
+  paying a deploy, which is a general command
+  system, not a rescue. The scope's wider-scope
+  question is therefore answered narrowly, with
+  the wider decision carried, not assumed.
+- Targeting, decided in this step: squad list index
+  (the snapshot's order). Position is ambiguous when
+  two squads share a cell (deploy at the player's
+  feet is common) and rally is ambiguous when two
+  squads share a rally, while an index names one
+  list entry; the gate is re-checked at call time, so
+  a stale index after a death or removal fails closed
+  instead of re-rallying the wrong squad. No stable
+  squad identity is invented, so no save field is
+  added.
+- State changes, decided in this step, via
+  WorldZone.TryReRallyStuckPatrol (thin Simulation
+  passthrough; TacticalSquad.ReRally is internal and
+  performs no gate of its own): the rally changes,
+  the waypoint index resets to 0, and the refusal
+  counter resets to 0; position, health, doctrine,
+  and kind are untouched. No teleport: the squad
+  walks to the new rally under the unchanged
+  MoveForPatrol rule, and the loop re-derives from
+  the new rally at the unchanged radius 3 and five
+  waypoints. The snapshot reads Patrolling at once,
+  honestly, because the loop is new, not because the
+  block vanished. A re-rally to the same rally is
+  refused, or it would clear the Stuck word for one
+  circuit without correcting anything; a rally inside
+  a solid block is accepted, as deploy accepts one,
+  and the squad holds short of it visibly.
+- Economy, decided in this step: free, with no refund
+  question because there is no recall. A re-rally
+  charges 0 EmberOre, refunds nothing, and frees no
+  cap slot — the squad never left the field, so a
+  priced re-rally would charge twice for one presence
+  (and a stuck-only price would be a rescue tax that
+  leaves an unaffordable player exactly where neither
+  left them). Deploy price (10) and cap (3) stand,
+  and the paid path is unchanged: a re-rallied squad
+  still counts toward the cap, and a fourth deploy at
+  a full cap is still refused with ore untouched.
+- Movement boundary, decided in this step: no movement
+  rule moves. MoveForPatrol's sidestep, skip, and
+  five-refusal Stuck threshold stand; HoldGround,
+  Advance, and Defend Core movement stand; no
+  pathfinder, no wider sidestep, no hold replaces a
+  skip; fire in passing is unchanged for stuck and
+  re-rallied patrols alike. The honest limit, proved
+  rather than hidden: a fully cell-enclosed squad
+  re-rallied to an outside rally still cannot step
+  out, so it reads Stuck again after a full circuit
+  on the new loop — a re-rally corrects the loop, it
+  does not march a squad through a wall, and that
+  squad needs a step cell cleared as well as a new
+  loop. No radius finding: no Step 1 proof shows the
+  radius (3) caused a block, so the radius stays a
+  carried first-pass value, not a retune.
+- Display relation, decided in this step: no HUD line
+  added, moved, or reworded, no new activity word, no
+  marker rule changed. The snapshot's existing Patrol
+  branch reads Patrolling after a re-rally and Stuck
+  again after a full circuit on a blocked new loop,
+  and the existing rally marker follows the new rally
+  because it already renders the snapshot's rally.
+- Adapter binding, PROPOSED ONLY, decided in this
+  step: K while not picking, crosshair on the stuck
+  squad's marker, opening a re-rally pick that reuses
+  the picker's raycast rally selection, Return to
+  confirm, Escape to cancel, doing nothing while
+  picking and nothing when the raycast hits no stuck
+  marker. K is free against the taken keys (WASD,
+  Space, E, Q, R, O, Return, Esc, Alpha1–Alpha7, T,
+  Y, U, I, B, N, P, M, mouse click). This binding is
+  a comment in FpsInputAdapter.cs only in this step:
+  it is NOT implemented, NOT claimed as working in a
+  scene, and observed only under new playtest-gate
+  item 39 once implemented on Windows.
+- Checklist relation, decided in this step: new
+  playtest-gate item 39, the stuck-patrol re-rally
+  observation. Item 39 EXTENDS item 37's patrol-route
+  observation; item 37, item 29, and orbital-command
+  item 13 stand unchanged and are NOT superseded.
+  Next free playtest-gate number is now 40.
+- Proof set, decided in this step (all in
+  tests/Forgeborne.Core.Tests/Program.cs, no demo
+  scenario required of this step alone; the composed
+  demo belongs to Step 2): a route-blocked Vanguard
+  patrol (east neighbour open) reading Stuck, then
+  re-rallied to a new rally, marching to it in six
+  steps and turning onto the new loop with the east
+  waypoint re-derived at new-rally-plus-3; Recon and
+  Heavy proved for the same core effect and for
+  FindTarget fire targeting with their damage values
+  (Recon 12, Heavy 16; a world-tick kill is proved for
+  Vanguard below, not claimed for Recon and Heavy here);
+  a fully enclosed patrol re-rallied outside and
+  reading Stuck again after five refusals on the new
+  loop, unmoved; refusals for a non-stuck Patrol,
+  HoldGround, Advance, and Defend Core squads (with
+  the stuck patrol in the same world succeeding after
+  them, proving index discrimination), an out-of-range
+  and a negative index, a dead squad, an out-of-bounds
+  rally, and the same rally again, each with nothing
+  changed; a solid rally cell accepted with the squad
+  holding short of it; a world-tick fire proof (a
+  re-rallied Vanguard walks east and kills in passing);
+  save/load proofs (a re-rallied patrol loads with its
+  new rally and marches from index 0 through the
+  Simulation passthrough, with no ore charged; a
+  stuck-before-save patrol still loads Patrolling at
+  index 0 and re-sticks after a full circuit, as
+  before); and a paid-path proof (three paid deploys
+  at 10 ore each, cap full at 3, re-rally free with ore
+  and count unchanged, fourth deploy still refused).
+  No save-format change: the save array already
+  carries the rally, so a re-rally persists on the
+  next save with no new field, and old saves load
+  unchanged.
+- Changes: src/Forgeborne.Core/Orbital.cs (Rally
+  private-set with a ReRally internal, economy doc
+  note that a re-rally costs 0 and frees no slot);
+  src/Forgeborne.Core/World.cs (TryReRallyStuckPatrol
+  gate); src/Forgeborne.Core/Simulation.cs (thin
+  passthrough); tests/Forgeborne.Core.Tests/Program.cs
+  (+158 assertions); docs/orbital-command.md (re-rally
+  section); docs/orbital-view.md (no new word/marker
+  note); docs/slice-01-playtest-gate.md (item 39);
+  ForgeborneUnity/Assets/Scripts/FpsInputAdapter.cs
+  (proposed-binding comment only, no code);
+  CHANGELOG 0.85.0 and DECISIONS.md entries (next
+  step: Slice 20 Step 2, composed demo + review
+  closing Slice 20).
+- Tests: 2968 passed, 0 failed (was 2810; +158, no
+  failures on the final runs). Demo unchanged: Slice
+  19 scenario save 43,965 chars, Slice 18 save 44,015
+  chars, Slice 15 save 44,016 chars, Slice 17 save
+  43,974 chars. No demo scenario is added by this step
+  alone, per the Slice 20 scope; the composed demo
+  belongs to Step 2.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.84.0 — 2026-10-31 — Slice 20 scope:
 stuck-patrol player action, decided in later steps
 

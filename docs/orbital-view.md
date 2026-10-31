@@ -47,6 +47,17 @@ the snapshot as position facts, but they are no longer the
 display word, and no second word is kept alongside that
 could contradict the first.
 
+Slice 20 Step 1 (0.85.0) adds no word and no marker rule:
+a re-rallied patrol reads `PATROLLING` through the existing
+Patrol branch the moment its counter resets to 0, because
+its loop is new — and reads `STUCK` again through that
+same branch after a full circuit of refusals on the new
+loop, if the new loop is itself blocked. The rally marker
+already renders the snapshot's rally, so it follows the
+new rally with no adapter change; a recalled squad would
+need no marker, but no recall exists, so no marker
+disappears for that reason either.
+
 ## 3D markers (Slice 6 Step 2, 0.29.0)
 
 `ForgeborneUnity/Assets/Scripts/SquadMarkerDisplay.cs` is a

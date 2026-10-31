@@ -327,6 +327,15 @@ public sealed class Simulation
     public void CancelOrbitalPick() => OrbitalCommand.CancelPick();
     /// <summary>Deploy the picker's selected squad at its pending rally, paying the squad economy price; null if not picking, no rally, unaffordable, or over-cap — in which cases the picker stays open, with no squad and no charge.</summary>
     public TacticalSquad? ConfirmOrbitalDeploy() => OrbitalCommand.Confirm(World);
+    /// <summary>Slice 20 Step 1: thin passthrough to
+    /// WorldZone.TryReRallyStuckPatrol — a free re-rally
+    /// for a stuck Patrol only, by squad list index
+    /// (snapshot order); false, with nothing changed,
+    /// for any gate failure there. No logic lives here,
+    /// so the play path and the headless path cannot
+    /// drift apart on the gate.</summary>
+    public bool TryReRallyStuckPatrol(int squadIndex, int rallyX, int rallyY, int rallyZ) =>
+        World.TryReRallyStuckPatrol(squadIndex, rallyX, rallyY, rallyZ);
 
     /// <summary>Slice 8 Step 2: a Kinetic Mill by aim (see
     /// BuildAimed). A powered pair is still built by aiming

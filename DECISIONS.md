@@ -8113,6 +8113,279 @@ closing Slice 19
   player action, decided in that step, per
   docs/slice-20-scope.md.
 
+## 0.85.0 — Slice 20 Step 1: stuck-patrol player action — free re-rally, stuck Patrol only
+
+- Step, decided in this step: Slice 20 Step 1, the
+  stuck-patrol player action, per
+  docs/slice-20-scope.md. Quotable decision: a stuck
+  patrol gets a FREE re-rally, for a stuck Patrol
+  only — not a recall, not both, not neither. No demo
+  scenario is added by this step alone; the composed
+  demo belongs to Step 2, per the scope.
+- Why re-rally, and why it answers the motivating
+  case: a patrol's task is its route, and a route
+  that cannot be walked is a placement the player
+  cannot currently correct. Moving the loop's centre
+  corrects that placement while preserving the paid
+  presence, its position history, and its health: the
+  squad already paid for keeps existing, it just
+  walks a different loop. That is the smallest action
+  that answers the stuck state, and it answers it
+  without inventing a second system beside it.
+- Recall rejected, with reasons, not by default: a
+  recall destroys a paid investment and its position,
+  so it must answer refund and confirmation, and
+  neither answer is free. A refund plus a freed cap
+  slot is two gifts for one action, and a recall
+  without a refund is a punitive disposal, not a
+  rescue; a confirmation is a UI decision no
+  headless test can prove. The cap rule already
+  rejected a silent oldest-squad recall, and a
+  player-chosen recall differs from it in consent
+  but not in destruction — "the player chose it"
+  does not dissolve the refund question. Recall is
+  also a general dismiss system, not a stuck rescue:
+  once a dismiss exists, its scope (any doctrine?
+  any squad? refund on death too?) must be decided,
+  and that is a larger slice. A general recall or
+  dismiss is therefore carried after Slice 20, not
+  patched in beside a rescue, and no recall API
+  exists after this step.
+- Both rejected, with reasons: adding dismiss beside
+  rescue in one step is two decisions with two
+  economies (a free move plus a destructive refund
+  question), and the scope allows one action
+  decision, not a general command system. If a
+  later slice decides a general dismiss, it will
+  decide it on its own evidence, not inherit a
+  half-decided one from this step.
+- Neither rejected, with reasons, not as a default:
+  neither is a decision only if it is justified, and
+  no justification survives the motivating case. A
+  permanently blocked route — player-built walls,
+  terrain, a loop placed where it cannot fit — leaves
+  a squad firing in passing forever with no route
+  function, and death as the only exit. That is not
+  a skill test, it is a trap: the player is punished
+  for a placement mistake with a permanently dead
+  route, and the only correction is to let the squad
+  die. A display word without a remedy is honest
+  about the state and useless about the game.
+- Scope, decided in this step: stuck Patrol only.
+  A non-stuck Patrol is refused, because a moving
+  patrol has no failure to correct and a free
+  repositioning of a healthy route would be a
+  general move command, not a rescue. HoldGround,
+  Advance, and Defend Core are refused, because
+  none of them has a route failure: HoldGround holds
+  a point, Advance hunts, Defend Core guards a post,
+  and repositioning any of them free would let the
+  player move any squad without paying a deploy.
+  The wider-scope question is therefore answered
+  narrowly and explicitly, with the wider decision
+  carried, not assumed and not smuggled in through
+  a patrol-shaped API that other doctrines could
+  also call.
+- Targeting, decided in this step: squad list index,
+  the snapshot's order. Rejected, with reasons:
+  position, because two squads can share a cell —
+  deploy at the player's feet is the common case,
+  so a position target would be ambiguous exactly
+  when squads stack; rally, because two squads can
+  share a rally, so a rally target has the same
+  ambiguity; and a new stable squad identity,
+  because the save carries no identity field and
+  inventing one would be a save-format change for
+  a targeting convenience. An index names one list
+  entry, the snapshot already lists live squads in
+  list order, so a marker selection maps to it, and
+  the gate is re-checked at call time, so a stale
+  index after a death or removal fails closed
+  instead of re-rallying the wrong squad. The
+  miss cases are all fail-closed with nothing
+  changed: out-of-range or negative index, dead
+  squad, non-Patrol doctrine, non-stuck Patrol,
+  out-of-bounds new rally, and the same rally again.
+- State changes, decided in this step: the rally
+  changes, the waypoint index resets to 0, and the
+  refusal counter resets to 0; position, health,
+  doctrine, and kind are untouched. Both resets are
+  the clean reading, because the loop is new: its
+  progress is new, and its refusal history belongs
+  to the old loop. Carrying either over would read
+  a new loop as already partly failed, which it is
+  not. The snapshot reads Patrolling at once, and
+  that reading is honest either way it is framed:
+  the squad is no longer on the failed loop, so
+  Stuck would be a stale word for a loop it no
+  longer walks — and if the new loop is itself
+  blocked, the counter climbs again and Stuck
+  returns after a full circuit, proved, not assumed.
+  A re-rally to the same rally is refused, because
+  it would clear the Stuck word for one circuit
+  without correcting anything; a rally inside a
+  solid block is accepted, as deploy accepts one,
+  because a bad rally should be visible (the squad
+  holds short of it) rather than silently refused.
+- Economy, decided in this step: free, with no
+  refund, because there is no recall to refund.
+  A re-rally charges 0 EmberOre and frees no cap
+  slot, because the squad never left the field: it
+  is a correction of a paid presence, not a second
+  deploy. A priced re-rally would charge twice for
+  one presence, and a stuck-only price would be a
+  rescue tax that leaves an unaffordable player
+  exactly where neither left them — able to do
+  nothing, for a different reason. Deploy price (10)
+  and cap (3) stand, the paid path is unchanged,
+  and a re-rallied squad still counts toward the
+  cap: the paid proof deploys three squads, re-rallies
+  the stuck patrol free, and still refuses a fourth
+  deploy at the cap with ore untouched.
+- Movement boundary, decided in this step: no
+  movement rule moves, under any hypothesis.
+  MoveForPatrol's sidestep, skip, and five-refusal
+  Stuck threshold stand; HoldGround, Advance, and
+  Defend Core movement stand; no pathfinder, no
+  wider sidestep, no hold replaces a skip, and no
+  teleport to a new rally exists — the squad walks
+  under the existing step rule, or it does not move.
+  The enclosed proof is the boundary made visible:
+  a fully cell-enclosed squad re-rallied to an
+  outside rally reads Stuck again after five
+  refusals on the new loop, unmoved, because a
+  re-rally corrects the loop, not the walls. That
+  squad needs a step cell cleared as well as a new
+  loop, and this step says so rather than claiming
+  a re-rally rescues every stuck patrol. The
+  route-blocked proof is the other side: where a
+  step cell is open, the re-rallied squad marches
+  at once and turns onto the new loop, proving the
+  action is a walk, not a teleport.
+- Radius, decided in this step by non-decision, as
+  the scope requires: no Step 1 proof shows the
+  radius (3) or the waypoint count (5) caused a
+  block — the blocks in every proof are walls, not
+  loop geometry — so neither value moves, and no
+  radius finding is recorded as a gap. A re-rally
+  moves the loop's centre, never its radius or
+  count, and the constants are asserted unchanged
+  in tests so a future step cannot widen the loop
+  silently to make a proof pass.
+- Display relation, decided in this step: no HUD
+  line added, moved, or reworded; no new activity
+  word; no marker rule changed. The snapshot's
+  existing Patrol branch already reads Patrolling
+  when the counter is 0 and Stuck at 5, so the
+  re-rally needs no new word to be understood, and
+  a re-rally that needed a new HUD line would have
+  been a HUD decision smuggled inside an action
+  step. The existing rally marker follows the new
+  rally because it already renders the snapshot's
+  rally; a recalled squad would need no marker, but
+  no recall exists, so no marker disappears.
+- Adapter binding, PROPOSED ONLY, decided in this
+  step: K while not picking, crosshair on the stuck
+  squad's marker, opening a re-rally pick that
+  reuses the picker's raycast rally selection, with
+  Return confirming the new rally and Escape
+  cancelling. K is free against the taken keys
+  (WASD, Space, E, Q, R, O, Return, Esc, Alpha1–
+  Alpha7, T, Y, U, I, B, N, P, M, mouse click), and
+  it must do nothing while picking (so it cannot
+  collide with a picker key) and nothing when the
+  raycast hits no stuck marker (fail-closed
+  selection). This binding is a comment in
+  FpsInputAdapter.cs only: it is NOT implemented,
+  NOT claimed as working in a scene, and NOT proved
+  by any headless test. Rejected, with reasons: a
+  single key that re-rallies to the player's own
+  cell or to the aimed cell in one press, because
+  a re-rally needs two inputs — which squad, and
+  which new rally — and a one-press binding would
+  have to guess one of them; and reusing the picker
+  keys Alpha1–Alpha7, because those select doctrine
+  and kind for a deploy that does not yet exist,
+  not a live squad. The binding is observed only
+  under playtest-gate item 39, once implemented.
+- Checklist relation, decided in this step: new
+  playtest-gate item 39, the stuck-patrol re-rally
+  observation. Item 39 EXTENDS item 37's patrol-route
+  observation: item 37's sidestep, stuck, and
+  block-clears readings stand unchanged, as do item
+  29's and orbital-command item 13's patrol
+  observations, and item 39 adds only the decided
+  re-rally readings (enclosed patrol to Stuck,
+  re-rally to open ground to Patrolling with a walk
+  and a moved rally marker, re-rally to a still-
+  blocked rally to Stuck again, and refusals on a
+  moving patrol and a HoldGround squad). Item 39
+  does NOT supersede item 37, item 29, or item 13,
+  and it does not claim any tint, count, dusk, or
+  view model observation. Item 39 is also honestly
+  pending its own binding: it cannot be observed
+  until the proposed K binding is implemented in a
+  later adapter step, so until then it stands as the
+  observation that must be made, not as a verified
+  behaviour. Next free playtest-gate number is 40.
+- Proof set, decided in this step, with its honest
+  limits stated: a route-blocked Vanguard patrol
+  (east neighbour open, west/south/north walls)
+  reading Stuck after five refusals, then re-rallied
+  to a new rally, marching to it in six steps and
+  turning onto the new loop with the east waypoint
+  re-derived at new-rally-plus-3; Recon and Heavy
+  proved for the same core effect and for FindTarget
+  fire targeting with their damage values (Recon 12,
+  Heavy 16 — a world-tick kill is proved for Vanguard
+  only, not claimed for Recon and Heavy); a fully
+  enclosed patrol re-rallied outside and reading
+  Stuck again after five refusals on the new loop,
+  unmoved; refusals for a non-stuck Patrol,
+  HoldGround, Advance, and Defend Core squads, an
+  out-of-range and a negative index, a dead squad,
+  an out-of-bounds rally, and the same rally again,
+  each with nothing changed, with the stuck patrol
+  in the doctrine world succeeding after the
+  doctrine refusals, proving index discrimination;
+  a solid rally cell accepted with the squad holding
+  short of it; a world-tick fire proof for Vanguard
+  (walks east and kills in passing on the tick after
+  the action); save/load proofs through the
+  Simulation passthrough (a re-rallied patrol loads
+  with its new rally and marches from index 0, with
+  no ore charged; a stuck-before-save patrol still
+  loads Patrolling at index 0 and re-sticks after a
+  full circuit, as before); and the paid-path proof
+  above. No save-format change: the save array
+  already carries the rally, so a re-rally persists
+  on the next save with no new field, and old saves
+  load unchanged. No demo scenario is added by this
+  step alone, per the scope; the composed demo
+  belongs to Step 2.
+- Deliberately not in this step: a recall or dismiss
+  API, a general re-rally for other doctrines, a
+  radius, waypoint-count, or loop-shape change, a
+  movement, targeting, or fire rule change, a
+  delivery, precedence, conflict, rating, cost, or
+  phase rule change beyond the free re-rally answer
+  above, a price or cap change, a material, marker,
+  light, fog, model, or HUD change, a new block,
+  kind, doctrine, source, or consumer, an adapter
+  implementation of the proposed binding, a demo
+  scenario (Step 2's work), or a Slice 21 scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 20 Step 2, the composed demo
+  scenario plus documentation-only review closing
+  Slice 20, decided in that step, per
+  docs/slice-20-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

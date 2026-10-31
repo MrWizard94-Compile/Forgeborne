@@ -171,6 +171,62 @@ final balance):
   Unity play must never call it. The demo deploys through
   the paid path (no demo scenario ever called the free path).
 
+## Stuck-patrol re-rally — Slice 20 Step 1 (0.85.0)
+
+The one player action for a stuck patrol, decided in that
+step (rationale in DECISIONS.md): a FREE re-rally, for a
+stuck Patrol only. No recall exists, and no general
+re-rally or dismiss for other doctrines exists — those
+are larger decisions, carried after Slice 20, not patched
+in beside a rescue.
+
+- **Gate, fail-closed:** `WorldZone.TryReRallyStuckPatrol`
+  (thin passthrough: `Simulation.TryReRallyStuckPatrol`)
+  succeeds only for a live Patrol whose
+  `IsPatrolStuck` is true, targeted by its index in
+  `Squads` (the snapshot's order, so a marker selection
+  maps to it without inventing an identity the save does
+  not carry), with a new rally in bounds and different
+  from the old rally. Every other call returns false and
+  changes nothing: a non-stuck Patrol, a HoldGround,
+  Advance, or Defend Core squad, an out-of-range index,
+  a dead squad, an out-of-bounds rally, or the same
+  rally again. A rally inside a solid block is accepted,
+  as deploy accepts one: the squad holds short of it,
+  visibly, rather than teleporting into it.
+- **Effect:** the rally changes, the waypoint index and
+  the refusal counter reset to 0, and nothing else
+  moves — no teleport, no heal, no fire change. The
+  squad walks to the new rally under the unchanged
+  `MoveForPatrol` rule (sidestep, skip, and the
+  five-refusal Stuck threshold all stand), and the
+  loop re-derives from the new rally at the unchanged
+  radius 3 and five waypoints. The snapshot reads
+  Patrolling immediately after, because the loop is
+  new, not because the block vanished — and reads
+  Stuck again after a full circuit of refusals if the
+  new loop is itself blocked. A fully cell-enclosed
+  squad is the honest limit: a re-rally changes its
+  loop, but it still cannot step out until a step
+  cell clears, so it re-sticks on the new loop rather
+  than marching through a wall.
+- **Economy:** free. The squad was already paid for, so
+  a re-rally charges 0 EmberOre, refunds nothing, and
+  frees no cap slot — the squad never left the field,
+  so a re-rally is a correction of a paid presence,
+  not a second deploy and not a recall. Deploy price
+  (10) and cap (3) stand, and the paid path is
+  unchanged.
+- **Adapter binding, PROPOSED ONLY:** K while not
+  picking, crosshair on the stuck squad's marker,
+  opening a re-rally pick that reuses the picker's
+  raycast rally selection, Return to confirm, Escape
+  to cancel, doing nothing while picking and nothing
+  when the raycast hits no stuck marker. This binding
+  is NOT implemented in this step and is NOT claimed
+  as working in a scene; it is observed only under
+  playtest-gate item 39, once implemented on Windows.
+
 ## Second squad type — Recon (Slice 7 Step 1, 0.33.0)
 
 Chosen in that step from the recon / heavy / flyer pool the

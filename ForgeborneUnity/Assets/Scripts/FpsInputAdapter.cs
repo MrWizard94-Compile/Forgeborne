@@ -222,6 +222,25 @@ public class FpsInputAdapter : MonoBehaviour
         // While picking, the mouse does not fire: Enter is the
         // confirm, so a click cannot shoot while the player is
         // aiming a rally.
+        // Slice 20 Step 1, PROPOSED ONLY, no code in this
+        // step and nothing claimed as working in a scene:
+        // a stuck patrol's free re-rally (core:
+        // WorldZone.TryReRallyStuckPatrol, stuck Patrol
+        // only, by snapshot index) is proposed for a
+        // future adapter step as K while NOT picking,
+        // with the crosshair on that stuck squad's marker
+        // (K is free: used keys are WASD / Space / E /
+        // Q / R / O / Return / Esc / Alpha1-7 / T / Y /
+        // U / I / B / N / P / M / mouse click, and no
+        // builder fires while picking, so K must also
+        // do nothing while picking), opening a re-rally
+        // pick that reuses the picker's raycast rally
+        // selection, with Return confirming the new
+        // rally and Escape cancelling — the selection
+        // must fail closed on Windows when the raycast
+        // hits no stuck marker, and the whole binding
+        // is observed only under playtest-gate item 39,
+        // never from a headless test.
         // Since 0.18.0 a picker deploy costs 10 EmberOre and at
         // most 3 live squads may be fielded, enforced in core by
         // Confirm — see docs/orbital-command.md. Since Slice 7

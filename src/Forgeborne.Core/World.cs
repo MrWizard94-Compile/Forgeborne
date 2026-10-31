@@ -1086,6 +1086,63 @@ public sealed class WorldZone
         return squad;
     }
 
+    /// <summary>Slice 20 Step 1: the stuck-patrol player
+    /// action, decided here — a free re-rally, for a
+    /// stuck Patrol only, and for no other squad. The
+    /// squad is targeted by its index in Squads, which
+    /// is also the snapshot's order (OrbitalView lists
+    /// live squads in list order), so a Unity adapter
+    /// can map a selected marker to this index without
+    /// inventing an identity the save does not carry:
+    /// position is ambiguous when two squads share a
+    /// cell (deploy at the player's feet is common),
+    /// and rally is ambiguous when two squads share a
+    /// rally, while an index names one list entry. The
+    /// gate is re-checked at call time, so a stale
+    /// index after a death or removal fails closed
+    /// instead of re-rallying the wrong squad. Every
+    /// refusal returns false and changes nothing: an
+    /// out-of-range index, a dead squad, a doctrine
+    /// other than Patrol, a Patrol that is not stuck,
+    /// a new rally out of bounds, or a new rally
+    /// identical to the old one (a re-rally must move
+    /// the loop's centre, or it would clear the Stuck
+    /// word for one circuit without correcting
+    /// anything). A rally inside a solid block is
+    /// accepted, exactly as deploy accepts one: the
+    /// squad then holds short of it, visibly, rather
+    /// than the refusal hiding a bad rally. On
+    /// success the squad's rally changes, its waypoint
+    /// index and refusal counter reset to 0, and
+    /// nothing else moves: no teleport (the squad
+    /// walks to the new rally under MoveForPatrol,
+    /// whose sidestep, skip, and Stuck threshold are
+    /// untouched), no heal, no fire change, no ore
+    /// charged, no ore refunded, no cap slot freed
+    /// or taken — the squad never left the field, so
+    /// a re-rally is a correction of a paid presence,
+    /// not a second deploy and not a recall. The
+    /// snapshot reads Patrolling immediately after,
+    /// and reads Stuck again after a full circuit of
+    /// refusals if the new loop is itself blocked.
+    /// No recall exists: see DECISIONS.md for why a
+    /// recall, both actions, and neither were
+    /// rejected, and for the proposed adapter
+    /// binding, which is a Windows checklist item,
+    /// not a headless claim.</summary>
+    public bool TryReRallyStuckPatrol(int squadIndex, int rallyX, int rallyY, int rallyZ)
+    {
+        if (squadIndex < 0 || squadIndex >= Squads.Count) return false;
+        var squad = Squads[squadIndex];
+        if (squad.IsDead) return false;
+        if (squad.Doctrine != TacticalDoctrine.Patrol) return false;
+        if (!squad.IsPatrolStuck) return false;
+        if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return false;
+        if (rallyX == squad.RallyX && rallyY == squad.RallyY && rallyZ == squad.RallyZ) return false;
+        squad.ReRally(rallyX, rallyY, rallyZ);
+        return true;
+    }
+
     /// <summary>
     /// Slice 4 Step 1 targeting rule, re-derived every tick, in
     /// WorldZone so the choice is testable through Advance: the

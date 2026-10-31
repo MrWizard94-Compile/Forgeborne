@@ -6965,5 +6965,274 @@ Eq(0, s19Step3Loaded.World.PoweredBlocksGathered, "slice19 step3 composed powere
 Eq(0, s19Step3Loaded.World.KineticBlocksGathered, "slice19 step3 composed kinetic gathered 0 after loaded tick 1");
 Eq(0, s19Step3Loaded.World.DestroyedMills, "slice19 step3 composed destroyed 0 after loaded tick 1");
 
+// ---- Slice 20 Step 1: stuck-patrol player action, decided here (0.85.0) ----
+// Decision, in one sentence: a FREE re-rally, for a stuck
+// Patrol only — not a recall, not both, not neither (see
+// DECISIONS.md for the rejected hypotheses and their costs).
+// The staging below is deliberately split in two, because
+// the two stuck shapes behave differently and conflating
+// them would hide a limit: (a) a route-blocked patrol
+// whose east neighbour is open — its loop is blocked at
+// every waypoint, yet it can still step east, so a
+// re-rally to an eastern rally makes it march at once;
+// (b) a fully cell-enclosed patrol (the Slice 18 shape) —
+// a re-rally changes its loop, but it still cannot step
+// out, so it re-sticks on the new loop instead of marching
+// through a wall. Both are proved, and neither is claimed
+// to be the other.
+var s20World = new WorldZone(42);
+s20World.Player.X = 24; s20World.Player.Y = 5; s20World.Player.Z = 20;
+var s20Patrol = s20World.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s20World.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice20 re-rally test stages a west wall");
+Check(s20World.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice20 re-rally test stages a south wall");
+Check(s20World.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice20 re-rally test stages a north wall");
+Eq(BlockType.Air, s20World.Chunk.Get(25, 5, 20), "slice20 re-rally test east step cell stays open");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Patrol.MoveForPatrol(s20World.Chunk, Array.Empty<Enemy>());
+Eq(5, s20Patrol.PatrolConsecutiveRefusals, "slice20 re-rally route-blocked patrol counts five refusals");
+Eq(0, s20Patrol.PatrolWaypointIndex, "slice20 re-rally route-blocked patrol index cycles back to 0");
+Check(s20Patrol.IsPatrolStuck, "slice20 re-rally route-blocked patrol is stuck before the action");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s20World)[0].Activity, "slice20 re-rally route-blocked patrol reads stuck before the action");
+Eq(24, s20Patrol.X, "slice20 re-rally route-blocked patrol holds its X before the action");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice20 re-rally loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice20 re-rally loop waypoint count is still 5, not retuned");
+Check(s20World.TryReRallyStuckPatrol(0, 30, 5, 20), "slice20 re-rally stuck patrol accepts a free re-rally");
+Eq(30, s20Patrol.RallyX, "slice20 re-rally new rally X");
+Eq(20, s20Patrol.RallyZ, "slice20 re-rally new rally Z");
+Eq(0, s20Patrol.PatrolWaypointIndex, "slice20 re-rally waypoint index resets to 0");
+Eq(0, s20Patrol.PatrolConsecutiveRefusals, "slice20 re-rally refusal counter resets to 0");
+Check(!s20Patrol.IsPatrolStuck, "slice20 re-rally patrol is not stuck immediately after the action");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20World)[0].Activity, "slice20 re-rally patrol reads patrolling immediately after the action");
+Eq(24, s20Patrol.X, "slice20 re-rally does not teleport the squad to the new rally");
+Eq((30, 5, 20), s20Patrol.PatrolTarget, "slice20 re-rally loop re-derives from the new rally, waypoint 0");
+for (int s20Tick = 0; s20Tick < 6; s20Tick++) s20Patrol.MoveForPatrol(s20World.Chunk, Array.Empty<Enemy>());
+Eq(30, s20Patrol.X, "slice20 re-rally patrol marches to the new rally in six steps");
+Eq(0, s20Patrol.PatrolWaypointIndex, "slice20 re-rally patrol index is still 0 on arrival at the new rally");
+Check(s20Patrol.MoveForPatrol(s20World.Chunk, Array.Empty<Enemy>()), "slice20 re-rally patrol turns onto the new loop");
+Eq(31, s20Patrol.X, "slice20 re-rally patrol steps east onto the new loop");
+Eq(1, s20Patrol.PatrolWaypointIndex, "slice20 re-rally patrol index advances to the east waypoint");
+Eq((33, 5, 20), s20Patrol.PatrolTarget, "slice20 re-rally east waypoint is the new rally plus radius 3");
+// Recon and Heavy: the action is doctrine, index, and
+// counter logic, not a kind stat — but kinds differ in
+// health, damage, and range, so all three are proved for
+// the core effect and for fire in passing, not just one.
+var s20ReconWorld = new WorldZone(42);
+s20ReconWorld.Player.X = 24; s20ReconWorld.Player.Y = 5; s20ReconWorld.Player.Z = 20;
+var s20Recon = s20ReconWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+Check(s20ReconWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice20 re-rally recon test stages a west wall");
+Check(s20ReconWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice20 re-rally recon test stages a south wall");
+Check(s20ReconWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice20 re-rally recon test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Recon.MoveForPatrol(s20ReconWorld.Chunk, Array.Empty<Enemy>());
+Check(s20Recon.IsPatrolStuck, "slice20 re-rally recon patrol is stuck before the action");
+Check(s20ReconWorld.TryReRallyStuckPatrol(0, 30, 5, 20), "slice20 re-rally recon patrol accepts a re-rally");
+Eq(30, s20Recon.RallyX, "slice20 re-rally recon new rally X");
+Eq(0, s20Recon.PatrolConsecutiveRefusals, "slice20 re-rally recon refusal counter resets");
+Check(s20Recon.MoveForPatrol(s20ReconWorld.Chunk, Array.Empty<Enemy>()), "slice20 re-rally recon patrol marches east on the new loop");
+Eq(25, s20Recon.X, "slice20 re-rally recon patrol steps east to 25");
+Eq(12, s20Recon.DamagePerTick, "slice20 re-rally recon damage per tick unchanged");
+Check(s20Recon.FindTarget(new[] { new Enemy(28, 5, 20) }) != null, "slice20 re-rally recon patrol still fires in passing at range 3 after marching");
+var s20HeavyWorld = new WorldZone(42);
+s20HeavyWorld.Player.X = 24; s20HeavyWorld.Player.Y = 5; s20HeavyWorld.Player.Z = 20;
+var s20Heavy = s20HeavyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(s20HeavyWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice20 re-rally heavy test stages a west wall");
+Check(s20HeavyWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice20 re-rally heavy test stages a south wall");
+Check(s20HeavyWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice20 re-rally heavy test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Heavy.MoveForPatrol(s20HeavyWorld.Chunk, Array.Empty<Enemy>());
+Check(s20Heavy.IsPatrolStuck, "slice20 re-rally heavy patrol is stuck before the action");
+Check(s20HeavyWorld.TryReRallyStuckPatrol(0, 30, 5, 20), "slice20 re-rally heavy patrol accepts a re-rally");
+Eq(0, s20Heavy.PatrolConsecutiveRefusals, "slice20 re-rally heavy refusal counter resets");
+Check(s20Heavy.MoveForPatrol(s20HeavyWorld.Chunk, Array.Empty<Enemy>()), "slice20 re-rally heavy patrol marches east on the new loop");
+Eq(25, s20Heavy.X, "slice20 re-rally heavy patrol steps east to 25");
+Eq(16, s20Heavy.DamagePerTick, "slice20 re-rally heavy damage per tick unchanged");
+Check(s20Heavy.FindTarget(new[] { new Enemy(27, 5, 20) }) != null, "slice20 re-rally heavy patrol still fires in passing at range 2 after marching");
+// Enclosed shape, honestly: a re-rally that cannot fail
+// again would hide the block, not answer it. Here the
+// loop changes and the squad still cannot step out, so
+// it reads Stuck again after a full circuit on the new
+// loop, at the same cell, with the new rally kept.
+var s20EnclosedWorld = new WorldZone(42);
+s20EnclosedWorld.Player.X = 20; s20EnclosedWorld.Player.Y = 5; s20EnclosedWorld.Player.Z = 20;
+var s20Enclosed = s20EnclosedWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s20EnclosedWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice20 re-rally enclosed test stages an east wall");
+Check(s20EnclosedWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice20 re-rally enclosed test stages a west wall");
+Check(s20EnclosedWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice20 re-rally enclosed test stages a south wall");
+Check(s20EnclosedWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice20 re-rally enclosed test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Enclosed.MoveForPatrol(s20EnclosedWorld.Chunk, Array.Empty<Enemy>());
+Check(s20Enclosed.IsPatrolStuck, "slice20 re-rally enclosed patrol is stuck before the action");
+Check(s20EnclosedWorld.TryReRallyStuckPatrol(0, 26, 5, 20), "slice20 re-rally enclosed patrol accepts a re-rally to an outside rally");
+Eq(26, s20Enclosed.RallyX, "slice20 re-rally enclosed patrol keeps the new rally");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20EnclosedWorld)[0].Activity, "slice20 re-rally enclosed patrol reads patrolling at once on the new loop");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Enclosed.MoveForPatrol(s20EnclosedWorld.Chunk, Array.Empty<Enemy>());
+Check(s20Enclosed.IsPatrolStuck, "slice20 re-rally enclosed patrol reads stuck again after a full circuit on the new loop");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s20EnclosedWorld)[0].Activity, "slice20 re-rally enclosed patrol snapshot reads stuck again");
+Eq(20, s20Enclosed.X, "slice20 re-rally enclosed patrol never moved through a wall");
+Eq(20, s20Enclosed.Z, "slice20 re-rally enclosed patrol never moved through a wall in Z");
+// Fail-closed refusals: every gate failure returns false
+// and changes nothing — the action is stuck-Patrol-only,
+// and a stale or wrong target must never re-rally the
+// wrong squad.
+var s20MovingWorld = new WorldZone(42);
+s20MovingWorld.Player.X = 20; s20MovingWorld.Player.Y = 5; s20MovingWorld.Player.Z = 20;
+var s20Moving = s20MovingWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s20Moving.MoveForPatrol(s20MovingWorld.Chunk, Array.Empty<Enemy>()), "slice20 re-rally moving test patrol walks east in open ground");
+Check(!s20Moving.IsPatrolStuck, "slice20 re-rally moving patrol is not stuck");
+Check(!s20MovingWorld.TryReRallyStuckPatrol(0, 26, 5, 20), "slice20 re-rally non-stuck patrol is refused");
+Eq(20, s20Moving.RallyX, "slice20 re-rally refused non-stuck patrol keeps its rally");
+Eq(1, s20Moving.PatrolWaypointIndex, "slice20 re-rally refused non-stuck patrol keeps its index");
+Eq(21, s20Moving.X, "slice20 re-rally refused non-stuck patrol keeps its position");
+Check(!s20MovingWorld.TryReRallyStuckPatrol(-1, 26, 5, 20), "slice20 re-rally negative index is refused");
+Check(!s20MovingWorld.TryReRallyStuckPatrol(1, 26, 5, 20), "slice20 re-rally out-of-range index is refused");
+Eq(20, s20Moving.RallyX, "slice20 re-rally refused index cases keep the rally");
+var s20DoctrinesWorld = new WorldZone(42);
+s20DoctrinesWorld.Player.X = 20; s20DoctrinesWorld.Player.Y = 5; s20DoctrinesWorld.Player.Z = 20;
+var s20DocPatrol = s20DoctrinesWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s20DocHold = s20DoctrinesWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround)!;
+var s20DocAdvance = s20DoctrinesWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance)!;
+var s20DocDefend = s20DoctrinesWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore)!;
+Check(s20DoctrinesWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice20 re-rally doctrine test stages an east wall");
+Check(s20DoctrinesWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice20 re-rally doctrine test stages a west wall");
+Check(s20DoctrinesWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice20 re-rally doctrine test stages a south wall");
+Check(s20DoctrinesWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice20 re-rally doctrine test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20DocPatrol.MoveForPatrol(s20DoctrinesWorld.Chunk, Array.Empty<Enemy>());
+Check(s20DocPatrol.IsPatrolStuck, "slice20 re-rally doctrine test patrol is stuck");
+Check(!s20DoctrinesWorld.TryReRallyStuckPatrol(1, 26, 5, 20), "slice20 re-rally HoldGround squad is refused");
+Check(!s20DoctrinesWorld.TryReRallyStuckPatrol(2, 26, 5, 20), "slice20 re-rally Advance squad is refused");
+Check(!s20DoctrinesWorld.TryReRallyStuckPatrol(3, 26, 5, 20), "slice20 re-rally DefendCore squad is refused");
+Eq(10, s20DocHold.RallyX, "slice20 re-rally refused HoldGround squad keeps its rally");
+Eq(10, s20DocAdvance.RallyX, "slice20 re-rally refused Advance squad keeps its rally");
+Eq(10, s20DocDefend.RallyX, "slice20 re-rally refused DefendCore squad keeps its rally");
+Eq(20, s20DocHold.X, "slice20 re-rally refused squads keep their position");
+Check(s20DoctrinesWorld.TryReRallyStuckPatrol(0, 26, 5, 20), "slice20 re-rally stuck patrol still succeeds after the doctrine refusals");
+Eq(26, s20DocPatrol.RallyX, "slice20 re-rally stuck patrol takes the new rally after the refusals");
+Eq(10, s20DocHold.RallyX, "slice20 re-rally other squads are untouched by a patrol re-rally");
+var s20DeadWorld = new WorldZone(42);
+s20DeadWorld.Player.X = 20; s20DeadWorld.Player.Y = 5; s20DeadWorld.Player.Z = 20;
+var s20Dead = s20DeadWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+s20Dead.TakeDamage(1000);
+Check(s20Dead.IsDead, "slice20 re-rally dead test squad is dead before the action");
+Check(!s20DeadWorld.TryReRallyStuckPatrol(0, 26, 5, 20), "slice20 re-rally dead squad is refused");
+Eq(20, s20Dead.RallyX, "slice20 re-rally refused dead squad keeps its rally");
+var s20BoundsWorld = new WorldZone(42);
+s20BoundsWorld.Player.X = 20; s20BoundsWorld.Player.Y = 5; s20BoundsWorld.Player.Z = 20;
+var s20Bounds = s20BoundsWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s20BoundsWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice20 re-rally bounds test stages an east wall");
+Check(s20BoundsWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice20 re-rally bounds test stages a west wall");
+Check(s20BoundsWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice20 re-rally bounds test stages a south wall");
+Check(s20BoundsWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice20 re-rally bounds test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Bounds.MoveForPatrol(s20BoundsWorld.Chunk, Array.Empty<Enemy>());
+Check(s20Bounds.IsPatrolStuck, "slice20 re-rally bounds test patrol is stuck");
+Check(!s20BoundsWorld.TryReRallyStuckPatrol(0, 99, 5, 20), "slice20 re-rally out-of-bounds rally is refused");
+Check(!s20BoundsWorld.TryReRallyStuckPatrol(0, -1, 5, 20), "slice20 re-rally negative rally is refused");
+Check(!s20BoundsWorld.TryReRallyStuckPatrol(0, 20, 5, 20), "slice20 re-rally to the same rally is refused");
+Eq(20, s20Bounds.RallyX, "slice20 re-rally refused rally cases keep the old rally");
+Eq(5, s20Bounds.PatrolConsecutiveRefusals, "slice20 re-rally refused rally cases keep the refusal counter");
+Check(s20Bounds.IsPatrolStuck, "slice20 re-rally refused rally cases keep the patrol stuck");
+// Solid rally, deploy-consistent: accepted, never
+// teleported into. The squad steps to the open cell
+// before it, then holds short of the solid rally cell.
+var s20SolidWorld = new WorldZone(42);
+s20SolidWorld.Player.X = 24; s20SolidWorld.Player.Y = 5; s20SolidWorld.Player.Z = 20;
+var s20Solid = s20SolidWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s20SolidWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice20 re-rally solid test stages a west wall");
+Check(s20SolidWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice20 re-rally solid test stages a south wall");
+Check(s20SolidWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice20 re-rally solid test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Solid.MoveForPatrol(s20SolidWorld.Chunk, Array.Empty<Enemy>());
+Check(s20Solid.IsPatrolStuck, "slice20 re-rally solid test patrol is stuck");
+Check(s20SolidWorld.Chunk.TrySet(26, 5, 20, BlockType.Stone), "slice20 re-rally solid test stages a solid new rally cell");
+Check(s20SolidWorld.TryReRallyStuckPatrol(0, 26, 5, 20), "slice20 re-rally to a solid rally cell is accepted, as deploy accepts one");
+Eq(26, s20Solid.RallyX, "slice20 re-rally solid new rally X");
+Check(s20Solid.MoveForPatrol(s20SolidWorld.Chunk, Array.Empty<Enemy>()), "slice20 re-rally solid patrol steps east toward the solid rally");
+Eq(25, s20Solid.X, "slice20 re-rally solid patrol reaches the open cell before the rally");
+Check(!s20Solid.MoveForPatrol(s20SolidWorld.Chunk, Array.Empty<Enemy>()), "slice20 re-rally solid patrol step into the solid rally is refused");
+Eq(25, s20Solid.X, "slice20 re-rally solid patrol holds short of the solid rally, never inside it");
+Eq(BlockType.Stone, s20SolidWorld.Chunk.Get(26, 5, 20), "slice20 re-rally solid rally cell stays stone");
+// Fire through a world tick after a re-rally: the
+// re-rallied Vanguard walks east and kills in passing,
+// exactly as a moving patrol fires — the action changes
+// no fire rule.
+var s20FireWorld = new WorldZone(42);
+s20FireWorld.Player.X = 24; s20FireWorld.Player.Y = 5; s20FireWorld.Player.Z = 20;
+var s20Fire = s20FireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s20FireWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice20 re-rally fire test stages a west wall");
+Check(s20FireWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice20 re-rally fire test stages a south wall");
+Check(s20FireWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice20 re-rally fire test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20Fire.MoveForPatrol(s20FireWorld.Chunk, Array.Empty<Enemy>());
+Check(s20Fire.IsPatrolStuck, "slice20 re-rally fire test patrol is stuck");
+Check(s20FireWorld.TryReRallyStuckPatrol(0, 30, 5, 20), "slice20 re-rally fire test patrol accepts a re-rally");
+s20FireWorld.Enemies.Add(new Enemy(27, 5, 20));
+s20FireWorld.Advance();
+Eq(25, s20Fire.X, "slice20 re-rally fire test patrol walks east on the tick after the action");
+Eq(0, s20FireWorld.Enemies.Count, "slice20 re-rally fire test patrol kills in passing on that tick");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20FireWorld)[0].Activity, "slice20 re-rally fire test patrol reads patrolling after the tick");
+// Save/load: a re-rallied patrol loads with its new
+// rally and marches from index 0, through the thin
+// Simulation passthrough; and a stuck-before-save patrol
+// still loads Patrolling at index 0 under the existing
+// rule, which this step does not break.
+var s20Sim = new Simulation(42);
+s20Sim.World.Player.X = 24; s20Sim.World.Player.Y = 5; s20Sim.World.Player.Z = 20;
+var s20SimPatrol = s20Sim.World.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s20Sim.World.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice20 re-rally save test stages a west wall");
+Check(s20Sim.World.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice20 re-rally save test stages a south wall");
+Check(s20Sim.World.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice20 re-rally save test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20SimPatrol.MoveForPatrol(s20Sim.World.Chunk, Array.Empty<Enemy>());
+Check(s20SimPatrol.IsPatrolStuck, "slice20 re-rally save test patrol is stuck before the action");
+Eq(0, s20Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice20 re-rally save test starts with no ore");
+Check(s20Sim.TryReRallyStuckPatrol(0, 30, 5, 20), "slice20 re-rally save test accepts a re-rally through the Simulation passthrough");
+Eq(0, s20Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice20 re-rally charges no ore");
+var s20Save = s20Sim.SaveToJson();
+var s20LoadedSim = new Simulation(99);
+Check(s20LoadedSim.LoadFromJson(s20Save), "slice20 re-rally save test loads");
+Eq(1, s20LoadedSim.World.Squads.Count, "slice20 re-rally save test keeps one squad after load");
+var s20Loaded = s20LoadedSim.World.Squads[0];
+Eq(24, s20Loaded.X, "slice20 re-rally save test loaded position preserved");
+Eq(30, s20Loaded.RallyX, "slice20 re-rally save test loaded rally is the new rally");
+Eq(0, s20Loaded.PatrolWaypointIndex, "slice20 re-rally save test loaded index is 0");
+Eq(0, s20Loaded.PatrolConsecutiveRefusals, "slice20 re-rally save test loaded counter is 0");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20LoadedSim.World)[0].Activity, "slice20 re-rally save test loaded squad reads patrolling");
+Check(s20Loaded.MoveForPatrol(s20LoadedSim.World.Chunk, Array.Empty<Enemy>()), "slice20 re-rally save test loaded patrol marches east");
+Eq(25, s20Loaded.X, "slice20 re-rally save test loaded patrol steps east to 25");
+var s20StuckSaveSim = new Simulation(42);
+s20StuckSaveSim.World.Player.X = 20; s20StuckSaveSim.World.Player.Y = 5; s20StuckSaveSim.World.Player.Z = 20;
+var s20StuckSave = s20StuckSaveSim.World.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s20StuckSaveSim.World.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice20 re-rally stuck-save test stages an east wall");
+Check(s20StuckSaveSim.World.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice20 re-rally stuck-save test stages a west wall");
+Check(s20StuckSaveSim.World.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice20 re-rally stuck-save test stages a south wall");
+Check(s20StuckSaveSim.World.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice20 re-rally stuck-save test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20StuckSave.MoveForPatrol(s20StuckSaveSim.World.Chunk, Array.Empty<Enemy>());
+Check(s20StuckSave.IsPatrolStuck, "slice20 re-rally stuck-save test patrol is stuck before the save");
+var s20StuckSaveJson = s20StuckSaveSim.SaveToJson();
+var s20StuckLoadedSim = new Simulation(99);
+Check(s20StuckLoadedSim.LoadFromJson(s20StuckSaveJson), "slice20 re-rally stuck-save test loads");
+var s20StuckLoaded = s20StuckLoadedSim.World.Squads[0];
+Check(!s20StuckLoaded.IsPatrolStuck, "slice20 re-rally stuck-before-save patrol loads not stuck, as before");
+Eq(0, s20StuckLoaded.PatrolWaypointIndex, "slice20 re-rally stuck-before-save patrol loads at index 0, as before");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20StuckLoadedSim.World)[0].Activity, "slice20 re-rally stuck-before-save patrol loads reading patrolling, as before");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20StuckLoaded.MoveForPatrol(s20StuckLoadedSim.World.Chunk, Array.Empty<Enemy>());
+Check(s20StuckLoaded.IsPatrolStuck, "slice20 re-rally stuck-before-save patrol is stuck again after a full circuit");
+// Paid path unchanged, and a re-rally frees no cap
+// slot: three paid squads, one stuck patrol among them,
+// re-rallied free, and a fourth paid deploy with ore in
+// hand is still refused at the cap, with ore untouched.
+var s20PaidWorld = new WorldZone(42);
+s20PaidWorld.Player.X = 24; s20PaidWorld.Player.Y = 5; s20PaidWorld.Player.Z = 20;
+s20PaidWorld.Player.Inventory.Add(BlockType.EmberOre, 40);
+var s20PaidPatrol = s20PaidWorld.TryDeployPaidSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Eq(30, s20PaidWorld.Player.Inventory.Get(BlockType.EmberOre), "slice20 re-rally paid test first deploy charges 10");
+Check(s20PaidWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice20 re-rally paid test stages a west wall");
+Check(s20PaidWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice20 re-rally paid test stages a south wall");
+Check(s20PaidWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice20 re-rally paid test stages a north wall");
+for (int s20Tick = 0; s20Tick < 5; s20Tick++) s20PaidPatrol.MoveForPatrol(s20PaidWorld.Chunk, Array.Empty<Enemy>());
+Check(s20PaidPatrol.IsPatrolStuck, "slice20 re-rally paid test patrol is stuck");
+Check(s20PaidWorld.TryDeployPaidSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard) != null, "slice20 re-rally paid test second deploy succeeds");
+Check(s20PaidWorld.TryDeployPaidSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Recon) != null, "slice20 re-rally paid test third deploy succeeds at the cap");
+Eq(10, s20PaidWorld.Player.Inventory.Get(BlockType.EmberOre), "slice20 re-rally paid test three deploys leave 10 ore");
+Eq(3, SquadEconomy.LiveSquadCount(s20PaidWorld), "slice20 re-rally paid test cap is full at 3 live squads");
+Check(s20PaidWorld.TryReRallyStuckPatrol(0, 30, 5, 20), "slice20 re-rally paid test stuck patrol accepts a free re-rally");
+Eq(10, s20PaidWorld.Player.Inventory.Get(BlockType.EmberOre), "slice20 re-rally paid test re-rally charges nothing and refunds nothing");
+Eq(3, SquadEconomy.LiveSquadCount(s20PaidWorld), "slice20 re-rally paid test re-rally frees no cap slot");
+Check(s20PaidWorld.TryDeployPaidSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Heavy) == null, "slice20 re-rally paid test fourth deploy is still refused at the cap");
+Eq(10, s20PaidWorld.Player.Inventory.Get(BlockType.EmberOre), "slice20 re-rally paid test refused fourth deploy charges nothing");
+Eq(30, s20PaidPatrol.RallyX, "slice20 re-rally paid test patrol keeps its new rally after the cap refusal");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;
