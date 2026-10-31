@@ -1,5 +1,74 @@
 # Forgeborne — Changelog
 
+## 0.103.0 — 2026-10-31 — Slice 26 scope:
+pending auto-clear, decided in Step 1; documentation only
+
+- Step taken: Slice 26 scope, documentation-only,
+  0.103.0. No system built, no answer decided, by
+  design; Slice 27 is NOT scoped here.
+- Scope decided: Slice 26 is the pending
+  auto-clear slice, in order — Step 1, the
+  auto-clear decision plus its adapter
+  implementation, decided separately for the
+  re-rally pick and the dismiss pick, on the
+  weighing the scope sets out (poll mechanism
+  and false-clear case, placement and the
+  death-frame Return reading, per-frame cost
+  bound, re-press semantics, twin limit stated
+  as not closed, checklist relation); Step 2,
+  the documentation-only review closing Slice
+  26. The narrowing is the decision: of the
+  Slice 25 review's ranked candidates, only
+  the auto-clear gap inside candidate 5 is a
+  headlessly decidable routing step. Candidates
+  1 to 4 remain Windows observations or
+  Windows-evidence-gated decisions (Slice 13
+  remainders, graphics retune, re-rally price,
+  dismiss refund), and the other four adapter
+  gaps — identical-twin limit (a core and
+  save-format decision), invisible pending
+  dismiss (a display step gated on playtest
+  confusion), unparented pending marker (a
+  Windows observation), same-frame K+X order
+  (routing determinism, a Windows observation)
+  — are carried after Slice 26, not bundled
+  into it, as the Slice 25 review requires.
+- Ground facts verified against code this run,
+  not copied from review prose: the Update tail
+  runs dismiss, then re-rally, then picker, then
+  the opener else-branch, with K checked before
+  X in the opener; HandlePendingDismiss reads
+  keys only and does no per-frame snapshot work,
+  while HandlePendingReRally raycasts and shows
+  its marker every frame; both confirms
+  re-validate by doctrine, kind, and rally with
+  position and health excluded and clear pending
+  on success or refusal; SnapshotPosToGateIndex
+  walks squads skipping dead and returns -1 when
+  the live list shrinks past the stored position;
+  Snapshot allocates a new list per call, so a
+  per-frame poll costs one list per frame while
+  pending only. Deploy price 10 and cap 3 stand,
+  re-rally stays free, dismiss stays refund none.
+- Changes: new docs/slice-26-scope.md, CHANGELOG
+  0.103.0, DECISIONS.md.
+- Tests: 5053 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged:
+  Slice 25 save 44,041 chars, Slice 23 save
+  44,041 chars, Slice 22 save 43,990 chars,
+  Slice 21 save 44,040 chars, Slice 20 save
+  44,041 chars, Slice 19 save 43,965 chars,
+  Slice 18 save 44,015 chars, Slice 15 save
+  44,016 chars, Slice 17 save 43,974 chars.
+- Checklist relation: no new item. Items 42 and
+  43 already observe the pending routing, and
+  the next free gate number remains 44; whether
+  Step 1's auto-clear decision needs item 44 is
+  decided in that step, not here.
+- Next step: Slice 26 Step 1, the pending
+  auto-clear decision plus its adapter
+  implementation, decided in that step.
+
 ## 0.102.0 — 2026-10-31 — Slice 25 Step 2:
 composed demo + review, closing Slice 25
 

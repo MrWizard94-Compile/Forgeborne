@@ -11060,6 +11060,99 @@ marker proximity targeting, item 42
   chosen from the ranked candidates the review carries, not
   promised here.
 
+## 2026-10-31 — Slice 26 scope: pending auto-clear, decided in Step 1 (0.103.0, under delegation)
+
+- Step taken: Slice 26 scope, documentation-only,
+  0.103.0. No system built, no answer decided, by
+  design; Slice 27 is NOT scoped here. The scope is
+  docs/slice-26-scope.md, with the same decision
+  summarised in CHANGELOG 0.103.0.
+- Why candidate 5, narrowed to one gap, stated as
+  the scope states it: of the Slice 25 review's
+  ranked candidates, only the auto-clear gap inside
+  candidate 5 is a headlessly decidable routing
+  step. Candidate 1 (Slice 13 remainders) remains
+  observations to be made when Windows verification
+  runs, and scoping an observation as a headless
+  step would manufacture a step that cannot move
+  while Unity 6000 on Windows is still not ready
+  (Rob confirmed 2026-10-31 that he hit a snag
+  and then got busy with work). Candidates 2, 3,
+  and 4 (graphics retune, re-rally price, dismiss
+  refund) are all gated on Windows evidence that
+  does not exist yet, and a routing step must not
+  retune or reprice anything to pay for deciding a
+  pending rule. Inside candidate 5, the narrowing
+  matters as much as the choice: the twin limit
+  needs a core and save-format identity decision
+  and is bounded, not closable by a poll that
+  reuses the same triple; the invisible pending
+  dismiss is a display step gated on playtest
+  finding confusion, which no playtest has found;
+  the unparented marker is a Windows observation
+  and same-frame K+X order is recorded routing
+  determinism whose play reading is also a Windows
+  observation. Bundling any of those into an
+  auto-clear step would be exactly what the Slice
+  25 review forbids, so all four are carried as
+  the ranked Slice 27 candidates, not demoted and
+  not promised.
+- Grounding, verified against code this run, not
+  copied from review prose: the Update tail runs
+  dismiss first, then re-rally, then picker, then
+  the opener else-branch, so no frame sets both
+  pending flags and Return confirms exactly one
+  action, with K checked before X in the opener
+  (same-frame K+X opens re-rally only, by branch
+  order, not by designed priority);
+  HandlePendingDismiss reads Return, Escape, and
+  X again only, with no per-frame snapshot work,
+  while HandlePendingReRally raycasts and shows
+  its marker every frame; both confirms
+  re-validate on doctrine, kind, and rally (old
+  rally for re-rally), excluding position and
+  health, and clear pending on success or
+  refusal; SnapshotPosToGateIndex walks squads
+  skipping dead and returns -1 past the shrunk
+  live list; Snapshot allocates a new list per
+  call, so a per-frame poll is one allocation
+  per frame while pending only. The scope's
+  count-only false-clear case is the reason a
+  cheaper poll is not assumed clean: any squad's
+  death and sweep drops the live count, so a
+  count poll would clear a pick whose target is
+  still alive, while the triple poll would not.
+- Claim split, kept explicit: the scope decides
+  no routing and proves no key; items 42 and 43
+  already observe the pending routing, superseding
+  none, and the next free gate number remains 44,
+  with Step 1 deciding whether its auto-clear
+  decision needs item 44. Items 39, 40, 41, 42,
+  and 43 are attemptable and all unchecked,
+  closing only on their Windows observations
+  recorded here with the Unity version and GPU;
+  the Slice 1 director playtest gate is still
+  pending throughout and is not closed by
+  Slice 26's scope.
+- Gaps carried, not closed by the scope: Windows
+  Unity verification for Slices 1–25 and the
+  director playtest; the four remaining Slice 24
+  adapter gaps (identical-twin limit, invisible
+  pending dismiss, unparented re-rally pending
+  marker, same-frame K+X branch order); and the
+  Windows-evidence-gated graphics retune,
+  re-rally price, and dismiss refund decisions.
+- Deliberately NOT in this step: any core,
+  adapter, save-format, economy, marker, HUD,
+  light, fog, model, or display change; a twin
+  identity field; a checklist item; a Slice 27
+  scope; a claim that any pending routing works
+  in a scene; a claim that Slice 26 is playtested
+  or Unity-verified.
+- Next step: Slice 26 Step 1, the pending
+  auto-clear decision plus its adapter
+  implementation, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
