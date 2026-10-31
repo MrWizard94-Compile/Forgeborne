@@ -1,5 +1,108 @@
 # Forgeborne — Changelog
 
+## 0.95.0 — 2026-10-31 — Slice 23 Step 2:
+composed demo plus review, closing Slice 23
+
+- Step taken: Slice 23 Step 2, the composed demo
+  plus documentation-only review closing Slice 23,
+  per docs/slice-23-scope.md. No new core system,
+  no adapter edit, no checklist item beyond what
+  Step 1 decided, by design; Slice 24 is NOT
+  scoped here.
+- Composition decided: one Simulation, three paid
+  squads, no enemy, 30 EmberOre spent on deploys
+  and nothing else — Heavy HoldGround marched away
+  first (rally (10,5,10), Holding from the sixth
+  patrol-march tick on), Recon Patrol marched to
+  its rally (20,5,20) in eight ticks and walking
+  one full 24-step loop at radius 3 and count 5
+  (east 3, south 6, west 6, north 6, rally 3,
+  index back to 0, refusals 0), then Vanguard
+  Patrol deployed at the player cell in Step 1's
+  exact route-blocked shape translated to the
+  player cell (rally (12,5,16); stone west,
+  south, and north of the squad's cell, east step
+  cell open), counting five refusals and reading
+  Stuck, unmoved, while the other two keep their
+  readings. Then, in order: the stuck patrol
+  accepting the same free re-rally Slice 20
+  decided, to (22,5,16), with index and counter
+  reset to 0, Patrolling at once, position
+  unchanged, ore unchanged at 0, cap count
+  unchanged at 3; a fourth paid deploy still
+  refused at the full cap; the re-rallied patrol
+  marching east to its new rally in six ticks
+  and turning onto the new loop on the next tick
+  (east waypoint (25,5,16), new rally plus radius
+  3); and a save/load round-trip after the action
+  loading both loop centres (walking patrol
+  (20,5,20), re-rallied patrol (22,5,16), not the
+  old (12,5,16)), indices at 0, with the loaded
+  re-rallied patrol stepping back to its new rally
+  on loaded tick 1, as the index-reset load rule
+  requires.
+- Why this composition, stated in the review and
+  DECISIONS: the scope asked for the decided
+  values together with their controls in one
+  field — a patrol walking a loop at the decided
+  radius and count, a stuck geometry from the
+  audit beside it, and a save/load round-trip
+  preserving the loop's centre. A second stuck
+  geometry is not re-staged here because Step 1
+  already classified the enclosed and
+  blocked-new-loop shapes; re-staging them would
+  repeat the audit, not compose it. No enemy is
+  staged, so no fire claim rides along: Step 1
+  already proved the range relation from the
+  table, and staging an enemy on a waypoint to
+  "show" it would have turned a loop demo into a
+  fire demo.
+- Proof set: 290 composed-integration assertions
+  mirroring the demo tick by tick (hold march,
+  patrol march, 24-step loop with every position
+  and waypoint, stuck-phase refusals and waypoint
+  cycle with the walking patrol's loop positions
+  beside them, free re-rally state and economy,
+  fourth-deploy refusal, six-tick march, loop
+  turn with radius 3 and waypoint count 5 asserted
+  unchanged, post-action save/load and loaded tick
+  1, range constants re-asserted from the table).
+- Changes: demo/Forgeborne.Demo/Program.cs (new
+  Slice 23 scenario), tests/Forgeborne.Core.Tests/
+  Program.cs (+290 assertions), new
+  docs/slice-23-review.md, CHANGELOG 0.95.0,
+  DECISIONS.md (composition, claim split,
+  checklist relation, deliberately-not list, next
+  step: scoping Slice 24 as its own decision step,
+  chosen from the ranked candidates the review
+  carries, not promised here).
+- Tests: 4577 passed, 0 failed (was 4287; +290,
+  no failures on the final runs, FAIL count 0).
+  Demo unchanged except the new scenario: Slice
+  22 scenario save 43,990 chars, Slice 21 save
+  44,040 chars, Slice 20 save 44,041 chars, Slice
+  19 save 43,965 chars, Slice 18 save 44,015 chars,
+  Slice 15 save 44,016 chars, Slice 17 save 43,974
+  chars. New Slice 23 scenario save 44,041 chars,
+  quoted as its own entry (sharing Slice 20's
+  length is a coincidence of field size, not a
+  shared field).
+- Checklist relation: no new item. Items 37
+  (patrol route), 39 (stuck re-rally), and 40
+  (general re-rally) already observe the loop as
+  kept, superseding none of them; next free gate
+  number remains 42. Items 39, 40, and 41 remain
+  honestly pending their bindings: the K and X
+  proposals are comments in FpsInputAdapter.cs
+  only, not implemented.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.94.0 — 2026-10-31 — Slice 23 Step 1:
 radius and waypoint decision — KEEP radius 3
 and count 5, on audit evidence, with the range

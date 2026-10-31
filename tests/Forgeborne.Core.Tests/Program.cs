@@ -9131,5 +9131,180 @@ Check(!s23Wall.IsPatrolStuck, "slice23 audit wall across loop is not stuck");
 Eq(3, TacticalSquad.PatrolLoopRadius, "slice23 audit wall across loop radius is still 3, not retuned");
 Eq(5, TacticalSquad.PatrolWaypointCount, "slice23 audit wall across loop waypoint count is still 5, not retuned");
 
+// ---- Slice 23 Step 2: composed demo + review, closing Slice 23 (0.95.0) ----
+// One Simulation mirroring the demo, tick by tick: a Heavy
+// HoldGround marched away first, a Recon Patrol marched to its
+// rally and walking one full 24-step loop at radius 3 and count
+// 5, a Vanguard Patrol staged in the audited route-blocked
+// shape beside it counting five step-cell refusals and reading
+// Stuck, the same free re-rally Slice 20 decided, a fourth paid
+// deploy refused at the full cap, the rescued march and loop
+// turn, and a save/load round-trip preserving both loop
+// centres. No enemy is staged, so no fire claim rides along.
+var s23cSim = new Simulation(42);
+s23cSim.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+s23cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s23cSim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s23cSim.BeginOrbitalPick();
+Check(s23cSim.SetOrbitalRally(10, 5, 10), "slice23 composed hold rally set");
+Check(s23cSim.ConfirmOrbitalDeploy() != null, "slice23 composed hold deploys paid");
+Eq(20, s23cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice23 composed ore after hold deploy is 20");
+Eq(100, s23cSim.World.Squads[0].Health, "slice23 composed hold health is 100");
+int[] s23cHoldX = { 15, 15, 14, 14, 13, 13 };
+int[] s23cHoldZ = { 16, 15, 15, 14, 14, 13 };
+for (int s23cTick = 0; s23cTick < 6; s23cTick++)
+{
+    s23cSim.World.Advance();
+    Eq(s23cHoldX[s23cTick], s23cSim.World.Squads[0].X, $"slice23 composed hold march tick {s23cTick + 1} hold x");
+    Eq(s23cHoldZ[s23cTick], s23cSim.World.Squads[0].Z, $"slice23 composed hold march tick {s23cTick + 1} hold z");
+    Eq(SquadActivity.Marching, OrbitalView.Snapshot(s23cSim.World)[0].Activity, $"slice23 composed hold march tick {s23cTick + 1} hold reads marching");
+}
+s23cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+s23cSim.OrbitalCommand.SelectKind(SquadKind.Recon);
+s23cSim.BeginOrbitalPick();
+Check(s23cSim.SetOrbitalRally(20, 5, 20), "slice23 composed patrol rally set");
+Check(s23cSim.ConfirmOrbitalDeploy() != null, "slice23 composed patrol deploys paid");
+Eq(10, s23cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice23 composed ore after patrol deploy is 10");
+Eq(40, s23cSim.World.Squads[1].Health, "slice23 composed patrol health is 40");
+int[] s23cMarchHoldX = { 12, 12, 11, 11, 10, 10, 10, 10 };
+int[] s23cMarchHoldZ = { 13, 12, 12, 11, 11, 10, 10, 10 };
+int[] s23cMarchPatrolX = { 17, 17, 18, 18, 19, 19, 20, 20 };
+int[] s23cMarchPatrolZ = { 16, 17, 17, 18, 18, 19, 19, 20 };
+for (int s23cTick = 0; s23cTick < 8; s23cTick++)
+{
+    s23cSim.World.Advance();
+    Eq(s23cMarchHoldX[s23cTick], s23cSim.World.Squads[0].X, $"slice23 composed patrol march tick {s23cTick + 1} hold x");
+    Eq(s23cMarchHoldZ[s23cTick], s23cSim.World.Squads[0].Z, $"slice23 composed patrol march tick {s23cTick + 1} hold z");
+    Eq(s23cMarchPatrolX[s23cTick], s23cSim.World.Squads[1].X, $"slice23 composed patrol march tick {s23cTick + 1} patrol x");
+    Eq(s23cMarchPatrolZ[s23cTick], s23cSim.World.Squads[1].Z, $"slice23 composed patrol march tick {s23cTick + 1} patrol z");
+    Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23cSim.World)[1].Activity, $"slice23 composed patrol march tick {s23cTick + 1} patrol reads patrolling");
+}
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s23cSim.World)[0].Activity, "slice23 composed hold reads holding at its rally after the patrol march");
+Eq(0, s23cSim.World.Squads[1].PatrolWaypointIndex, "slice23 composed patrol is at its rally waypoint after the march");
+Eq((20, 5, 20), s23cSim.World.Squads[1].PatrolTarget, "slice23 composed patrol target after the march is its rally");
+int[] s23cLoopX = { 21, 22, 23, 22, 22, 21, 21, 20, 20, 19, 19, 18, 18, 17, 17, 18, 18, 19, 19, 20, 20, 20, 20, 20 };
+int[] s23cLoopZ = { 20, 20, 20, 20, 21, 21, 22, 22, 23, 23, 22, 22, 21, 21, 20, 20, 19, 19, 18, 18, 17, 18, 19, 20 };
+int[] s23cLoopIdx = { 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 0, 0, 0 };
+for (int s23cTick = 0; s23cTick < 24; s23cTick++)
+{
+    s23cSim.World.Advance();
+    Eq(s23cLoopX[s23cTick], s23cSim.World.Squads[1].X, $"slice23 composed loop tick {s23cTick + 1} patrol x");
+    Eq(s23cLoopZ[s23cTick], s23cSim.World.Squads[1].Z, $"slice23 composed loop tick {s23cTick + 1} patrol z");
+    Eq(s23cLoopIdx[s23cTick], s23cSim.World.Squads[1].PatrolWaypointIndex, $"slice23 composed loop tick {s23cTick + 1} patrol waypoint");
+}
+Eq(20, s23cSim.World.Squads[1].X, "slice23 composed loop returns to the rally X in 24 steps");
+Eq(20, s23cSim.World.Squads[1].Z, "slice23 composed loop returns to the rally Z in 24 steps");
+Eq(0, s23cSim.World.Squads[1].PatrolWaypointIndex, "slice23 composed loop index is back to the rally waypoint");
+Eq(0, s23cSim.World.Squads[1].PatrolConsecutiveRefusals, "slice23 composed loop counts no refusals");
+Check(!s23cSim.World.Squads[1].IsPatrolStuck, "slice23 composed loop patrol is not stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23cSim.World)[1].Activity, "slice23 composed loop patrol reads patrolling at its rally");
+Eq(10, s23cSim.World.Squads[0].X, "slice23 composed loop hold stays at its rally X");
+Eq(10, s23cSim.World.Squads[0].Z, "slice23 composed loop hold stays at its rally Z");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s23cSim.World)[0].Activity, "slice23 composed loop hold still reads holding");
+s23cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+s23cSim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s23cSim.BeginOrbitalPick();
+Check(s23cSim.SetOrbitalRally(12, 5, 16), "slice23 composed stuck patrol rally set");
+Check(s23cSim.ConfirmOrbitalDeploy() != null, "slice23 composed stuck patrol deploys paid");
+Eq(0, s23cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice23 composed ore after stuck deploy is 0");
+Eq(3, s23cSim.World.Squads.Count, "slice23 composed cap is full at 3 with the stuck patrol");
+Eq((12, 5, 16), s23cSim.World.Squads[2].PatrolTarget, "slice23 composed stuck patrol target before staging is its rally");
+Check(s23cSim.World.Chunk.TrySet(15, 5, 16, BlockType.Stone), "slice23 composed stuck stages a west wall");
+Check(s23cSim.World.Chunk.TrySet(16, 5, 17, BlockType.Stone), "slice23 composed stuck stages a south wall");
+Check(s23cSim.World.Chunk.TrySet(16, 5, 15, BlockType.Stone), "slice23 composed stuck stages a north wall");
+Eq(BlockType.Stone, s23cSim.World.Chunk.Get(15, 5, 16), "slice23 composed stuck east waypoint cell is stone, the blocked cell counted once");
+int[] s23cStuckWalkX = { 21, 22, 23, 22, 22 };
+int[] s23cStuckWalkZ = { 20, 20, 20, 20, 21 };
+int[] s23cStuckRefusals = { 1, 2, 3, 4, 5 };
+int[] s23cStuckWaypoint = { 1, 2, 3, 4, 0 };
+for (int s23cTick = 0; s23cTick < 5; s23cTick++)
+{
+    s23cSim.World.Advance();
+    Eq(s23cStuckWalkX[s23cTick], s23cSim.World.Squads[1].X, $"slice23 composed stuck tick {s23cTick + 1} walking patrol x");
+    Eq(s23cStuckWalkZ[s23cTick], s23cSim.World.Squads[1].Z, $"slice23 composed stuck tick {s23cTick + 1} walking patrol z");
+    Eq(16, s23cSim.World.Squads[2].X, $"slice23 composed stuck tick {s23cTick + 1} stuck x unmoved");
+    Eq(16, s23cSim.World.Squads[2].Z, $"slice23 composed stuck tick {s23cTick + 1} stuck z unmoved");
+    Eq(s23cStuckRefusals[s23cTick], s23cSim.World.Squads[2].PatrolConsecutiveRefusals, $"slice23 composed stuck tick {s23cTick + 1} refusals");
+    Eq(s23cStuckWaypoint[s23cTick], s23cSim.World.Squads[2].PatrolWaypointIndex, $"slice23 composed stuck tick {s23cTick + 1} waypoint");
+    Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23cSim.World)[1].Activity, $"slice23 composed stuck tick {s23cTick + 1} walking patrol still reads patrolling");
+}
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s23cSim.World)[2].Activity, "slice23 composed stuck patrol reads stuck after five refusals");
+Check(s23cSim.World.Squads[2].IsPatrolStuck, "slice23 composed stuck patrol is stuck");
+Eq(22, s23cSim.World.Squads[1].X, "slice23 composed stuck phase walking patrol ends east on its loop");
+Eq(21, s23cSim.World.Squads[1].Z, "slice23 composed stuck phase walking patrol ends south on its loop");
+Eq(2, s23cSim.World.Squads[1].PatrolWaypointIndex, "slice23 composed stuck phase walking patrol waypoint is south");
+Check(s23cSim.TryReRallyStuckPatrol(2, 22, 5, 16), "slice23 composed stuck patrol re-rallies free");
+Eq(22, s23cSim.World.Squads[2].RallyX, "slice23 composed rescued rally is now 22");
+Eq(0, s23cSim.World.Squads[2].PatrolWaypointIndex, "slice23 composed rescued waypoint resets to 0");
+Eq(0, s23cSim.World.Squads[2].PatrolConsecutiveRefusals, "slice23 composed rescued counter resets to 0");
+Eq(16, s23cSim.World.Squads[2].X, "slice23 composed rescued position unchanged, no teleport");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23cSim.World)[2].Activity, "slice23 composed rescued patrol reads patrolling at once");
+Eq(0, s23cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice23 composed rescue charges nothing");
+Eq(3, s23cSim.World.Squads.Count, "slice23 composed rescue frees no cap slot");
+s23cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+s23cSim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s23cSim.BeginOrbitalPick();
+Check(s23cSim.SetOrbitalRally(10, 5, 10), "slice23 composed fourth rally set");
+Check(s23cSim.ConfirmOrbitalDeploy() == null, "slice23 composed fourth paid deploy at the full cap is refused");
+s23cSim.CancelOrbitalPick();
+Eq(0, s23cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice23 composed fourth refusal charges nothing");
+Eq(3, s23cSim.World.Squads.Count, "slice23 composed fourth refusal adds no squad");
+Eq(22, s23cSim.World.Squads[2].RallyX, "slice23 composed fourth refusal leaves the rescued rally");
+int[] s23cRescuedX = { 17, 18, 19, 20, 21, 22 };
+int[] s23cRescueWalkX = { 21, 21, 20, 20, 19, 19 };
+int[] s23cRescueWalkZ = { 21, 22, 22, 23, 23, 22 };
+int[] s23cRescueWalkIdx = { 2, 2, 2, 2, 3, 3 };
+for (int s23cTick = 0; s23cTick < 6; s23cTick++)
+{
+    s23cSim.World.Advance();
+    Eq(s23cRescueWalkX[s23cTick], s23cSim.World.Squads[1].X, $"slice23 composed rescued march tick {s23cTick + 1} walking patrol x");
+    Eq(s23cRescueWalkZ[s23cTick], s23cSim.World.Squads[1].Z, $"slice23 composed rescued march tick {s23cTick + 1} walking patrol z");
+    Eq(s23cRescueWalkIdx[s23cTick], s23cSim.World.Squads[1].PatrolWaypointIndex, $"slice23 composed rescued march tick {s23cTick + 1} walking patrol waypoint");
+    Eq(s23cRescuedX[s23cTick], s23cSim.World.Squads[2].X, $"slice23 composed rescued march tick {s23cTick + 1} rescued x");
+    Eq(16, s23cSim.World.Squads[2].Z, $"slice23 composed rescued march tick {s23cTick + 1} rescued z");
+    Eq(0, s23cSim.World.Squads[2].PatrolWaypointIndex, $"slice23 composed rescued march tick {s23cTick + 1} rescued waypoint stays 0 toward its rally");
+    Eq(22, s23cSim.World.Squads[2].PatrolTarget.X, $"slice23 composed rescued march tick {s23cTick + 1} rescued target is its new rally");
+}
+Eq(22, s23cSim.World.Squads[2].X, "slice23 composed rescued march reaches its new rally X");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23cSim.World)[2].Activity, "slice23 composed rescued patrol reads patrolling at its new rally");
+s23cSim.World.Advance();
+Eq(23, s23cSim.World.Squads[2].X, "slice23 composed rescued loop tick steps east onto its new loop");
+Eq(1, s23cSim.World.Squads[2].PatrolWaypointIndex, "slice23 composed rescued loop tick is waypoint 1");
+Eq(25, s23cSim.World.Squads[2].PatrolTarget.X, "slice23 composed rescued loop target is the new rally plus radius 3");
+Eq(18, s23cSim.World.Squads[1].X, "slice23 composed rescued loop tick walking patrol steps west on its loop");
+Eq(22, s23cSim.World.Squads[1].Z, "slice23 composed rescued loop tick walking patrol z");
+Eq(3, s23cSim.World.Squads[1].PatrolWaypointIndex, "slice23 composed rescued loop tick walking patrol waypoint is west");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23cSim.World)[2].Activity, "slice23 composed rescued patrol reads patrolling on its new loop");
+var s23cSave = s23cSim.SaveToJson();
+var s23cLoaded = new Simulation(99);
+Check(s23cLoaded.LoadFromJson(s23cSave), "slice23 composed save loads");
+Eq(3, s23cLoaded.World.Squads.Count, "slice23 composed save keeps three squads");
+Eq(10, s23cLoaded.World.Squads[0].RallyX, "slice23 composed loaded hold rally kept");
+Eq(20, s23cLoaded.World.Squads[1].RallyX, "slice23 composed loaded walking patrol rally kept");
+Eq(22, s23cLoaded.World.Squads[2].RallyX, "slice23 composed loaded rescued rally kept, not the old one");
+Eq(10, s23cLoaded.World.Squads[0].X, "slice23 composed loaded hold position kept");
+Eq(18, s23cLoaded.World.Squads[1].X, "slice23 composed loaded walking patrol position kept");
+Eq(23, s23cLoaded.World.Squads[2].X, "slice23 composed loaded rescued position kept");
+Eq(0, s23cLoaded.World.Squads[0].PatrolWaypointIndex, "slice23 composed loaded hold index is 0");
+Eq(0, s23cLoaded.World.Squads[1].PatrolWaypointIndex, "slice23 composed loaded walking patrol index is 0");
+Eq(0, s23cLoaded.World.Squads[2].PatrolWaypointIndex, "slice23 composed loaded rescued index is 0");
+Eq(0, s23cLoaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice23 composed loaded ore is still 0");
+Eq(100, s23cLoaded.World.Squads[0].Health, "slice23 composed loaded hold health kept");
+Eq(40, s23cLoaded.World.Squads[1].Health, "slice23 composed loaded walking patrol health kept");
+Eq(90, s23cLoaded.World.Squads[2].Health, "slice23 composed loaded rescued health kept");
+s23cLoaded.World.Advance();
+Eq(10, s23cLoaded.World.Squads[0].X, "slice23 composed loaded tick 1 hold stays at its rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s23cLoaded.World)[0].Activity, "slice23 composed loaded tick 1 hold reads holding");
+Eq(19, s23cLoaded.World.Squads[1].X, "slice23 composed loaded tick 1 walking patrol steps toward its rally");
+Eq(22, s23cLoaded.World.Squads[1].Z, "slice23 composed loaded tick 1 walking patrol z");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23cLoaded.World)[1].Activity, "slice23 composed loaded tick 1 walking patrol reads patrolling");
+Eq(22, s23cLoaded.World.Squads[2].X, "slice23 composed loaded tick 1 rescued steps back to its new rally");
+Eq(0, s23cLoaded.World.Squads[2].PatrolWaypointIndex, "slice23 composed loaded tick 1 rescued waypoint is 0 at its rally");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice23 composed loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice23 composed loop waypoint count is still 5, not retuned");
+Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice23 composed vanguard range is 3, equal to the radius");
+Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice23 composed recon range is 5, above the radius");
+Eq(2, SquadShapes.For(SquadKind.Heavy).EngagementRange, "slice23 composed heavy range is 2, below the radius");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

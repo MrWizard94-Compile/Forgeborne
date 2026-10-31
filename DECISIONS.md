@@ -9915,6 +9915,113 @@ evidence, documentation only (under delegation)
 - Next step: Slice 23 Step 2, composed demo plus
   documentation-only review closing Slice 23.
 
+## Slice 23 Step 2 (0.95.0) — composed demo + review,
+closing Slice 23
+
+- Decision, in one sentence: Slice 23 closes with the
+  kept loop proved in composition — a Recon Patrol
+  walking one full 24-step loop at radius 3 and count
+  5 beside a HoldGround control and the audited
+  route-blocked stuck geometry, rescued by the same
+  free re-rally, and persisting through a save/load
+  round-trip with both loop centres kept — with no
+  new system, no adapter edit, and no new checklist
+  item, because Step 1 already decided the values and
+  this step's job was to prove them together, not to
+  re-decide them.
+- Composition, decided: one Simulation, three paid
+  squads, no enemy, 30 EmberOre, in deploy order
+  Heavy HoldGround rally (10,5,10), Recon Patrol
+  rally (20,5,20), Vanguard Patrol rally (12,5,16)
+  staged route-blocked at the player cell. The
+  HoldGround is deployed first so it is not standing
+  on the player cell when the stuck patrol deploys
+  there, and so its later Holding reading is a
+  control, not an accident of spawn. The walking
+  patrol's loop is walked in full, not sampled: east
+  3, south 6, west 6, north 6, rally 3, index back to
+  0, refusals 0. The stuck geometry is Step 1's
+  route-blocked shape translated to the player cell,
+  not a new shape, and its classification is stated
+  in the demo lines: every attempted step cell is
+  stone, and the east waypoint (15,5,16) is the same
+  blocked cell counted once. The rescue is the Slice
+  20 decision, reused, not re-decided: free re-rally
+  to (22,5,16), index and counter reset, no teleport,
+  no ore, no cap slot. The fourth-deploy refusal at
+  the full cap is kept from Slice 22's pattern
+  because a rescue that made room would be a
+  different economy answer, and none is decided here.
+  The save/load round-trip is taken after the action,
+  not before it, because the centre that must persist
+  is the new one (22,5,16), not the old one.
+- Why no second stuck geometry, stated honestly: Step
+  1 classified the enclosed shape and the blocked-new-
+  loop shape with their removal proofs, and this step
+  composes, it does not re-audit. Re-staging them
+  would add ticks, not evidence. Likewise no enemy is
+  staged: Step 1 proved the range relation from the
+  table (Vanguard 3, Recon 5, Heavy 2), and an enemy
+  on a waypoint would have made the demo prove fire,
+  not the loop, while risking the patrol's path on a
+  kill. The range relation is therefore printed in the
+  demo from the table and re-asserted in the composed
+  tests as constants, not claimed as a staged
+  engagement.
+- Claim split, kept from Step 1 and repeated in the
+  review: headless-tested is the loop, its stuck
+  classification, its rescue, and its persistence;
+  still owed on Windows is whether a loop at radius 3
+  routinely fits ordinary ground, whether waypoints
+  routinely land inside unplaced structures, and
+  whether a 24-step circuit feels like a patrol in
+  play — the reopen condition Step 1 stated. No
+  headless number in this step meets that condition,
+  and none is presented as if it did.
+- Checklist relation: no new playtest-gate item, per
+  the scope and per Step 1 — no player-visible
+  behaviour changes, so items 37, 39, and 40 already
+  observe the loop as kept, superseding none of them,
+  and the next free gate number remains 42. Items 39,
+  40, and 41 remain honestly pending their bindings.
+- Deliberately NOT in this step: a movement,
+  targeting, or fire rule change; a loop-shape change;
+  a re-rally repricing, a dismiss refund, a deploy
+  price or cap change, or any other economy change;
+  a reserve, bench, or general command system; a
+  material, marker, light, fog, model, or HUD change;
+  an adapter edit or binding implementation (K and X
+  stay comments); a scene file or imported asset;
+  Windows Unity verification itself (still open for
+  Slices 1–23, blocked on Unity 6000 on Windows); a
+  Slice 24 scope.
+- Gaps carried, in priority order: Windows Unity
+  verification (Slices 1–23, items 25–27 and 30–41
+  still open, items 39, 40, and 41 pending their
+  bindings); the Slice 1 director playtest gate
+  still pending; first-pass graphics values
+  unproven; Slice 13 scene-proof observations
+  still unmade; a re-rally price and a dismiss
+  refund, both on Windows playtest evidence only;
+  the K/X bindings implementation as a later
+  adapter step; a loop-shape decision, if ever
+  wanted, as its own decision with its own tests.
+  Closed by this slice, not carried as a question:
+  whether radius 3 and count 5 are right, and whether
+  they hold together in one field — they are kept,
+  on the Step 1 audit, and proved in composition
+  here, subject to the Windows reopen condition.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 24 as its own decision step,
+  chosen from the ranked candidates the Slice 23
+  review carries, not promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
