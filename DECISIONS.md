@@ -8509,6 +8509,152 @@ closing Slice 20 (2026-10-31, silent scheduled run)
   chosen from the ranked candidates the Slice 20 review
   carries, not promised here.
 
+## 0.87.0 — Slice 21 scope: general re-rally
+(2026-10-31, silent scheduled run)
+
+- Step, decided in this step: the Slice 21 scope,
+  documentation-only, per docs/slice-21-scope.md.
+  No system built, no answer decided, by design.
+  Slice 22 is NOT scoped here; it is scoped
+  afterwards, the same way the Slice 21 scope
+  follows the Slice 20 review rather than
+  preceding it.
+- Theme, decided in this step: Slice 21 is the
+  general re-rally slice, not a recall slice,
+  not a general squad-command slice, and not a
+  radius slice. The motivating remainder is
+  precise: Slice 20 decided a free re-rally for
+  a stuck Patrol only, and every other live
+  squad refuses it with nothing changed. The
+  scope's question is therefore what re-rally,
+  if any, the player has for live squads beyond
+  a stuck Patrol — and nothing else in the slice
+  is allowed to answer a different question
+  first.
+- Order, decided in this step: general re-rally
+  before recall, because the ranked candidate
+  order says so in its second half and because
+  the two remainders are not the same size: a
+  general re-rally generalises a proved mechanism
+  (the Slice 20 gate, the internal ReRally, the
+  saved rally field, the walk-to-new-rally
+  proof), while a recall has no mechanism, no
+  confirmation design, and an open refund/cap
+  question. Reversing the order would not break
+  either decision, stated honestly: recall-first
+  is coherent, and it is chosen against here
+  only because generalisation is the smaller
+  step, not because recall is unimportant.
+- Questions-not-answers, decided in this step:
+  the scope records hypotheses and proof
+  obligations, not decisions. Scope per doctrine
+  (all doctrines, HoldGround plus Patrol only, or
+  another justified scope); the inert-rally
+  question for Advance and Defend Core (valid
+  field-only action, fail-closed refusal, or
+  outside the scope); the interaction with the
+  Slice 20 stuck rescue (free special case, or
+  general price applied uniformly, with reason);
+  targeting (Slice 20 index rule reused, or a
+  new rule, with the stuck path merged or kept
+  separate); state changes per doctrine
+  (Patrol index and counter, including the
+  counter-above-0 case; HoldGround, Advance,
+  and Defend Core rally-field-only changes);
+  snapshot words immediately after, per doctrine,
+  from OrbitalView.Snapshot code; economy (free
+  or priced, justified on a repositioning basis
+  rather than copied from the rescue rationale,
+  cannot-pay behaviour, no cap slot freed or
+  taken unless justified); and the adapter
+  binding proposal against the taken keys and
+  the proposed K binding for the stuck action.
+  Any Step 1 answer that settles one of these
+  without recording its rejected alternatives has
+  not met this scope.
+- Boundary, decided in this step: movement stands
+  (MoveTowardRally, MoveForPatrol sidestep/skip/
+  Stuck, Advance chase, Defend Core chase-or-
+  return, no pathfinder, no rally fallback for
+  Advance, no rally consultation for Defend Core,
+  no teleport to a new rally); the deploy price
+  (10) and cap (3) stand except for the economy
+  answer Step 1 justifies explicitly; no power,
+  consumer, or save-format rule moves (a re-rally
+  reuses the saved rally field, and a new save
+  field needs justification plus old-save proof);
+  no material, marker, light, fog, model, or HUD
+  rule moves except the snapshot word immediately
+  after the action, if Step 1 justifies a change
+  there. The scope also draws the line Slice 20
+  drew: a re-rallied squad is still on the field,
+  still counts toward the cap, and still costs
+  nothing to keep, so a general re-rally must not
+  be presented as a recall substitute.
+- Rally-per-doctrine, decided in this step as a
+  scope fact, not a Step 1 answer: HoldGround's
+  rally is its destination (firing only once
+  holding, so a Holding squad re-rallied elsewhere
+  marches again and does not fire while marching,
+  under the existing rule); Patrol's rally is its
+  loop centre, re-derived on every call; Advance's
+  rally is not consulted (no fallback when no
+  enemy lives, so a re-rally changes a stored
+  field with no movement effect on the code as it
+  stands); Defend Core's rally is a deployment
+  formality, not a place the squad ever goes
+  (chase within radius 8 of the core, else return
+  to the core). Step 1 may still decide any scope
+  it justifies, but it must answer the inert-rally
+  doctrines explicitly, not by omission.
+- Radius carried, not re-decided, decided in this
+  step: PatrolLoopRadius 3 and PatrolWaypointCount
+  5 stay first-pass values through Slice 21. The
+  reason is now evidence-based, not just cautious:
+  Slice 20 Step 1 looked for a radius-caused stuck
+  case and found none, so a headless retune still
+  has no evidence behind it. A general re-rally
+  moves a loop's centre, never its radius or
+  count, and a Step 1 radius finding is recorded
+  as a gap for a later radius decision, not acted
+  on by widening. A Windows observation that a
+  loop does not fit its ground is the other
+  evidence route, likewise recorded, not acted on
+  headlessly here.
+- Grounding, decided in this step: every ground
+  fact in the scope was verified against code this
+  run — the TryReRallyStuckPatrol gate and its
+  Simulation passthrough, the internal ReRally,
+  the pending-deploy-only SetRally and picker key
+  map, the per-doctrine movement rules in
+  Orbital.cs (MoveTowardRally, Advance chase with
+  no rally fallback, Defend Core chase-or-return
+  with rally unconsulted), the proposed K binding
+  comment in FpsInputAdapter.cs, and the 10-ore /
+  cap-3 / no-refund economy — not copied from
+  review prose. The next free playtest-gate
+  number is 40, and Step 1's item must state its
+  relation to items 39, 37, 29, and orbital-
+  command item 13.
+- Deliberately not in this step: a general
+  re-rally decision itself; a recall or dismiss
+  API; a general squad-command system; a radius,
+  waypoint, or loop-shape change; a movement,
+  targeting, or fire change; a material, marker,
+  light, fog, model, or HUD change; a demo
+  scenario (Step 2's work, by the Slice 21 scope);
+  a Slice 22 scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 21 Step 1, the general re-rally
+  decision, decided in that step, per
+  docs/slice-21-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

@@ -1,5 +1,73 @@
 # Forgeborne — Changelog
 
+## 0.87.0 — 2026-10-31 — Slice 21 scope:
+general re-rally, documentation only
+
+- Step taken, decided in this step: the Slice 21
+  scope, documentation-only, per
+  docs/slice-21-scope.md. No system built, no
+  answer decided, by design. Slice 22 is NOT
+  scoped here; it is scoped afterwards, the same
+  way the Slice 21 scope follows the Slice 20
+  review rather than preceding it.
+- Scope decided: Slice 21 is the general re-rally
+  slice, in order — Step 1, the general re-rally
+  decision (scope per doctrine, interaction with
+  the Slice 20 stuck rescue's free price, targeting,
+  state changes, economy, movement boundary, proof
+  set, checklist item from 40, display relation,
+  and adapter binding proposal, all decided in
+  that step, not here); Step 2, composed demo
+  scenario plus documentation-only review closing
+  Slice 21.
+- Why general re-rally, and why now: Slice 20
+  proved a re-rally mechanism (internal ReRally,
+  saved rally field, walk-to-new-rally proof) for
+  one state only, and its review carries the
+  generalisation as the first-ranked remainder.
+  Generalising a proved mechanism is the smaller
+  step; recall, which has no mechanism, no
+  confirmation design, and an open refund/cap
+  question, is carried as the first Slice 22
+  candidate, not patched in beside it.
+- The decision inside the scope, stated plainly:
+  the rally is not the same thing for every
+  doctrine, so Step 1 must answer per doctrine.
+  HoldGround's rally is its destination; Patrol's
+  rally is its loop centre; Advance's rally is
+  not consulted by movement at all (no rally
+  fallback when no enemy lives); Defend Core's
+  rally is a deployment formality, not a place
+  the squad ever goes. A scope that said "all
+  doctrines, same effect" would be wrong on two
+  of the four, so Step 1 must say, for Advance
+  and Defend Core, whether a re-rally is a valid
+  field-only action, a fail-closed refusal, or
+  outside the scope — with chase and fire proofs
+  either way.
+- Radius and waypoints carried, not re-decided:
+  radius 3 and five waypoints stay first-pass
+  values, because Slice 20 Step 1 found no stuck
+  case whose cause was the radius itself, so
+  there is still no evidence behind a headless
+  retune. A general re-rally moves a loop's
+  centre, never its radius or count, and a Step 1
+  radius finding is recorded as a gap, not acted
+  on by widening.
+- Candidates and gaps carried: Slice 13 remainder
+  observations (items 25-27, 30-39, plus the new
+  item Step 1 adds) remain Windows observations,
+  not re-scoped steps; first-pass graphics values
+  are retuned only on Windows evidence; Windows
+  Unity verification (Slices 1-21) and the Slice 1
+  director playtest gate remain open and are not
+  closed, reordered away, or answered by scoping.
+- Tests: 3165 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice
+  20 scenario save 44,041 chars, Slice 19 save
+  43,965 chars, Slice 18 save 44,015 chars, Slice
+  15 save 44,016 chars, Slice 17 save 43,974 chars.
+
 ## 0.86.0 — 2026-10-31 — Slice 20 Step 2:
 composed demo + review, closing Slice 20
 
