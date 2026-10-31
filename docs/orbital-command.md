@@ -175,10 +175,10 @@ final balance):
 
 The one player action for a stuck patrol, decided in that
 step (rationale in DECISIONS.md): a FREE re-rally, for a
-stuck Patrol only. No recall exists, and no general
-re-rally or dismiss for other doctrines exists — those
-are larger decisions, carried after Slice 20, not patched
-in beside a rescue.
+stuck Patrol only. No recall exists. A general re-rally
+for other squads did not exist yet at that step — it is
+decided in Slice 21 Step 1, below, not patched in beside
+the rescue.
 
 - **Gate, fail-closed:** `WorldZone.TryReRallyStuckPatrol`
   (thin passthrough: `Simulation.TryReRallyStuckPatrol`)
@@ -226,6 +226,84 @@ in beside a rescue.
   is NOT implemented in this step and is NOT claimed
   as working in a scene; it is observed only under
   playtest-gate item 39, once implemented on Windows.
+
+## General re-rally — Slice 21 Step 1 (0.88.0)
+
+The generalisation of the stuck action, decided in that
+step (rationale in DECISIONS.md): a FREE re-rally for
+any live HoldGround or Patrol squad, stuck or not.
+Advance and Defend Core squads are refused, fail-closed,
+because their rally moves nothing — and a field-only
+change would move their orange rally marker while the
+squad stayed put, which is a false move order, not an
+action. No recall or dismiss exists, and a general
+re-rally is not a recall substitute: a re-rallied squad
+is still on the field, still counts toward the cap, and
+still costs nothing to keep.
+
+- **Gate, fail-closed:** `WorldZone.TryReRallySquad`
+  (thin passthrough: `Simulation.TryReRallySquad`)
+  succeeds only for a live HoldGround or Patrol squad,
+  targeted by its index in `Squads` — the same
+  snapshot-order rule as the stuck gate, so the two
+  gates cannot disagree about which squad an index
+  names; they differ only in eligibility, by design.
+  Every other call returns false and changes nothing:
+  an Advance or Defend Core squad, an out-of-range
+  index, a dead squad, an out-of-bounds rally, or the
+  same rally again. A rally inside a solid block is
+  accepted, as deploy and the stuck action accept one:
+  the squad holds short of it, visibly, rather than
+  teleporting into it. The stuck gate stands beside
+  this gate, unchanged: a stuck Patrol succeeds under
+  both with the identical outcome, so Slice 20 is
+  subsumed, not repriced and not revised.
+- **Effect:** the rally changes, a Patrol's waypoint
+  index and refusal counter reset to 0 — including a
+  counter above 0 but below 5, because the loop is
+  new — and nothing else moves: no teleport, no heal,
+  no fire change. A HoldGround squad away from its new
+  rally reads Marching and walks there under the
+  unchanged `MoveTowardRally` rule, firing only once
+  holding under the existing rule; a HoldGround squad
+  re-rallied to the cell it already stands on reads
+  Holding at once. A Patrol reads Patrolling at once
+  and walks to its new rally, then onto the new loop
+  at the unchanged radius 3 and five waypoints, and
+  reads Stuck again after a full circuit of refusals
+  if the new loop is itself blocked.
+- **Economy:** free, on the wider ground that a
+  re-rally is a move order to an already-paid squad,
+  not a second deploy: it creates and destroys nothing,
+  so it charges 0 EmberOre, refunds nothing, and frees
+  or takes no cap slot, and a player with 0 ore can
+  still reposition the squads already fielded. Any
+  price would be invented balance with no evidence
+  behind it, so a price is a later decision on Windows
+  playtest evidence, not a value set here. Deploy price
+  (10) and cap (3) stand, and the paid path is
+  unchanged.
+- **Movement boundary:** no movement rule moves.
+  `MoveTowardRally`, `MoveForPatrol`'s sidestep, skip,
+  and Stuck threshold, Advance's nearest-enemy chase,
+  and Defend Core's chase-or-return stand; no
+  pathfinder is added, no rally fallback is added for
+  Advance, and no rally consultation is added for
+  Defend Core.
+- **Adapter binding, PROPOSED ONLY:** reuse K, with
+  wider eligibility — K while not picking, crosshair
+  on an eligible (live HoldGround or Patrol) squad's
+  marker, opening a re-rally pick that reuses the
+  picker's raycast rally selection, Return to confirm,
+  Escape to cancel, doing nothing while picking,
+  nothing when the raycast hits no eligible marker,
+  and nothing when the target squad refuses the
+  action. This binding is NOT implemented in this step
+  and is NOT claimed as working in a scene; it is
+  observed only under playtest-gate item 40, once
+  implemented on Windows. Item 40 EXTENDS item 39; it
+  does not supersede it, and items 37, 29, and
+  orbital-command item 13 stand unchanged.
 
 ## Second squad type — Recon (Slice 7 Step 1, 0.33.0)
 

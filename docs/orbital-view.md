@@ -58,6 +58,21 @@ new rally with no adapter change; a recalled squad would
 need no marker, but no recall exists, so no marker
 disappears for that reason either.
 
+Slice 21 Step 1 (0.88.0) adds no word and no marker rule
+either, and it adds no HUD line: a generally re-rallied
+HoldGround squad reads `MARCHING` away from its new
+rally and `HOLDING` on it, through the existing
+HoldGround branch, and a generally re-rallied Patrol
+reads `PATROLLING` through the existing Patrol branch.
+The marker rule is verified, not assumed, from
+`SquadMarkerDisplay.cs`: it renders one orange rally
+marker per snapshot squad from that snapshot's rally, for
+every doctrine — which is exactly why Advance and Defend
+Core squads are refused the general action instead of
+given a field-only rally change: their marker would move
+while the squad did not, and a refused squad's marker
+correctly stays where its rally stands.
+
 ## 3D markers (Slice 6 Step 2, 0.29.0)
 
 `ForgeborneUnity/Assets/Scripts/SquadMarkerDisplay.cs` is a

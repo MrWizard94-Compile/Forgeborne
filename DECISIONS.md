@@ -8655,6 +8655,242 @@ closing Slice 20 (2026-10-31, silent scheduled run)
   decision, decided in that step, per
   docs/slice-21-scope.md.
 
+## 0.88.0 — Slice 21 Step 1: general re-rally
+decision — free, HoldGround and Patrol only
+
+- Decision, in one sentence: a live HoldGround or
+  Patrol squad gets a FREE general re-rally, stuck or
+  not, and an Advance or Defend Core squad gets a
+  fail-closed refusal, because its rally moves nothing.
+- Why free, decided in this step, on a repositioning
+  basis rather than copied from the rescue rationale:
+  a re-rally is a move order to an already-paid squad,
+  not a second deploy — it creates a squad, destroys a
+  squad, frees a cap slot, or takes one in no case — so
+  charging would charge twice for one presence, exactly
+  the Slice 20 argument, but now on the wider ground
+  that commanding a fielded squad is not buying one.
+  The genre ground is the same: move orders to existing
+  units are not purchases, and a price on every move
+  order would punish ordinary commanding. The
+  cannot-pay case therefore does not arise — there is
+  no debt and no poverty failure for repositioning — and
+  that is itself a decision: poverty already blocks new
+  deploys, and freezing the squads a player already owns
+  on top of that would turn a resource shortage into a
+  command lockout. The honest counterweight is recorded
+  as a gap, not priced away: if Windows playtest shows
+  free repositioning enables abusive kiting (a
+  HoldGround squad dodging by constant re-rally, for
+  example), a price is a later balance decision on that
+  evidence, with the evidence named, not a value
+  invented now to pre-empt a problem no test has shown.
+- Why priced was rejected, decided in this step: any
+  price — half a deploy, a full deploy, a flat fee —
+  would be invented balance. The deploy price (10) is a
+  first-pass value for a new squad, not a price for
+  moving one, and no headless test can tell a fair
+  reposition price from an unfair one, because no
+  headless test measures how often a player repositions
+  or what it is worth to them. Setting a price now would
+  dress a guess as a decision and then force every later
+  balance discussion to argue against a number that was
+  never evidence. Free is the reversible default: a
+  later price, if evidence calls for one, is a one-line
+  economy change with its own proof set, while a price
+  set now and later removed would have charged players
+  for a mechanic that never needed charging.
+- Why Advance and Defend Core are refused, decided
+  in this step, not omitted: the scope's inert-rally
+  question has three honest answers — valid field-only
+  action, fail-closed refusal, or outside the scope —
+  and refusal is the one that survives the marker check.
+  A field-only change was weighed and rejected for a
+  concrete, verified reason, not a preference:
+  SquadMarkerDisplay.cs renders one orange rally marker
+  per snapshot squad from that snapshot's rally, for
+  every doctrine, so an Advance squad whose rally field
+  changed would show its marker moving to a place the
+  squad will never walk to, and a player reading that
+  marker as a move order would be misled by the game's
+  own display. Calling the scope "outside the scope"
+  instead of a refusal would leave the question
+  unanswered at the API level — a caller would have no
+  defined failure, only an absence — while a refusal
+  gives the action a defined, testable answer for every
+  doctrine: two accept, two refuse, nothing silent.
+  Adding a movement rule to make those rallies
+  meaningful (a rally fallback for Advance, a rally
+  consultation for Defend Core) was rejected as a
+  movement redesign smuggled inside a generalisation:
+  Advance's no-fallback rule exists precisely so an
+  empty battlefield does not turn Advance into
+  HoldGround, and Defend Core's post exists precisely
+  so a guard is not a second HoldGround with a
+  different name. The refusal therefore protects two
+  earlier decisions, not just this one.
+- Why two gates instead of one merged API, decided
+  in this step: merging was weighed and rejected because
+  the two gates have different eligibility by design and
+  no single gate expresses both without lying about one
+  of them. A merged gate that accepted any HoldGround
+  or Patrol squad would make the stuck API accept a
+  non-stuck Patrol, breaking the Slice 20 proof set and
+  revising Slice 20's "stuck only" decision without
+  saying so; a merged gate that kept the stuck
+  requirement would narrow the general action back to
+  the rescue. Keeping both, sharing one mechanism
+  (internal ReRally, which performs no gate of its own)
+  and one index rule, is the honest shape: the stuck
+  gate is the stricter subset, the general gate is the
+  wider scope, and a stuck Patrol succeeds under both
+  with the identical outcome, proved in a shared-cell
+  world where both gates name the same list entries.
+  The stuck gate is therefore not dead code and not
+  legacy: it is the API that says "this squad is stuck
+  and may be rescued," while the general gate says "this
+  squad may be repositioned," and a caller that needs
+  the stuck-only guarantee keeps it.
+- Why the Patrol counter resets, including above 0,
+  decided in this step: the counter is live route
+  progress on a loop, not a property of the squad. A
+  counter of 2 on the old loop says two waypoints of
+  that loop were refused; the new loop has refused
+  nothing, so carrying 2 onto it would let a squad
+  read Stuck after three more refusals on a loop that
+  only refused three waypoints, and would let a
+  re-rally performed to escape a bad loop inherit the
+  bad loop's failure count. The proof that separates
+  reset from carry-over is the counter-2 world: two
+  refused waypoints, a same-rally refusal that leaves
+  the counter at 2 (proving refusals change nothing,
+  including the counter), then a west re-rally that
+  clears it to 0 and marches cleanly to the new rally.
+  The alternative — carry the counter, on the ground
+  that a squad that struggled should stay fragile —
+  was rejected because the counter is not a wound: the
+  squad's health is untouched by a re-rally, and
+  fragility, if it is ever wanted, belongs in health or
+  in a doctrine rule, not smuggled into a route counter.
+- Snapshot words, decided in this step from
+  OrbitalView.Snapshot code, not assumed: HoldGround
+  away from its new rally reads Marching (the else
+  branch, AtRally false) and on it reads Holding
+  (AtRally true); Patrol reads Patrolling (the Patrol
+  branch, counter below 5 after the reset) or Stuck
+  again (the same branch, counter at 5 after a full
+  circuit on a blocked new loop); Advance keeps Hunting
+  with a living enemy or Idle without one (the Advance
+  branch reads prey, never rally); Defend Core keeps
+  Hunting with a core attacker, Guarding at its post,
+  or Marching on its return (the Defend Core branch
+  reads attacker and post, never rally). No word was
+  added, because every reading the action needs already
+  exists, and a new word for "re-rallied" would be a
+  history word, not an activity word — it would say
+  what happened to a squad, not what it is doing.
+- Display and marker relation, decided in this step:
+  no HUD line moves, because the POWER line and the
+  squad text lines already carry everything the action
+  changes, and a new line to explain a move order would
+  be a HUD decision smuggled inside an action step.
+  The marker relation was verified from
+  SquadMarkerDisplay.cs rather than assumed from the
+  snapshot: one rally marker per snapshot squad, orange
+  flat cube, positioned from the snapshot's rally — so
+  a re-rallied HoldGround or Patrol squad's marker
+  follows its new rally with no adapter change, and a
+  refused Advance or Defend Core squad's marker stays
+  put because its rally stands. That verification is
+  also what kills the field-only hypothesis: the marker
+  rule is per-squad, not per-doctrine, so there is no
+  existing "inert doctrines render no rally marker"
+  behaviour to lean on.
+- Adapter binding, decided in this step as a proposal
+  only: reuse K with wider eligibility, rather than a
+  new key, because the action is the same gesture with
+  a wider target set — K while not picking, crosshair
+  on an eligible marker, picker raycast rally reuse,
+  Return to confirm, Escape to cancel — and a second
+  key for the same gesture would teach the player two
+  bindings for one action while doubling the
+  fail-closed cases an adapter step must prove. The
+  eligibility widening is itself a stated fail-closed
+  case: an Advance or Defend Core marker under the
+  crosshair must do nothing, exactly as a non-eligible
+  marker does nothing under item 39, and the item 40
+  observation proves that nothing. K is still free
+  against the taken keys, checked against the same list
+  Slice 20 checked (WASD, Space, E, Q, R, O, Return,
+  Esc, Alpha1–Alpha7, T, Y, U, I, B, N, P, M, mouse
+  click). No binding is claimed as working in a scene
+  from a core test.
+- Checklist relation, decided in this step: item 40
+  EXTENDS item 39, and the reason it is a new item
+  rather than a reuse is stated, not assumed — item 39's
+  observation text is stuck-specific (enclose, STUCK,
+  re-rally, STUCK again), so a reader following item 39
+  alone would never observe a Holding squad marching
+  again, a moving Patrol's loop moving, or an inert
+  refusal with no marker move. Item 40 adds only those
+  general readings; item 39's stuck readings, item 37's
+  patrol-route readings, item 29's and orbital-command
+  item 13's patrol readings all stand unchanged, and
+  none is superseded. Next free playtest-gate number is
+  now 41.
+- Claim split, stated plainly: the headless evidence is
+  squad states before and after the action for staged
+  layouts, refusal counts, waypoint indices, rally
+  values, ore and cap counts across deploys and the
+  action, march positions across ticks, and two save/
+  load round-trips that preserve the new rally, plus
+  FindTarget readings for the HoldGround fire rule.
+  None of that proves a player can press K, aim at an
+  eligible marker, pick a new rally, and watch the
+  marker move in a built scene. That is a Windows
+  observation (item 40), which is also honestly pending
+  its own binding: the proposed K binding is not yet
+  implemented in an adapter, so the observation cannot
+  even be attempted until a later adapter step
+  implements it. Fire is proved via FindTarget for
+  HoldGround, as Slice 20 proved via FindTarget for
+  Recon and Heavy; a world-tick kill is not re-claimed
+  here, and the Slice 20 patrol world-tick kill stands
+  as the patrol fire proof.
+- Gaps carried, in priority order: Windows Unity
+  verification (Slices 1–21, items 25–27 and 30–40
+  still open, item 40 pending its binding); the Slice 1
+  director playtest gate still pending; first-pass
+  graphics values unproven; Slice 13 scene-proof
+  observations still unmade; a general re-rally price
+  on Windows playtest evidence, if free repositioning
+  proves abusive; recall or dismiss as its own decision,
+  with its refund and confirmation questions, as the
+  first Slice 22 candidate. Closed by this step, not
+  carried: the general re-rally question from the Slice
+  20 review's first-ranked remainder.
+- Deliberately not in this step: a recall or dismiss
+  API of any kind; a general squad-command system; a
+  radius, waypoint-count, or loop-shape change; a
+  movement, targeting, or fire rule change; a delivery,
+  precedence, conflict, rating, cost, or phase rule
+  change beyond the explicitly decided free economy
+  answer; a price or cap change; a material, marker,
+  light, fog, model, or HUD change; a demo scenario
+  (Step 2's work, by the Slice 21 scope); a Slice 22
+  scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 21 Step 2, the composed demo
+  scenario plus documentation-only review closing
+  Slice 21, decided in that step, per
+  docs/slice-21-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

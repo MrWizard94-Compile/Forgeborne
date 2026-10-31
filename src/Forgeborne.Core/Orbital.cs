@@ -133,13 +133,16 @@ public sealed class TacticalSquad
     public int X { get; private set; }
     public int Y { get; private set; }
     public int Z { get; private set; }
-    /// <summary>Slice 20 Step 1: the rally is mutable only
-    /// through TacticalSquad.ReRally, which WorldZone
-    /// calls after its stuck-Patrol gate — never by a
-    /// direct setter, so no caller can move a squad's
-    /// loop without passing that gate. The save array
-    /// already carries the rally, so a re-rally persists
-    /// on the next save with no new save field.</summary>
+    /// <summary>Slice 20 Step 1, generalised in Slice 21
+    /// Step 1: the rally is mutable only through
+    /// TacticalSquad.ReRally, which WorldZone calls
+    /// after one of its two gates — the stuck-Patrol
+    /// gate, or the general HoldGround-or-Patrol gate
+    /// — never by a direct setter, so no caller can
+    /// move a squad's loop without passing a gate. The
+    /// save array already carries the rally, so a
+    /// re-rally persists on the next save with no new
+    /// save field.</summary>
     public int RallyX { get; private set; }
     public int RallyY { get; private set; }
     public int RallyZ { get; private set; }
@@ -365,17 +368,17 @@ public sealed class TacticalSquad
     public bool IsPatrolStuck => Doctrine == TacticalDoctrine.Patrol
         && PatrolConsecutiveRefusals >= PatrolWaypointCount;
 
-    /// <summary>Slice 20 Step 1: move a squad's patrol loop
-    /// to a new rally, without moving the squad itself.
-    /// Internal, called only by
-    /// WorldZone.TryReRallyStuckPatrol after that method
-    /// has checked the squad is a live, stuck Patrol and
-    /// the new rally is in bounds and different from the
-    /// old one — this method performs no gate of its
-    /// own, so a caller that reached it has already
-    /// passed the gate, and a caller that must not
-    /// re-rally must never call it directly. The new
-    /// rally re-derives the whole loop through
+    /// <summary>Slice 20 Step 1, generalised in Slice 21
+    /// Step 1: move a squad's rally (and, for a Patrol,
+    /// its loop) to a new rally, without moving the
+    /// squad itself. Internal, called only by
+    /// WorldZone.TryReRallyStuckPatrol or
+    /// WorldZone.TryReRallySquad after that method
+    /// has checked its gate — this method performs no
+    /// gate of its own, so a caller that reached it has
+    /// already passed a gate, and a caller that must
+    /// not re-rally must never call it directly. The
+    /// new rally re-derives the whole loop through
     /// PatrolTarget (rally, then east, south, west,
     /// and north at PatrolLoopRadius, unchanged), so
     /// the radius and waypoint count never move with
@@ -390,11 +393,15 @@ public sealed class TacticalSquad
     /// again and the squad reads Stuck after a full
     /// circuit on the new loop, proved in tests, so
     /// a rescue that cannot fail again is not smuggled
-    /// in here. Position, health, doctrine, and kind
-    /// are untouched: a re-rally is not a teleport,
-    /// not a heal, and not a redeploy, and it costs
-    /// no EmberOre and frees no cap slot — see
-    /// TryReRallyStuckPatrol and DECISIONS.md.</summary>
+    /// in here. For a HoldGround squad the same call
+    /// changes only the rally: there is no index or
+    /// counter to reset, and the squad walks to the
+    /// new rally under MoveTowardRally. Position,
+    /// health, doctrine, and kind are untouched: a
+    /// re-rally is not a teleport, not a heal, and not
+    /// a redeploy, and it costs no EmberOre and frees
+    /// no cap slot — see TryReRallySquad,
+    /// TryReRallyStuckPatrol, and DECISIONS.md.</summary>
     internal void ReRally(int rallyX, int rallyY, int rallyZ)
     {
         RallyX = rallyX; RallyY = rallyY; RallyZ = rallyZ;
@@ -675,7 +682,19 @@ public sealed class TacticalSquad
 /// because it moves a squad already paid for, it does
 /// not deploy a new one, and it frees no cap slot —
 /// a rescue priced like a deploy would charge twice
-/// for one presence. Both values are first-pass values for
+/// for one presence. Slice 21 Step 1 generalises that
+/// answer to every HoldGround or Patrol re-rally, on
+/// the wider ground that a re-rally is a move order to
+/// an already-paid squad, not a second deploy: it
+/// creates and destroys nothing, so it charges 0,
+/// refunds nothing, and frees or takes no cap slot,
+/// and a player with 0 ore can still reposition the
+/// squads already fielded (poverty already blocks new
+/// deploys; it does not also freeze existing squads).
+/// Any price would be invented balance with no
+/// evidence behind it, so a price is a later decision
+/// on Windows playtest evidence, not a value set here.
+/// Both values are first-pass values for
 /// determinism and testability, not final balance (see the
 /// Slice 3 scope's no-balance-pass rule). Enforcement lives in
 /// WorldZone.TryDeployPaidSquad, which checks cap and

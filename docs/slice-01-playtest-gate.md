@@ -814,6 +814,52 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     until the binding is implemented, the observation is
     made there, and both are recorded in DECISIONS.md.
 
+40. [ ] General re-rally, decided 0.88.0 (core action
+    changed, adapter binding PROPOSED ONLY and not yet
+    implemented — no headless test proves a binding reads
+    in the scene, and no headless test proves a proposed
+    key works, so the cited headless evidence is only the
+    Slice 21 Step 1 proof set: a HoldGround squad
+    re-rallied elsewhere marches to the new rally and
+    reads HOLDING on arrival, with fire suspended while
+    marching under the existing rule and resuming once
+    holding; a non-stuck Patrol re-rallied mid-loop,
+    including one with a refusal counter above 0, marches
+    to its new rally and turns onto the new loop at radius
+    3 with five waypoints; a non-stuck Patrol re-rallied
+    to a loop it cannot walk reads STUCK again after a
+    full circuit; and Advance and Defend Core squads
+    refuse the action with nothing changed, including
+    their chase and fire behaviour): once the proposed
+    binding is implemented on Windows — K while not
+    picking, crosshair on an eligible (live HoldGround
+    or Patrol) squad's marker, reusing the picker's
+    raycast rally selection, Return to confirm, Escape
+    to cancel, doing nothing while picking, nothing when
+    the raycast hits no eligible marker, and nothing when
+    the target squad refuses — in one scene, against
+    dark voxel, re-rally a Holding squad to a new
+    destination and observe its text line change from
+    HOLDING to MARCHING at once, the squad walk (not
+    teleport) to the new rally, its orange rally marker
+    move to the new rally cell, and its text line return
+    to HOLDING on arrival; re-rally a moving Patrol
+    mid-loop and observe its loop move, with the marker
+    following the new rally; then attempt the action on
+    an Advance squad and on a Defend Core squad and
+    observe nothing change for either — no marker move,
+    no march, no chase change. This item EXTENDS item
+    39's stuck-patrol observation: item 39's stuck
+    readings stand unchanged, item 37's, item 29's, and
+    orbital-command item 13's patrol observations stand
+    unchanged, and this item adds only the decided
+    general-action readings. It does NOT supersede item
+    39, item 37, item 29, or item 13, and it does not
+    claim any tint, count, dusk, or view model
+    observation. Do not claim this verified in Unity
+    until the binding is implemented, the observation is
+    made there, and both are recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

@@ -336,6 +336,18 @@ public sealed class Simulation
     /// drift apart on the gate.</summary>
     public bool TryReRallyStuckPatrol(int squadIndex, int rallyX, int rallyY, int rallyZ) =>
         World.TryReRallyStuckPatrol(squadIndex, rallyX, rallyY, rallyZ);
+    /// <summary>Slice 21 Step 1: thin passthrough to
+    /// WorldZone.TryReRallySquad — a free general
+    /// re-rally for a live HoldGround or Patrol squad
+    /// only, by squad list index (snapshot order);
+    /// false, with nothing changed, for any gate
+    /// failure there, including an Advance or Defend
+    /// Core squad. No logic lives here, so the play
+    /// path and the headless path cannot drift apart
+    /// on the gate. The stuck-Patrol passthrough above
+    /// stands beside it, unchanged.</summary>
+    public bool TryReRallySquad(int squadIndex, int rallyX, int rallyY, int rallyZ) =>
+        World.TryReRallySquad(squadIndex, rallyX, rallyY, rallyZ);
 
     /// <summary>Slice 8 Step 2: a Kinetic Mill by aim (see
     /// BuildAimed). A powered pair is still built by aiming

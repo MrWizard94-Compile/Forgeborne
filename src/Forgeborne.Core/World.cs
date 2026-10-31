@@ -1143,6 +1143,81 @@ public sealed class WorldZone
         return true;
     }
 
+    /// <summary>Slice 21 Step 1: the general re-rally,
+    /// decided here — a FREE re-rally for any live
+    /// HoldGround or Patrol squad, stuck or not, and
+    /// for no other doctrine. The squad is targeted
+    /// by its index in Squads, the same snapshot-order
+    /// rule as TryReRallyStuckPatrol, so the two gates
+    /// cannot disagree about which squad an index
+    /// names: they differ only in eligibility, by
+    /// design — the stuck gate is the stricter subset
+    /// (Patrol and stuck), this gate is the general
+    /// scope (HoldGround or Patrol, any live state),
+    /// and a stuck Patrol succeeds under both with
+    /// the identical outcome, so the Slice 20 decision
+    /// is subsumed, not repriced and not revised. Every
+    /// refusal returns false and changes nothing: an
+    /// out-of-range index, a dead squad, an Advance or
+    /// Defend Core squad (their rally moves nothing —
+    /// see below), a new rally out of bounds, or a new
+    /// rally identical to the old one. A rally inside
+    /// a solid block is accepted, exactly as deploy
+    /// and the stuck action accept one: the squad then
+    /// holds short of it, visibly, rather than
+    /// teleporting into it. On success the rally
+    /// changes, a Patrol's waypoint index and refusal
+    /// counter reset to 0 (including a counter above 0
+    /// but below 5 — the loop is new, so its progress
+    /// is new too), and nothing else moves: no
+    /// teleport, no heal, no fire change, no ore
+    /// charged, no ore refunded, no cap slot freed or
+    /// taken. A HoldGround squad away from its new
+    /// rally reads Marching and walks there under the
+    /// unchanged MoveTowardRally rule, firing only
+    /// once holding under the existing rule; a
+    /// HoldGround squad re-rallied to the cell it
+    /// already stands on reads Holding at once. A
+    /// Patrol reads Patrolling at once and walks to
+    /// its new rally, then onto the new loop at the
+    /// unchanged radius 3 and five waypoints, and
+    /// reads Stuck again after a full circuit of
+    /// refusals if the new loop is itself blocked.
+    /// Why Advance and Defend Core are refused, not
+    /// given a field-only change: neither doctrine
+    /// consults its rally for movement (Advance chases
+    /// its nearest living enemy with no rally fallback,
+    /// Defend Core chases a core attacker or returns
+    /// to the core), so a rally change would move
+    /// nothing the player can see except the squad's
+    /// orange rally marker — SquadMarkerDisplay renders
+    /// one rally marker per snapshot squad from its
+    /// rally — and a marker that moves while its squad
+    /// does not is a false move order, not an action.
+    /// No movement rule is added to make those rallies
+    /// meaningful: that would be a movement redesign,
+    /// not a generalisation. No recall exists: a
+    /// re-rallied squad is still on the field, still
+    /// counts toward the cap, and still costs nothing
+    /// to keep. See DECISIONS.md for the rejected
+    /// alternatives (priced re-rally, all-doctrine
+    /// scope with a field-only change, and merging
+    /// the two gates) and for the proposed adapter
+    /// binding, which is a Windows checklist item,
+    /// not a headless claim.</summary>
+    public bool TryReRallySquad(int squadIndex, int rallyX, int rallyY, int rallyZ)
+    {
+        if (squadIndex < 0 || squadIndex >= Squads.Count) return false;
+        var squad = Squads[squadIndex];
+        if (squad.IsDead) return false;
+        if (squad.Doctrine != TacticalDoctrine.HoldGround
+            && squad.Doctrine != TacticalDoctrine.Patrol) return false;
+        if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return false;
+        if (rallyX == squad.RallyX && rallyY == squad.RallyY && rallyZ == squad.RallyZ) return false;
+        squad.ReRally(rallyX, rallyY, rallyZ);
+        return true;
+    }
+
     /// <summary>
     /// Slice 4 Step 1 targeting rule, re-derived every tick, in
     /// WorldZone so the choice is testable through Advance: the

@@ -7505,5 +7505,436 @@ Eq(22, s20Step2LoadedSim.World.Squads[1].Z, "slice20 step2 composed loaded tick 
 Eq(0, s20Step2LoadedSim.World.Squads[1].PatrolWaypointIndex, "slice20 step2 composed loaded tick 1 patrol waypoint is its rally");
 Eq(SquadActivity.Holding, OrbitalView.Snapshot(s20Step2LoadedSim.World)[0].Activity, "slice20 step2 composed loaded tick 1 hold still reads holding");
 
+// ---- Slice 21 Step 1: general re-rally decision, decided here (0.88.0) ----
+// Decision, in one sentence: a FREE general re-rally
+// for any live HoldGround or Patrol squad, stuck or
+// not — and a fail-closed refusal for Advance and
+// Defend Core, whose rally moves nothing (see
+// DECISIONS.md for the rejected hypotheses: a priced
+// re-rally, an all-doctrine scope with a field-only
+// change for the inert doctrines, and merging the two
+// gates). A stuck Patrol succeeds under both gates
+// with the identical outcome, so Slice 20 is subsumed,
+// not repriced and not revised, and its proof set
+// above still passes unchanged.
+// HoldGround, Vanguard, in full: a marching squad
+// re-rallied elsewhere marches to the new rally and
+// reads Holding on arrival, with no teleport.
+var s21HoldWorld = new WorldZone(42);
+s21HoldWorld.Player.X = 16; s21HoldWorld.Player.Y = 5; s21HoldWorld.Player.Z = 16;
+var s21Hold = s21HoldWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s21HoldWorld)[0].Activity, "slice21 general holdground reads marching before the action");
+Check(s21HoldWorld.TryReRallySquad(0, 20, 5, 20), "slice21 general holdground accepts a re-rally");
+Eq(20, s21Hold.RallyX, "slice21 general holdground new rally X");
+Eq(20, s21Hold.RallyZ, "slice21 general holdground new rally Z");
+Eq(16, s21Hold.X, "slice21 general holdground does not teleport to the new rally X");
+Eq(16, s21Hold.Z, "slice21 general holdground does not teleport to the new rally Z");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s21HoldWorld)[0].Activity, "slice21 general holdground reads marching immediately after the action");
+Check(s21Hold.MoveTowardRally(s21HoldWorld.Chunk, Array.Empty<Enemy>()), "slice21 general holdground first march step moves");
+Eq(17, s21Hold.X, "slice21 general holdground first march step is east on the X tie-break");
+Eq(16, s21Hold.Z, "slice21 general holdground first march step keeps Z");
+for (int s21Tick = 0; s21Tick < 30 && !s21Hold.AtRally; s21Tick++) s21Hold.MoveTowardRally(s21HoldWorld.Chunk, Array.Empty<Enemy>());
+Check(s21Hold.AtRally, "slice21 general holdground reaches its new rally");
+Eq(20, s21Hold.X, "slice21 general holdground arrives at the new rally X");
+Eq(20, s21Hold.Z, "slice21 general holdground arrives at the new rally Z");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s21HoldWorld)[0].Activity, "slice21 general holdground reads holding at its new rally");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice21 general loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice21 general loop waypoint count is still 5, not retuned");
+// HoldGround fire, suspended while marching and
+// resuming once holding, under the existing rule
+// (FindTarget returns null for a marching HoldGround
+// squad, whatever is in range): an enemy in range
+// while marching is not shot, and an enemy in range
+// once holding is.
+var s21HoldFireWorld = new WorldZone(42);
+s21HoldFireWorld.Player.X = 16; s21HoldFireWorld.Player.Y = 5; s21HoldFireWorld.Player.Z = 16;
+var s21HoldFire = s21HoldFireWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var s21HoldFireNear = new Enemy(17, 5, 17);
+var s21HoldFireFar = new Enemy(22, 5, 18);
+s21HoldFireWorld.Enemies.Add(s21HoldFireNear);
+s21HoldFireWorld.Enemies.Add(s21HoldFireFar);
+Check(s21HoldFireWorld.TryReRallySquad(0, 22, 5, 16), "slice21 general holdground fire test accepts a re-rally");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s21HoldFireWorld)[0].Activity, "slice21 general holdground fire test reads marching after the action");
+Check(s21HoldFire.FindTarget(s21HoldFireWorld.Enemies) == null, "slice21 general holdground marching squad does not fire at an in-range enemy");
+for (int s21Tick = 0; s21Tick < 30 && !s21HoldFire.AtRally; s21Tick++) s21HoldFire.MoveTowardRally(s21HoldFireWorld.Chunk, Array.Empty<Enemy>());
+Check(s21HoldFire.AtRally, "slice21 general holdground fire test reaches its new rally");
+Eq(22, s21HoldFire.X, "slice21 general holdground fire test arrives at the new rally X");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s21HoldFireWorld)[0].Activity, "slice21 general holdground fire test reads holding at its new rally");
+Check(s21HoldFire.FindTarget(s21HoldFireWorld.Enemies) == s21HoldFireFar, "slice21 general holdground holding squad fires at the in-range enemy by its new rally");
+Eq(30, s21HoldFire.DamagePerTick, "slice21 general holdground vanguard damage per tick unchanged");
+// HoldGround re-rallied to the cell it already
+// stands on reads Holding at once, with no march.
+var s21HoldOwnWorld = new WorldZone(42);
+s21HoldOwnWorld.Player.X = 16; s21HoldOwnWorld.Player.Y = 5; s21HoldOwnWorld.Player.Z = 16;
+var s21HoldOwn = s21HoldOwnWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Check(s21HoldOwnWorld.TryReRallySquad(0, 16, 5, 16), "slice21 general holdground accepts a re-rally to its own cell");
+Check(s21HoldOwn.AtRally, "slice21 general holdground re-rallied to its own cell is at its rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s21HoldOwnWorld)[0].Activity, "slice21 general holdground re-rallied to its own cell reads holding at once");
+Eq(16, s21HoldOwn.X, "slice21 general holdground re-rallied to its own cell does not move");
+// HoldGround Recon and Heavy: the action is doctrine
+// logic, not a kind stat — but kinds differ in damage
+// and range, so all three are proved for the core march.
+var s21HoldReconWorld = new WorldZone(42);
+s21HoldReconWorld.Player.X = 16; s21HoldReconWorld.Player.Y = 5; s21HoldReconWorld.Player.Z = 16;
+var s21HoldRecon = s21HoldReconWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+Check(s21HoldReconWorld.TryReRallySquad(0, 20, 5, 20), "slice21 general holdground recon accepts a re-rally");
+for (int s21Tick = 0; s21Tick < 30 && !s21HoldRecon.AtRally; s21Tick++) s21HoldRecon.MoveTowardRally(s21HoldReconWorld.Chunk, Array.Empty<Enemy>());
+Check(s21HoldRecon.AtRally, "slice21 general holdground recon reaches its new rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s21HoldReconWorld)[0].Activity, "slice21 general holdground recon reads holding at its new rally");
+Eq(12, s21HoldRecon.DamagePerTick, "slice21 general holdground recon damage per tick unchanged");
+var s21HoldHeavyWorld = new WorldZone(42);
+s21HoldHeavyWorld.Player.X = 16; s21HoldHeavyWorld.Player.Y = 5; s21HoldHeavyWorld.Player.Z = 16;
+var s21HoldHeavy = s21HoldHeavyWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+Check(s21HoldHeavyWorld.TryReRallySquad(0, 20, 5, 20), "slice21 general holdground heavy accepts a re-rally");
+for (int s21Tick = 0; s21Tick < 30 && !s21HoldHeavy.AtRally; s21Tick++) s21HoldHeavy.MoveTowardRally(s21HoldHeavyWorld.Chunk, Array.Empty<Enemy>());
+Check(s21HoldHeavy.AtRally, "slice21 general holdground heavy reaches its new rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s21HoldHeavyWorld)[0].Activity, "slice21 general holdground heavy reads holding at its new rally");
+Eq(16, s21HoldHeavy.DamagePerTick, "slice21 general holdground heavy damage per tick unchanged");
+// HoldGround re-rallied to a solid rally cell is
+// accepted, as deploy accepts one, and holds short
+// of it instead of stepping inside it.
+var s21HoldSolidWorld = new WorldZone(42);
+s21HoldSolidWorld.Player.X = 16; s21HoldSolidWorld.Player.Y = 5; s21HoldSolidWorld.Player.Z = 16;
+var s21HoldSolid = s21HoldSolidWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Check(s21HoldSolidWorld.Chunk.TrySet(20, 5, 16, BlockType.Stone), "slice21 general holdground solid test stages a solid new rally cell");
+Check(s21HoldSolidWorld.TryReRallySquad(0, 20, 5, 16), "slice21 general holdground to a solid rally cell is accepted, as deploy accepts one");
+Eq(20, s21HoldSolid.RallyX, "slice21 general holdground solid new rally X");
+for (int s21Tick = 0; s21Tick < 4; s21Tick++) s21HoldSolid.MoveTowardRally(s21HoldSolidWorld.Chunk, Array.Empty<Enemy>());
+Eq(19, s21HoldSolid.X, "slice21 general holdground solid patrol reaches the open cell before the rally");
+Check(!s21HoldSolid.MoveTowardRally(s21HoldSolidWorld.Chunk, Array.Empty<Enemy>()), "slice21 general holdground solid step into the rally is refused");
+Eq(19, s21HoldSolid.X, "slice21 general holdground solid squad holds short of the solid rally, never inside it");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s21HoldSolidWorld)[0].Activity, "slice21 general holdground solid squad still reads marching short of its rally");
+Eq(BlockType.Stone, s21HoldSolidWorld.Chunk.Get(20, 5, 16), "slice21 general holdground solid rally cell stays stone");
+// Patrol, Vanguard, mid-loop: a non-stuck patrol
+// re-rallied mid-circuit moves its loop, marches to
+// the new rally, and turns onto the new loop at
+// radius 3 with five waypoints.
+var s21PatrolWorld = new WorldZone(42);
+s21PatrolWorld.Player.X = 16; s21PatrolWorld.Player.Y = 5; s21PatrolWorld.Player.Z = 16;
+var s21Patrol = s21PatrolWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s21Patrol.MoveForPatrol(s21PatrolWorld.Chunk, Array.Empty<Enemy>()), "slice21 general patrol mid-loop first step moves");
+Check(s21Patrol.MoveForPatrol(s21PatrolWorld.Chunk, Array.Empty<Enemy>()), "slice21 general patrol mid-loop second step moves");
+Eq(17, s21Patrol.X, "slice21 general patrol mid-loop position X before the action");
+Eq(17, s21Patrol.Z, "slice21 general patrol mid-loop position Z before the action");
+Eq(0, s21Patrol.PatrolWaypointIndex, "slice21 general patrol mid-loop index is still 0 before the action");
+Eq(0, s21Patrol.PatrolConsecutiveRefusals, "slice21 general patrol mid-loop counter is 0 before the action");
+Check(s21PatrolWorld.TryReRallySquad(0, 26, 5, 20), "slice21 general non-stuck patrol accepts a re-rally");
+Eq(26, s21Patrol.RallyX, "slice21 general patrol new rally X");
+Eq(0, s21Patrol.PatrolWaypointIndex, "slice21 general patrol waypoint index resets to 0");
+Eq(0, s21Patrol.PatrolConsecutiveRefusals, "slice21 general patrol refusal counter resets to 0");
+Eq((26, 5, 20), s21Patrol.PatrolTarget, "slice21 general patrol loop re-derives from the new rally, waypoint 0");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s21PatrolWorld)[0].Activity, "slice21 general patrol reads patrolling immediately after the action");
+Eq(17, s21Patrol.X, "slice21 general patrol does not teleport to the new rally");
+for (int s21Tick = 0; s21Tick < 40 && !(s21Patrol.X == 26 && s21Patrol.Z == 20); s21Tick++) s21Patrol.MoveForPatrol(s21PatrolWorld.Chunk, Array.Empty<Enemy>());
+Eq(26, s21Patrol.X, "slice21 general patrol marches to its new rally X");
+Eq(20, s21Patrol.Z, "slice21 general patrol marches to its new rally Z");
+Eq(0, s21Patrol.PatrolWaypointIndex, "slice21 general patrol index is still 0 on arrival at the new rally");
+Check(s21Patrol.MoveForPatrol(s21PatrolWorld.Chunk, Array.Empty<Enemy>()), "slice21 general patrol turns onto the new loop");
+Eq(27, s21Patrol.X, "slice21 general patrol steps east onto the new loop");
+Eq(1, s21Patrol.PatrolWaypointIndex, "slice21 general patrol index advances to the east waypoint");
+Eq((29, 5, 20), s21Patrol.PatrolTarget, "slice21 general patrol east waypoint is the new rally plus radius 3");
+// Patrol with a counter above 0 but below 5 — the
+// case that separates reset from carry-over: two
+// refused waypoints, then a re-rally, must clear the
+// counter (the loop is new) rather than carry two
+// refusals onto a loop that refused nothing. The
+// same-rally refusal first proves a refusal changes
+// nothing, including the counter.
+var s21CounterWorld = new WorldZone(42);
+s21CounterWorld.Player.X = 20; s21CounterWorld.Player.Y = 5; s21CounterWorld.Player.Z = 20;
+var s21Counter = s21CounterWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s21CounterWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice21 general counter test stages an east wall");
+Check(s21CounterWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice21 general counter test stages a south wall");
+Check(!s21Counter.MoveForPatrol(s21CounterWorld.Chunk, Array.Empty<Enemy>()), "slice21 general counter test first refused waypoint does not move");
+Eq(1, s21Counter.PatrolConsecutiveRefusals, "slice21 general counter test one refusal counted");
+Eq(2, s21Counter.PatrolWaypointIndex, "slice21 general counter test index advances past the refused east waypoint");
+Check(!s21Counter.MoveForPatrol(s21CounterWorld.Chunk, Array.Empty<Enemy>()), "slice21 general counter test second refused waypoint does not move");
+Eq(2, s21Counter.PatrolConsecutiveRefusals, "slice21 general counter test two refusals counted");
+Eq(3, s21Counter.PatrolWaypointIndex, "slice21 general counter test index advances past the refused south waypoint");
+Check(!s21Counter.IsPatrolStuck, "slice21 general counter test two refusals is not stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s21CounterWorld)[0].Activity, "slice21 general counter test two refusals still reads patrolling");
+Check(!s21CounterWorld.TryReRallySquad(0, 20, 5, 20), "slice21 general counter test same-rally re-rally is refused");
+Eq(2, s21Counter.PatrolConsecutiveRefusals, "slice21 general counter test refused same-rally keeps the counter at 2");
+Eq(3, s21Counter.PatrolWaypointIndex, "slice21 general counter test refused same-rally keeps the index at 3");
+Check(s21CounterWorld.TryReRallySquad(0, 14, 5, 20), "slice21 general counter test accepts a re-rally west");
+Eq(14, s21Counter.RallyX, "slice21 general counter test new rally X");
+Eq(0, s21Counter.PatrolWaypointIndex, "slice21 general counter test re-rally resets the index to 0");
+Eq(0, s21Counter.PatrolConsecutiveRefusals, "slice21 general counter test re-rally resets a counter above 0 to 0, not carried over");
+Eq((14, 5, 20), s21Counter.PatrolTarget, "slice21 general counter test loop re-derives from the new rally, waypoint 0");
+for (int s21Tick = 0; s21Tick < 40 && !(s21Counter.X == 14 && s21Counter.Z == 20); s21Tick++) s21Counter.MoveForPatrol(s21CounterWorld.Chunk, Array.Empty<Enemy>());
+Eq(14, s21Counter.X, "slice21 general counter test patrol marches west to its new rally");
+Eq(0, s21Counter.PatrolWaypointIndex, "slice21 general counter test index is still 0 on arrival at the new rally");
+Eq(0, s21Counter.PatrolConsecutiveRefusals, "slice21 general counter test counter stays 0 through the march");
+Check(s21Counter.MoveForPatrol(s21CounterWorld.Chunk, Array.Empty<Enemy>()), "slice21 general counter test patrol turns onto the new loop");
+Eq(15, s21Counter.X, "slice21 general counter test patrol steps east onto the new loop");
+Eq((17, 5, 20), s21Counter.PatrolTarget, "slice21 general counter test east waypoint is the new rally plus radius 3");
+// Patrol Recon and Heavy: core march plus fire in
+// passing, as in Slice 20, for the general action.
+var s21PatrolReconWorld = new WorldZone(42);
+s21PatrolReconWorld.Player.X = 16; s21PatrolReconWorld.Player.Y = 5; s21PatrolReconWorld.Player.Z = 16;
+var s21PatrolRecon = s21PatrolReconWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+Check(s21PatrolReconWorld.TryReRallySquad(0, 26, 5, 20), "slice21 general patrol recon accepts a re-rally");
+for (int s21Tick = 0; s21Tick < 40 && !(s21PatrolRecon.X == 26 && s21PatrolRecon.Z == 20); s21Tick++) s21PatrolRecon.MoveForPatrol(s21PatrolReconWorld.Chunk, Array.Empty<Enemy>());
+Eq(26, s21PatrolRecon.X, "slice21 general patrol recon marches to its new rally");
+Eq(0, s21PatrolRecon.PatrolWaypointIndex, "slice21 general patrol recon index is 0 on arrival");
+Check(s21PatrolRecon.MoveForPatrol(s21PatrolReconWorld.Chunk, Array.Empty<Enemy>()), "slice21 general patrol recon turns onto the new loop");
+Eq((29, 5, 20), s21PatrolRecon.PatrolTarget, "slice21 general patrol recon east waypoint is the new rally plus radius 3");
+Eq(12, s21PatrolRecon.DamagePerTick, "slice21 general patrol recon damage per tick unchanged");
+Check(s21PatrolRecon.FindTarget(new[] { new Enemy(29, 5, 20) }) != null, "slice21 general patrol recon still fires in passing after the action");
+var s21PatrolHeavyWorld = new WorldZone(42);
+s21PatrolHeavyWorld.Player.X = 16; s21PatrolHeavyWorld.Player.Y = 5; s21PatrolHeavyWorld.Player.Z = 16;
+var s21PatrolHeavy = s21PatrolHeavyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(s21PatrolHeavyWorld.TryReRallySquad(0, 26, 5, 20), "slice21 general patrol heavy accepts a re-rally");
+for (int s21Tick = 0; s21Tick < 40 && !(s21PatrolHeavy.X == 26 && s21PatrolHeavy.Z == 20); s21Tick++) s21PatrolHeavy.MoveForPatrol(s21PatrolHeavyWorld.Chunk, Array.Empty<Enemy>());
+Eq(26, s21PatrolHeavy.X, "slice21 general patrol heavy marches to its new rally");
+Check(s21PatrolHeavy.MoveForPatrol(s21PatrolHeavyWorld.Chunk, Array.Empty<Enemy>()), "slice21 general patrol heavy turns onto the new loop");
+Eq(16, s21PatrolHeavy.DamagePerTick, "slice21 general patrol heavy damage per tick unchanged");
+Check(s21PatrolHeavy.FindTarget(new[] { new Enemy(28, 5, 20) }) != null, "slice21 general patrol heavy still fires in passing after the action");
+// Patrol re-rallied to a solid rally cell is accepted,
+// holds short of it, and skips that waypoint on the
+// new loop instead of stepping inside the rally cell.
+var s21PatrolSolidWorld = new WorldZone(42);
+s21PatrolSolidWorld.Player.X = 16; s21PatrolSolidWorld.Player.Y = 5; s21PatrolSolidWorld.Player.Z = 16;
+var s21PatrolSolid = s21PatrolSolidWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s21PatrolSolidWorld.Chunk.TrySet(20, 5, 16, BlockType.Stone), "slice21 general patrol solid test stages a solid new rally cell");
+Check(s21PatrolSolidWorld.TryReRallySquad(0, 20, 5, 16), "slice21 general patrol to a solid rally cell is accepted, as deploy accepts one");
+Eq(20, s21PatrolSolid.RallyX, "slice21 general patrol solid new rally X");
+for (int s21Tick = 0; s21Tick < 3; s21Tick++) s21PatrolSolid.MoveForPatrol(s21PatrolSolidWorld.Chunk, Array.Empty<Enemy>());
+Eq(19, s21PatrolSolid.X, "slice21 general patrol solid squad reaches the open cell before the rally");
+Check(!s21PatrolSolid.MoveForPatrol(s21PatrolSolidWorld.Chunk, Array.Empty<Enemy>()), "slice21 general patrol solid step into the rally is refused");
+Eq(19, s21PatrolSolid.X, "slice21 general patrol solid squad holds short of the solid rally, never inside it");
+Eq(1, s21PatrolSolid.PatrolConsecutiveRefusals, "slice21 general patrol solid refusal counts once");
+Eq(1, s21PatrolSolid.PatrolWaypointIndex, "slice21 general patrol solid squad skips to the east waypoint");
+Eq((23, 5, 16), s21PatrolSolid.PatrolTarget, "slice21 general patrol solid east waypoint is the new rally plus radius 3");
+Eq(BlockType.Stone, s21PatrolSolidWorld.Chunk.Get(20, 5, 16), "slice21 general patrol solid rally cell stays stone");
+// A non-stuck patrol re-rallied to a loop it cannot
+// walk reads Stuck again after a full circuit on the
+// new loop, unmoved, with the new rally kept — the
+// general action corrects the loop, it does not march
+// a squad through a wall, exactly as Slice 20 proved
+// for the stuck case.
+var s21RestickWorld = new WorldZone(42);
+s21RestickWorld.Player.X = 20; s21RestickWorld.Player.Y = 5; s21RestickWorld.Player.Z = 20;
+var s21Restick = s21RestickWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s21RestickWorld.TryReRallySquad(0, 26, 5, 20), "slice21 general restick test non-stuck patrol accepts a re-rally");
+Check(s21RestickWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice21 general restick test stages an east wall");
+Check(s21RestickWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice21 general restick test stages a west wall");
+Check(s21RestickWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice21 general restick test stages a south wall");
+Check(s21RestickWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice21 general restick test stages a north wall");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s21RestickWorld)[0].Activity, "slice21 general restick test reads patrolling at once on the new loop");
+for (int s21Tick = 0; s21Tick < 5; s21Tick++) s21Restick.MoveForPatrol(s21RestickWorld.Chunk, Array.Empty<Enemy>());
+Check(s21Restick.IsPatrolStuck, "slice21 general restick test reads stuck again after a full circuit on the new loop");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s21RestickWorld)[0].Activity, "slice21 general restick test snapshot reads stuck again");
+Eq(20, s21Restick.X, "slice21 general restick test patrol never moved through a wall");
+Eq(26, s21Restick.RallyX, "slice21 general restick test patrol keeps its new rally while stuck again");
+// The inert doctrines, all three kinds each: every
+// refusal returns false and changes nothing — rally,
+// position, and health all stand.
+var s21InertWorld = new WorldZone(42);
+s21InertWorld.Player.X = 16; s21InertWorld.Player.Y = 5; s21InertWorld.Player.Z = 16;
+var s21InertAdvVan = s21InertWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Vanguard)!;
+var s21InertAdvRec = s21InertWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Recon)!;
+var s21InertAdvHea = s21InertWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Heavy)!;
+var s21InertDefVan = s21InertWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Vanguard)!;
+var s21InertDefRec = s21InertWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
+var s21InertDefHea = s21InertWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
+Check(!s21InertWorld.TryReRallySquad(0, 20, 5, 20), "slice21 general advance vanguard is refused");
+Eq(10, s21InertAdvVan.RallyX, "slice21 general refused advance vanguard keeps its rally");
+Eq(16, s21InertAdvVan.X, "slice21 general refused advance vanguard keeps its position");
+Eq(90, s21InertAdvVan.Health, "slice21 general refused advance vanguard keeps its health");
+Check(!s21InertWorld.TryReRallySquad(1, 20, 5, 20), "slice21 general advance recon is refused");
+Eq(10, s21InertAdvRec.RallyX, "slice21 general refused advance recon keeps its rally");
+Eq(40, s21InertAdvRec.Health, "slice21 general refused advance recon keeps its health");
+Check(!s21InertWorld.TryReRallySquad(2, 20, 5, 20), "slice21 general advance heavy is refused");
+Eq(10, s21InertAdvHea.RallyX, "slice21 general refused advance heavy keeps its rally");
+Eq(100, s21InertAdvHea.Health, "slice21 general refused advance heavy keeps its health");
+Check(!s21InertWorld.TryReRallySquad(3, 20, 5, 20), "slice21 general defendcore vanguard is refused");
+Eq(10, s21InertDefVan.RallyX, "slice21 general refused defendcore vanguard keeps its rally");
+Eq(90, s21InertDefVan.Health, "slice21 general refused defendcore vanguard keeps its health");
+Check(!s21InertWorld.TryReRallySquad(4, 20, 5, 20), "slice21 general defendcore recon is refused");
+Eq(10, s21InertDefRec.RallyX, "slice21 general refused defendcore recon keeps its rally");
+Eq(40, s21InertDefRec.Health, "slice21 general refused defendcore recon keeps its health");
+Check(!s21InertWorld.TryReRallySquad(5, 20, 5, 20), "slice21 general defendcore heavy is refused");
+Eq(10, s21InertDefHea.RallyX, "slice21 general refused defendcore heavy keeps its rally");
+Eq(100, s21InertDefHea.Health, "slice21 general refused defendcore heavy keeps its health");
+// A refused Advance squad still chases the same enemy,
+// and a refused Advance squad with no enemy still
+// reads Idle and does not move — the refusal changes
+// no movement, chase, or fire behaviour.
+var s21AdvWorld = new WorldZone(42);
+s21AdvWorld.Player.X = 16; s21AdvWorld.Player.Y = 5; s21AdvWorld.Player.Z = 16;
+var s21Adv = s21AdvWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Vanguard)!;
+var s21AdvEnemy = new Enemy(20, 5, 16);
+s21AdvWorld.Enemies.Add(s21AdvEnemy);
+Eq(SquadActivity.Hunting, OrbitalView.Snapshot(s21AdvWorld)[0].Activity, "slice21 general advance with an enemy reads hunting before the action");
+Check(OrbitalView.Snapshot(s21AdvWorld)[0].HasHuntingTarget, "slice21 general advance has a hunting target before the action");
+Eq(20, OrbitalView.Snapshot(s21AdvWorld)[0].HuntingTargetX, "slice21 general advance hunting target X before the action");
+Check(!s21AdvWorld.TryReRallySquad(0, 22, 5, 16), "slice21 general advance with an enemy is refused");
+Eq(10, s21Adv.RallyX, "slice21 general refused advance keeps its rally");
+Eq(SquadActivity.Hunting, OrbitalView.Snapshot(s21AdvWorld)[0].Activity, "slice21 general refused advance still reads hunting");
+Eq(20, OrbitalView.Snapshot(s21AdvWorld)[0].HuntingTargetX, "slice21 general refused advance keeps its hunting target");
+Check(s21Adv.MoveTowardNearestEnemy(s21AdvWorld.Chunk, s21AdvWorld.Enemies), "slice21 general refused advance still chases its enemy");
+Eq(17, s21Adv.X, "slice21 general refused advance steps toward its enemy");
+Eq(10, s21Adv.RallyX, "slice21 general refused advance keeps its rally after chasing");
+var s21AdvIdleWorld = new WorldZone(42);
+s21AdvIdleWorld.Player.X = 16; s21AdvIdleWorld.Player.Y = 5; s21AdvIdleWorld.Player.Z = 16;
+var s21AdvIdle = s21AdvIdleWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Recon)!;
+Eq(SquadActivity.Idle, OrbitalView.Snapshot(s21AdvIdleWorld)[0].Activity, "slice21 general advance with no enemy reads idle before the action");
+Check(!s21AdvIdleWorld.TryReRallySquad(0, 22, 5, 16), "slice21 general advance with no enemy is refused");
+Eq(SquadActivity.Idle, OrbitalView.Snapshot(s21AdvIdleWorld)[0].Activity, "slice21 general refused advance with no enemy still reads idle");
+Check(!s21AdvIdle.MoveTowardNearestEnemy(s21AdvIdleWorld.Chunk, s21AdvIdleWorld.Enemies), "slice21 general refused advance with no enemy still does not move");
+Eq(16, s21AdvIdle.X, "slice21 general refused advance with no enemy keeps its position");
+// A refused Defend Core squad still chases the same
+// core attacker, and a refused guard at its post with
+// no attacker still reads Guarding and does not move.
+var s21DefWorld = new WorldZone(42);
+s21DefWorld.Player.X = 26; s21DefWorld.Player.Y = 5; s21DefWorld.Player.Z = 28;
+var s21Def = s21DefWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Vanguard)!;
+var s21DefAttacker = new Enemy(24, 5, 28);
+s21DefWorld.Enemies.Add(s21DefAttacker);
+Eq(SquadActivity.Hunting, OrbitalView.Snapshot(s21DefWorld)[0].Activity, "slice21 general defendcore with an attacker reads hunting before the action");
+Check(!s21DefWorld.TryReRallySquad(0, 20, 5, 28), "slice21 general defendcore with an attacker is refused");
+Eq(10, s21Def.RallyX, "slice21 general refused defendcore keeps its rally");
+Eq(SquadActivity.Hunting, OrbitalView.Snapshot(s21DefWorld)[0].Activity, "slice21 general refused defendcore still reads hunting");
+Check(s21Def.MoveForDefendCore(s21DefWorld.Chunk, s21DefWorld.Enemies, 28, 5, 28), "slice21 general refused defendcore still chases its attacker");
+Eq(25, s21Def.X, "slice21 general refused defendcore steps toward its attacker");
+Eq(10, s21Def.RallyX, "slice21 general refused defendcore keeps its rally after chasing");
+var s21DefPostWorld = new WorldZone(42);
+s21DefPostWorld.Player.X = 28; s21DefPostWorld.Player.Y = 5; s21DefPostWorld.Player.Z = 28;
+var s21DefPost = s21DefPostWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(s21DefPostWorld)[0].Activity, "slice21 general defendcore at its post reads guarding before the action");
+Check(!s21DefPostWorld.TryReRallySquad(0, 20, 5, 28), "slice21 general defendcore at its post is refused");
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(s21DefPostWorld)[0].Activity, "slice21 general refused defendcore at its post still reads guarding");
+Check(!s21DefPost.MoveForDefendCore(s21DefPostWorld.Chunk, s21DefPostWorld.Enemies, 28, 5, 28), "slice21 general refused defendcore at its post still does not move");
+Eq(28, s21DefPost.X, "slice21 general refused defendcore at its post keeps its position");
+// The two gates agree about identity: the same index
+// names the same list entry under both gates, in a
+// world where two squads share one cell (the deploy-
+// at-the-player's-feet ambiguity). Eligibility differs
+// by design — the stuck gate refuses the HoldGround
+// squad, the general gate accepts it — but neither
+// gate ever names the wrong squad, and a stuck patrol
+// succeeds under the stuck gate and then again under
+// the general gate, now as an ordinary Patrol.
+var s21GatesWorld = new WorldZone(42);
+s21GatesWorld.Player.X = 24; s21GatesWorld.Player.Y = 5; s21GatesWorld.Player.Z = 20;
+var s21GatesPatrol = s21GatesWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+var s21GatesHold = s21GatesWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Check(s21GatesWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice21 general gates test stages a west wall");
+Check(s21GatesWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice21 general gates test stages a south wall");
+Check(s21GatesWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice21 general gates test stages a north wall");
+for (int s21Tick = 0; s21Tick < 5; s21Tick++) s21GatesPatrol.MoveForPatrol(s21GatesWorld.Chunk, Array.Empty<Enemy>());
+Check(s21GatesPatrol.IsPatrolStuck, "slice21 general gates test patrol is stuck before the actions");
+Check(!s21GatesWorld.TryReRallyStuckPatrol(1, 26, 5, 20), "slice21 general gates test stuck gate refuses the holdground squad at index 1");
+Eq(10, s21GatesHold.RallyX, "slice21 general gates test stuck-gate refusal keeps the holdground rally");
+Check(s21GatesWorld.TryReRallySquad(1, 26, 5, 20), "slice21 general gates test general gate accepts the same holdground squad at index 1");
+Eq(26, s21GatesHold.RallyX, "slice21 general gates test general gate moves the holdground rally at index 1");
+Eq(20, s21GatesPatrol.RallyX, "slice21 general gates test holdground re-rally leaves the patrol rally at index 0 untouched");
+Check(s21GatesWorld.TryReRallyStuckPatrol(0, 30, 5, 20), "slice21 general gates test stuck gate accepts the stuck patrol at index 0");
+Eq(30, s21GatesPatrol.RallyX, "slice21 general gates test stuck gate moves the patrol rally at index 0");
+Check(s21GatesWorld.TryReRallySquad(0, 28, 5, 20), "slice21 general gates test general gate accepts the same patrol at index 0 again, now as an ordinary patrol");
+Eq(28, s21GatesPatrol.RallyX, "slice21 general gates test general gate moves the patrol rally a second time");
+Eq(0, s21GatesPatrol.PatrolWaypointIndex, "slice21 general gates test second re-rally resets the patrol index");
+Eq(24, s21GatesPatrol.X, "slice21 general gates test neither re-rally teleports the patrol");
+Eq(24, s21GatesHold.X, "slice21 general gates test neither action teleports the holdground squad");
+Eq(26, s21GatesHold.RallyX, "slice21 general gates test holdground rally stands after the patrol actions");
+// Fail-closed general refusals: every gate failure
+// returns false and changes nothing — dead squad,
+// out-of-range and negative indices, out-of-bounds
+// rallies, and the same rally again, for both covered
+// doctrines.
+var s21RefuseWorld = new WorldZone(42);
+s21RefuseWorld.Player.X = 20; s21RefuseWorld.Player.Y = 5; s21RefuseWorld.Player.Z = 20;
+var s21RefuseHold = s21RefuseWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var s21RefusePatrol = s21RefuseWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(!s21RefuseWorld.TryReRallySquad(-1, 26, 5, 20), "slice21 general negative index is refused");
+Check(!s21RefuseWorld.TryReRallySquad(2, 26, 5, 20), "slice21 general out-of-range index is refused");
+Check(!s21RefuseWorld.TryReRallySquad(0, 99, 5, 20), "slice21 general out-of-bounds rally is refused for holdground");
+Check(!s21RefuseWorld.TryReRallySquad(1, -1, 5, 20), "slice21 general negative rally is refused for patrol");
+Check(!s21RefuseWorld.TryReRallySquad(0, 10, 5, 10), "slice21 general same-rally re-rally is refused for holdground");
+Check(!s21RefuseWorld.TryReRallySquad(1, 20, 5, 20), "slice21 general same-rally re-rally is refused for patrol");
+Eq(10, s21RefuseHold.RallyX, "slice21 general refused holdground keeps its rally");
+Eq(20, s21RefusePatrol.RallyX, "slice21 general refused patrol keeps its rally");
+Eq(20, s21RefuseHold.X, "slice21 general refused holdground keeps its position");
+Eq(20, s21RefusePatrol.X, "slice21 general refused patrol keeps its position");
+Eq(0, s21RefusePatrol.PatrolWaypointIndex, "slice21 general refused patrol keeps its index");
+Eq(0, s21RefusePatrol.PatrolConsecutiveRefusals, "slice21 general refused patrol keeps its counter");
+var s21DeadWorld = new WorldZone(42);
+s21DeadWorld.Player.X = 20; s21DeadWorld.Player.Y = 5; s21DeadWorld.Player.Z = 20;
+var s21Dead = s21DeadWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+s21Dead.TakeDamage(1000);
+Check(s21Dead.IsDead, "slice21 general dead test squad is dead before the action");
+Check(!s21DeadWorld.TryReRallySquad(0, 26, 5, 20), "slice21 general dead squad is refused");
+Eq(10, s21Dead.RallyX, "slice21 general refused dead squad keeps its rally");
+// Save/load, Simulation passthrough, and the paid
+// path unchanged: three paid squads, a free general
+// re-rally for the HoldGround squad and for the
+// Patrol through the passthrough, a refused inert
+// re-rally, and a fourth deploy still refused at the
+// full cap with ore untouched; then a save/load
+// round-trip in which the re-rallied squads load
+// with their new rallies and march on the loaded tick.
+var s21Sim = new Simulation(42);
+s21Sim.World.Player.X = 16; s21Sim.World.Player.Y = 5; s21Sim.World.Player.Z = 16;
+s21Sim.World.Player.Inventory.Add(BlockType.EmberOre, 40);
+var s21SimHold = s21Sim.World.TryDeployPaidSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Eq(30, s21Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice21 general paid test first deploy charges 10");
+var s21SimPatrol = s21Sim.World.TryDeployPaidSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+Eq(20, s21Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice21 general paid test second deploy charges 10");
+var s21SimAdv = s21Sim.World.TryDeployPaidSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Heavy)!;
+Eq(10, s21Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice21 general paid test third deploy charges 10");
+Eq(3, SquadEconomy.LiveSquadCount(s21Sim.World), "slice21 general paid test cap is full at 3 live squads");
+Check(s21Sim.TryReRallySquad(0, 22, 5, 16), "slice21 general paid test holdground accepts a free re-rally through the passthrough");
+Eq(22, s21SimHold.RallyX, "slice21 general paid test holdground takes its new rally");
+Eq(10, s21Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice21 general paid test holdground re-rally charges nothing");
+Eq(3, SquadEconomy.LiveSquadCount(s21Sim.World), "slice21 general paid test holdground re-rally frees no cap slot");
+Check(!s21Sim.TryReRallySquad(2, 22, 5, 16), "slice21 general paid test advance re-rally is refused through the passthrough");
+Eq(10, s21SimAdv.RallyX, "slice21 general paid test refused advance keeps its rally");
+Check(s21Sim.TryReRallySquad(1, 26, 5, 20), "slice21 general paid test patrol accepts a free re-rally through the passthrough");
+Eq(26, s21SimPatrol.RallyX, "slice21 general paid test patrol takes its new rally");
+Eq(10, s21Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice21 general paid test patrol re-rally charges nothing");
+Check(s21Sim.World.TryDeployPaidSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Heavy) == null, "slice21 general paid test fourth deploy is still refused at the cap");
+Eq(10, s21Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice21 general paid test refused fourth deploy charges nothing");
+Eq(22, s21SimHold.RallyX, "slice21 general paid test holdground keeps its new rally after the cap refusal");
+Eq(26, s21SimPatrol.RallyX, "slice21 general paid test patrol keeps its new rally after the cap refusal");
+var s21Save = s21Sim.SaveToJson();
+var s21LoadedSim = new Simulation(99);
+Check(s21LoadedSim.LoadFromJson(s21Save), "slice21 general paid test save loads");
+Eq(3, s21LoadedSim.World.Squads.Count, "slice21 general paid test save keeps three squads");
+var s21LoadedHold = s21LoadedSim.World.Squads[0];
+var s21LoadedPatrol = s21LoadedSim.World.Squads[1];
+Eq(16, s21LoadedHold.X, "slice21 general paid test loaded holdground position preserved");
+Eq(22, s21LoadedHold.RallyX, "slice21 general paid test loaded holdground rally is the new rally, not the old one");
+Eq(16, s21LoadedPatrol.X, "slice21 general paid test loaded patrol position preserved");
+Eq(26, s21LoadedPatrol.RallyX, "slice21 general paid test loaded patrol rally is the new rally, not the old one");
+Eq(0, s21LoadedPatrol.PatrolWaypointIndex, "slice21 general paid test loaded patrol index is 0");
+Eq(0, s21LoadedPatrol.PatrolConsecutiveRefusals, "slice21 general paid test loaded patrol counter is 0");
+s21LoadedSim.World.Advance();
+Eq(17, s21LoadedHold.X, "slice21 general paid test loaded tick 1 holdground steps toward its new rally");
+Eq(17, s21LoadedPatrol.X, "slice21 general paid test loaded tick 1 patrol steps toward its new rally");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s21LoadedSim.World)[0].Activity, "slice21 general paid test loaded tick 1 holdground reads marching");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s21LoadedSim.World)[1].Activity, "slice21 general paid test loaded tick 1 patrol reads patrolling");
+// A stuck-before-save patrol still loads Patrolling
+// at index 0 under the existing rule, which this step
+// does not break, and re-sticks after a fresh circuit.
+var s21StuckSaveSim = new Simulation(42);
+s21StuckSaveSim.World.Player.X = 20; s21StuckSaveSim.World.Player.Y = 5; s21StuckSaveSim.World.Player.Z = 20;
+var s21StuckSave = s21StuckSaveSim.World.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s21StuckSaveSim.World.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice21 general stuck-save test stages an east wall");
+Check(s21StuckSaveSim.World.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice21 general stuck-save test stages a west wall");
+Check(s21StuckSaveSim.World.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice21 general stuck-save test stages a south wall");
+Check(s21StuckSaveSim.World.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice21 general stuck-save test stages a north wall");
+for (int s21Tick = 0; s21Tick < 5; s21Tick++) s21StuckSave.MoveForPatrol(s21StuckSaveSim.World.Chunk, Array.Empty<Enemy>());
+Check(s21StuckSave.IsPatrolStuck, "slice21 general stuck-save test patrol is stuck before the save");
+var s21StuckSaveJson = s21StuckSaveSim.SaveToJson();
+var s21StuckLoadedSim = new Simulation(99);
+Check(s21StuckLoadedSim.LoadFromJson(s21StuckSaveJson), "slice21 general stuck-save test loads");
+var s21StuckLoaded = s21StuckLoadedSim.World.Squads[0];
+Check(!s21StuckLoaded.IsPatrolStuck, "slice21 general stuck-before-save patrol loads not stuck, as before");
+Eq(0, s21StuckLoaded.PatrolWaypointIndex, "slice21 general stuck-before-save patrol loads at index 0, as before");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s21StuckLoadedSim.World)[0].Activity, "slice21 general stuck-before-save patrol loads reading patrolling, as before");
+for (int s21Tick = 0; s21Tick < 5; s21Tick++) s21StuckLoaded.MoveForPatrol(s21StuckLoadedSim.World.Chunk, Array.Empty<Enemy>());
+Check(s21StuckLoaded.IsPatrolStuck, "slice21 general stuck-before-save patrol is stuck again after a full circuit");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

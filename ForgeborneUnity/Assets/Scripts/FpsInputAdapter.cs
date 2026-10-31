@@ -241,6 +241,27 @@ public class FpsInputAdapter : MonoBehaviour
         // hits no stuck marker, and the whole binding
         // is observed only under playtest-gate item 39,
         // never from a headless test.
+        // Slice 21 Step 1, PROPOSED ONLY, no code in this
+        // step and nothing claimed as working in a scene:
+        // the general re-rally (core:
+        // WorldZone.TryReRallySquad, live HoldGround or
+        // Patrol only, by snapshot index) reuses the same
+        // K binding with wider eligibility — K while NOT
+        // picking, crosshair on an eligible squad's
+        // marker (a stuck marker qualifies, and so does a
+        // moving Patrol's or a HoldGround squad's; an
+        // Advance or Defend Core marker does not, because
+        // those squads refuse the action), opening a
+        // re-rally pick that reuses the picker's raycast
+        // rally selection, with Return confirming the new
+        // rally and Escape cancelling — doing nothing
+        // while picking, nothing when the raycast hits no
+        // eligible marker, and nothing when the target
+        // squad refuses the action. K is still free
+        // against the taken keys listed above, and the
+        // general action is observed only under
+        // playtest-gate item 40, which EXTENDS item 39,
+        // never from a headless test.
         // Since 0.18.0 a picker deploy costs 10 EmberOre and at
         // most 3 live squads may be fielded, enforced in core by
         // Confirm — see docs/orbital-command.md. Since Slice 7

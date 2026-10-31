@@ -1,5 +1,238 @@
 # Forgeborne — Changelog
 
+## 0.88.0 — 2026-10-31 — Slice 21 Step 1:
+general re-rally decided — free, HoldGround and
+Patrol only, Advance and Defend Core refused
+
+- Step taken, decided in this step: Slice 21 Step 1,
+  the general re-rally decision. In one quotable
+  sentence: a live HoldGround or Patrol squad gets a
+  FREE general re-rally, stuck or not — and an Advance
+  or Defend Core squad gets a fail-closed refusal,
+  because its rally moves nothing.
+- Decision, with its rejected hypotheses: a priced
+  general re-rally rejected, because any price would
+  be invented balance with no evidence behind it, and
+  because a re-rally creates and destroys no presence
+  — a move order to an already-paid squad, not a
+  second deploy — so charging would charge twice for
+  one presence, and a cannot-pay failure would freeze
+  squads a player already owns (poverty already blocks
+  new deploys; it does not also freeze existing ones);
+  a price remains a later decision on Windows playtest
+  evidence, for example if free repositioning proves
+  abusive kiting, and is recorded as a gap, not set
+  here. An all-doctrine scope with a field-only change
+  for Advance and Defend Core rejected, because neither
+  doctrine consults its rally for movement, so the only
+  visible effect of a field-only change would be the
+  squad's orange rally marker moving while the squad
+  stayed put — SquadMarkerDisplay renders one rally
+  marker per snapshot squad from its rally — and a
+  marker that moves while its squad does not is a false
+  move order, not an action; adding a movement rule to
+  make those rallies meaningful would be a movement
+  redesign, not a generalisation, and is forbidden by
+  the scope. Merging the two gates into one API
+  rejected, because merging would either loosen the
+  stuck gate (a non-stuck Patrol would succeed through
+  it, breaking the Slice 20 proof set) or narrow the
+  general gate; the two gates therefore stand beside
+  each other, sharing one mechanism (internal ReRally)
+  and one index rule, differing only in eligibility by
+  design. A general recall or dismiss is not added
+  here, under any name; recall stays the first Slice 22
+  candidate.
+- Scope, decided in this step: HoldGround and Patrol
+  only, any live squad of those doctrines. A stuck
+  Patrol is inside that scope, and succeeds under both
+  gates with the identical outcome (free, rally changed,
+  index and counter reset to 0, no teleport, no ore, no
+  cap change), so Slice 20 is subsumed, not repriced
+  and not revised — and the Slice 20 proof set still
+  passes unchanged, because no Slice 20 test was touched
+  and the full suite passes. For a non-stuck Patrol the
+  counter question is answered by reset, including a
+  counter above 0 but below 5 (proved at 2): the loop
+  is new, so its progress is new too, and carrying two
+  refusals onto a loop that refused nothing would be a
+  stale counter masquerading as route truth.
+- Targeting, decided in this step: squad list index
+  (the snapshot's order), reused from Slice 20, for the
+  same reasons — position is ambiguous when squads share
+  a cell and rally when they share a rally, while an
+  index names one list entry; a stale index after a
+  death or removal fails closed instead of re-rallying
+  the wrong squad. No stable squad identity is invented,
+  so no save field is added. The gates-agreement proof
+  (a world where two squads share one cell) shows both
+  gates naming the same list entries: the stuck gate
+  refuses the HoldGround squad at index 1 while the
+  general gate accepts that same index-1 squad, and the
+  stuck gate accepts the stuck Patrol at index 0 while
+  the general gate accepts that same index-0 squad
+  again, now as an ordinary Patrol.
+- State changes, decided in this step, via
+  WorldZone.TryReRallySquad (thin Simulation
+  passthrough; TacticalSquad.ReRally is internal and
+  performs no gate of its own): the rally changes; a
+  Patrol's waypoint index and refusal counter reset to
+  0; position, health, doctrine, and kind are untouched.
+  No teleport: a HoldGround squad walks to its new rally
+  under the unchanged MoveTowardRally rule, and a Patrol
+  walks to its new rally and then onto the new loop
+  under the unchanged MoveForPatrol rule, at the
+  unchanged radius 3 and five waypoints. Snapshot words
+  immediately after, from OrbitalView.Snapshot code, not
+  assumed: a HoldGround squad away from its new rally
+  reads Marching, a HoldGround squad re-rallied to the
+  cell it already stands on reads Holding at once, a
+  Patrol reads Patrolling at once (or Stuck again after
+  a full circuit of refusals if the new loop is itself
+  blocked, proved for a non-stuck origin as well as the
+  Slice 20 stuck origin), and a refused Advance squad
+  keeps its word (Hunting with a living enemy, Idle
+  without one) while a refused Defend Core squad keeps
+  its word (Hunting with a core attacker, Guarding at
+  its post without one).
+- Economy, decided in this step: free, with no refund
+  question because there is no recall and no second
+  deploy. A general re-rally charges 0 EmberOre, refunds
+  nothing, and frees or takes no cap slot — the squad
+  never left the field. The cannot-pay case therefore
+  does not arise: there is no debt and no poverty
+  failure for repositioning. Deploy price (10) and cap
+  (3) stand, and the paid path is unchanged: a re-rallied
+  squad still counts toward the cap, and a fourth deploy
+  at a full cap is still refused with ore untouched, even
+  after a general re-rally.
+- Movement boundary, decided in this step: no movement
+  rule moves. MoveTowardRally, MoveForPatrol's sidestep,
+  skip, and five-refusal Stuck threshold, Advance's
+  nearest-enemy chase, and Defend Core's chase-or-return
+  stand; no pathfinder, no wider sidestep, no hold
+  replaces a skip, no rally fallback for Advance, no
+  rally consultation for Defend Core. A HoldGround squad
+  re-rallied to a solid rally cell is accepted, as deploy
+  accepts one, and holds short of it visibly; a Patrol
+  re-rallied to a solid rally cell is accepted alike,
+  holds short, and skips that waypoint on the new loop.
+- Display relation, decided in this step: no HUD line
+  added, moved, or reworded, no new activity word, no
+  marker rule changed. The rally marker follows the new
+  rally for HoldGround and Patrol squads because it
+  already renders the snapshot's rally — verified from
+  SquadMarkerDisplay.cs, not assumed — and a refused
+  Advance or Defend Core squad's marker correctly stays
+  put, because its rally stands.
+- Adapter binding, PROPOSED ONLY, decided in this
+  step: reuse K, with wider eligibility — K while not
+  picking, crosshair on an eligible (live HoldGround or
+  Patrol) squad's marker, opening a re-rally pick that
+  reuses the picker's raycast rally selection, Return to
+  confirm, Escape to cancel, doing nothing while picking
+  and nothing when the raycast hits no eligible marker
+  or the target squad refuses. K is free against the
+  taken keys (WASD, Space, E, Q, R, O, Return, Esc,
+  Alpha1–Alpha7, T, Y, U, I, B, N, P, M, mouse click).
+  This binding is a comment in FpsInputAdapter.cs only
+  in this step: it is NOT implemented, NOT claimed as
+  working in a scene, and observed only under new
+  playtest-gate item 40 once implemented on Windows.
+- Checklist relation, decided in this step: new
+  playtest-gate item 40, the general re-rally
+  observation. Item 40 EXTENDS item 39's stuck-patrol
+  observation — item 39's stuck readings stand unchanged,
+  and item 40 adds only the general readings (a Holding
+  squad marching again, a moving Patrol's loop moving,
+  and inert-doctrine refusals with no marker move). Item
+  40 does NOT supersede item 39, item 37, item 29, or
+  orbital-command item 13. Next free playtest-gate
+  number is now 41. Item 39 alone does not cover the
+  general action: its observation text is stuck-specific
+  (enclose, STUCK, re-rally, STUCK again), so the
+  non-stuck and other-doctrine cases need their own item.
+- Proof set, decided in this step (all in
+  tests/Forgeborne.Core.Tests/Program.cs, no demo
+  scenario required of this step alone; the composed
+  demo belongs to Step 2): a HoldGround Vanguard
+  marching to a new rally and Holding on arrival, with
+  fire suspended while marching (FindTarget null
+  despite an in-range enemy) and resuming once holding
+  (FindTarget on the enemy by the new rally, 30 damage);
+  a HoldGround squad re-rallied to its own cell reading
+  Holding at once; HoldGround Recon and Heavy marching
+  to a new rally with damage values unchanged (12, 16);
+  a HoldGround solid-rally hold-short; a non-stuck
+  Patrol re-rallied mid-loop marching to its new rally
+  and turning onto the new loop (east waypoint new
+  rally plus radius 3); a Patrol with a counter of 2
+  re-rallied west, with the counter reset to 0 (after a
+  same-rally refusal proved the counter untouched at 2),
+  marching to the new rally and turning onto the new
+  loop; Patrol Recon and Heavy core marches with fire
+  in passing; a Patrol solid-rally hold-short with a
+  skip to the east waypoint; a non-stuck Patrol
+  re-rallied to a blocked loop reading Stuck again after
+  a full circuit, unmoved, with the new rally kept;
+  Advance and Defend Core refusals for all three kinds
+  each, with rally, position, and health unchanged, plus
+  chase/fire-unchanged proofs (Advance Hunting then
+  stepping toward its enemy, Advance Idle with no enemy
+  and no move, Defend Core Hunting then stepping toward
+  its attacker, Defend Core Guarding at its post with no
+  move); the two-gates-agree proof in a shared-cell
+  world; fail-closed refusals (dead squad, out-of-range
+  and negative indices, out-of-bounds rallies, same
+  rally again for both covered doctrines, each with
+  nothing changed); save/load proofs (generally
+  re-rallied HoldGround and Patrol loading with their
+  new rallies through the Simulation passthrough and
+  marching on loaded tick 1, a stuck-before-save patrol
+  still loading Patrolling at index 0 and re-sticking
+  after a fresh circuit, as before); and a paid-path
+  proof (three paid deploys at 10 ore each, cap full at
+  3, general re-rallies free with ore and count
+  unchanged, inert re-rally refused, fourth deploy still
+  refused). No save-format change: the save array already
+  carries the rally, so a general re-rally persists on
+  the next save with no new field, and old saves load
+  unchanged. Fire is proved via FindTarget for
+  HoldGround, as Slice 20 proved via FindTarget for
+  Recon and Heavy — a world-tick kill is proved for the
+  Slice 20 patrol, not re-claimed here for HoldGround.
+- Changes: src/Forgeborne.Core/World.cs (new
+  TryReRallySquad gate; TryReRallyStuckPatrol
+  unchanged); src/Forgeborne.Core/Simulation.cs (thin
+  TryReRallySquad passthrough); src/Forgeborne.Core/
+  Orbital.cs (ReRally and economy doc notes updated to
+  the two gates; no logic change);
+  tests/Forgeborne.Core.Tests/Program.cs (+237
+  assertions); docs/orbital-command.md (general
+  re-rally section; stuck section's "no general action"
+  sentence updated); docs/orbital-view.md (no new
+  word/marker note, with the marker rule verified from
+  SquadMarkerDisplay.cs); docs/slice-01-playtest-gate.md
+  (item 40); ForgeborneUnity/Assets/Scripts/
+  FpsInputAdapter.cs (proposed-binding comment only, no
+  code); CHANGELOG 0.88.0 and DECISIONS.md entries
+  (next step: Slice 21 Step 2, composed demo + review
+  closing Slice 21).
+- Tests: 3402 passed, 0 failed (was 3165; +237, no
+  failures on the final runs). Demo unchanged: Slice
+  20 scenario save 44,041 chars, Slice 19 save 43,965
+  chars, Slice 18 save 44,015 chars, Slice 15 save
+  44,016 chars, Slice 17 save 43,974 chars. No demo
+  scenario is added by this step alone, per the Slice 21
+  scope; the composed demo belongs to Step 2.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.87.0 — 2026-10-31 — Slice 21 scope:
 general re-rally, documentation only
 
