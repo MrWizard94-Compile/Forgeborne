@@ -1,5 +1,106 @@
 # Forgeborne — Changelog
 
+## 0.89.0 — 2026-10-31 — Slice 21 Step 2:
+composed demo + review, closing Slice 21
+
+- Step taken: Slice 21 Step 2, composed demo scenario
+  plus documentation-only review closing Slice 21, per
+  docs/slice-21-scope.md. No new core system, no adapter
+  edit, no checklist item, by design; Slice 22 is NOT
+  scoped here.
+- Composition decided: one Simulation, five paid deploys
+  in sequence but never more than 3 live squads at once —
+  an Advance and a Defend Core squad whose general
+  re-rallies are refused fail-closed with nothing changed,
+  then removed by staged lethal damage and one tick (a
+  death freeing a cap slot, as Slice 11 proved, NOT a
+  recall and not a player action, stated as staging in
+  the demo, the tests, and the review, so it cannot be
+  mistaken for a dismiss feature); a Vanguard HoldGround
+  marched to a first rally, generally re-rallied free,
+  and marched to its new rally and Holding there; a
+  Vanguard Patrol marched to its rally, walked onto its
+  loop, generally re-rallied free mid-loop, marched to
+  its new rally, and turned onto its new loop; then a
+  Vanguard Patrol deployed at the player cell in Step 1's
+  exact route-blocked shape translated to the player
+  cell (rally (12,5,16); stone west, south, and north
+  of the squad's cell, east step cell open), counting
+  five refusals and reading Stuck, unmoved, while the
+  other two keep their readings. Then, in order: a
+  stuck-before-save load copy reading Patrolling at
+  index 0 and re-sticking after a fresh full circuit;
+  the stuck patrol accepting a free general re-rally
+  through the general gate (Step 1's gates-agreement
+  proof cited, not re-staged; both gates free, so the
+  ore difference is zero, shown as ore unchanged at 0);
+  a fourth paid deploy still refused at the full cap;
+  the re-rallied patrol marching east to its new rally
+  in six ticks and turning onto the new loop on the
+  next tick (east waypoint (25,5,16), new rally plus
+  radius 3); and a save/load round-trip after the
+  action loading the new rallies (not the old ones),
+  indices at 0, with the loaded re-rallied patrol
+  stepping back to its new rally on loaded tick 1, as
+  the index-reset load rule requires.
+- Why the route-blocked shape, stated in the review and
+  DECISIONS: Step 1 proved both stuck shapes and they
+  behave differently — the blocked-loop shape re-sticks
+  on a new loop instead of marching through a wall, the
+  route-blocked shape marches — so the composition
+  stages the shape that marches, and the blocked-loop
+  re-stick remains Step 1's proof, cited, not re-claimed
+  as a composed result, and the enclosed shape's
+  re-stick remains Slice 20 Step 1's proof. No fire
+  claim in this composition: no enemy is staged for a
+  fire claim, so Step 1's fire proofs are cited, not
+  repeated as demo results.
+- Proof set: 205 composed-integration assertions
+  mirroring the demo tick by tick (inert refusals and
+  staged deaths with ore and cap counts, HoldGround
+  march and re-rally march, Patrol march, loop turn,
+  mid-loop re-rally, new-loop turn, stuck-phase
+  refusals and waypoint cycle with the moving Patrol's
+  tie-break westward turn, stuck-before-save load copy,
+  free general re-rally of the stuck patrol and
+  economy, fourth-deploy refusal, six-tick march, loop
+  turn with radius 3 and waypoint count 5 asserted
+  unchanged, post-action save/load and loaded tick 1).
+  A placement error during this run first put the new
+  section after the test runner's summary print, so the
+  printed count stayed 3402 while the new assertions ran
+  after it; the section was moved before the summary and
+  the suite re-run to 3607/3607 before any push, so the
+  pushed count is the count the runner itself printed.
+- Changes: demo/Forgeborne.Demo/Program.cs (new Slice 21
+  scenario), tests/Forgeborne.Core.Tests/Program.cs (+205
+  assertions), new docs/slice-21-review.md, CHANGELOG
+  0.89.0, DECISIONS.md (composition, cap-staging
+  rationale, claim split, checklist relation,
+  deliberately-not list, next step: scoping Slice 22 as
+  its own decision step, chosen from the ranked
+  candidates the review carries, not promised here).
+- Tests: 3607 passed, 0 failed (was 3402; +205, no
+  failures on the final runs, FAIL count 0). Demo
+  unchanged except the new scenario: Slice 20 save
+  44,041 chars, Slice 19 save 43,965 chars, Slice 18
+  save 44,015 chars, Slice 15 save 44,016 chars, Slice
+  17 save 43,974 chars, and all other earlier saves as
+  in the 0.86.0 entry (Slice 1 43,881, Slice 2 43,921,
+  Step 1 44,016, Step 3 44,103, Slice 4 44,026, Slice 5
+  43,974, Slice 6 44,024, Slice 7 44,013, Slice 8 43,974,
+  Slice 9 43,975, Slice 10 43,974, Slice 11 44,038,
+  Slice 12 43,974, Slice 13 44,045, Slice 14 43,974).
+  New Slice 21 scenario save 44,040 chars, quoted as its
+  own entry.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.88.0 — 2026-10-31 — Slice 21 Step 1:
 general re-rally decided — free, HoldGround and
 Patrol only, Advance and Defend Core refused

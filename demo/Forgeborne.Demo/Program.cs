@@ -1460,3 +1460,189 @@ Console.WriteLine($"Slice 20 loaded indices: hold {simS20Loaded.World.Squads[0].
 simS20Loaded.World.Advance();
 Console.WriteLine($"Slice 20 loaded tick 1: hold at ({simS20Loaded.World.Squads[0].X},5,{simS20Loaded.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS20Loaded.World)[0].Activity}, patrol at ({simS20Loaded.World.Squads[1].X},5,{simS20Loaded.World.Squads[1].Z}) waypoint {simS20Loaded.World.Squads[1].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS20Loaded.World)[1].Activity}, re-rallied at ({simS20Loaded.World.Squads[2].X},5,{simS20Loaded.World.Squads[2].Z}) waypoint {simS20Loaded.World.Squads[2].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS20Loaded.World)[2].Activity}");
 Console.WriteLine($"Slice 20 done: hold {simS20.World.Squads[0].Kind} {simS20.World.Squads[0].Doctrine} + loaded hold, patrol {simS20.World.Squads[1].Kind} {simS20.World.Squads[1].Doctrine} + loaded patrol, re-rallied {simS20.World.Squads[2].Kind} {simS20.World.Squads[2].Doctrine} marched to its new rally and loaded with it, save JSON length: {saveS20.Length} chars");
+
+// Slice 21 Step 2 scenario: Slice 21 composed in one run —
+// the decided general re-rally agreeing with its controls
+// in one field, through the paid path only. One Simulation
+// carries, in order: an Advance squad and a Defend Core
+// squad whose general re-rallies are refused fail-closed
+// with nothing changed (the inert doctrines Step 1
+// refuses, because their rallies move nothing); those two
+// squads are then removed by staged lethal damage and one
+// world tick — a death freeing a cap slot, as Slice 11
+// proved, NOT a recall, and not a claim that a player can
+// dismiss a squad — so the cap can hold the three squads
+// that follow, since the cap is 3 and five roles cannot
+// stand at once; a Vanguard HoldGround marched to a
+// first rally, generally re-rallied, and marched to its
+// new rally and Holding there; a Vanguard Patrol marched
+// to its rally, walked onto its loop, generally re-rallied
+// mid-loop, marched to its new rally, and turned onto its
+// new loop; and a Vanguard Patrol deployed at the player
+// cell in the exact route-blocked shape Step 1 proved by
+// translation — west, south, and north walls around the
+// squad's cell, the east step cell open — so it counts
+// five refusals and reads Stuck, unmoved, while the other
+// two keep their readings. The demo then proves, in
+// order: a stuck-before-save load copy reading Patrolling
+// at index 0 and re-sticking after a fresh full circuit;
+// the stuck patrol accepting a FREE general re-rally —
+// the general gate, not the stuck gate, because Slice 21
+// subsumes Slice 20, and both gates are free, so the ore
+// difference between them is zero and is shown as ore
+// unchanged at 0, with Step 1's gates-agreement proof
+// cited, not re-staged; a fourth paid deploy at the full
+// cap still refused; the re-rallied patrol marching east
+// to its new rally in six ticks and turning onto the new
+// loop; and a save/load round-trip after the action
+// loading the new rallies, with patrol indices reset to 0
+// as before. No enemy is staged for a fire claim, so no
+// fire, chase, or damage claim is smuggled into an action
+// demo: the demo proves the action, its refusals, its
+// economy, and its movement, and nothing else. What this
+// demo cannot show, by construction, is any adapter feel:
+// no K key press, no crosshair on a marker, and no rally
+// marker move appear in a headless run, so the decided
+// action stays in playtest-gate checklist item 40
+// (Windows-only, extending item 39), not in the numbers
+// below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 21 Step 2 scenario — free general re-rally for a HoldGround and a Patrol beside inert-doctrine refusals and a stuck Patrol, save/load round-trip");
+var simS21 = new Simulation(42);
+simS21.World.Player.Inventory.Add(BlockType.EmberOre, 50);
+simS21.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+simS21.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS21.BeginOrbitalPick();
+simS21.SetOrbitalRally(10, 5, 10);
+var s21Adv = simS21.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Vanguard Advance {(s21Adv == null ? "REJECTED" : "rally (10,5,10)")}, ore left {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and stays there with no enemy: Advance has no rally fallback)");
+simS21.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+simS21.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS21.BeginOrbitalPick();
+simS21.SetOrbitalRally(10, 5, 10);
+var s21Def = simS21.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Vanguard DefendCore {(s21Def == null ? "REJECTED" : "rally (10,5,10)")}, ore left {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player cell beside the Advance squad, sharing the cell, and reads Marching before any tick: away from the core with no attacker, it is on its return march, not at its post)");
+foreach (var sq in OrbitalView.Snapshot(simS21.World))
+    Console.WriteLine($"Slice 21 snapshot before refusals: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity} HP {sq.Health}");
+var s21AdvRefused = simS21.TryReRallySquad(0, 20, 5, 20);
+var s21DefRefused = simS21.TryReRallySquad(1, 20, 5, 20);
+Console.WriteLine($"Slice 21 inert refusals: Advance re-rally accepted: {s21AdvRefused} (rally still ({simS21.World.Squads[0].RallyX},5,{simS21.World.Squads[0].RallyZ}), at ({simS21.World.Squads[0].X},5,{simS21.World.Squads[0].Z}), HP {simS21.World.Squads[0].Health}, reads {OrbitalView.Snapshot(simS21.World)[0].Activity}), DefendCore re-rally accepted: {s21DefRefused} (rally still ({simS21.World.Squads[1].RallyX},5,{simS21.World.Squads[1].RallyZ}), at ({simS21.World.Squads[1].X},5,{simS21.World.Squads[1].Z}), HP {simS21.World.Squads[1].Health}, reads {OrbitalView.Snapshot(simS21.World)[1].Activity}) — both refused fail-closed, nothing changed, because neither rally moves its squad");
+s21Adv!.TakeDamage(90);
+s21Def!.TakeDamage(90);
+simS21.World.Advance();
+Console.WriteLine($"Slice 21 staged deaths: inert squads removed by lethal damage and one tick, live squads now {simS21.World.Squads.Count}, ore still {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (a death frees a cap slot and refunds nothing; this is staging to fit five roles under a cap of 3, not a recall and not a player action)");
+simS21.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS21.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS21.BeginOrbitalPick();
+simS21.SetOrbitalRally(12, 5, 16);
+var s21Hold = simS21.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Vanguard HoldGround {(s21Hold == null ? "REJECTED" : "rally (12,5,16)")}, ore left {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches west to its rally)");
+for (int tick = 1; tick <= 4; tick++)
+{
+    simS21.World.Advance();
+    var hold = simS21.World.Squads[0];
+    var snaps = OrbitalView.Snapshot(simS21.World);
+    Console.WriteLine($"Slice 21 hold march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}");
+}
+var s21HoldReRally = simS21.TryReRallySquad(0, 20, 5, 16);
+Console.WriteLine($"Slice 21 hold general re-rally: accepted: {s21HoldReRally}, hold rally now ({simS21.World.Squads[0].RallyX},5,{simS21.World.Squads[0].RallyZ}), still at ({simS21.World.Squads[0].X},5,{simS21.World.Squads[0].Z}) (no teleport), reads {OrbitalView.Snapshot(simS21.World)[0].Activity}, ore {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (free: no charge, no refund), live squads {simS21.World.Squads.Count} (no cap slot freed or taken)");
+for (int tick = 1; tick <= 8; tick++)
+{
+    simS21.World.Advance();
+    var hold = simS21.World.Squads[0];
+    var snaps = OrbitalView.Snapshot(simS21.World);
+    Console.WriteLine($"Slice 21 hold re-rally march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}");
+}
+simS21.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS21.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS21.BeginOrbitalPick();
+simS21.SetOrbitalRally(20, 5, 20);
+var s21Patrol = simS21.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Vanguard Patrol {(s21Patrol == null ? "REJECTED" : "rally (20,5,20)")}, ore left {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches to its rally while the HoldGround stays Holding at (20,5,16))");
+for (int tick = 1; tick <= 8; tick++)
+{
+    simS21.World.Advance();
+    var hold = simS21.World.Squads[0];
+    var patrol = simS21.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS21.World);
+    Console.WriteLine($"Slice 21 patrol march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}");
+}
+simS21.World.Advance();
+Console.WriteLine($"Slice 21 patrol loop tick: patrol at ({simS21.World.Squads[1].X},5,{simS21.World.Squads[1].Z}) waypoint {simS21.World.Squads[1].PatrolWaypointIndex} target ({simS21.World.Squads[1].PatrolTarget.X},5,{simS21.World.Squads[1].PatrolTarget.Z}) reads {OrbitalView.Snapshot(simS21.World)[1].Activity} (turned onto its loop, east waypoint at its rally plus radius 3)");
+var s21PatrolReRally = simS21.TryReRallySquad(1, 26, 5, 20);
+Console.WriteLine($"Slice 21 patrol general re-rally mid-loop: accepted: {s21PatrolReRally}, patrol rally now ({simS21.World.Squads[1].RallyX},5,{simS21.World.Squads[1].RallyZ}), waypoint {simS21.World.Squads[1].PatrolWaypointIndex}, refusals {simS21.World.Squads[1].PatrolConsecutiveRefusals}, still at ({simS21.World.Squads[1].X},5,{simS21.World.Squads[1].Z}) (no teleport), reads {OrbitalView.Snapshot(simS21.World)[1].Activity}, ore {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (free)");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS21.World.Advance();
+    var hold = simS21.World.Squads[0];
+    var patrol = simS21.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS21.World);
+    Console.WriteLine($"Slice 21 patrol re-rally march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}");
+}
+simS21.World.Advance();
+Console.WriteLine($"Slice 21 patrol new loop tick: patrol at ({simS21.World.Squads[1].X},5,{simS21.World.Squads[1].Z}) waypoint {simS21.World.Squads[1].PatrolWaypointIndex} target ({simS21.World.Squads[1].PatrolTarget.X},5,{simS21.World.Squads[1].PatrolTarget.Z}) reads {OrbitalView.Snapshot(simS21.World)[1].Activity} (turned onto the new loop, east waypoint at the new rally plus radius 3)");
+simS21.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS21.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS21.BeginOrbitalPick();
+simS21.SetOrbitalRally(12, 5, 16);
+var s21Stuck = simS21.ConfirmOrbitalDeploy();
+simS21.World.Chunk.TrySet(15, 5, 16, BlockType.Stone);
+simS21.World.Chunk.TrySet(16, 5, 17, BlockType.Stone);
+simS21.World.Chunk.TrySet(16, 5, 15, BlockType.Stone);
+Console.WriteLine($"Paid squads deployed: Vanguard Patrol {(s21Stuck == null ? "REJECTED" : "rally (12,5,16), the route-blocked shape: west, south, and north walls around the player cell, east step cell open")}, ore left {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (cap now full at 3 live squads; enclosure staged after this deploy, as in Slice 18)");
+foreach (var sq in OrbitalView.Snapshot(simS21.World))
+    Console.WriteLine($"Slice 21 snapshot before stuck phase: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS21.World.Advance();
+    var hold = simS21.World.Squads[0];
+    var patrol = simS21.World.Squads[1];
+    var stuck = simS21.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS21.World);
+    Console.WriteLine($"Slice 21 stuck tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}, stuck at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} refusals {stuck.PatrolConsecutiveRefusals} reads {snaps[2].Activity}");
+}
+Console.WriteLine($"Slice 21 after stuck phase: stuck at ({simS21.World.Squads[2].X},5,{simS21.World.Squads[2].Z}) waypoint {simS21.World.Squads[2].PatrolWaypointIndex} refusals {simS21.World.Squads[2].PatrolConsecutiveRefusals} reads Stuck, unmoved, while the HoldGround and the moving Patrol keep their own readings");
+var saveS21Stuck = simS21.SaveToJson();
+var simS21StuckLoaded = new Simulation(99);
+Console.WriteLine($"Load (stuck-before-save copy): {simS21StuckLoaded.LoadFromJson(saveS21Stuck)}");
+foreach (var sq in OrbitalView.Snapshot(simS21StuckLoaded.World))
+    Console.WriteLine($"Slice 21 snapshot after stuck-before-save load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 21 stuck-before-save loaded indices: hold {simS21StuckLoaded.World.Squads[0].PatrolWaypointIndex}, patrol {simS21StuckLoaded.World.Squads[1].PatrolWaypointIndex}, stuck {simS21StuckLoaded.World.Squads[2].PatrolWaypointIndex} (all reset to 0 on load, and all refusal counters reset to 0, so the stuck patrol reads Patrolling on arrival, not Stuck)");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS21StuckLoaded.World.Advance();
+    var stuck = simS21StuckLoaded.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS21StuckLoaded.World);
+    Console.WriteLine($"Slice 21 stuck-before-save loaded tick {tick}: stuck at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} refusals {stuck.PatrolConsecutiveRefusals} reads {snaps[2].Activity}");
+}
+Console.WriteLine($"Slice 21 stuck-before-save loaded after 5 ticks: stuck at ({simS21StuckLoaded.World.Squads[2].X},5,{simS21StuckLoaded.World.Squads[2].Z}) reads Stuck again, unmoved, as before the save");
+var s21StuckReRally = simS21.TryReRallySquad(2, 22, 5, 16);
+var s21StuckAfter = simS21.World.Squads[2];
+Console.WriteLine($"Slice 21 stuck general re-rally on the main field: accepted: {s21StuckReRally}, stuck rally now ({s21StuckAfter.RallyX},5,{s21StuckAfter.RallyZ}), waypoint {s21StuckAfter.PatrolWaypointIndex}, refusals {s21StuckAfter.PatrolConsecutiveRefusals}, reads {OrbitalView.Snapshot(simS21.World)[2].Activity}, still at ({s21StuckAfter.X},5,{s21StuckAfter.Z}) (no teleport), ore {simS21.World.Player.Inventory.Get(BlockType.EmberOre)} (free under the general gate, as under the stuck gate: the ore difference between the two free gates is zero), live squads {simS21.World.Squads.Count} (no cap slot freed)");
+simS21.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+simS21.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS21.BeginOrbitalPick();
+simS21.SetOrbitalRally(10, 5, 10);
+var s21Fourth = simS21.ConfirmOrbitalDeploy();
+simS21.CancelOrbitalPick();
+Console.WriteLine($"Slice 21 fourth paid deploy at the full cap: {(s21Fourth == null ? "REFUSED" : "DEPLOYED")} (ore still {simS21.World.Player.Inventory.Get(BlockType.EmberOre)}, live squads still {simS21.World.Squads.Count}, stuck rally still ({simS21.World.Squads[2].RallyX},5,{simS21.World.Squads[2].RallyZ})) — the re-rallies did not make room for a new squad");
+for (int tick = 1; tick <= 6; tick++)
+{
+    simS21.World.Advance();
+    var hold = simS21.World.Squads[0];
+    var patrol = simS21.World.Squads[1];
+    var stuck = simS21.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS21.World);
+    Console.WriteLine($"Slice 21 re-rally march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}, re-rallied at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} target ({stuck.PatrolTarget.X},5,{stuck.PatrolTarget.Z}) reads {snaps[2].Activity}");
+}
+simS21.World.Advance();
+Console.WriteLine($"Slice 21 re-rally loop tick: hold at ({simS21.World.Squads[0].X},5,{simS21.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS21.World)[0].Activity}, patrol at ({simS21.World.Squads[1].X},5,{simS21.World.Squads[1].Z}) waypoint {simS21.World.Squads[1].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS21.World)[1].Activity}, re-rallied at ({simS21.World.Squads[2].X},5,{simS21.World.Squads[2].Z}) waypoint {simS21.World.Squads[2].PatrolWaypointIndex} target ({simS21.World.Squads[2].PatrolTarget.X},5,{simS21.World.Squads[2].PatrolTarget.Z}) reads {OrbitalView.Snapshot(simS21.World)[2].Activity} (turned onto the new loop, east waypoint at the new rally plus radius 3)");
+var saveS21 = simS21.SaveToJson();
+var simS21Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS21Loaded.LoadFromJson(saveS21)}");
+foreach (var sq in OrbitalView.Snapshot(simS21Loaded.World))
+    Console.WriteLine($"Slice 21 snapshot after load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 21 loaded indices: hold {simS21Loaded.World.Squads[0].PatrolWaypointIndex}, patrol {simS21Loaded.World.Squads[1].PatrolWaypointIndex}, re-rallied {simS21Loaded.World.Squads[2].PatrolWaypointIndex} (all reset to 0 on load; the re-rallied patrol keeps its new rally (22,5,16), it does not revert to (12,5,16); the HoldGround keeps (20,5,16) and the moving Patrol keeps (26,5,20))");
+simS21Loaded.World.Advance();
+Console.WriteLine($"Slice 21 loaded tick 1: hold at ({simS21Loaded.World.Squads[0].X},5,{simS21Loaded.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS21Loaded.World)[0].Activity}, patrol at ({simS21Loaded.World.Squads[1].X},5,{simS21Loaded.World.Squads[1].Z}) waypoint {simS21Loaded.World.Squads[1].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS21Loaded.World)[1].Activity}, re-rallied at ({simS21Loaded.World.Squads[2].X},5,{simS21Loaded.World.Squads[2].Z}) waypoint {simS21Loaded.World.Squads[2].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS21Loaded.World)[2].Activity}");
+Console.WriteLine($"Slice 21 done: hold {simS21.World.Squads[0].Kind} {simS21.World.Squads[0].Doctrine} + loaded hold, patrol {simS21.World.Squads[1].Kind} {simS21.World.Squads[1].Doctrine} + loaded patrol, re-rallied {simS21.World.Squads[2].Kind} {simS21.World.Squads[2].Doctrine} marched to its new rally and loaded with it, inert refusals and staged deaths beside them, save JSON length: {saveS21.Length} chars");

@@ -8891,6 +8891,146 @@ decision — free, HoldGround and Patrol only
   Slice 21, decided in that step, per
   docs/slice-21-scope.md.
 
+## 0.89.0 — Slice 21 Step 2: composed demo + review,
+closing Slice 21
+
+- Decision, in one sentence: Slice 21 closes with a
+  composed demo and a documentation-only review, no new
+  system, no adapter edit, and no new checklist item,
+  because item 40 already observes the general action
+  Step 1 decided.
+- Composition, decided in this step: one Simulation, in
+  sequence — inert refusals first, then the HoldGround
+  action, then the moving Patrol action, then the stuck
+  Patrol case, then the save/load round-trip after the
+  action, with the paid deploy path exercised beside
+  them (five paid deploys at 10 EmberOre each, 50 spent
+  in total, a fourth deploy refused at the full cap, no
+  re-rally charged, no death refunded). The order is
+  deliberate: the inert squads must be proved before
+  they are removed, the HoldGround must be Holding at
+  its new rally before the Patrol deploys (so its
+  Holding reading is a control, not a spawn accident),
+  and the stuck patrol must deploy last at the player
+  cell, which is free only because the HoldGround and
+  the Patrol have marched away from it.
+- Cap-staging rationale, stated so it cannot be
+  mistaken for a feature: the cap is 3 and the demo
+  stages five roles, so two roles must leave the field
+  before the last three arrive, and the only leaving
+  mechanism the game already has is death — a death
+  frees a cap slot, as Slice 11 proved, and refunds
+  nothing. The inert squads are therefore removed by
+  staged lethal damage (90 damage, their full Vanguard
+  health) and one world tick, with ore unchanged at 30
+  and live squads at 0 after the tick. This is staging,
+  not a recall, not a dismiss, and not a player action:
+  no recall or dismiss API is created, used, or implied
+  here, and a reader who quotes the staged deaths as a
+  dismiss feature has misread the demo, the tests, and
+  the review, all three of which label them as staging.
+  Rejected alternative, with its cost: staging the
+  inert refusals in a second Simulation would have
+  broken the scope's one-Simulation requirement and
+  hidden the cap interaction the composition exists to
+  prove — that re-rallies, unlike deaths, free no slot.
+- Why the general gate for the stuck case, decided in
+  this step: the demo re-rallies the stuck patrol
+  through TryReRallySquad, not TryReRallyStuckPatrol,
+  because Slice 21 subsumes Slice 20 and the general
+  gate is the action under review. Step 1's
+  gates-agreement proof — a stuck Patrol succeeding
+  under both gates with the identical outcome in a
+  shared-cell world — is cited, not re-staged, and the
+  ore difference between the two free gates is zero,
+  shown as ore unchanged at 0 before and after the
+  action, not assumed from the price being free in
+  either case alone.
+- Why the route-blocked shape, decided in this step:
+  Step 1 proved two stuck shapes with different
+  outcomes — a route-blocked patrol marches to a new
+  rally, a blocked-loop patrol re-sticks on the new
+  loop — and the composition stages the shape that
+  marches, because a composed demo that ended in a
+  re-stick would prove the limit twice and the march
+  never. The blocked-loop re-stick remains Step 1's
+  proof and the enclosed re-stick remains Slice 20
+  Step 1's proof; neither is re-claimed here as a
+  composed result, and no fire claim is made here at
+  all, because no enemy is staged for a fire claim.
+- Claim split, stated in this step: the headless
+  evidence is squad states before and after actions for
+  staged layouts, refusal counts, waypoint indices,
+  rally values, ore and cap counts across five paid
+  deploys, two staged deaths, three re-rallies, and one
+  refused fourth deploy, march positions across ticks,
+  and two save/load round-trips. None of that proves a
+  player can press K, aim at an eligible marker, pick a
+  new rally, and watch the rally marker move in a built
+  scene, or that a player reads a moved marker as a move
+  order — that is item 40 (extending item 39), a Windows
+  observation, not closed by a test count.
+- Checklist relation, decided in this step: no new item.
+  Item 40 already observes the general action (a Holding
+  squad marching again, a moving Patrol's loop moving,
+  and inert-doctrine refusals with no marker move), and
+  this review exercises no behaviour item 40 does not
+  already cover. Item 40 EXTENDS item 39, whose
+  stuck-patrol readings stand unchanged, and supersedes
+  neither item 39, item 37, item 29, nor orbital-command
+  item 13. Next free playtest-gate number remains 41.
+  Item 40 is honestly pending its own binding: the
+  proposed K binding, widened in Step 1 to eligible
+  HoldGround and Patrol squads, is a comment in
+  FpsInputAdapter.cs only, not implemented, so the
+  observation cannot even be attempted until a later
+  adapter step implements it — and that wider proposal
+  now covers item 39's stuck observation too, which is
+  why item 40 extends rather than replaces it.
+- Test-placement lesson, recorded because it nearly
+  corrupted this step's count: the new composed section
+  was first inserted before the test runner's return
+  but after its summary print, so the printed count
+  stayed 3402 while the new assertions ran after it.
+  The section was moved before the summary print and
+  the suite re-run to 3607/3607 before any push. The
+  rule, restated for the next composed step: insert
+  before the summary print, never merely before the
+  return, and quote only the count the runner itself
+  printed on the final run.
+- Deliberately not in this step: a recall or dismiss
+  API of any kind; a general squad-command system; a
+  radius, waypoint-count, or loop-shape change; a
+  movement, targeting, or fire rule change; a delivery,
+  precedence, conflict, rating, cost, or phase rule
+  change beyond Step 1's explicitly decided free
+  economy answer; a price or cap change; a material,
+  marker, light, fog, model, or HUD change; a scene
+  file, imported asset, texture, or shader file; a
+  Slice 22 scope.
+- Gaps carried, in priority order: Windows Unity
+  verification (Slices 1–21, items 25–27 and 30–40
+  still open, item 40 pending its binding); the Slice 1
+  director playtest gate still pending; first-pass
+  graphics values unproven; Slice 13 scene-proof
+  observations still unmade; a general re-rally price
+  on Windows playtest evidence, if free repositioning
+  proves abusive; recall or dismiss as its own decision,
+  with its refund and confirmation questions, as the
+  first Slice 22 candidate. Closed by this step, not
+  carried: the general re-rally question from the Slice
+  20 review's first-ranked remainder.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 22 as its own decision step,
+  chosen from the ranked candidates the Slice 21 review
+  carries, not promised here, per docs/slice-21-review.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
