@@ -6834,6 +6834,150 @@ documentation-only review, closing Slice 17
   retuning on Windows evidence third) — not
   promised here, and not scoped in this step.
 
+## 0.77.0 — Slice 18 scope: orbital remainders,
+documentation-only
+
+- State found on entry: remote main head
+  1372a5dec6d1533c0e456f2852c576475dfac99c,
+  CHANGELOG 0.76.0 (Slice 17 Step 3, composed demo
+  plus review closing Slice 17), sync record 78
+  entries ending at that commit, local working copy
+  matched — no step was repeated: the 0.76.0
+  decision named scoping Slice 18 as its own
+  decision step, chosen from the ranked candidates
+  the review carries, and this run did exactly
+  that. (The local run log's top entry was still
+  0.74.0, but the sync record and the remote head
+  both confirmed 0.75.0 and 0.76.0 as pushed, so no
+  step was re-implemented; this entry records that
+  check, as the 0.76.0 entry did for earlier gaps.)
+  Tests 2301 baseline re-run passing; demo Slice 17
+  save 43,974 chars, Slice 15 save 44,016 chars.
+- Theme decision: Slice 18 is the two orbital
+  remainders, each as its own decision step with
+  its own tests, then a demo plus review. The
+  Slice 17 review ranked them first among its
+  carried candidates, ahead of Slice 13
+  observations (observations, not steps) and
+  graphics retuning (Windows evidence only), and
+  this scope takes them in that order rather than
+  re-ranking them: the review's priority order is
+  the order, unless a reason overturns it, and no
+  reason overturned it here. The scope deliberately
+  does not decide either answer — a scope that
+  answered the patrol question or the deploy
+  question would leave its step with nothing to
+  decide and no proof set of its own, and would
+  hide the reasoning the step is supposed to
+  record. The four patrol hypotheses and the four
+  deploy hypotheses are starting points for the
+  steps to weigh, not decisions smuggled in as a
+  list: each step must still choose, and must
+  record why the rejected hypotheses fail.
+- Order decision: patrol before deploy, for the
+  visible-behaviour reason stated in the scope,
+  with the reversal honesty stated alongside it:
+  the deploy step does not depend on the patrol
+  step, so patrol-first is a priority choice, not
+  a dependency claim. The scope requires Step 2
+  to state its independence explicitly, because
+  the two steps share a squad: a deploy path that
+  changed a doctrine's movement would be a
+  movement change wearing a boundary's name, and
+  neither step is allowed to make one silently.
+- Boundary decision: orbital-remainder steps only,
+  with the settled-system boundary drawn before
+  either step runs. This matters in both
+  directions. On patrol, the temptation is a
+  shared-rule fix: changing MoveTowardPosition so
+  a patrol sidesteps would also sidestep
+  HoldGround, Advance, and Defend Core, and
+  calling that a patrol fix would be exactly the
+  smuggling the Slice 17 scope forbade for a
+  display fix (a query step must not move the
+  delivery it displays; here, a route step must
+  not move the movement other doctrines rely on).
+  On deploy, the temptation is a balance fix:
+  changing the price or the cap while tightening
+  the boundary would let a boundary step claim a
+  balance result it never proved. The scope
+  therefore tells a step that needs such a move
+  to defer it openly, and tells Step 1 to prove
+  the other doctrines unchanged and Step 2 to
+  prove the paid path unchanged, whatever each
+  step decides.
+- Grounding decision: the scope's ground facts
+  were verified against the code this run, not
+  copied from the review's prose — PatrolLoopRadius
+  3, PatrolWaypointCount 5, PatrolTarget derived
+  from rally and live index, waypoint index reset
+  on load, MoveForPatrol's skip-on-refusal and
+  cycle-without-moving behaviour, Patrolling
+  activity for moving and cycling alike,
+  DeploySquad's free and uncapped terms,
+  TryDeployPaidSquad's check-before-charge order
+  and refund guard, SquadEconomy's 10 EmberOre and
+  cap 3, the picker through paid deploy, the
+  adapter through ConfirmOrbitalDeploy with no
+  adapter reference to the free primitive, the
+  test file's over-a-hundred DeploySquad call
+  sites, and the next free checklist number 37.
+  Verifying them matters because the scope's
+  whole proof-set design follows from them: the
+  patrol case exists only because skip-on-refusal
+  plus cycle-without-moving plus a Patrolling
+  reading together describe a squad that never
+  patrols, and the deploy case exists only
+  because a free primitive plus a paid play path
+  plus a hundred test call sites together make
+  hard enforcement a migration question, not a
+  tightening question.
+- Carried-not-closed decision: Windows verification,
+  the director playtest gate, Slice 13 observations,
+  first-pass graphics values, and the
+  transformer-adjacency invisibility are named in
+  the scope with their dispositions, not silently
+  dropped. The transformer gap deserves its own
+  sentence, because it is the one gap a reader
+  might expect Slice 18 to take: it is a display
+  question of the Slice 17 kind, but the review
+  ranked the orbital remainders ahead of it, and
+  Slice 18 already carries two decisions plus a
+  review. Carrying it as the first Slice 19
+  candidate, with its dead-cable consistency
+  condition stated, is the honest placement —
+  deciding it here as a third decision would have
+  made Slice 18 three decisions plus a review,
+  breaking the small-slice pattern the scope
+  pattern exists to protect, and deciding it
+  inside a route or boundary step would have
+  been exactly the patching Slice 17 refused.
+  Slice 19 candidates are ranked in the scope
+  (transformer first, observations as observations
+  second, graphics retuning third) as a starting
+  point for the Slice 18 review, not as promises.
+- Deliberately-not list: no code, no demo
+  scenario, no test, no checklist item, no patrol
+  or deploy answer, no scene, shader, or imported
+  asset file, no HUD, marker, tint, light, or core
+  change, and no Slice 19 scope. The Slice 18
+  review, unlike Slice 16's, is scoped with a
+  demo scenario, because both decisions are
+  headless-testable — the documentation-only
+  review form was Slice 16's honest difference,
+  not a new default, and copying it here would
+  have hidden testable claims behind a review
+  form built for untestable ones.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 18 Step 1, the patrol route
+  limits, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

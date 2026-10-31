@@ -1,5 +1,90 @@
 # Forgeborne — Changelog
 
+## 0.77.0 — 2026-10-31 — Slice 18 scope: orbital remainders,
+documentation-only
+
+- Scope, decided in this step (rationale in
+  DECISIONS.md): new docs/slice-18-scope.md scopes
+  Slice 18 as the two carried orbital remainders
+  from the Slice 17 review, in order — Step 1, the
+  patrol route limits (what a patrol does when
+  its waypoint step is refused, and what a fully
+  blocked patrol does and reads as); Step 2, the
+  free deploy primitive enforcement (what, in
+  code, stops a play path from using the free,
+  unpriced, uncapped deploy primitive, or why a
+  documented rule remains enough); Step 3, a
+  composed demo scenario plus a documentation-only
+  review, which unlike the Slice 16 review is
+  accompanied by a demo because both decisions
+  are headless-testable. The scope decides theme,
+  order, and the questions each step must answer
+  — it decides neither answer: Step 1 must choose
+  among a one-step sidestep, a hold, keeping the
+  skip rule with a stuck readout, or keeping the
+  skip rule unchanged with a stated reason, and
+  Step 2 must choose among hard removal or
+  privatisation, renaming, compiler marking, or
+  keeping the rule-only status with a recorded
+  play-path audit, each with a stated proof set.
+- Order rationale, decided in this step (rationale
+  in DECISIONS.md): patrol before deploy because
+  the patrol question changes what a player sees
+  a squad do on the field, while the deploy
+  question changes what code paths are allowed
+  and no play path uses the free path today, so
+  its answer changes no player's field behaviour
+  until a future play path is written; reversing
+  the order would not break either step, and the
+  scope says so, but the visible behaviour
+  outranks a boundary rule with no current
+  violator. Step 2's cases must be stated
+  independently of Step 1's answer: a patrol
+  deployed through the paid path must behave
+  exactly as Step 1 decided, or Step 2 must say
+  why the deploy path changes a doctrine's
+  movement — it should not.
+- Boundary, decided in this step (rationale in
+  DECISIONS.md): both steps are orbital-remainder
+  steps only. No price, cap, radius, waypoint,
+  fire, targeting, delivery, precedence, conflict,
+  rating, cost, or phase rule moves in Slice 18
+  except as a step explicitly justifies and
+  records; a sidestep in the shared movement rule
+  would move every doctrine, so Step 1 must say
+  whether its mechanism lives in MoveForPatrol
+  alone or in the shared rule and prove the other
+  doctrines unchanged, and a full pathfinder is a
+  new system, not a sidestep, and must be
+  justified as one. The deploy step must count
+  its migration cost in the open: the test file
+  calls DeploySquad on over a hundred lines, so
+  hard removal is a suite-wide migration, not a
+  one-line tightening, and any earlier demo save
+  length it moves must be quoted as a new entry
+  with rationale, never silently absorbed.
+- Deliberately not moved in this step: no code, no
+  demo scenario, no test, no checklist item, no
+  patrol or deploy answer, no scene file, no shader
+  file, no imported asset, no HUD, marker, tint,
+  light, or core change, and no Slice 19 scope.
+  This step is documentation-only by the scope
+  pattern, so the test suite must stand unchanged.
+  Windows Unity verification, the director
+  playtest gate, Slice 13 observations, first-pass
+  graphics retuning, and the transformer-adjacency
+  invisibility are carried, not closed or re-scoped
+  here; the transformer gap is the first candidate
+  for Slice 19 scoping. The next free playtest-gate
+  number is 37.
+- Tests: 2301 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 17
+  scenario save 43,974 chars, Slice 15 scenario save
+  44,016 chars, all earlier demo saves as in the
+  0.76.0 entry.
+- Next, in order: Slice 18 Step 1, the patrol route
+  limits, decided in that step.
+
 ## 0.76.0 — 2026-10-31 — Slice 17 Step 3: composed demo
 plus documentation-only review, closing Slice 17
 
