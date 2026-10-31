@@ -348,6 +348,20 @@ public sealed class Simulation
     /// stands beside it, unchanged.</summary>
     public bool TryReRallySquad(int squadIndex, int rallyX, int rallyY, int rallyZ) =>
         World.TryReRallySquad(squadIndex, rallyX, rallyY, rallyZ);
+    /// <summary>Slice 22 Step 1: thin passthrough to
+    /// WorldZone.TryDismissSquad — dismiss any live
+    /// squad, by squad list index (snapshot order);
+    /// false, with nothing changed, for any gate
+    /// failure there. Immediate in core: the squad is
+    /// gone before the next tick, its cap slot freed,
+    /// and no ore refunded. Confirmation lives in the
+    /// adapter only, by proposal, so this call removes
+    /// on a single call and no core test proves an
+    /// adapter confirm step. No logic lives here, so
+    /// the play path and the headless path cannot
+    /// drift apart on the gate.</summary>
+    public bool TryDismissSquad(int squadIndex) =>
+        World.TryDismissSquad(squadIndex);
 
     /// <summary>Slice 8 Step 2: a Kinetic Mill by aim (see
     /// BuildAimed). A powered pair is still built by aiming

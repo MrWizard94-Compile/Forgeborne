@@ -8231,5 +8231,337 @@ Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s21Step2LoadedSim.World)[1].Ac
 Eq(22, s21Step2LoadedSim.World.Squads[2].X, "slice21 step2 composed loaded tick 1 re-rallied steps back to its new rally");
 Eq(0, s21Step2LoadedSim.World.Squads[2].PatrolWaypointIndex, "slice21 step2 composed loaded tick 1 re-rallied waypoint is 0 at its rally");
 
+// ---- Slice 22 Step 1: dismiss decision, decided here (0.91.0) ----
+// Decision, in one sentence: DISMISS (not recall) — any
+// live squad of any doctrine and any kind leaves the field
+// at once, by squad list index, for refund NONE and one
+// freed cap slot, with confirmation in the adapter only,
+// by proposal (see DECISIONS.md for the rejected
+// hypotheses: recall, both actions, neither, a full or
+// partial refund, a core pending-confirmation state, a
+// different targeting rule, next-tick removal, and a
+// narrower doctrine scope). A dismissed squad is gone,
+// not stored: there is no reserve, bench, or
+// redeploy-from-reserve rule behind the name.
+// Paid chain first: three paid deploys at a full cap,
+// a dismiss in the middle, then a paid redeploy through
+// the picker — ore and cap shown at every step, so the
+// two economy answers (refund none, slot freed) are
+// proved together, not asserted separately.
+var s22Sim = new Simulation(42);
+s22Sim.World.Player.Inventory.Add(BlockType.EmberOre, 40);
+// The headless paid helper deploys only the default
+// HoldGround Vanguard, so this chain deploys through
+// the picker — the play path — to get three doctrines.
+s22Sim.BeginOrbitalPick();
+Check(s22Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround), "slice22 dismiss paid chain hold doctrine selected");
+Check(s22Sim.OrbitalCommand.SelectKind(SquadKind.Vanguard), "slice22 dismiss paid chain hold kind selected");
+Check(s22Sim.SetOrbitalRally(20, 5, 16), "slice22 dismiss paid chain hold rally set");
+Check(s22Sim.ConfirmOrbitalDeploy() != null, "slice22 dismiss paid chain hold deploys");
+s22Sim.BeginOrbitalPick();
+Check(s22Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol), "slice22 dismiss paid chain patrol doctrine selected");
+Check(s22Sim.OrbitalCommand.SelectKind(SquadKind.Recon), "slice22 dismiss paid chain patrol kind selected");
+Check(s22Sim.SetOrbitalRally(20, 5, 20), "slice22 dismiss paid chain patrol rally set");
+Check(s22Sim.ConfirmOrbitalDeploy() != null, "slice22 dismiss paid chain patrol deploys");
+s22Sim.BeginOrbitalPick();
+Check(s22Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance), "slice22 dismiss paid chain advance doctrine selected");
+Check(s22Sim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice22 dismiss paid chain advance kind selected");
+Check(s22Sim.SetOrbitalRally(10, 5, 10), "slice22 dismiss paid chain advance rally set");
+Check(s22Sim.ConfirmOrbitalDeploy() != null, "slice22 dismiss paid chain advance deploys");
+Eq(10, s22Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 dismiss paid chain ore after three deploys is 10");
+Eq(3, s22Sim.World.Squads.Count, "slice22 dismiss paid chain cap is full at 3");
+Eq(3, SquadEconomy.LiveSquadCount(s22Sim.World), "slice22 dismiss paid chain live count is 3");
+Eq(3, OrbitalView.Snapshot(s22Sim.World).Count, "slice22 dismiss paid chain snapshot lists 3");
+var s22PaidHold = s22Sim.World.Squads[0];
+var s22PaidAdv = s22Sim.World.Squads[2];
+Check(s22Sim.TryDismissSquad(1), "slice22 dismiss paid chain middle patrol dismisses");
+Eq(2, s22Sim.World.Squads.Count, "slice22 dismiss paid chain count drops to 2");
+Eq(2, SquadEconomy.LiveSquadCount(s22Sim.World), "slice22 dismiss paid chain live count drops to 2");
+Eq(10, s22Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 dismiss paid chain refund is none, ore still 10");
+Eq(2, OrbitalView.Snapshot(s22Sim.World).Count, "slice22 dismiss paid chain snapshot lists 2 after the dismiss");
+Eq(TacticalDoctrine.HoldGround, s22Sim.World.Squads[0].Doctrine, "slice22 dismiss paid chain remaining first squad is still holdground");
+Eq(TacticalDoctrine.Advance, s22Sim.World.Squads[1].Doctrine, "slice22 dismiss paid chain remaining second squad is still advance");
+Eq(90, s22PaidHold.Health, "slice22 dismiss paid chain remaining hold health unchanged");
+Eq(100, s22PaidAdv.Health, "slice22 dismiss paid chain remaining advance health unchanged");
+s22Sim.BeginOrbitalPick();
+Check(s22Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore), "slice22 dismiss paid chain redeploy doctrine selected");
+Check(s22Sim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice22 dismiss paid chain redeploy kind selected");
+Check(s22Sim.SetOrbitalRally(10, 5, 20), "slice22 dismiss paid chain redeploy rally set");
+Check(s22Sim.ConfirmOrbitalDeploy() != null, "slice22 dismiss paid chain redeploy at the freed slot succeeds through the picker");
+Eq(0, s22Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 dismiss paid chain redeploy costs a fresh 10, ore now 0");
+Eq(3, s22Sim.World.Squads.Count, "slice22 dismiss paid chain cap is full again at 3");
+Eq(TacticalDoctrine.DefendCore, s22Sim.World.Squads[2].Doctrine, "slice22 dismiss paid chain redeployed squad is defendcore");
+Eq(SquadKind.Heavy, s22Sim.World.Squads[2].Kind, "slice22 dismiss paid chain redeployed squad is heavy");
+// Every doctrine x every kind: twelve seam squads in one
+// world, dismissed from index 0 in turn, so each combo is
+// proved by its own removal, not by one representative.
+var s22MatrixWorld = new WorldZone(42);
+s22MatrixWorld.Player.X = 16; s22MatrixWorld.Player.Y = 5; s22MatrixWorld.Player.Z = 16;
+var s22MatrixDoctrines = new[] { TacticalDoctrine.HoldGround, TacticalDoctrine.Patrol, TacticalDoctrine.Advance, TacticalDoctrine.DefendCore };
+var s22MatrixKinds = new[] { SquadKind.Vanguard, SquadKind.Recon, SquadKind.Heavy };
+var s22MatrixHealths = new[] { 90, 40, 100 };
+foreach (var s22Doc in s22MatrixDoctrines)
+foreach (var s22Kind in s22MatrixKinds)
+    Check(s22MatrixWorld.SpawnSquad(20, 5, 20, s22Doc, s22Kind) != null, $"slice22 dismiss matrix spawns {s22Doc} {s22Kind}");
+Eq(12, s22MatrixWorld.Squads.Count, "slice22 dismiss matrix holds all twelve doctrine-kind combos");
+for (int s22Mi = 0; s22Mi < 12; s22Mi++)
+{
+    var s22Doc = s22MatrixDoctrines[s22Mi / 3];
+    var s22Kind = s22MatrixKinds[s22Mi % 3];
+    Eq(s22Doc, s22MatrixWorld.Squads[0].Doctrine, $"slice22 dismiss matrix combo {s22Mi} doctrine is {s22Doc}");
+    Eq(s22Kind, s22MatrixWorld.Squads[0].Kind, $"slice22 dismiss matrix combo {s22Mi} kind is {s22Kind}");
+    Eq(s22MatrixHealths[s22Mi % 3], s22MatrixWorld.Squads[0].Health, $"slice22 dismiss matrix combo {s22Mi} health is the kind full health");
+    Check(s22MatrixWorld.TryDismissSquad(0), $"slice22 dismiss matrix combo {s22Mi} dismisses");
+    Eq(11 - s22Mi, s22MatrixWorld.Squads.Count, $"slice22 dismiss matrix count after combo {s22Mi}");
+}
+Eq(0, OrbitalView.Snapshot(s22MatrixWorld).Count, "slice22 dismiss matrix snapshot is empty after all twelve");
+// The named cases, one world each, so the scope's
+// holding / marching / chasing / returning / patrolling
+// list is proved by readings, not folded into "all".
+var s22HoldWorld = new WorldZone(42);
+s22HoldWorld.Player.X = 16; s22HoldWorld.Player.Y = 5; s22HoldWorld.Player.Z = 16;
+var s22Hold = s22HoldWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s22HoldWorld)[0].Activity, "slice22 dismiss holding holdground reads holding before the dismiss");
+Check(s22HoldWorld.TryDismissSquad(0), "slice22 dismiss holding holdground dismisses");
+Eq(0, s22HoldWorld.Squads.Count, "slice22 dismiss holding holdground leaves no squad");
+var s22MarchWorld = new WorldZone(42);
+s22MarchWorld.Player.X = 16; s22MarchWorld.Player.Y = 5; s22MarchWorld.Player.Z = 16;
+var s22March = s22MarchWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s22MarchWorld)[0].Activity, "slice22 dismiss marching holdground reads marching before the dismiss");
+Check(s22MarchWorld.TryDismissSquad(0), "slice22 dismiss marching holdground dismisses");
+Eq(40, s22March.Health, "slice22 dismiss marching recon health is untouched by its own removal, it is simply gone from the list");
+var s22PatrolCaseWorld = new WorldZone(42);
+s22PatrolCaseWorld.Player.X = 16; s22PatrolCaseWorld.Player.Y = 5; s22PatrolCaseWorld.Player.Z = 16;
+var s22PatrolCase = s22PatrolCaseWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22PatrolCaseWorld)[0].Activity, "slice22 dismiss patrolling patrol reads patrolling before the dismiss");
+Check(s22PatrolCaseWorld.TryDismissSquad(0), "slice22 dismiss patrolling patrol dismisses");
+var s22ChaseWorld = new WorldZone(42);
+s22ChaseWorld.Player.X = 16; s22ChaseWorld.Player.Y = 5; s22ChaseWorld.Player.Z = 16;
+var s22Chase = s22ChaseWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Vanguard)!;
+s22ChaseWorld.Enemies.Add(new Enemy(20, 5, 16));
+Eq(SquadActivity.Hunting, OrbitalView.Snapshot(s22ChaseWorld)[0].Activity, "slice22 dismiss chasing advance reads hunting before the dismiss");
+Check(s22ChaseWorld.TryDismissSquad(0), "slice22 dismiss chasing advance dismisses");
+var s22ReturnWorld = new WorldZone(42);
+s22ReturnWorld.Player.X = 16; s22ReturnWorld.Player.Y = 5; s22ReturnWorld.Player.Z = 16;
+var s22Return = s22ReturnWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s22ReturnWorld)[0].Activity, "slice22 dismiss returning defendcore reads marching before the dismiss");
+Check(s22ReturnWorld.TryDismissSquad(0), "slice22 dismiss returning defendcore dismisses");
+var s22GuardWorld = new WorldZone(42);
+s22GuardWorld.Player.X = 28; s22GuardWorld.Player.Y = 5; s22GuardWorld.Player.Z = 28;
+var s22Guard = s22GuardWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
+Eq(SquadActivity.Guarding, OrbitalView.Snapshot(s22GuardWorld)[0].Activity, "slice22 dismiss guarding defendcore reads guarding before the dismiss");
+Check(s22GuardWorld.TryDismissSquad(0), "slice22 dismiss guarding defendcore dismisses");
+// A damaged squad dismisses for refund none too: health
+// is not a refund basis, so a wounded squad is worth
+// the same 0 as a full one, and its neighbours are
+// untouched by its removal.
+var s22WoundWorld = new WorldZone(42);
+s22WoundWorld.Player.X = 16; s22WoundWorld.Player.Y = 5; s22WoundWorld.Player.Z = 16;
+var s22Wound = s22WoundWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var s22WoundOther = s22WoundWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+s22Wound.TakeDamage(30);
+Eq(60, s22Wound.Health, "slice22 dismiss wounded squad health is 60 before the dismiss");
+Check(s22WoundWorld.TryDismissSquad(0), "slice22 dismiss wounded squad dismisses");
+Eq(0, s22WoundWorld.Player.Inventory.Get(BlockType.EmberOre), "slice22 dismiss wounded squad refunds nothing");
+Eq(100, s22WoundOther.Health, "slice22 dismiss wounded squad leaves its neighbour at full health");
+Eq(TacticalDoctrine.HoldGround, s22WoundWorld.Squads[0].Doctrine, "slice22 dismiss wounded squad leaves only the neighbour");
+// Stuck patrol: dismiss is available beside the free
+// rescue, not instead of it. The same staging as Slice
+// 21's gates test (player at (24,5,20), walls west,
+// south, and north) makes the patrol stuck in five
+// patrol steps; one world dismisses it, a second
+// re-rallies it free, and a third dismisses a different
+// squad and still re-rallies the stuck one.
+var s22StuckDismissWorld = new WorldZone(42);
+s22StuckDismissWorld.Player.X = 24; s22StuckDismissWorld.Player.Y = 5; s22StuckDismissWorld.Player.Z = 20;
+var s22StuckDismiss = s22StuckDismissWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s22StuckDismissWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice22 dismiss stuck test stages a west wall");
+Check(s22StuckDismissWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice22 dismiss stuck test stages a south wall");
+Check(s22StuckDismissWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice22 dismiss stuck test stages a north wall");
+for (int s22Tick = 0; s22Tick < 5; s22Tick++) s22StuckDismiss.MoveForPatrol(s22StuckDismissWorld.Chunk, Array.Empty<Enemy>());
+Check(s22StuckDismiss.IsPatrolStuck, "slice22 dismiss stuck test patrol is stuck before the choice");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s22StuckDismissWorld)[0].Activity, "slice22 dismiss stuck test reads stuck before the choice");
+Check(s22StuckDismissWorld.TryDismissSquad(0), "slice22 dismiss stuck patrol dismisses as a distinct choice");
+Eq(0, s22StuckDismissWorld.Squads.Count, "slice22 dismiss stuck patrol leaves no squad");
+var s22StuckRescueWorld = new WorldZone(42);
+s22StuckRescueWorld.Player.X = 24; s22StuckRescueWorld.Player.Y = 5; s22StuckRescueWorld.Player.Z = 20;
+var s22StuckRescue = s22StuckRescueWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s22StuckRescueWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice22 dismiss rescue test stages a west wall");
+Check(s22StuckRescueWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice22 dismiss rescue test stages a south wall");
+Check(s22StuckRescueWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice22 dismiss rescue test stages a north wall");
+for (int s22Tick = 0; s22Tick < 5; s22Tick++) s22StuckRescue.MoveForPatrol(s22StuckRescueWorld.Chunk, Array.Empty<Enemy>());
+Check(s22StuckRescue.IsPatrolStuck, "slice22 dismiss rescue test patrol is stuck before the choice");
+Check(s22StuckRescueWorld.TryReRallySquad(0, 26, 5, 20), "slice22 dismiss rescue test stuck patrol still accepts a free re-rally");
+Eq(26, s22StuckRescue.RallyX, "slice22 dismiss rescue test re-rally moves the rally");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22StuckRescueWorld)[0].Activity, "slice22 dismiss rescue test reads patrolling after the free rescue");
+Eq(1, s22StuckRescueWorld.Squads.Count, "slice22 dismiss rescue test keeps the rescued squad on the field");
+var s22StuckBesideWorld = new WorldZone(42);
+s22StuckBesideWorld.Player.X = 24; s22StuckBesideWorld.Player.Y = 5; s22StuckBesideWorld.Player.Z = 20;
+var s22StuckBesideHold = s22StuckBesideWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var s22StuckBeside = s22StuckBesideWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s22StuckBesideWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice22 dismiss beside test stages a west wall");
+Check(s22StuckBesideWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice22 dismiss beside test stages a south wall");
+Check(s22StuckBesideWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice22 dismiss beside test stages a north wall");
+for (int s22Tick = 0; s22Tick < 5; s22Tick++) s22StuckBeside.MoveForPatrol(s22StuckBesideWorld.Chunk, Array.Empty<Enemy>());
+Check(s22StuckBeside.IsPatrolStuck, "slice22 dismiss beside test patrol is stuck before the removal");
+Check(s22StuckBesideWorld.TryDismissSquad(0), "slice22 dismiss beside test dismisses the other squad");
+Eq(1, s22StuckBesideWorld.Squads.Count, "slice22 dismiss beside test leaves only the stuck patrol");
+Check(s22StuckBesideWorld.TryReRallySquad(0, 26, 5, 20), "slice22 dismiss beside test stuck patrol still accepts a free re-rally after a removal in the same world");
+Eq(26, s22StuckBeside.RallyX, "slice22 dismiss beside test re-rally moves the stuck rally after the removal");
+// Refusals, each with nothing changed: empty list,
+// negative and out-of-range indices, and a dead squad
+// that is still in the list until Advance sweeps it.
+var s22EmptyWorld = new WorldZone(42);
+Check(!s22EmptyWorld.TryDismissSquad(0), "slice22 dismiss empty list is refused");
+Eq(0, s22EmptyWorld.Squads.Count, "slice22 dismiss empty list stays empty");
+var s22RefuseWorld = new WorldZone(42);
+s22RefuseWorld.Player.X = 16; s22RefuseWorld.Player.Y = 5; s22RefuseWorld.Player.Z = 16;
+var s22RefuseHold = s22RefuseWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Check(!s22RefuseWorld.TryDismissSquad(-1), "slice22 dismiss negative index is refused");
+Check(!s22RefuseWorld.TryDismissSquad(1), "slice22 dismiss out-of-range index is refused");
+Eq(1, s22RefuseWorld.Squads.Count, "slice22 dismiss refused indices leave the squad");
+Eq(20, s22RefuseHold.RallyX, "slice22 dismiss refused indices keep the rally");
+Eq(90, s22RefuseHold.Health, "slice22 dismiss refused indices keep the health");
+var s22DeadWorld = new WorldZone(42);
+s22DeadWorld.Player.X = 16; s22DeadWorld.Player.Y = 5; s22DeadWorld.Player.Z = 16;
+var s22Dead = s22DeadWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+s22Dead.TakeDamage(90);
+Check(s22Dead.IsDead, "slice22 dismiss dead test squad is dead before the call");
+Eq(0, SquadEconomy.LiveSquadCount(s22DeadWorld), "slice22 dismiss dead test live count is already 0");
+Check(!s22DeadWorld.TryDismissSquad(0), "slice22 dismiss dead squad is refused");
+Eq(1, s22DeadWorld.Squads.Count, "slice22 dismiss dead refusal leaves the dead entry in the list");
+s22DeadWorld.Advance();
+Eq(0, s22DeadWorld.Squads.Count, "slice22 dismiss dead entry is swept by the next tick, by death, not by dismiss");
+// List shift, stated as player responsibility: after a
+// dismiss, later indices shift down by one, and the
+// gates prove it — the old index 2 is out of range,
+// the old index 1's squad is now at index 1's target
+// for the re-rally gates, and a stale index is never
+// remapped to the squad it used to name.
+var s22ShiftWorld = new WorldZone(42);
+s22ShiftWorld.Player.X = 16; s22ShiftWorld.Player.Y = 5; s22ShiftWorld.Player.Z = 16;
+var s22ShiftHold = s22ShiftWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var s22ShiftPatrol = s22ShiftWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s22ShiftHold2 = s22ShiftWorld.SpawnSquad(22, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+Check(s22ShiftWorld.TryDismissSquad(1), "slice22 dismiss shift test dismisses the middle patrol");
+Eq(2, s22ShiftWorld.Squads.Count, "slice22 dismiss shift test count drops to 2");
+Eq(TacticalDoctrine.HoldGround, s22ShiftWorld.Squads[1].Doctrine, "slice22 dismiss shift test index 1 now names the old index 2 squad");
+Eq(SquadKind.Heavy, s22ShiftWorld.Squads[1].Kind, "slice22 dismiss shift test index 1 now names the heavy squad");
+Check(!s22ShiftWorld.TryReRallySquad(2, 26, 5, 16), "slice22 dismiss shift test old index 2 is out of range after the shift");
+Check(s22ShiftWorld.TryReRallySquad(1, 24, 5, 16), "slice22 dismiss shift test re-rally at index 1 now moves the shifted squad");
+Eq(24, s22ShiftHold2.RallyX, "slice22 dismiss shift test shifted squad rally moves");
+Eq(20, s22ShiftHold.RallyX, "slice22 dismiss shift test first squad rally untouched by the shift");
+// Re-rally gates unchanged after a removal: a HoldGround
+// squad still re-rallies free, an Advance squad is still
+// refused for doctrine, and the shifted index is the
+// one that is refused — the gates agree with the new
+// list, not with the old one.
+var s22GatesWorld = new WorldZone(42);
+s22GatesWorld.Player.X = 16; s22GatesWorld.Player.Y = 5; s22GatesWorld.Player.Z = 16;
+var s22GatesHold = s22GatesWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var s22GatesPatrol = s22GatesWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+var s22GatesAdv = s22GatesWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Vanguard)!;
+Check(s22GatesWorld.TryDismissSquad(1), "slice22 dismiss gates test dismisses the patrol");
+Check(s22GatesWorld.TryReRallySquad(0, 21, 5, 16), "slice22 dismiss gates test remaining holdground still re-rallies free");
+Eq(21, s22GatesHold.RallyX, "slice22 dismiss gates test holdground rally moves after the removal");
+Check(!s22GatesWorld.TryReRallySquad(1, 22, 5, 16), "slice22 dismiss gates test shifted advance is still refused for doctrine");
+Eq(10, s22GatesAdv.RallyX, "slice22 dismiss gates test refused advance keeps its rally after the removal");
+// Timing: immediate, not next-tick. A dismissed squad
+// that would have fired fires nothing, takes no hit,
+// and leaves no half-tick: with only that squad and
+// one enemy, the tick ends with the enemy at full
+// health, stepped toward the player, and the player
+// unhurt — while a remaining holding squad in a second
+// world still fires exactly as before, so the tick is
+// clean for both the removed and the remaining.
+var s22TimingWorld = new WorldZone(42);
+s22TimingWorld.Player.X = 16; s22TimingWorld.Player.Y = 5; s22TimingWorld.Player.Z = 16;
+var s22TimingAdv = s22TimingWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Vanguard)!;
+var s22TimingEnemy = new Enemy(19, 5, 16);
+s22TimingWorld.Enemies.Add(s22TimingEnemy);
+Check(s22TimingWorld.TryDismissSquad(0), "slice22 dismiss timing test dismisses before the tick");
+s22TimingWorld.Advance();
+Eq(30, s22TimingEnemy.Health, "slice22 dismiss timing test dismissed squad fires nothing, enemy at full health");
+Eq(18, s22TimingEnemy.X, "slice22 dismiss timing test enemy retargets cleanly to the player");
+Eq(100, s22TimingWorld.Player.Health, "slice22 dismiss timing test player takes no hit from the retargeted enemy");
+Eq(0, s22TimingWorld.Squads.Count, "slice22 dismiss timing test no squad remains to take a hit");
+var s22RemainWorld = new WorldZone(42);
+s22RemainWorld.Player.X = 16; s22RemainWorld.Player.Y = 5; s22RemainWorld.Player.Z = 16;
+var s22RemainHold = s22RemainWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var s22RemainAdv = s22RemainWorld.SpawnSquad(10, 5, 10, TacticalDoctrine.Advance, SquadKind.Vanguard)!;
+var s22RemainEnemy = new Enemy(18, 5, 16);
+s22RemainWorld.Enemies.Add(s22RemainEnemy);
+Check(s22RemainWorld.TryDismissSquad(1), "slice22 dismiss remain test dismisses the advance squad");
+s22RemainWorld.Advance();
+Eq(0, s22RemainWorld.Enemies.Count, "slice22 dismiss remain test remaining holding squad still kills its enemy on the tick");
+Eq(75, s22RemainWorld.Player.Shields, "slice22 dismiss remain test player shields show the enemy's adjacent hit before the squad kill");
+Eq(90, s22RemainHold.Health, "slice22 dismiss remain test remaining holding squad takes no squad damage");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s22RemainWorld)[0].Activity, "slice22 dismiss remain test remaining squad still reads holding");
+// Picker independence and the death-counter check: a
+// dismiss while the picker is open succeeds and leaves
+// the picker — its selection and its pending rally —
+// exactly as it was, and no kill counter moves, because
+// no squad-death counter exists in core (the only kill
+// counter counts enemies killed by player fire).
+var s22PickSim = new Simulation(42);
+var s22PickSquad = s22PickSim.World.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+Eq(0, s22PickSim.EnemiesKilled, "slice22 dismiss picker test no enemy killed before the dismiss");
+s22PickSim.BeginOrbitalPick();
+Check(s22PickSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore), "slice22 dismiss picker test doctrine selected while picking");
+Check(s22PickSim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice22 dismiss picker test kind selected while picking");
+Check(s22PickSim.SetOrbitalRally(10, 5, 20), "slice22 dismiss picker test rally set while picking");
+Check(s22PickSim.TryDismissSquad(0), "slice22 dismiss picker test dismiss succeeds while the picker is open");
+Check(s22PickSim.OrbitalCommand.IsPicking, "slice22 dismiss picker test picker stays open after the dismiss");
+Check(s22PickSim.OrbitalCommand.HasRally, "slice22 dismiss picker test pending rally survives the dismiss");
+Eq(TacticalDoctrine.DefendCore, s22PickSim.OrbitalCommand.Doctrine, "slice22 dismiss picker test doctrine selection survives the dismiss");
+Eq(SquadKind.Heavy, s22PickSim.OrbitalCommand.Kind, "slice22 dismiss picker test kind selection survives the dismiss");
+Eq(0, s22PickSim.EnemiesKilled, "slice22 dismiss picker test no kill counter moves on a dismiss");
+s22PickSim.CancelOrbitalPick();
+Check(!s22PickSim.OrbitalCommand.IsPicking, "slice22 dismiss picker test picker cancels cleanly after the dismiss");
+// Save/load: a post-dismiss save has no entry for the
+// removed squad, and a pre-dismiss save still loads
+// with the squad present — no new save field, so old
+// saves load unchanged.
+var s22SaveSim = new Simulation(42);
+s22SaveSim.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+// Picker deploys here too, for the same reason as the
+// paid chain above: the paid helper is default-only.
+s22SaveSim.BeginOrbitalPick();
+Check(s22SaveSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround), "slice22 dismiss save test hold doctrine selected");
+Check(s22SaveSim.OrbitalCommand.SelectKind(SquadKind.Vanguard), "slice22 dismiss save test hold kind selected");
+Check(s22SaveSim.SetOrbitalRally(20, 5, 16), "slice22 dismiss save test hold rally set");
+Check(s22SaveSim.ConfirmOrbitalDeploy() != null, "slice22 dismiss save test hold deploys");
+s22SaveSim.BeginOrbitalPick();
+Check(s22SaveSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol), "slice22 dismiss save test patrol doctrine selected");
+Check(s22SaveSim.OrbitalCommand.SelectKind(SquadKind.Recon), "slice22 dismiss save test patrol kind selected");
+Check(s22SaveSim.SetOrbitalRally(20, 5, 20), "slice22 dismiss save test patrol rally set");
+Check(s22SaveSim.ConfirmOrbitalDeploy() != null, "slice22 dismiss save test patrol deploys");
+s22SaveSim.BeginOrbitalPick();
+Check(s22SaveSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance), "slice22 dismiss save test advance doctrine selected");
+Check(s22SaveSim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice22 dismiss save test advance kind selected");
+Check(s22SaveSim.SetOrbitalRally(10, 5, 10), "slice22 dismiss save test advance rally set");
+Check(s22SaveSim.ConfirmOrbitalDeploy() != null, "slice22 dismiss save test advance deploys");
+var s22PreDismissSave = s22SaveSim.SaveToJson();
+var s22PreDismissLoaded = new Simulation(99);
+Check(s22PreDismissLoaded.LoadFromJson(s22PreDismissSave), "slice22 dismiss save test pre-dismiss save loads");
+Eq(3, s22PreDismissLoaded.World.Squads.Count, "slice22 dismiss save test pre-dismiss save keeps three squads");
+Eq(TacticalDoctrine.Patrol, s22PreDismissLoaded.World.Squads[1].Doctrine, "slice22 dismiss save test pre-dismiss save keeps the patrol");
+Check(s22SaveSim.TryDismissSquad(1), "slice22 dismiss save test dismisses the patrol");
+Eq(0, s22SaveSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 dismiss save test ore is still 0 after the dismiss");
+var s22PostDismissSave = s22SaveSim.SaveToJson();
+var s22PostDismissLoaded = new Simulation(99);
+Check(s22PostDismissLoaded.LoadFromJson(s22PostDismissSave), "slice22 dismiss save test post-dismiss save loads");
+Eq(2, s22PostDismissLoaded.World.Squads.Count, "slice22 dismiss save test post-dismiss save has no entry for the removed squad");
+Eq(TacticalDoctrine.HoldGround, s22PostDismissLoaded.World.Squads[0].Doctrine, "slice22 dismiss save test post-dismiss save keeps the holdground");
+Eq(TacticalDoctrine.Advance, s22PostDismissLoaded.World.Squads[1].Doctrine, "slice22 dismiss save test post-dismiss save keeps the advance");
+Eq(20, s22PostDismissLoaded.World.Squads[0].RallyX, "slice22 dismiss save test loaded hold rally preserved");
+Eq(10, s22PostDismissLoaded.World.Squads[1].RallyX, "slice22 dismiss save test loaded advance rally preserved");
+Eq(0, s22PostDismissLoaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 dismiss save test loaded ore is still 0");
+// Radius and waypoint count carried, not re-decided:
+// a dismiss moves no loop, so the first-pass values
+// stand exactly as Slices 15, 20, and 21 left them.
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice22 dismiss loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice22 dismiss loop waypoint count is still 5, not retuned");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

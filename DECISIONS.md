@@ -9152,6 +9152,301 @@ closing Slice 21
 - Next step: Slice 22 Step 1, the removal decision,
   decided in that step, per docs/slice-22-scope.md.
 
+## 0.91.0 — Slice 22 Step 1: dismiss, the one
+live-squad removal action (under delegation)
+
+- Decision, in one sentence: DISMISS (not recall) —
+  any live squad of any doctrine and any kind leaves
+  the field at once, by squad list index, for refund
+  NONE and one freed cap slot, with confirmation in
+  the adapter only, by proposal. The API is
+  WorldZone.TryDismissSquad with a thin Simulation
+  passthrough, following the re-rally pattern.
+- Name, decided against recall: a recall promises a
+  return — to the player, to the core, to a reserve
+  it can be deployed from again. No reserve exists,
+  no redeploy-from-reserve rule exists, and no squad
+  has a home cell to return to except its rally,
+  which a re-rally already moves. A recall that
+  simply despawns the squad is a dismiss wearing a
+  kinder name, and this step refuses to let the name
+  imply a system the game does not have. "Both
+  actions" was rejected because it is two decisions
+  (a removal plus a reserve system) inside one step,
+  and "neither" was rejected because a cap slot held
+  until something kills the squad is a trap, not a
+  commitment: the motivating case is a wrong deploy
+  the player wants corrected, and death is not a
+  player action. If a later slice finds removal
+  meaningless without a reserve, that slice defers
+  itself and says so; this step does not smuggle a
+  bench in quietly, and a dismissed squad is gone,
+  not stored.
+- Refund, decided as none, against full and partial:
+  the two-gifts problem from the scope is answered by
+  refusing both gifts except the slot. A full refund
+  of 10 was rejected on a mechanism, not a taste:
+  deploy spawns at the player's feet, so dismiss plus
+  a fresh deploy repositions a squad to the player
+  for free — and for Advance and Defend Core, which
+  Slice 21 refuses a re-rally precisely because their
+  rally moves nothing, that free loop would defeat
+  the refusal outright. "Nothing to farm" does not
+  save full refund, because the exploit is not ore
+  farming, it is free repositioning. A partial refund
+  was rejected as an invented number: no fraction,
+  flat amount, or health basis has any playtest
+  evidence behind it, and a health-based refund would
+  need a rounding rule for a pooled health total that
+  drops in member-sized steps (Vanguard 90, Recon 40,
+  Heavy 100) — a balance design, not a removal
+  decision. Refund none is the smallest economy change
+  and the only one consistent with death: the price
+  was always a sunk cost, and this step says plainly
+  that it does NOT fully undo a wrong deploy. The
+  correction a dismiss buys is the slot, not the money
+  back, and a refund is a later economy decision on
+  Windows evidence if playtest shows slot-only feels
+  punishing — not a value set here to soften the step.
+- Cap, decided separately from refund: the slot is
+  freed. A removal that freed no slot would leave the
+  player with fewer squads and no room for a new one,
+  a rule so close to a bug that it needed explicit
+  justification, and none exists. The proof is the
+  chain, not the claim: 40 ore in, three picker
+  deploys (10 left, cap full at 3), a middle dismiss
+  (still 10, count 2), a picker redeploy (0, cap full
+  again at 3). Price 10 and cap 3 otherwise stand,
+  and the paid path is unchanged.
+- Scope, decided as all live doctrines and all kinds:
+  unlike re-rally, removal consults no rally and no
+  task, so no doctrine is inert to it — there is no
+  Advance/Defend Core exception to justify, and
+  inventing one would be a second decision hiding
+  inside the first. Kinds differ in health, damage,
+  and range, not in list membership, but the step
+  proves all three anyway rather than resting on that
+  argument: a twelve-combination matrix (four
+  doctrines x three kinds, dismissed from index 0 in
+  turn), plus the named cases the scope required — a
+  Holding HoldGround squad, a marching HoldGround
+  squad, a patrolling Patrol, a chasing Advance squad
+  (enemy present, reading Hunting), a returning
+  Defend Core squad (away from the core, no attacker,
+  reading Marching), and a guarding Defend Core squad
+  (at the core, reading Guarding) — plus a damaged
+  squad dismissed for refund none, proving health is
+  not a refund basis.
+- Stuck interaction, decided as beside, not instead:
+  a stuck Patrol may be dismissed, and it may still
+  be re-rallied free. The free rescue from Slices 20
+  and 21 is not repriced, not revoked, and not made
+  conditional on the removal: the same blocked staging
+  (player at (24,5,20), walls west, south, and north,
+  five refusals, reading Stuck) dismisses in one world
+  and re-rallies free in a second, and in a third world
+  a dismiss of a different squad leaves the stuck
+  patrol's free re-rally intact. A player is never
+  forced to pay, in ore or in a lost squad, for a
+  rescue the earlier slices gave free — dismiss is a
+  choice to lose the squad for its slot, rescue is a
+  choice to keep it, and the step keeps the two visibly
+  distinct.
+- Targeting, decided as the index rule reused, with
+  the shift answered as player responsibility: the
+  three gates (two re-rally, one dismiss) all target
+  by squad list index in snapshot order, so they
+  cannot disagree about which squad an index names at
+  call time. An index is a list position, not a stable
+  identity, and this step does not invent one: after
+  a dismiss, later indices shift down by one, and a
+  caller acting again must re-read the snapshot
+  first, exactly as after a death sweep in Advance.
+  The proof shows both halves — a re-rally at the
+  shifted index moves the shifted squad (the old
+  index 2 Heavy HoldGround, now at index 1), and the
+  old index 2 fails closed — and a remapping rule was
+  rejected because remapping a stale index to the
+  squad it used to name would invent exactly the
+  identity the save does not carry. Gate order is
+  index in range, then squad live; every refusal
+  returns false and changes nothing.
+- Timing, decided as immediate, against next-tick: a
+  next-tick removal would let a squad act once more
+  after the player ordered it gone, and would need a
+  pending-removal state to carry it across the tick —
+  the same state machine rejected under confirmation
+  below, for the same reason. Immediate removal is
+  proved clean from both sides: with only the
+  dismissed squad and one enemy, the tick ends with
+  the enemy at full health, stepped toward the player,
+  and the player unhurt (the dismissed squad fired
+  nothing and absorbed no hit), and with a remaining
+  holding squad beside a dismissed Advance squad, the
+  holding squad still kills its enemy on the tick
+  (the enemy's adjacent hit on the player, shields
+  85 to 75, lands before the squad kill, exactly as
+  before). No half-applied tick is left behind in
+  either case, because the tick derives everything
+  from the list as it stands when it runs.
+- Confirmation, decided as adapter only, against a
+  core pending state: the scope allowed either
+  placement, and this step chose the smaller one
+  deliberately. A core pending state is a second
+  system inside a removal step — pending selection,
+  confirm, cancel, expiry (on tick, on another
+  action, or never), a second request while one is
+  pending, a pending squad that dies before
+  confirmation, and a save question (pending state
+  is session state, like the picker, and would need
+  its own load rule) — all of it testable, but all of
+  it larger than the removal itself, and none of it
+  needed to decide what removal is. The adapter
+  proposal follows the established pattern for K:
+  a comment only, a checklist item as the proof, and
+  no claim of a working scene from a headless run.
+  The honesty note is stated without softening: until
+  a later adapter step implements X plus Return, the
+  core call removes on a single call, and no core
+  test proves a confirm step — the play path must
+  therefore expose dismiss only through the proposed
+  binding, never as a bare core call. A core pending
+  state remains available as a later decision if the
+  Windows observation finds the adapter confirm
+  insufficient, and that decision would say so.
+- Adapter binding, proposed as X plus Return, against
+  a K variant: K is taken by proposal for re-rally, and
+  a K-then-confirm sequence would need a mode
+  disambiguation (which action does K mean, and what
+  disambiguates it?) invented inside this step. X is
+  free against the taken keys (WASD / Space / E / Q /
+  R / O / Return / Esc / Alpha1-7 / T / Y / U / I / B /
+  N / P / M / mouse click) and against the K proposal,
+  and Return/Escape reuse the picker's existing
+  confirm/cancel pattern, so the player learns one
+  confirm gesture for two actions. Fail-closed cases
+  for the proposal: nothing while picking, nothing
+  when the raycast hits no live marker, nothing when
+  the target squad refuses, nothing on Return with no
+  pending dismiss, nothing on Escape. The proposal is
+  a comment in FpsInputAdapter.cs only.
+- Picker independence, decided as independent state,
+  not a core refusal: the re-rally gates do not check
+  the picker, and the dismiss gate follows them — a
+  dismiss while the picker is open succeeds and leaves
+  the picker, its doctrine/kind selection, and its
+  pending rally exactly as they were. The adapter
+  proposal's "nothing while picking" is about the key,
+  not the gate, and the two statements do not
+  conflict: one says the core does not gate on the
+  picker, the other says the proposed key does not
+  fire while the picker owns the keys. The proof keeps
+  both visible in one test (dismiss succeeds, picker
+  stays open with its rally) rather than asserting
+  one and hiding the other.
+- Death distinction, verified not assumed: a search
+  of the core sources finds no squad-death counter —
+  the only kill counter is Simulation.EnemiesKilled,
+  which counts enemies killed by player fire, and it
+  is 0 before and after a dismiss in the picker test.
+  A dismissed squad is therefore not killed by any
+  counter, effect, or reading the game has: the
+  snapshot simply no longer lists it, and the save
+  array simply has no entry for it. A staged lethal
+  damage case is not quoted as removal evidence
+  anywhere in this step, per the scope's boundary:
+  the dead-squad refusal test stages a death only to
+  prove the refusal, and the next tick's sweep of
+  that dead entry is attributed to death, not to
+  dismiss.
+- Display relation, decided as no new word and no new
+  HUD line: the text display already drops a line
+  when its snapshot entry goes, the marker display
+  already deactivates squad and rally slots beyond
+  the snapshot count (verified by reading
+  SquadMarkerDisplay.cs, not assumed), and the
+  existing NO SQUADS line already covers an empty
+  field. What a player reads when a marker vanishes
+  is the shortened list itself — one fewer line, one
+  fewer marker pair — and a per-dismiss flash or
+  message would be a HUD decision smuggled inside a
+  removal step, so none is added. The vanishing is
+  observed under item 41, not proved headlessly.
+- Checklist relation, decided as standing beside:
+  new item 41 leaves items 40, 39, 37, 29, and
+  orbital-command item 13 standing, superseding none
+  and extending none. Extension would imply dismiss
+  readings are wider re-rally readings; they are not
+  — a removal is a different action with different
+  readings (a vanishing, not a march), and the item
+  says so. Next free gate number is 42. Item 41 is
+  honestly pending its own binding, as items 39 and
+  40 were: it cannot be observed until the X binding
+  is implemented in a later adapter step.
+- Movement boundary: no movement rule moves.
+  MoveTowardRally, MoveForPatrol's sidestep, skip,
+  and Stuck threshold, Advance's nearest-enemy chase,
+  and Defend Core's chase-or-return stand; no
+  pathfinder is added; no rally fallback is added for
+  Advance and no rally consultation is added for
+  Defend Core. Radius 3 and five waypoints are carried
+  as first-pass values, asserted unchanged, because a
+  dismiss moves no loop and proves nothing about
+  radius. The re-rally gates stand unchanged after a
+  removal, proved in the shifted list (a free
+  HoldGround re-rally succeeds, an Advance re-rally
+  is still refused for doctrine). No delivery,
+  precedence, conflict, rating, cost, or phase rule
+  moves except the removal itself and its two economy
+  answers; no save field is added, so a pre-dismiss
+  save loads unchanged and a post-dismiss save loads
+  without the removed squad.
+- Proof set and one test fix: 221 new assertions
+  (3607 to 3828, no failures on the final runs).
+  The fix was a test fix, not a code fix: the
+  headless paid helper DeployOrbitalSquadPaid deploys
+  only the default HoldGround Vanguard, so the paid
+  chain and the save test deploy through the picker
+  instead — which is also the play path, and which
+  the test comments now say plainly, so a later
+  reader does not mistake the helper for a
+  doctrine-carrying deploy. No demo scenario is added
+  by this step alone, per the scope; the composed
+  demo belongs to Step 2, which stages the decided
+  removal together with its controls.
+- Deliberately not in this step: a recall or reserve
+  system; a general squad-command system; a radius,
+  waypoint-count, or loop-shape change; a movement,
+  targeting, or fire rule change; a re-rally
+  repricing; a refund of any size; a core pending
+  confirmation state; a material, marker, light, fog,
+  model, or HUD change; a scene file, imported asset,
+  texture, or shader file; a Slice 23 scope.
+- Gaps carried, in priority order: Windows Unity
+  verification (Slices 1–22, items 25–27 and 30–41
+  still open, item 41 pending its binding); the
+  Slice 1 director playtest gate still pending;
+  first-pass graphics values unproven; Slice 13
+  scene-proof observations still unmade; a radius or
+  waypoint value revisited on evidence, as the first
+  Slice 23 candidate; a general re-rally price on
+  Windows playtest evidence, if free repositioning
+  proves abusive, as a later economy decision; a
+  dismiss refund on Windows playtest evidence, if
+  slot-only removal proves punishing, as a later
+  economy decision — recorded here so it is a gap,
+  not a silent promise. Closed by this step, not
+  carried: the removal question itself, decided here.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 22 Step 2, composed demo + review
+  closing Slice 22, per docs/slice-22-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

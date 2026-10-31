@@ -860,6 +860,53 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     until the binding is implemented, the observation is
     made there, and both are recorded in DECISIONS.md.
 
+41. [ ] Dismiss, decided 0.91.0 (core action changed,
+    adapter binding PROPOSED ONLY and not yet
+    implemented — no headless test proves a binding reads
+    in the scene, and no headless test proves a proposed
+    key works, so the cited headless evidence is only the
+    Slice 22 Step 1 proof set: any live squad of any
+    doctrine and any kind dismisses at once by snapshot
+    index, with refund none and one cap slot freed, so a
+    paid redeploy at a full cap succeeds afterwards at
+    10 EmberOre; a stuck Patrol may be dismissed or
+    re-rallied free, as two distinct choices; dead,
+    out-of-range, and negative indices are refused with
+    nothing changed; a dismiss before a tick fires
+    nothing and leaves no half-tick behind; and a
+    post-dismiss save has no entry for the removed squad
+    while a pre-dismiss save still loads with it
+    present): once the proposed binding is implemented
+    on Windows — X while not picking, crosshair on any
+    live squad's marker, Return to confirm, Escape to
+    cancel, doing nothing while picking, nothing when
+    the raycast hits no live marker, and nothing when
+    the target squad refuses — in one scene, against
+    dark voxel, deploy three squads, dismiss the middle
+    one, and observe its text line and both its markers
+    (squad and rally) vanish at once while the other
+    two lines, markers, positions, and healths stand
+    unchanged; redeploy through the picker and observe
+    the new squad cost 10 EmberOre with the cap full
+    again; dismiss a stuck Patrol in a second scene and
+    observe the same vanishing with no refund, then
+    re-rally a stuck Patrol in a third scene and observe
+    the free rescue still available beside the removal;
+    finally, press X with the crosshair on no marker and
+    press Escape after X on a marker, and observe
+    nothing change in either case. This item leaves
+    standing item 40's general re-rally observation,
+    item 39's stuck-patrol observation, item 37's
+    patrol-route observation, item 29's and
+    orbital-command item 13's patrol observations: it
+    does NOT supersede any of them, and it does NOT
+    extend any of them, because dismiss readings are new
+    and separate, not wider re-rally readings. It does
+    not claim any tint, count, dusk, or view model
+    observation. Do not claim this verified in Unity
+    until the binding is implemented, the observation is
+    made there, and both are recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

@@ -236,7 +236,8 @@ Advance and Defend Core squads are refused, fail-closed,
 because their rally moves nothing — and a field-only
 change would move their orange rally marker while the
 squad stayed put, which is a false move order, not an
-action. No recall or dismiss exists, and a general
+action. No recall exists, and a dismiss is decided
+separately in Slice 22 Step 1, below; a general
 re-rally is not a recall substitute: a re-rallied squad
 is still on the field, still counts toward the cap, and
 still costs nothing to keep.
@@ -304,6 +305,94 @@ still costs nothing to keep.
   implemented on Windows. Item 40 EXTENDS item 39; it
   does not supersede it, and items 37, 29, and
   orbital-command item 13 stand unchanged.
+
+## Dismiss — Slice 22 Step 1 (0.91.0)
+
+The one live-squad removal action, decided in that
+step (rationale in DECISIONS.md): DISMISS, not recall.
+There is no reserve, bench, or redeploy-from-reserve
+rule, so a squad called back to nowhere would be a
+dismiss wearing a kinder name, and this step names
+it honestly. A dismissed squad is gone, not stored.
+
+- **Gate, fail-closed:** `WorldZone.TryDismissSquad`
+  (thin passthrough: `Simulation.TryDismissSquad`)
+  succeeds only for a live squad, targeted by its
+  index in `Squads` (the snapshot's order, the same
+  rule as both re-rally gates). Every other call
+  returns false and changes nothing: an out-of-range
+  or negative index, a dead squad (still in the list
+  until the next tick sweeps it), or an empty list.
+  There is no doctrine or kind eligibility check:
+  a Holding HoldGround squad, a marching or stuck
+  Patrol, a chasing Advance squad, and a guarding or
+  returning Defend Core squad are all dismissible,
+  in all three kinds, because removal consults no
+  rally and no task.
+- **Effect, immediate:** the squad leaves the list
+  at once, before the next tick, so it neither moves,
+  fires, nor takes adjacent-enemy damage on that
+  tick, and enemies re-derive their target from the
+  remaining world. No other squad's position, health,
+  doctrine, kind, rally, waypoint index, or refusal
+  counter changes. An index is a list position, not
+  a stable identity: after a dismiss, later indices
+  shift down by one, so a caller acting again must
+  re-read the snapshot first, exactly as after a
+  death sweep, and a stale index past the new end
+  fails closed rather than being remapped.
+- **Economy, two separate answers:** refund NONE
+  (the deploy price stays a sunk cost, exactly as on
+  death) and cap slot FREED (the live count drops by
+  one, so a paid redeploy at a full cap succeeds
+  afterwards at the unchanged price of 10). A full
+  refund was rejected because a dismiss plus a fresh
+  deploy at the player's feet would reposition even
+  an Advance or Defend Core squad for free, defeating
+  the Slice 21 refusal for those doctrines; a partial
+  or health-based refund was rejected as an invented
+  number with no playtest evidence behind it.
+- **Stuck interaction:** a stuck Patrol may be
+  dismissed, and it may still be re-rallied free —
+  the two choices stand beside each other, so a
+  player is never forced to lose a squad for a rescue
+  the earlier slices gave free. Dismissing a different
+  squad does not revoke the rescue either.
+- **Confirmation, adapter only:** this core call
+  removes on a single call. Confirmation lives in
+  the adapter proposal below, not in core state, so
+  no core test proves a confirm step — the safety is
+  a Windows observation under playtest-gate item 41,
+  not a test count. The picker is an independent
+  state, not a core refusal: dismissing while the
+  picker is open succeeds and leaves the picker, its
+  selection, and its pending rally exactly as they
+  were.
+- **Death distinction:** a dismissed squad is not
+  killed. No squad-death counter exists in core to
+  increment (the only kill counter counts enemies
+  killed by player fire), no death-triggered effect
+  fires, and the snapshot simply no longer lists the
+  squad. The save after a dismiss has no entry for
+  the removed squad, and a pre-dismiss save still
+  loads with the squad present; no save field is
+  added.
+- **Adapter binding, PROPOSED ONLY:** X while not
+  picking, crosshair on any live squad's marker (all
+  doctrines are eligible, unlike K's re-rally), Return
+  to confirm, Escape to cancel, doing nothing while
+  picking, nothing when the raycast hits no live
+  marker, nothing when the target squad refuses, and
+  nothing on Return with no pending dismiss. X is
+  free against the taken keys and the K proposal.
+  This binding is NOT implemented in this step and is
+  NOT claimed as working in a scene; it is observed
+  only under playtest-gate item 41, once implemented
+  on Windows. Item 41 leaves items 40, 39, 37, 29, and
+  orbital-command item 13 standing; it supersedes
+  none of them and extends none of them, because
+  dismiss readings are new and separate, not wider
+  re-rally readings.
 
 ## Second squad type — Recon (Slice 7 Step 1, 0.33.0)
 

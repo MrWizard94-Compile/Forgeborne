@@ -1143,6 +1143,79 @@ public sealed class WorldZone
         return true;
     }
 
+    /// <summary>Slice 22 Step 1: dismiss, decided here —
+    /// the one live-squad removal action. The squad is
+    /// targeted by its index in Squads, the same
+    /// snapshot-order rule as both re-rally gates, so
+    /// the three gates cannot disagree about which
+    /// squad an index names at call time — but an index
+    /// is a list position, not a stable identity, so
+    /// after a dismiss every later index shifts down by
+    /// one: a caller that acts again must re-read the
+    /// snapshot first, exactly as after a death sweep
+    /// in Advance, and a stale index that now names a
+    /// different squad acts on that squad, while a
+    /// stale index past the new end fails closed. The
+    /// gate, in order: index in range, squad live. Every
+    /// other call returns false and changes nothing: an
+    /// out-of-range or negative index, a dead squad
+    /// (still in the list until the next Advance sweeps
+    /// it — dismissing it would be a cleanup dressed as
+    /// an action), or a call on an empty list. There is
+    /// no doctrine or kind eligibility check, by design:
+    /// removal consults no rally and no task, so unlike
+    /// re-rally no doctrine is inert to it — a Holding
+    /// HoldGround squad, a marching or stuck Patrol, a
+    /// chasing Advance squad, and a guarding or
+    /// returning Defend Core squad are all dismissible,
+    /// in all three kinds. On success the squad leaves
+    /// the list at once, before the next tick: it neither
+    /// moves, fires, nor takes adjacent-enemy damage on
+    /// that tick, and enemies re-derive their target
+    /// from the remaining world on the next tick, so no
+    /// half-applied tick is left behind. No ore is
+    /// refunded — the deploy price stays a sunk cost,
+    /// exactly as on death — and no other squad's
+    /// position, health, doctrine, kind, rally, waypoint
+    /// index, or refusal counter changes. The freed cap
+    /// slot is the whole gain: LiveSquadCount drops by
+    /// one, so a paid redeploy at a full cap succeeds
+    /// afterwards at the unchanged price of 10. This is
+    /// not a recall: there is no reserve, no bench, and
+    /// no redeploy-from-reserve rule, so a dismissed
+    /// squad is gone, not stored; a dismiss that
+    /// despawned under the name recall would be a
+    /// dismiss by another name. It is not a death either:
+    /// no squad-death counter exists in core to increment
+    /// (the only kill counter, Simulation.EnemiesKilled,
+    /// counts enemies killed by player fire), no
+    /// death-triggered effect fires, and the snapshot
+    /// simply no longer lists the squad. Confirmation
+    /// lives in the adapter only, by proposal (see
+    /// FpsInputAdapter.cs): this core call removes on a
+    /// single call, and no core test proves an adapter
+    /// confirm step. The picker is an independent state,
+    /// not a core refusal: dismissing while the picker
+    /// is open succeeds and leaves the picker open, and
+    /// the adapter proposal does nothing while picking,
+    /// so the two statements do not conflict — one is
+    /// about the core gate, the other about the key
+    /// that may trigger it. No movement, targeting,
+    /// fire, delivery, precedence, conflict, rating,
+    /// cost, or phase rule moves here, and no save field
+    /// is added: the save array already lists squads, so
+    /// a post-dismiss save simply has no entry for the
+    /// removed squad, and a pre-dismiss save still loads
+    /// with the squad present.</summary>
+    public bool TryDismissSquad(int squadIndex)
+    {
+        if (squadIndex < 0 || squadIndex >= Squads.Count) return false;
+        var squad = Squads[squadIndex];
+        if (squad.IsDead) return false;
+        Squads.RemoveAt(squadIndex);
+        return true;
+    }
+
     /// <summary>Slice 21 Step 1: the general re-rally,
     /// decided here — a FREE re-rally for any live
     /// HoldGround or Patrol squad, stuck or not, and

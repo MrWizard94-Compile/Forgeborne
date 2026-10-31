@@ -694,6 +694,16 @@ public sealed class TacticalSquad
 /// Any price would be invented balance with no
 /// evidence behind it, so a price is a later decision
 /// on Windows playtest evidence, not a value set here.
+/// Slice 22 Step 1 keeps the sunk-cost answer for the
+/// new removal action too: WorldZone.TryDismissSquad
+/// refunds 0 EmberOre and frees one cap slot, so a
+/// dismissed squad is a slot regained, not a purchase
+/// undone — a full or partial refund would be an
+/// invented economy value, and a full refund would let
+/// a dismiss plus a fresh deploy at the player's feet
+/// reposition even an Advance or Defend Core squad for
+/// free, defeating the Slice 21 refusal for those
+/// doctrines. See DECISIONS.md 0.91.0.
 /// Both values are first-pass values for
 /// determinism and testability, not final balance (see the
 /// Slice 3 scope's no-balance-pass rule). Enforcement lives in

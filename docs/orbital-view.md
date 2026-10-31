@@ -73,6 +73,25 @@ given a field-only rally change: their marker would move
 while the squad did not, and a refused squad's marker
 correctly stays where its rally stands.
 
+Slice 22 Step 1 (0.91.0) adds no word, no marker rule,
+and no HUD line either. A dismissed squad's snapshot
+entry simply stops existing, so the text display drops
+its line and, when the last squad goes, reads the
+existing `ORBITAL: NO SQUADS` line — no new message
+is needed for an empty field, and a per-dismiss flash
+or message would be a HUD decision smuggled inside a
+removal step. The marker rule is verified, not
+assumed, from `SquadMarkerDisplay.cs`: it renders one
+squad marker and one orange rally marker per snapshot
+squad, and deactivates the slots beyond the snapshot
+count, so a dismissed squad's squad marker and its
+rally marker both vanish on the next frame, for every
+doctrine alike. What a player is supposed to read
+when a marker simply vanishes is therefore the
+shortened squad list itself — one fewer line, one
+fewer marker pair — and that reading is observed
+under playtest-gate item 41, not proved headlessly.
+
 ## 3D markers (Slice 6 Step 2, 0.29.0)
 
 `ForgeborneUnity/Assets/Scripts/SquadMarkerDisplay.cs` is a

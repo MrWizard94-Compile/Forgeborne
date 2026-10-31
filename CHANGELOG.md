@@ -1,5 +1,134 @@
 # Forgeborne — Changelog
 
+## 0.91.0 — 2026-10-31 — Slice 22 Step 1:
+dismiss — the one live-squad removal action,
+decided in this step
+
+- Step taken: Slice 22 Step 1, the removal decision,
+  per docs/slice-22-scope.md. No demo scenario is
+  added by this step alone; the composed demo belongs
+  to Step 2.
+- Decision, in one sentence: DISMISS (not recall) —
+  any live squad of any doctrine and any kind leaves
+  the field at once, by squad list index, for refund
+  NONE and one freed cap slot, with confirmation in
+  the adapter only, by proposal. Rationale, rejected
+  hypotheses, and the full proof set are in
+  DECISIONS.md.
+- Name and mechanism: a recall promises a return to
+  a reserve that does not exist, so a despawn under
+  that name would be a dismiss by another name; no
+  reserve, bench, or redeploy-from-reserve rule is
+  added, and a dismissed squad is gone, not stored.
+  The API is WorldZone.TryDismissSquad, with a thin
+  Simulation passthrough, following the re-rally
+  pattern. No general squad-command system rides
+  along.
+- Economy, two separate answers: refund none — the
+  deploy price stays a sunk cost, exactly as on death
+  — and cap slot freed, proved by a paid redeploy at
+  a full cap succeeding afterwards at the unchanged
+  price of 10 (ore shown at every step: 40 in, 10
+  after three deploys, still 10 after the dismiss, 0
+  after the redeploy). A full refund was rejected
+  because a dismiss plus a fresh deploy at the
+  player's feet would reposition even an Advance or
+  Defend Core squad for free, defeating the Slice 21
+  refusal for those doctrines; a partial or
+  health-based refund was rejected as an invented
+  number with no playtest evidence behind it.
+- Scope: every live squad, all four doctrines, all
+  three kinds, proved by a twelve-combination matrix
+  plus the named cases — a Holding HoldGround squad,
+  a marching HoldGround squad, a patrolling Patrol, a
+  chasing Advance squad, a returning Defend Core
+  squad, and a guarding Defend Core squad. A stuck
+  Patrol may be dismissed or re-rallied free, as two
+  distinct choices, and dismissing a different squad
+  does not revoke the free rescue.
+- Targeting and timing: the snapshot-order index rule
+  is reused, so the three gates cannot disagree about
+  which squad an index names at call time; after a
+  dismiss, later indices shift down by one, and the
+  step answers that shift as player responsibility —
+  re-read the snapshot before acting again, as after
+  a death sweep — proved by a shifted re-rally moving
+  the shifted squad and the old index 2 failing
+  closed. Removal is immediate, not next-tick: a
+  dismissed squad that would have fired fires nothing,
+  takes no hit, and leaves no half-tick, while a
+  remaining holding squad still fires exactly as
+  before. Refusals, each with nothing changed: a dead
+  squad, out-of-range and negative indices, and an
+  empty list. The picker is an independent state, not
+  a core refusal: a dismiss while picking succeeds
+  and leaves the picker, its selection, and its
+  pending rally exactly as they were.
+- Confirmation: adapter only, by proposal — X while
+  not picking, crosshair on any live squad's marker,
+  Return to confirm, Escape to cancel — as a comment
+  in FpsInputAdapter.cs only, NOT implemented, NOT
+  claimed as working in a scene. No core test proves
+  the confirm step; the safety is a Windows
+  observation under new playtest-gate item 41, which
+  leaves items 40, 39, 37, 29, and orbital-command
+  item 13 standing, superseding and extending none of
+  them. Next free gate number is 42.
+- State changes and display: the squad leaves the
+  squad list, the snapshot no longer lists it, and no
+  other squad's position, health, doctrine, kind,
+  rally, waypoint index, or refusal counter changes.
+  No squad-death counter exists in core to increment
+  (verified, not assumed — the only kill counter
+  counts enemies killed by player fire). No save field
+  is added: a post-dismiss save has no entry for the
+  removed squad, and a pre-dismiss save still loads
+  with the squad present. No HUD line is added and no
+  new snapshot word is added: the text display drops
+  the squad's line, the marker display deactivates its
+  squad and rally markers under the existing rule, and
+  the existing NO SQUADS line covers an empty field.
+- Movement boundary: no movement, targeting, fire,
+  delivery, precedence, conflict, rating, cost, or
+  phase rule moves, and no radius or waypoint change:
+  PatrolLoopRadius stays 3 and PatrolWaypointCount
+  stays 5, asserted unchanged. The re-rally gates
+  stand unchanged after a removal, proved by a free
+  HoldGround re-rally and a still-refused Advance
+  re-rally in the shifted list.
+- Changes: src/Forgeborne.Core/World.cs
+  (TryDismissSquad), src/Forgeborne.Core/Simulation.cs
+  (thin passthrough), src/Forgeborne.Core/Orbital.cs
+  (economy doc note), tests/Forgeborne.Core.Tests/
+  Program.cs (+221 assertions), docs/orbital-command.md
+  (dismiss section, and the general re-rally section's
+  stale "no dismiss exists" line corrected),
+  docs/orbital-view.md (dismiss display note),
+  docs/slice-01-playtest-gate.md (new item 41),
+  ForgeborneUnity/Assets/Scripts/FpsInputAdapter.cs
+  (proposed-binding comment only), CHANGELOG 0.91.0
+  and DECISIONS.md entries (next step: Slice 22 Step
+  2, composed demo + review closing Slice 22).
+- Tests: 3828 passed, 0 failed (was 3607; +221, no
+  failures on the final runs, FAIL count 0). One test
+  fix during the run, a test fix not a code fix: the
+  headless paid helper deploys only the default
+  HoldGround Vanguard, so the paid chain and the
+  save test deploy through the picker instead, which
+  is also the play path. Demo unchanged: Slice 21
+  scenario save 44,040 chars, Slice 20 save 44,041
+  chars, Slice 19 save 43,965 chars, Slice 18 save
+  44,015 chars, Slice 15 save 44,016 chars, Slice 17
+  save 43,974 chars. No new demo scenario in this step,
+  per the scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.90.0 — 2026-10-31 — Slice 22 scope:
 recall or dismiss — one removal decision,
 then demo + review; documentation only

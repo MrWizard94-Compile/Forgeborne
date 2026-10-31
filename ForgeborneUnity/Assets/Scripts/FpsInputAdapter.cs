@@ -262,6 +262,31 @@ public class FpsInputAdapter : MonoBehaviour
         // general action is observed only under
         // playtest-gate item 40, which EXTENDS item 39,
         // never from a headless test.
+        // Slice 22 Step 1, PROPOSED ONLY, no code in this
+        // step and nothing claimed as working in a scene:
+        // a dismiss (core: WorldZone.TryDismissSquad, any
+        // live squad, by snapshot index) is proposed for a
+        // future adapter step as X while NOT picking,
+        // with the crosshair on any live squad's marker
+        // (every doctrine is eligible, unlike K's re-rally,
+        // so an Advance or Defend Core marker qualifies
+        // here), opening an adapter pending dismiss that
+        // Return confirms and Escape cancels — the pending
+        // state lives in the adapter, not in core, so the
+        // core call itself still removes on a single call
+        // and no headless test proves the confirm step.
+        // X is free: used keys are WASD / Space / E /
+        // Q / R / O / Return / Esc / Alpha1-7 / T / Y /
+        // U / I / B / N / P / M / mouse click, and K is
+        // taken by the re-rally proposal above, so X
+        // collides with neither. The binding must do
+        // nothing while picking, nothing when the raycast
+        // hits no live marker, nothing when the target
+        // squad refuses the action, nothing on Return
+        // with no pending dismiss, and nothing on a
+        // cancelled confirmation — and the whole binding
+        // is observed only under playtest-gate item 41,
+        // never from a headless test.
         // Since 0.18.0 a picker deploy costs 10 EmberOre and at
         // most 3 live squads may be fielded, enforced in core by
         // Confirm — see docs/orbital-command.md. Since Slice 7
