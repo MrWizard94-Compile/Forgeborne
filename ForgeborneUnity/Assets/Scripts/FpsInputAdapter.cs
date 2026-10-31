@@ -25,6 +25,40 @@ public class FpsInputAdapter : MonoBehaviour
     public VoxelMeshRenderer? MeshRenderer;
     public float MouseSensitivity = 2f;
 
+    // Slice 24 Step 1 (0.97.0): K re-rally pending state, decided
+    // in that step (rationale in DECISIONS.md). This is an OWN
+    // adapter flag, deliberately NOT OrbitalCommand.IsPicking:
+    // reusing the picker flag would turn a Return into a paid
+    // deploy at the new rally instead of a free re-rally of the
+    // target squad, because the picker branch calls
+    // ConfirmOrbitalDeploy on Return. The pending state stores
+    // the target's snapshot position plus its doctrine, kind,
+    // and old rally — the adapter-visible fields that do not
+    // change when the squad moves — so Confirm can re-validate
+    // the target instead of silently re-targeting a different
+    // squad after a death sweep shifts the list. The candidate
+    // rally is adapter state too: OrbitalCommand.SetRally
+    // refuses outside picking, so the picker's rally storage
+    // cannot carry a re-rally candidate. The pending marker
+    // is adapter-owned for the same reason SquadMarkerDisplay
+    // shows its pending sphere only while picking: one orange
+    // sphere, 0.6 units, at the candidate rally cell centre,
+    // reusing the picker's pending-marker reading (same shape,
+    // size, and colour), unparented because this adapter has
+    // no MarkerRoot field and no new scene wiring is claimed.
+    private bool _pendingReRally;
+    private int _pendingReRallySnapshotPos;
+    private TacticalDoctrine _pendingReRallyDoctrine;
+    private SquadKind _pendingReRallyKind;
+    private int _pendingReRallyOldX;
+    private int _pendingReRallyOldY;
+    private int _pendingReRallyOldZ;
+    private int _pendingReRallyX;
+    private int _pendingReRallyY;
+    private int _pendingReRallyZ;
+    private GameObject? _pendingReRallyMarker;
+    private Material? _pendingReRallyMaterial;
+
     void Update()
     {
         if (Simulation == null) return;
@@ -139,7 +173,19 @@ public class FpsInputAdapter : MonoBehaviour
         // Return / Esc / 1 / 2 / 3 / 4 / T / Y / U / mouse
         // click. No drag-to-lay mode: one key press lays one
         // cable cell, by aim, like every other builder.
-        if (!Simulation.OrbitalCommand.IsPicking)
+        // Slice 24 Step 1: builders are suppressed while a
+        // re-rally pick is pending, as while the picker is
+        // open — the pending pick is a pick-like state, and
+        // a builder firing while the player aims a rally
+        // would spend resources mid-pick (and a Q wall could
+        // land in the candidate cell). E / Q / R above keep
+        // their pre-existing unsuppressed behaviour, as
+        // while picking: the re-rally is free, so no build
+        // can break a pending confirm's affordability, and
+        // a solid candidate rally is accepted by the gate
+        // anyway, so a Q wall in that cell changes nothing
+        // the gate would refuse.
+        if (!Simulation.OrbitalCommand.IsPicking && !_pendingReRally)
         {
             // Slice 13 Step 3: each builder refreshes on success
             // only, by the event set above — see the E / Q note.
@@ -222,46 +268,81 @@ public class FpsInputAdapter : MonoBehaviour
         // While picking, the mouse does not fire: Enter is the
         // confirm, so a click cannot shoot while the player is
         // aiming a rally.
-        // Slice 20 Step 1, PROPOSED ONLY, no code in this
-        // step and nothing claimed as working in a scene:
-        // a stuck patrol's free re-rally (core:
-        // WorldZone.TryReRallyStuckPatrol, stuck Patrol
-        // only, by snapshot index) is proposed for a
-        // future adapter step as K while NOT picking,
-        // with the crosshair on that stuck squad's marker
-        // (K is free: used keys are WASD / Space / E /
+        // Slice 24 Step 1 (0.97.0): K re-rally binding,
+        // IMPLEMENTED in this adapter, NOT Unity-verified
+        // and NOT claimed as working in a scene — adapter
+        // code is not compiled headlessly, so no test
+        // count proves this key. It serves both the stuck
+        // action (Slice 20 Step 1) and the general action
+        // (Slice 21 Step 1) through the GENERAL gate alone
+        // (Simulation.TryReRallySquad): a stuck Patrol
+        // succeeds identically under both gates, so no
+        // squad-and-rally exists where the stuck gate
+        // succeeds and the general gate fails, and a
+        // stuck-first fallback would add a branch with no
+        // different outcome. K while NOT picking, with
+        // the crosshair on an eligible (live HoldGround
+        // or Patrol) squad's marker, opens a re-rally
+        // pick; Return confirms, Escape cancels, K again
+        // cancels (toggle-off, like O cancels the picker).
+        // K is free: used keys are WASD / Space / E /
         // Q / R / O / Return / Esc / Alpha1-7 / T / Y /
-        // U / I / B / N / P / M / mouse click, and no
-        // builder fires while picking, so K must also
-        // do nothing while picking), opening a re-rally
-        // pick that reuses the picker's raycast rally
-        // selection, with Return confirming the new
-        // rally and Escape cancelling — the selection
-        // must fail closed on Windows when the raycast
-        // hits no stuck marker, and the whole binding
-        // is observed only under playtest-gate item 39,
-        // never from a headless test.
-        // Slice 21 Step 1, PROPOSED ONLY, no code in this
-        // step and nothing claimed as working in a scene:
-        // the general re-rally (core:
-        // WorldZone.TryReRallySquad, live HoldGround or
-        // Patrol only, by snapshot index) reuses the same
-        // K binding with wider eligibility — K while NOT
-        // picking, crosshair on an eligible squad's
-        // marker (a stuck marker qualifies, and so does a
-        // moving Patrol's or a HoldGround squad's; an
-        // Advance or Defend Core marker does not, because
-        // those squads refuse the action), opening a
-        // re-rally pick that reuses the picker's raycast
-        // rally selection, with Return confirming the new
-        // rally and Escape cancelling — doing nothing
-        // while picking, nothing when the raycast hits no
-        // eligible marker, and nothing when the target
-        // squad refuses the action. K is still free
-        // against the taken keys listed above, and the
-        // general action is observed only under
-        // playtest-gate item 40, which EXTENDS item 39,
-        // never from a headless test.
+        // U / I / B / N / P / M / mouse click.
+        // "Crosshair on a marker" is implemented as
+        // marker-centre proximity, NOT as a raycast hit
+        // on a marker, because SquadMarkerDisplay destroys
+        // every marker collider on creation: a raycast
+        // can never hit a marker, and giving markers
+        // colliders would make them block the picker's
+        // own raycast. On K, each eligible squad's marker
+        // centre (cell centre, as rendered) is tested for
+        // angle from the centre ray within max(2 degrees,
+        // atan(0.6 / distance)) — the marker's angular
+        // size plus slack, floored so a far marker stays
+        // aimable — for distance at most 30f (the picker
+        // range), and for a clear line: a raycast toward
+        // that centre that hits a voxel first means the
+        // squad is occluded and is not selected. The
+        // smallest angle wins; ties go to the first
+        // snapshot position. A rally marker never
+        // selects: only squad centres are tested, so a
+        // crosshair on a rally cell whose squad stands
+        // elsewhere opens nothing, and a squad standing
+        // on its own rally still selects by its squad
+        // centre. The marker-to-index translation walks
+        // Simulation.World.Squads in order skipping dead
+        // squads, exactly as OrbitalView.Snapshot does,
+        // so a dead squad awaiting its sweep cannot shift
+        // a snapshot position into the wrong gate index.
+        // The pending pick is the own-flag state above,
+        // never the picker flag; while it is open, O does
+        // nothing, builders do nothing, the picker keys
+        // do nothing, and the mouse does not fire — the
+        // picker modal rule, extended to this pick-like
+        // state — while E / Q / R keep their pre-existing
+        // unsuppressed behaviour, as while picking. The
+        // candidate rally reuses the picker's centre
+        // raycast (30f, floored cell) and its pending
+        // marker reading (adapter-owned orange sphere, see
+        // the fields above); the target squad's rally
+        // marker stays until the gate succeeds, then moves
+        // under the existing snapshot rendering. Confirm
+        // re-validates the target (snapshot position still
+        // holds the same doctrine, kind, and old rally)
+        // and then calls the general gate with the freshly
+        // translated gate index; any mismatch clears the
+        // pending state with nothing changed, never
+        // re-targeting a different live squad. Return
+        // clears the pending state whether the gate
+        // succeeds or refuses (including a same-rally
+        // refusal): a confirm is one attempt, and a retry
+        // re-selects its target fresh. Observed only
+        // under playtest-gate items 39 and 40, plus the
+        // pending-routing readings in item 42, never from
+        // a headless test. The X dismiss binding is still
+        // PROPOSED ONLY below; X while a re-rally pick is
+        // pending does nothing yet, and the cross-pending
+        // answer belongs to Slice 24 Step 2.
         // Slice 22 Step 1, PROPOSED ONLY, no code in this
         // step and nothing claimed as working in a scene:
         // a dismiss (core: WorldZone.TryDismissSquad, any
@@ -294,12 +375,26 @@ public class FpsInputAdapter : MonoBehaviour
         // kinds then existing, and since Slice 11 Step 1 they
         // hold for Heavy too, so the prompt's COST 10 / MAX 3
         // line stays true.
-        if (Input.GetKeyDown(KeyCode.O))
+        // Slice 24 Step 1: O does nothing while a re-rally
+        // pick is pending — opening a deploy pick on top
+        // of a pending re-rally would stack two pending
+        // states under two flags, and the picker branch
+        // below never runs while pending, so its O-cancel
+        // cannot clear the re-rally pick. Escape (or K
+        // again) cancels the re-rally pick; O works again
+        // once it is closed. This is refuse-while-pending
+        // for the O key specifically; the K/X cross-pending
+        // answer belongs to Slice 24 Step 2.
+        if (Input.GetKeyDown(KeyCode.O) && !_pendingReRally)
         {
             if (Simulation.OrbitalCommand.IsPicking) Simulation.CancelOrbitalPick();
             else Simulation.BeginOrbitalPick();
         }
-        if (Simulation.OrbitalCommand.IsPicking)
+        if (_pendingReRally)
+        {
+            HandlePendingReRally();
+        }
+        else if (Simulation.OrbitalCommand.IsPicking)
         {
             // Slice 18 Step 2 audit note: Enter deploys ONLY
             // through ConfirmOrbitalDeploy (paid). The former
@@ -349,6 +444,204 @@ public class FpsInputAdapter : MonoBehaviour
                 }
             }
         }
-        else if (Input.GetMouseButtonDown(0)) Simulation.FireAimed();
+        else
+        {
+            // Slice 24 Step 1: K opens a re-rally pick only
+            // here — not picking (that branch is above) and
+            // not already pending (that branch is above it).
+            // A K press on the same frame as a click opens
+            // the pick and does not fire: the pick-like
+            // state suppresses the mouse from its first
+            // frame, as the picker does.
+            if (Input.GetKeyDown(KeyCode.K)) TryOpenReRallyPick();
+            else if (Input.GetMouseButtonDown(0)) Simulation.FireAimed();
+        }
+    }
+
+    // Slice 24 Step 1 helpers. No core rule lives here: these
+    // methods only select a target, hold pending state, and
+    // call the Simulation passthrough, whose gate decides.
+    private void TryOpenReRallyPick()
+    {
+        if (Simulation == null) return;
+        var snapshot = OrbitalView.Snapshot(Simulation.World);
+        Vector3 origin = transform.position;
+        Vector3 forward = transform.forward;
+        int bestPos = -1;
+        float bestAngle = float.PositiveInfinity;
+        for (int i = 0; i < snapshot.Count; i++)
+        {
+            var s = snapshot[i];
+            // General-gate eligibility, decided at press so a
+            // pick the gate will certainly refuse never opens:
+            // doctrine never changes, so an Advance or Defend
+            // Core marker refused here would be refused on
+            // confirm too. Only death, a same-rally pick, or a
+            // list shift can still refuse at confirm time, and
+            // Confirm re-validates for exactly those.
+            if (s.Doctrine != TacticalDoctrine.HoldGround
+                && s.Doctrine != TacticalDoctrine.Patrol) continue;
+            Vector3 centre = new Vector3(s.X + 0.5f, s.Y + 0.5f, s.Z + 0.5f);
+            Vector3 toSquad = centre - origin;
+            float dist = toSquad.magnitude;
+            if (dist > 30f) continue;
+            // Occlusion, exact for this squad's centre line:
+            // a voxel hit before the centre means a wall
+            // stands between the crosshair and the marker,
+            // and an honestly occluded marker (see
+            // SquadMarkerDisplay) is not selectable. Markers
+            // carry no colliders, so they never appear as a
+            // hit here; the squad's own cell is air, so no
+            // hit lands exactly on the centre.
+            if (Physics.Raycast(origin, toSquad.normalized, out RaycastHit blockHit, dist)
+                && blockHit.distance < dist) continue;
+            float angle = Vector3.Angle(forward, toSquad);
+            float tolerance = Mathf.Max(2f, Mathf.Atan(0.6f / dist) * Mathf.Rad2Deg);
+            if (angle > tolerance) continue;
+            if (angle < bestAngle)
+            {
+                bestAngle = angle;
+                bestPos = i;
+            }
+        }
+        if (bestPos < 0) return;
+        var target = snapshot[bestPos];
+        _pendingReRally = true;
+        _pendingReRallySnapshotPos = bestPos;
+        _pendingReRallyDoctrine = target.Doctrine;
+        _pendingReRallyKind = target.Kind;
+        _pendingReRallyOldX = target.RallyX;
+        _pendingReRallyOldY = target.RallyY;
+        _pendingReRallyOldZ = target.RallyZ;
+        // The candidate starts at the target's own rally, so
+        // the pending marker reads a real cell from the first
+        // frame, and an immediate Return is a same-rally
+        // refusal that clears the pick — never a silent move.
+        _pendingReRallyX = target.RallyX;
+        _pendingReRallyY = target.RallyY;
+        _pendingReRallyZ = target.RallyZ;
+        ShowReRallyMarker();
+    }
+
+    private void HandlePendingReRally()
+    {
+        if (Input.GetKeyDown(KeyCode.Return)) ConfirmPendingReRally();
+        else if (Input.GetKeyDown(KeyCode.Escape)) CancelPendingReRally();
+        else if (Input.GetKeyDown(KeyCode.K)) CancelPendingReRally();
+        else
+        {
+            // Rally selection reuses the picker's centre
+            // raycast (30f, floored cell). No hit within
+            // range leaves the candidate unchanged, as the
+            // picker leaves its pending rally unchanged —
+            // the player reads the pending marker, which
+            // stays on the last aimed cell.
+            Ray ray = new Ray(transform.position, transform.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, 30f))
+            {
+                _pendingReRallyX = Mathf.FloorToInt(hit.point.x);
+                _pendingReRallyY = Mathf.FloorToInt(hit.point.y);
+                _pendingReRallyZ = Mathf.FloorToInt(hit.point.z);
+            }
+            ShowReRallyMarker();
+        }
+    }
+
+    private void ConfirmPendingReRally()
+    {
+        if (Simulation != null)
+        {
+            // Re-validation before any gate call: the stored
+            // snapshot position must still hold a squad with
+            // the same doctrine, kind, and old rally. A target
+            // that died and was swept shifts every later live
+            // position by one, so the stored position then
+            // names a different squad or no squad at all —
+            // and this check catches that shift unless the
+            // shifted-in squad is an identical twin (same
+            // doctrine, kind, and rally), which no
+            // adapter-visible field can distinguish without
+            // inventing a core identity the save does not
+            // carry. That twin case is the known limit,
+            // recorded in DECISIONS.md; it needs a twin
+            // death plus a sweep between press and confirm.
+            // Movement never invalidates: a walking squad
+            // keeps its doctrine, kind, and rally.
+            var snapshot = OrbitalView.Snapshot(Simulation.World);
+            if (_pendingReRallySnapshotPos < snapshot.Count)
+            {
+                var s = snapshot[_pendingReRallySnapshotPos];
+                if (s.Doctrine == _pendingReRallyDoctrine
+                    && s.Kind == _pendingReRallyKind
+                    && s.RallyX == _pendingReRallyOldX
+                    && s.RallyY == _pendingReRallyOldY
+                    && s.RallyZ == _pendingReRallyOldZ)
+                {
+                    int gateIndex = SnapshotPosToGateIndex(_pendingReRallySnapshotPos);
+                    if (gateIndex >= 0)
+                    {
+                        // General gate only (see the Slice 24
+                        // Step 1 note above). Its result is
+                        // not branched on: success and refusal
+                        // alike clear the pending state, so a
+                        // confirm is one attempt and a second
+                        // Return cannot re-apply a stale pick.
+                        Simulation.TryReRallySquad(
+                            gateIndex,
+                            _pendingReRallyX, _pendingReRallyY, _pendingReRallyZ);
+                    }
+                }
+            }
+        }
+        CancelPendingReRally();
+    }
+
+    // The marker-to-index translation, in one place so Step 2
+    // reuses it: walk Squads in order skipping dead squads,
+    // exactly as OrbitalView.Snapshot does, and count live
+    // positions until the stored snapshot position. -1 means
+    // the position no longer exists (a sweep shrank the
+    // live list past it), and the caller clears pending
+    // with nothing changed.
+    private int SnapshotPosToGateIndex(int snapshotPos)
+    {
+        if (Simulation == null) return -1;
+        int livePos = -1;
+        var squads = Simulation.World.Squads;
+        for (int i = 0; i < squads.Count; i++)
+        {
+            if (squads[i].IsDead) continue;
+            livePos++;
+            if (livePos == snapshotPos) return i;
+        }
+        return -1;
+    }
+
+    private void CancelPendingReRally()
+    {
+        _pendingReRally = false;
+        if (_pendingReRallyMarker != null) _pendingReRallyMarker.SetActive(false);
+    }
+
+    private void ShowReRallyMarker()
+    {
+        if (_pendingReRallyMarker == null)
+        {
+            _pendingReRallyMarker = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            _pendingReRallyMarker.name = "ReRallyPendingMarker";
+            if (_pendingReRallyMaterial == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+                _pendingReRallyMaterial = new Material(shader) { color = new Color(1f, 0.55f, 0f) };
+            }
+            _pendingReRallyMarker.GetComponent<Renderer>().sharedMaterial = _pendingReRallyMaterial;
+            // Display only, as in SquadMarkerDisplay: the
+            // marker must not block the rally raycast.
+            Destroy(_pendingReRallyMarker.GetComponent<Collider>());
+            _pendingReRallyMarker.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+        }
+        _pendingReRallyMarker.transform.position = new Vector3(
+            _pendingReRallyX + 0.5f, _pendingReRallyY + 0.5f, _pendingReRallyZ + 0.5f);
+        _pendingReRallyMarker.SetActive(true);
     }
 }

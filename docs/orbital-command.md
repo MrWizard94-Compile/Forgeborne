@@ -217,15 +217,30 @@ the rescue.
   not a second deploy and not a recall. Deploy price
   (10) and cap (3) stand, and the paid path is
   unchanged.
-- **Adapter binding, PROPOSED ONLY:** K while not
-  picking, crosshair on the stuck squad's marker,
-  opening a re-rally pick that reuses the picker's
-  raycast rally selection, Return to confirm, Escape
-  to cancel, doing nothing while picking and nothing
-  when the raycast hits no stuck marker. This binding
-  is NOT implemented in this step and is NOT claimed
-  as working in a scene; it is observed only under
-  playtest-gate item 39, once implemented on Windows.
+- **Adapter binding, IMPLEMENTED 0.97.0 (Slice 24
+  Step 1), NOT Unity-verified:** K while not picking,
+  crosshair on an eligible squad's marker — a stuck
+  Patrol qualifies, because the binding calls the
+  general gate, under which a stuck Patrol succeeds
+  identically — opening a re-rally pick that reuses
+  the picker's centre raycast (30f, floored cell) for
+  rally selection, Return to confirm, Escape to cancel,
+  K again to cancel, doing nothing while picking and
+  nothing when the crosshair selects no eligible marker.
+  "Crosshair on a marker" is marker-centre proximity
+  (markers carry no colliders, so no raycast can hit
+  one), with an occlusion check per squad centre line,
+  and the marker-to-index translation walks `Squads`
+  skipping dead squads, as the snapshot does. The
+  pending pick is an own adapter flag, never the picker
+  flag, so Return confirms a free re-rally and never a
+  paid deploy; the candidate rally reads through an
+  adapter-owned orange sphere reusing the picker's
+  pending-marker reading. This binding is NOT claimed
+  as working in a scene — no headless test proves a
+  key — and it is observed only under playtest-gate
+  items 39 and 40 plus item 42's pending-routing
+  readings, once observed on Windows.
 
 ## General re-rally — Slice 21 Step 1 (0.88.0)
 
@@ -291,20 +306,31 @@ still costs nothing to keep.
   pathfinder is added, no rally fallback is added for
   Advance, and no rally consultation is added for
   Defend Core.
-- **Adapter binding, PROPOSED ONLY:** reuse K, with
-  wider eligibility — K while not picking, crosshair
+- **Adapter binding, IMPLEMENTED 0.97.0 (Slice 24
+  Step 1), NOT Unity-verified:** K, with the wider
+  eligibility above — K while not picking, crosshair
   on an eligible (live HoldGround or Patrol) squad's
   marker, opening a re-rally pick that reuses the
-  picker's raycast rally selection, Return to confirm,
-  Escape to cancel, doing nothing while picking,
-  nothing when the raycast hits no eligible marker,
-  and nothing when the target squad refuses the
-  action. This binding is NOT implemented in this step
-  and is NOT claimed as working in a scene; it is
-  observed only under playtest-gate item 40, once
-  implemented on Windows. Item 40 EXTENDS item 39; it
-  does not supersede it, and items 37, 29, and
-  orbital-command item 13 stand unchanged.
+  picker's centre raycast (30f, floored cell) for
+  rally selection, Return to confirm, Escape to cancel,
+  K again to cancel, doing nothing while picking,
+  nothing when the crosshair selects no eligible marker,
+  and nothing when the target squad refuses the action.
+  The binding calls the general gate alone (the stuck
+  gate is subsumed, not called first: no squad-and-rally
+  exists where the stuck gate succeeds and the general
+  gate fails). Target selection is marker-centre
+  proximity with a per-centre-line occlusion check —
+  markers carry no colliders — and the marker-to-index
+  translation walks `Squads` skipping dead squads, as
+  the snapshot does; confirm re-validates the target
+  by doctrine, kind, and old rally and clears the pick
+  on any mismatch, never re-targeting silently. This
+  binding is NOT claimed as working in a scene; it is
+  observed only under playtest-gate item 40, which
+  EXTENDS item 39, plus item 42's pending-routing
+  readings, once observed on Windows. Items 37, 29,
+  and orbital-command item 13 stand unchanged.
 
 ## Dismiss — Slice 22 Step 1 (0.91.0)
 

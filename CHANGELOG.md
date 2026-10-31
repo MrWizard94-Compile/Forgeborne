@@ -1,5 +1,155 @@
 # Forgeborne — Changelog
 
+## 0.97.0 — 2026-10-31 — Slice 24 Step 1:
+K re-rally binding implemented in the adapter —
+general gate alone, own pending flag, marker
+proximity targeting; items 39 and 40 attemptable,
+new item 42; NOT Unity-verified
+
+- Step taken: Slice 24 Step 1, the K re-rally
+  binding, decided in this step per
+  docs/slice-24-scope.md. Adapter-only: one file
+  changed in code
+  (ForgeborneUnity/Assets/Scripts/FpsInputAdapter.cs),
+  no core file touched, no economy, movement,
+  targeting, fire, marker, material, light, fog,
+  model, or HUD rule moved, no demo scenario added.
+  Slice 25 is NOT scoped here; Slice 24 Step 2 (the
+  X dismiss binding) is next, not promised here.
+- Gate choice: the GENERAL gate alone
+  (Simulation.TryReRallySquad). The stuck gate is
+  NOT called first and NOT fallen back to: a stuck
+  Patrol succeeds identically under both gates
+  (same ReRally, same free price, same state
+  changes, verified by reading both gate bodies),
+  so no squad-and-rally exists where the stuck
+  gate succeeds and the general gate fails, and a
+  stuck-first branch would add code with no
+  different outcome. One K binding therefore serves
+  both item 39's stuck readings and item 40's
+  general readings, without merging the gates
+  (Slice 21 rejected merging; the stuck gate stands
+  beside the general gate, unchanged).
+- Target selection: marker-centre proximity, NOT a
+  raycast hit on a marker — SquadMarkerDisplay
+  destroys every marker collider on creation, so a
+  raycast can never hit a marker, and giving markers
+  colliders would make them block the picker's own
+  raycast. On K, each live HoldGround or Patrol
+  squad's marker centre (cell centre, as rendered)
+  is tested for angle from the centre ray within
+  max(2 degrees, atan(0.6 / distance)) at distance
+  at most 30f (the picker range), with a per-centre
+  raycast occlusion check (a voxel hit before the
+  centre means an honestly occluded marker is not
+  selectable); smallest angle wins, ties to the
+  first snapshot position. K while picking does
+  nothing; K with no eligible marker in range does
+  nothing; K on an Advance or Defend Core marker
+  never opens a pick, because doctrine never
+  changes and the gate would refuse on confirm
+  exactly as at press. A rally marker never
+  selects: only squad centres are tested.
+- Marker-to-index translation: the adapter walks
+  Simulation.World.Squads in order skipping dead
+  squads, exactly as OrbitalView.Snapshot does, so
+  a dead squad awaiting its sweep cannot shift a
+  snapshot position into the wrong gate index. The
+  translation lives in one helper
+  (SnapshotPosToGateIndex) so Slice 24 Step 2
+  reuses it instead of re-deciding it.
+- Pending-state shape: an OWN adapter flag, NOT
+  OrbitalCommand.IsPicking. Reusing the picker flag
+  would turn Return into a paid deploy at the new
+  rally, because the picker branch calls
+  ConfirmOrbitalDeploy on Return — and
+  OrbitalCommand.SetRally refuses outside picking,
+  so the picker's rally storage cannot carry a
+  re-rally candidate either. The pending state
+  stores the target's snapshot position plus its
+  doctrine, kind, and old rally, and its own
+  candidate rally (starting at the target's own
+  rally, so an immediate Return is a same-rally
+  refusal that clears the pick). While pending: O
+  does nothing (no deploy picker stacks on top),
+  builders do nothing, picker keys do nothing, the
+  mouse does not fire; E / Q / R keep their
+  pre-existing unsuppressed behaviour, as while
+  picking, because the re-rally is free (no build
+  can break a confirm's affordability) and a solid
+  candidate rally is accepted by the gate anyway.
+  The candidate rally reuses the picker's centre
+  raycast (30f, floored cell; no hit leaves the
+  candidate unchanged); the target squad's rally
+  marker stays until the gate succeeds, then moves
+  under the existing snapshot rendering; the
+  candidate reads through an adapter-owned orange
+  sphere (0.6 units, same shape, size, and colour
+  as the picker's pending marker), unparented
+  because this adapter has no MarkerRoot field and
+  no new scene wiring is claimed. No HUD word is
+  added.
+- Confirm and fail-closed: Return re-validates the
+  target (stored snapshot position still holds the
+  same doctrine, kind, and old rally) and then
+  calls the general gate with the freshly
+  translated gate index; any mismatch clears the
+  pick with nothing changed, never re-targeting a
+  different live squad. Movement never invalidates
+  (a walking squad keeps doctrine, kind, rally).
+  Return clears the pick whether the gate succeeds
+  or refuses, including a same-rally refusal: a
+  confirm is one attempt, and a retry re-selects
+  its target fresh. Escape cancels, K again cancels
+  (toggle-off, like O cancels the picker), and
+  Return or Escape with no pick open does nothing.
+  Known limit, stated honestly: an identical twin
+  (same doctrine, kind, and rally) shifting into
+  the stored snapshot position after the target's
+  death and sweep cannot be distinguished by any
+  adapter-visible field without inventing a core
+  identity the save does not carry; that case needs
+  a twin death plus a sweep between press and
+  confirm, and no identity field is invented here.
+  The X dismiss binding is still proposed only:
+  X while a re-rally pick is pending does nothing
+  yet, and the K/X cross-pending answer belongs to
+  Step 2.
+- Checklist relation: no item is marked passed from
+  headless work — adapter code is not compiled
+  headlessly, so no test count proves K. Items 39
+  and 40 move from "cannot even be attempted" to
+  attemptable on Windows, and stay unchecked until
+  a Windows observation is made and recorded in
+  DECISIONS.md. New item 42 (re-rally
+  pending-state routing) EXTENDS items 39 and 40:
+  the K-again cancel, O-ignored, mouse-suppressed,
+  same-rally-clears, and Return/Escape-with-no-pick
+  readings had no home in either item, so they are
+  recorded as item 42 only, superseding nothing and
+  leaving items 39, 40, 37, 29, and orbital-command
+  item 13 standing. Next free gate number is 43.
+  Item 41 (dismiss) is untouched: X is Step 2.
+- Verification, stated honestly: a code reading
+  (every new branch traced against the existing
+  Update routing, the picker routing, and the gate
+  signatures; brace balance checked; every
+  fail-closed case walked to a nothing-changed
+  exit), plus the standing suite and demo re-run
+  unchanged — 4577/4577 tests, Slice 23 demo save
+  44,041 chars, every earlier save unchanged, no
+  new scenario. A step that moved either number
+  would have had to say why; this step moves
+  neither, because adapter code is never compiled
+  by the headless runner.
+- Docs updated beside the code: the re-rally
+  sections of docs/orbital-command.md now read
+  IMPLEMENTED 0.97.0, NOT Unity-verified, instead
+  of PROPOSED ONLY, and docs/slice-01-playtest-gate.md
+  items 39 and 40 read implemented-not-observed
+  with item 42 added. The X proposal comment in
+  FpsInputAdapter.cs is untouched.
+
 ## 0.96.0 — 2026-10-31 — Slice 24 scope:
 adapter bindings — K for re-rally, X for dismiss,
 as their own adapter slice, documentation only

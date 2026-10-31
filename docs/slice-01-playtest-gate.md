@@ -771,8 +771,8 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     in DECISIONS.md.
 
 39. [ ] Stuck-patrol re-rally, decided 0.85.0 (core action
-    changed, adapter binding PROPOSED ONLY and not yet
-    implemented — no headless test proves a binding reads
+    changed, adapter binding implemented 0.97.0, not yet
+    observed on Windows — no headless test proves a binding reads
     in the scene, and no headless test proves a proposed
     key works, so the cited headless evidence is only the
     Slice 20 Step 1 proof set: a route-blocked patrol
@@ -785,12 +785,12 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     HoldGround, Advance, and Defend Core squads refuse
     the action with nothing changed, and the paid path
     is unchanged with the cap still full after a
-    re-rally): once the proposed binding is implemented
-    on Windows — K while not picking, crosshair on the
-    stuck squad's marker, reusing the picker's raycast
+    re-rally): once observed on Windows — K while not
+    picking, crosshair on the stuck squad's marker,
+    reusing the picker's raycast
     rally selection, Return to confirm, Escape to cancel,
     doing nothing while picking and nothing when the
-    raycast hits no stuck marker — in one scene, against
+    crosshair selects no stuck marker — in one scene, against
     dark voxel, enclose a patrol on all four sides and
     observe its text line change from PATROLLING to STUCK
     after a full circuit; apply the re-rally to a new
@@ -811,12 +811,12 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     supersede item 37, item 29, or item 13, and it does
     not claim any tint, count, dusk, or view model
     observation. Do not claim this verified in Unity
-    until the binding is implemented, the observation is
-    made there, and both are recorded in DECISIONS.md.
+    until the observation is made there and recorded
+    in DECISIONS.md.
 
 40. [ ] General re-rally, decided 0.88.0 (core action
-    changed, adapter binding PROPOSED ONLY and not yet
-    implemented — no headless test proves a binding reads
+    changed, adapter binding implemented 0.97.0, not yet
+    observed on Windows — no headless test proves a binding reads
     in the scene, and no headless test proves a proposed
     key works, so the cited headless evidence is only the
     Slice 21 Step 1 proof set: a HoldGround squad
@@ -830,13 +830,13 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     to a loop it cannot walk reads STUCK again after a
     full circuit; and Advance and Defend Core squads
     refuse the action with nothing changed, including
-    their chase and fire behaviour): once the proposed
-    binding is implemented on Windows — K while not
-    picking, crosshair on an eligible (live HoldGround
+    their chase and fire behaviour): once observed
+    on Windows — K while not picking, crosshair on
+    an eligible (live HoldGround
     or Patrol) squad's marker, reusing the picker's
     raycast rally selection, Return to confirm, Escape
     to cancel, doing nothing while picking, nothing when
-    the raycast hits no eligible marker, and nothing when
+    the crosshair selects no eligible marker, and nothing when
     the target squad refuses — in one scene, against
     dark voxel, re-rally a Holding squad to a new
     destination and observe its text line change from
@@ -857,8 +857,8 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     39, item 37, item 29, or item 13, and it does not
     claim any tint, count, dusk, or view model
     observation. Do not claim this verified in Unity
-    until the binding is implemented, the observation is
-    made there, and both are recorded in DECISIONS.md.
+    until the observation is made there and recorded
+    in DECISIONS.md.
 
 41. [ ] Dismiss, decided 0.91.0 (core action changed,
     adapter binding PROPOSED ONLY and not yet
@@ -906,6 +906,48 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     observation. Do not claim this verified in Unity
     until the binding is implemented, the observation is
     made there, and both are recorded in DECISIONS.md.
+
+42. [ ] Re-rally pending-state routing, decided 0.97.0
+    (adapter binding implemented, not yet observed on
+    Windows — no headless test proves a binding reads
+    in the scene, so the cited evidence is only the
+    Slice 24 Step 1 code reading: the pending pick is
+    an own adapter flag, never the picker flag, so
+    Return confirms a free re-rally and never a paid
+    deploy; the candidate rally reads through an
+    adapter-owned orange sphere while the target
+    squad's orange rally marker stays on its deployed
+    rally; confirm re-validates the target by doctrine,
+    kind, and old rally and clears the pick on any
+    mismatch, never re-targeting silently): once
+    observed on Windows — K while not picking,
+    crosshair on an eligible squad's marker — in one
+    scene, against dark voxel, open a re-rally pick
+    and observe the candidate rally marked by an
+    orange sphere while the target squad's rally
+    marker stays on its deployed rally; press K again
+    and observe the pick cancel with nothing changed;
+    open a second pick and press O and observe
+    nothing happen (no deploy picker opens on top of
+    the pick); open a third pick and click and observe
+    no weapon fire while the pick is open; open a
+    fourth pick, aim at the target's own rally cell,
+    and press Return and observe nothing change and
+    the pick close (a same-rally confirm is one
+    attempt, not a retry loop); finally, press Return
+    with no pick open and press Escape with no pick
+    open and observe nothing change in either case.
+    This item EXTENDS items 39 and 40's K binding
+    observations: items 39's stuck readings and 40's
+    general readings stand unchanged, and this item
+    adds only the pending-routing readings, which had
+    no home in either item. It does NOT supersede
+    items 39, 40, 37, 29, or orbital-command item 13,
+    and it leaves them standing. It does not claim any
+    tint, count, dusk, or view model observation. Do
+    not claim this verified in Unity until the
+    observation is made there and recorded in
+    DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
