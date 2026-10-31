@@ -8563,5 +8563,243 @@ Eq(0, s22PostDismissLoaded.World.Player.Inventory.Get(BlockType.EmberOre), "slic
 Eq(3, TacticalSquad.PatrolLoopRadius, "slice22 dismiss loop radius is still 3, not retuned");
 Eq(5, TacticalSquad.PatrolWaypointCount, "slice22 dismiss loop waypoint count is still 5, not retuned");
 
+// ---- Slice 22 Step 2: composed demo + review, closing Slice 22 (0.92.0) ----
+// One Simulation mirroring the demo, tick by tick: a
+// full cap marched to its readings, out-of-range and
+// negative refusals, an Advance dismiss, a paid
+// Defend Core redeploy at the freed slot, a HoldGround
+// dismiss, a route-blocked stuck Patrol, a pre-removal
+// save, a free stuck re-rally beside a Defend Core
+// dismiss, a post-removal save, a rescued march and
+// loop turn, a moving Patrol dismiss, a sacrificial
+// dead-squad refusal and sweep, an empty-field dismiss
+// and empty refusal, and a final paid rebuild — with
+// ore shown at every step, so the composed field
+// proves the removal, its refusals, its economy, its
+// rescue distinction, and its movement agree.
+var s22cSim = new Simulation(42);
+s22cSim.World.Player.Inventory.Add(BlockType.EmberOre, 70);
+s22cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s22cSim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s22cSim.BeginOrbitalPick();
+Check(s22cSim.SetOrbitalRally(12, 5, 16), "slice22 composed hold rally set");
+Check(s22cSim.ConfirmOrbitalDeploy() != null, "slice22 composed hold deploys paid");
+Eq(60, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed ore after hold deploy is 60");
+s22cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+s22cSim.OrbitalCommand.SelectKind(SquadKind.Recon);
+s22cSim.BeginOrbitalPick();
+Check(s22cSim.SetOrbitalRally(20, 5, 20), "slice22 composed patrol rally set");
+Check(s22cSim.ConfirmOrbitalDeploy() != null, "slice22 composed patrol deploys paid");
+Eq(50, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed ore after patrol deploy is 50");
+s22cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+s22cSim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s22cSim.BeginOrbitalPick();
+Check(s22cSim.SetOrbitalRally(10, 5, 10), "slice22 composed advance rally set");
+Check(s22cSim.ConfirmOrbitalDeploy() != null, "slice22 composed advance deploys paid");
+Eq(40, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed ore after advance deploy is 40");
+Eq(3, s22cSim.World.Squads.Count, "slice22 composed cap is full at 3");
+Eq(3, OrbitalView.Snapshot(s22cSim.World).Count, "slice22 composed snapshot lists 3");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s22cSim.World)[0].Activity, "slice22 composed hold reads marching before the march");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22cSim.World)[1].Activity, "slice22 composed patrol reads patrolling before the march");
+Eq(SquadActivity.Idle, OrbitalView.Snapshot(s22cSim.World)[2].Activity, "slice22 composed advance reads idle before the march");
+Eq(90, s22cSim.World.Squads[0].Health, "slice22 composed hold health is 90");
+Eq(40, s22cSim.World.Squads[1].Health, "slice22 composed patrol health is 40");
+Eq(100, s22cSim.World.Squads[2].Health, "slice22 composed advance health is 100");
+int[] s22cHoldX = { 15, 14, 13, 12, 12, 12, 12, 12, 12 };
+int[] s22cPatrolX = { 17, 17, 18, 18, 19, 19, 20, 20, 21 };
+int[] s22cPatrolZ = { 16, 17, 17, 18, 18, 19, 19, 20, 20 };
+for (int s22cTick = 0; s22cTick < 9; s22cTick++)
+{
+    s22cSim.World.Advance();
+    Eq(s22cHoldX[s22cTick], s22cSim.World.Squads[0].X, $"slice22 composed march tick {s22cTick + 1} hold x");
+    Eq(16, s22cSim.World.Squads[0].Z, $"slice22 composed march tick {s22cTick + 1} hold z");
+    Eq(s22cPatrolX[s22cTick], s22cSim.World.Squads[1].X, $"slice22 composed march tick {s22cTick + 1} patrol x");
+    Eq(s22cPatrolZ[s22cTick], s22cSim.World.Squads[1].Z, $"slice22 composed march tick {s22cTick + 1} patrol z");
+    Eq(16, s22cSim.World.Squads[2].X, $"slice22 composed march tick {s22cTick + 1} advance x stays");
+    Eq(16, s22cSim.World.Squads[2].Z, $"slice22 composed march tick {s22cTick + 1} advance z stays");
+    Eq(SquadActivity.Idle, OrbitalView.Snapshot(s22cSim.World)[2].Activity, $"slice22 composed march tick {s22cTick + 1} advance still idle");
+}
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s22cSim.World)[0].Activity, "slice22 composed hold reads holding at its rally");
+Eq(1, s22cSim.World.Squads[1].PatrolWaypointIndex, "slice22 composed patrol turns onto its loop at waypoint 1");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22cSim.World)[1].Activity, "slice22 composed patrol reads patrolling on its loop");
+Check(!s22cSim.TryDismissSquad(3), "slice22 composed out-of-range dismiss refused");
+Check(!s22cSim.TryDismissSquad(-1), "slice22 composed negative dismiss refused");
+Eq(40, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed refusals charge nothing");
+Eq(3, s22cSim.World.Squads.Count, "slice22 composed refusals remove nothing");
+Eq(12, s22cSim.World.Squads[0].X, "slice22 composed refusals leave the hold position");
+Eq(21, s22cSim.World.Squads[1].X, "slice22 composed refusals leave the patrol position");
+Eq(16, s22cSim.World.Squads[2].X, "slice22 composed refusals leave the advance position");
+Check(s22cSim.TryDismissSquad(2), "slice22 composed advance dismisses");
+Eq(2, s22cSim.World.Squads.Count, "slice22 composed count drops to 2 after the advance dismiss");
+Eq(40, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed advance dismiss refunds none");
+Eq(TacticalDoctrine.HoldGround, s22cSim.World.Squads[0].Doctrine, "slice22 composed hold remains first after the advance dismiss");
+Eq(TacticalDoctrine.Patrol, s22cSim.World.Squads[1].Doctrine, "slice22 composed patrol remains second after the advance dismiss");
+Eq(90, s22cSim.World.Squads[0].Health, "slice22 composed hold health unchanged by the advance dismiss");
+Eq(40, s22cSim.World.Squads[1].Health, "slice22 composed patrol health unchanged by the advance dismiss");
+s22cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+s22cSim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s22cSim.BeginOrbitalPick();
+Check(s22cSim.SetOrbitalRally(10, 5, 20), "slice22 composed defendcore rally set");
+Check(s22cSim.ConfirmOrbitalDeploy() != null, "slice22 composed defendcore redeploys paid at the freed slot");
+Eq(30, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed redeploy costs a fresh 10, ore now 30");
+Eq(3, s22cSim.World.Squads.Count, "slice22 composed cap is full again at 3");
+Eq(TacticalDoctrine.DefendCore, s22cSim.World.Squads[2].Doctrine, "slice22 composed redeployed squad is defendcore");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s22cSim.World)[2].Activity, "slice22 composed defendcore reads marching before any tick");
+Check(s22cSim.TryDismissSquad(0), "slice22 composed holdground dismisses");
+Eq(2, s22cSim.World.Squads.Count, "slice22 composed count drops to 2 after the hold dismiss");
+Eq(30, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed hold dismiss refunds none");
+Eq(TacticalDoctrine.Patrol, s22cSim.World.Squads[0].Doctrine, "slice22 composed patrol remains first after the hold dismiss");
+Eq(TacticalDoctrine.DefendCore, s22cSim.World.Squads[1].Doctrine, "slice22 composed defendcore remains second after the hold dismiss");
+Eq(21, s22cSim.World.Squads[0].X, "slice22 composed patrol position unchanged by the hold dismiss");
+Eq(16, s22cSim.World.Squads[1].X, "slice22 composed defendcore position unchanged by the hold dismiss");
+s22cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+s22cSim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s22cSim.BeginOrbitalPick();
+Check(s22cSim.SetOrbitalRally(12, 5, 16), "slice22 composed stuck patrol rally set");
+Check(s22cSim.ConfirmOrbitalDeploy() != null, "slice22 composed stuck patrol deploys paid");
+Eq(20, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed ore after stuck deploy is 20");
+Eq(3, s22cSim.World.Squads.Count, "slice22 composed cap is full again at 3 with the stuck patrol");
+s22cSim.World.Chunk.TrySet(15, 5, 16, BlockType.Stone);
+s22cSim.World.Chunk.TrySet(16, 5, 17, BlockType.Stone);
+s22cSim.World.Chunk.TrySet(16, 5, 15, BlockType.Stone);
+int[] s22cStuckPatrolX = { 22, 23, 22, 22, 21 };
+int[] s22cStuckPatrolZ = { 20, 20, 20, 21, 21 };
+int[] s22cDefX = { 17, 17, 18, 18, 19 };
+int[] s22cDefZ = { 16, 17, 17, 18, 18 };
+int[] s22cStuckRefusals = { 1, 2, 3, 4, 5 };
+int[] s22cStuckWaypoint = { 1, 2, 3, 4, 0 };
+for (int s22cTick = 0; s22cTick < 5; s22cTick++)
+{
+    s22cSim.World.Advance();
+    Eq(s22cStuckPatrolX[s22cTick], s22cSim.World.Squads[0].X, $"slice22 composed stuck tick {s22cTick + 1} patrol x");
+    Eq(s22cStuckPatrolZ[s22cTick], s22cSim.World.Squads[0].Z, $"slice22 composed stuck tick {s22cTick + 1} patrol z");
+    Eq(s22cDefX[s22cTick], s22cSim.World.Squads[1].X, $"slice22 composed stuck tick {s22cTick + 1} defendcore x");
+    Eq(s22cDefZ[s22cTick], s22cSim.World.Squads[1].Z, $"slice22 composed stuck tick {s22cTick + 1} defendcore z");
+    Eq(16, s22cSim.World.Squads[2].X, $"slice22 composed stuck tick {s22cTick + 1} stuck x unmoved");
+    Eq(16, s22cSim.World.Squads[2].Z, $"slice22 composed stuck tick {s22cTick + 1} stuck z unmoved");
+    Eq(s22cStuckRefusals[s22cTick], s22cSim.World.Squads[2].PatrolConsecutiveRefusals, $"slice22 composed stuck tick {s22cTick + 1} refusals");
+    Eq(s22cStuckWaypoint[s22cTick], s22cSim.World.Squads[2].PatrolWaypointIndex, $"slice22 composed stuck tick {s22cTick + 1} waypoint");
+}
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s22cSim.World)[2].Activity, "slice22 composed stuck patrol reads stuck after five refusals");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22cSim.World)[0].Activity, "slice22 composed moving patrol still reads patrolling beside the stuck patrol");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s22cSim.World)[1].Activity, "slice22 composed defendcore still reads marching beside the stuck patrol");
+var s22cPreSave = s22cSim.SaveToJson();
+var s22cPreLoaded = new Simulation(99);
+Check(s22cPreLoaded.LoadFromJson(s22cPreSave), "slice22 composed pre-removal save loads");
+Eq(3, s22cPreLoaded.World.Squads.Count, "slice22 composed pre-removal save keeps three squads");
+Eq(TacticalDoctrine.DefendCore, s22cPreLoaded.World.Squads[1].Doctrine, "slice22 composed pre-removal save keeps the defendcore");
+Eq(19, s22cPreLoaded.World.Squads[1].X, "slice22 composed pre-removal defendcore position kept");
+Eq(18, s22cPreLoaded.World.Squads[1].Z, "slice22 composed pre-removal defendcore z kept");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22cPreLoaded.World)[2].Activity, "slice22 composed pre-removal stuck patrol reads patrolling on load, not stuck");
+Eq(0, s22cPreLoaded.World.Squads[2].PatrolWaypointIndex, "slice22 composed pre-removal stuck patrol index resets to 0 on load");
+Eq(0, s22cPreLoaded.World.Squads[2].PatrolConsecutiveRefusals, "slice22 composed pre-removal stuck patrol counter resets to 0 on load");
+Eq(12, s22cPreLoaded.World.Squads[2].RallyX, "slice22 composed pre-removal stuck patrol keeps its old rally on load");
+Check(s22cSim.TryReRallyStuckPatrol(2, 22, 5, 16), "slice22 composed stuck patrol re-rallies free");
+Eq(22, s22cSim.World.Squads[2].RallyX, "slice22 composed rescued rally is now 22");
+Eq(0, s22cSim.World.Squads[2].PatrolWaypointIndex, "slice22 composed rescued waypoint resets to 0");
+Eq(0, s22cSim.World.Squads[2].PatrolConsecutiveRefusals, "slice22 composed rescued counter resets to 0");
+Eq(16, s22cSim.World.Squads[2].X, "slice22 composed rescued position unchanged, no teleport");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22cSim.World)[2].Activity, "slice22 composed rescued patrol reads patrolling at once");
+Eq(20, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed rescue charges nothing");
+Eq(3, s22cSim.World.Squads.Count, "slice22 composed rescue frees no cap slot");
+Check(s22cSim.TryDismissSquad(1), "slice22 composed defendcore dismisses beside the rescue");
+Eq(2, s22cSim.World.Squads.Count, "slice22 composed count drops to 2 after the defendcore dismiss");
+Eq(20, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed defendcore dismiss refunds none");
+Eq(TacticalDoctrine.Patrol, s22cSim.World.Squads[0].Doctrine, "slice22 composed patrol remains first after the defendcore dismiss");
+Eq(TacticalDoctrine.Patrol, s22cSim.World.Squads[1].Doctrine, "slice22 composed rescued patrol remains second after the defendcore dismiss");
+Eq(21, s22cSim.World.Squads[0].X, "slice22 composed patrol position unchanged by the defendcore dismiss");
+Eq(16, s22cSim.World.Squads[1].X, "slice22 composed rescued position unchanged by the defendcore dismiss");
+Eq(22, s22cSim.World.Squads[1].RallyX, "slice22 composed rescued rally unchanged by the defendcore dismiss");
+Eq(40, s22cSim.World.Squads[0].Health, "slice22 composed patrol health unchanged by the defendcore dismiss");
+Eq(90, s22cSim.World.Squads[1].Health, "slice22 composed rescued health unchanged by the defendcore dismiss");
+var s22cPostSave = s22cSim.SaveToJson();
+var s22cPostLoaded = new Simulation(99);
+Check(s22cPostLoaded.LoadFromJson(s22cPostSave), "slice22 composed post-removal save loads");
+Eq(2, s22cPostLoaded.World.Squads.Count, "slice22 composed post-removal save has no defendcore entry");
+Eq(TacticalDoctrine.Patrol, s22cPostLoaded.World.Squads[0].Doctrine, "slice22 composed post-removal save keeps the patrol");
+Eq(TacticalDoctrine.Patrol, s22cPostLoaded.World.Squads[1].Doctrine, "slice22 composed post-removal save keeps the rescued patrol");
+Eq(20, s22cPostLoaded.World.Squads[0].RallyX, "slice22 composed post-removal patrol rally kept");
+Eq(22, s22cPostLoaded.World.Squads[1].RallyX, "slice22 composed post-removal rescued rally kept");
+Eq(20, s22cPostLoaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed post-removal loaded ore is still 20");
+int[] s22cRescuedX = { 17, 18, 19, 20, 21, 22 };
+int[] s22cLoopPatrolX = { 21, 20, 20, 19, 19, 18 };
+int[] s22cLoopPatrolZ = { 22, 22, 23, 23, 22, 22 };
+for (int s22cTick = 0; s22cTick < 6; s22cTick++)
+{
+    s22cSim.World.Advance();
+    Eq(s22cLoopPatrolX[s22cTick], s22cSim.World.Squads[0].X, $"slice22 composed rescued march tick {s22cTick + 1} patrol x");
+    Eq(s22cLoopPatrolZ[s22cTick], s22cSim.World.Squads[0].Z, $"slice22 composed rescued march tick {s22cTick + 1} patrol z");
+    Eq(s22cRescuedX[s22cTick], s22cSim.World.Squads[1].X, $"slice22 composed rescued march tick {s22cTick + 1} rescued x");
+    Eq(16, s22cSim.World.Squads[1].Z, $"slice22 composed rescued march tick {s22cTick + 1} rescued z");
+    Eq(0, s22cSim.World.Squads[1].PatrolWaypointIndex, $"slice22 composed rescued march tick {s22cTick + 1} rescued waypoint stays 0 toward its rally");
+    Eq(22, s22cSim.World.Squads[1].PatrolTarget.X, $"slice22 composed rescued march tick {s22cTick + 1} rescued target is its new rally");
+}
+s22cSim.World.Advance();
+Eq(23, s22cSim.World.Squads[1].X, "slice22 composed rescued loop tick steps east onto its new loop");
+Eq(1, s22cSim.World.Squads[1].PatrolWaypointIndex, "slice22 composed rescued loop tick is waypoint 1");
+Eq(25, s22cSim.World.Squads[1].PatrolTarget.X, "slice22 composed rescued loop target is the new rally plus radius 3");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22cSim.World)[1].Activity, "slice22 composed rescued patrol reads patrolling on its new loop");
+Check(s22cSim.TryDismissSquad(0), "slice22 composed moving patrol dismisses");
+Eq(1, s22cSim.World.Squads.Count, "slice22 composed count drops to 1 after the moving patrol dismiss");
+Eq(20, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed moving patrol dismiss refunds none");
+Eq(23, s22cSim.World.Squads[0].X, "slice22 composed rescued position unchanged by the moving patrol dismiss");
+Eq(22, s22cSim.World.Squads[0].RallyX, "slice22 composed rescued rally unchanged by the moving patrol dismiss");
+Eq(1, s22cSim.World.Squads[0].PatrolWaypointIndex, "slice22 composed rescued waypoint unchanged by the moving patrol dismiss");
+s22cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s22cSim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s22cSim.BeginOrbitalPick();
+Check(s22cSim.SetOrbitalRally(20, 5, 16), "slice22 composed sacrificial rally set");
+Check(s22cSim.ConfirmOrbitalDeploy() != null, "slice22 composed sacrificial hold deploys paid");
+Eq(10, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed ore after sacrificial deploy is 10");
+Eq(2, s22cSim.World.Squads.Count, "slice22 composed cap is 2 with the sacrificial squad");
+var s22cSac = s22cSim.World.Squads[1];
+s22cSac.TakeDamage(90);
+Eq(0, s22cSac.Health, "slice22 composed sacrificial squad is dead at 0 HP");
+Check(!s22cSim.TryDismissSquad(1), "slice22 composed dead squad dismiss refused");
+Eq(2, s22cSim.World.Squads.Count, "slice22 composed dead refusal leaves the list at 2");
+Eq(10, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed dead refusal changes no ore");
+Eq(23, s22cSim.World.Squads[0].X, "slice22 composed dead refusal leaves the rescued patrol");
+s22cSim.World.Advance();
+Eq(1, s22cSim.World.Squads.Count, "slice22 composed sweep tick removes the dead squad from the list");
+Eq(24, s22cSim.World.Squads[0].X, "slice22 composed sweep tick steps the rescued patrol to 24");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s22cSim.World)[0].Activity, "slice22 composed rescued patrol still patrolling after the sweep");
+Check(s22cSim.TryDismissSquad(0), "slice22 composed rescued patrol dismisses, emptying the field");
+Eq(0, s22cSim.World.Squads.Count, "slice22 composed field is empty after the rescued dismiss");
+Eq(0, OrbitalView.Snapshot(s22cSim.World).Count, "slice22 composed snapshot is empty after the rescued dismiss");
+Eq(10, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed rescued dismiss refunds none");
+Check(!s22cSim.TryDismissSquad(0), "slice22 composed empty-list dismiss refused");
+Eq(0, s22cSim.World.Squads.Count, "slice22 composed empty refusal leaves the field empty");
+Eq(10, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed empty refusal changes no ore");
+s22cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s22cSim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s22cSim.BeginOrbitalPick();
+Check(s22cSim.SetOrbitalRally(20, 5, 16), "slice22 composed final rally set");
+Check(s22cSim.ConfirmOrbitalDeploy() != null, "slice22 composed final hold deploys paid with the last ore");
+Eq(0, s22cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed ore is 0 after the final deploy");
+Eq(1, s22cSim.World.Squads.Count, "slice22 composed cap is 1 with the rebuilt hold");
+int[] s22cFinalX = { 17, 18, 19, 20 };
+for (int s22cTick = 0; s22cTick < 4; s22cTick++)
+{
+    s22cSim.World.Advance();
+    Eq(s22cFinalX[s22cTick], s22cSim.World.Squads[0].X, $"slice22 composed final march tick {s22cTick + 1} final hold x");
+    Eq(16, s22cSim.World.Squads[0].Z, $"slice22 composed final march tick {s22cTick + 1} final hold z");
+}
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s22cSim.World)[0].Activity, "slice22 composed final hold reads holding at its rally");
+Eq(20, s22cSim.World.Squads[0].RallyX, "slice22 composed final hold rally is 20");
+var s22cFinalSave = s22cSim.SaveToJson();
+var s22cFinalLoaded = new Simulation(99);
+Check(s22cFinalLoaded.LoadFromJson(s22cFinalSave), "slice22 composed final save loads");
+Eq(1, s22cFinalLoaded.World.Squads.Count, "slice22 composed final save keeps one squad");
+Eq(TacticalDoctrine.HoldGround, s22cFinalLoaded.World.Squads[0].Doctrine, "slice22 composed final save keeps the holdground");
+Eq(20, s22cFinalLoaded.World.Squads[0].X, "slice22 composed final loaded hold position kept");
+Eq(20, s22cFinalLoaded.World.Squads[0].RallyX, "slice22 composed final loaded hold rally kept");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s22cFinalLoaded.World)[0].Activity, "slice22 composed final loaded hold reads holding");
+Eq(0, s22cFinalLoaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice22 composed final loaded ore is 0");
+s22cFinalLoaded.World.Advance();
+Eq(20, s22cFinalLoaded.World.Squads[0].X, "slice22 composed final loaded tick 1 hold stays at its rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s22cFinalLoaded.World)[0].Activity, "slice22 composed final loaded tick 1 hold still holding");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice22 composed loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice22 composed loop waypoint count is still 5, not retuned");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

@@ -9447,6 +9447,140 @@ live-squad removal action (under delegation)
 - Next step: Slice 22 Step 2, composed demo + review
   closing Slice 22, per docs/slice-22-scope.md.
 
+## 0.92.0 — Slice 22 Step 2: composed demo + review,
+closing Slice 22 (under delegation)
+
+- Decision, in one sentence: the composed demo proves
+  the decided dismiss together with its controls in one
+  field — five dismissals, one per doctrine plus the
+  rescued patrol, four refusal classes, one free stuck
+  re-rally beside one removal, three save/load
+  round-trips — with no new system, no adapter edit,
+  and no checklist item, and the review closes Slice 22
+  as reviewed headlessly, not playtested or
+  Unity-verified.
+- Composition, decided as one field with seven paid
+  deploys and never more than 3 live squads: the cap
+  is proved by the sequence itself, not by a claim
+  about it — every deploy succeeds because the cap
+  either has room or a dismiss just freed a slot, and
+  the one deploy that would break the cap (a fourth
+  deploy at a full cap) is Step 1's proof, cited, not
+  re-staged, because re-staging it here would add a
+  refusal the demo does not need and a squad the demo
+  does not use. The ore arithmetic is the economy
+  proof in miniature: 70 in, seven deploys at 10 each,
+  0 charged by the re-rally, 0 refunded by any dismiss
+  or by the staged death, 0 at the end — and every
+  intermediate ore value (60, 50, 40, 30, 20, 10, 0)
+  is printed in the demo and asserted in the tests, so
+  a reader can check the refund-none answer at each
+  step rather than trusting the total.
+- Rescue distinction, decided as the composition's
+  centre, not its decoration: the stuck patrol is
+  re-rallied through the stuck gate, not the general
+  gate, even though Step 1's gates-agreement proof
+  shows both gates give the identical outcome for a
+  stuck Patrol. The reason is naming, not mechanics:
+  the stuck gate names the action as a rescue, and
+  the dismiss that follows it, of a different squad in
+  the same field, names the other action as a removal
+  — so a reader sees two choices side by side, one
+  that keeps the squad for free and one that ends it
+  for its slot, rather than one action with two prices.
+  The pre-removal save is taken before either action
+  and the post-removal save after the dismiss, so the
+  two saves together prove both halves of the save
+  claim (present before, absent after) with no new
+  save field; a removal deletes a squad entry, and
+  the review says which per-doctrine effects change a
+  save — none, except presence or absence of the
+  entry — rather than quoting the suite as unchanged.
+- Staged death, stated honestly as staging: the
+  sacrificial HoldGround exists only to prove a dead
+  squad refuses a dismiss, and it is killed by a demo
+  TakeDamage call, not by any player action — a player
+  cannot damage their own squad, and the step does not
+  pretend otherwise. Its sweep by the next tick is the
+  existing Slice 11 rule, not a dismiss, and the demo
+  prints both halves (refusal with the dead squad still
+  listed, then sweep with the list at 1) so the two
+  removals cannot be confused. The same honesty
+  applies to the rebuild: the final HoldGround is a
+  new paid deploy with the last 10 ore, not a return
+  of any dismissed squad, and no dismissed squad in
+  this demo ever returns.
+- What is cited, not re-claimed, in this composition:
+  the enclosed stuck shape's re-stick (Slice 20 Step 1
+  and Step 1's enclosed proof), the stuck-before-save
+  re-stick after a fresh full circuit (Slices 20 and
+  21), Step 1's fire proofs (no enemy is staged here,
+  so no fire claim is smuggled into a removal demo),
+  and the full-cap deploy refusal (Step 1's paid
+  chain). The pre-removal load copy is read, not
+  ticked, for the same reason: its presence proof is
+  the composed claim, and its re-stick is already
+  proved. A composition that re-proved everything
+  would be a second Step 1, not a review.
+- Claim split, stated plainly: the headless evidence
+  is squad states, refusal counts, waypoint indices,
+  rally values, ore and cap counts, march positions,
+  and three save/load round-trips, plus a demo that
+  prints them in sequence. None of it proves a player
+  can press X, aim at a live marker, confirm with
+  Return, watch the marker vanish, and understand the
+  freed slot as a correction rather than a loss. That
+  is item 41, a Windows observation, recorded in
+  DECISIONS.md when observed, not closed by a test
+  count — and the X binding is still a comment only,
+  so the observation cannot even be attempted until a
+  later adapter step implements it.
+- Checklist relation: no new item. Item 41 is the
+  dismiss observation, and it stands beside item 40
+  (general re-rally), item 39 (stuck re-rally), item
+  37 (patrol route), item 29 (patrol), and
+  orbital-command item 13 (patrol command) —
+  superseding none, extending none, because a removal
+  is a different action from a re-rally, not a wider
+  form of one. Next free gate number remains 42.
+- Deliberately not in this step: a new core system; a
+  radius, waypoint-count, or loop-shape change; a
+  movement, targeting, or fire rule change; a delivery,
+  precedence, conflict, rating, cost, or phase rule
+  change; a re-rally repricing; a dismiss refund of
+  any size; a reserve, bench, or redeploy-from-reserve
+  system; a general squad-command system; a material,
+  marker, light, fog, model, or HUD change; an adapter
+  edit or a binding implementation; a scene file,
+  imported asset, texture, or shader file; a Slice 23
+  scope.
+- Gaps carried, in priority order: Windows Unity
+  verification (Slices 1–22, items 25–27 and 30–41
+  still open, item 41 pending its binding); the
+  Slice 1 director playtest gate still pending;
+  first-pass graphics values unproven; Slice 13
+  scene-proof observations still unmade; a radius or
+  waypoint value revisited on evidence, as the first
+  Slice 23 candidate; a general re-rally price on
+  Windows playtest evidence, if free repositioning
+  proves abusive, as a later economy decision; a
+  dismiss refund on Windows playtest evidence, if
+  slot-only removal proves punishing, as a later
+  economy decision — recorded here so it is a gap,
+  not a silent promise. Closed by this slice, not
+  carried: the removal question itself, decided in
+  Step 1 and proved together with its controls here.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 23 as its own decision
+  step, chosen from the ranked candidates the Slice 22
+  review carries, not promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

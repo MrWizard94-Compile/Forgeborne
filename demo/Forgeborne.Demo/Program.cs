@@ -1646,3 +1646,188 @@ Console.WriteLine($"Slice 21 loaded indices: hold {simS21Loaded.World.Squads[0].
 simS21Loaded.World.Advance();
 Console.WriteLine($"Slice 21 loaded tick 1: hold at ({simS21Loaded.World.Squads[0].X},5,{simS21Loaded.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS21Loaded.World)[0].Activity}, patrol at ({simS21Loaded.World.Squads[1].X},5,{simS21Loaded.World.Squads[1].Z}) waypoint {simS21Loaded.World.Squads[1].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS21Loaded.World)[1].Activity}, re-rallied at ({simS21Loaded.World.Squads[2].X},5,{simS21Loaded.World.Squads[2].Z}) waypoint {simS21Loaded.World.Squads[2].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS21Loaded.World)[2].Activity}");
 Console.WriteLine($"Slice 21 done: hold {simS21.World.Squads[0].Kind} {simS21.World.Squads[0].Doctrine} + loaded hold, patrol {simS21.World.Squads[1].Kind} {simS21.World.Squads[1].Doctrine} + loaded patrol, re-rallied {simS21.World.Squads[2].Kind} {simS21.World.Squads[2].Doctrine} marched to its new rally and loaded with it, inert refusals and staged deaths beside them, save JSON length: {saveS21.Length} chars");
+
+// Slice 22 Step 2 scenario: Slice 22 composed in one run —
+// the decided dismiss agreeing with its controls in one
+// field, through the paid path only. One Simulation
+// carries, in order: a Vanguard HoldGround, a Recon
+// Patrol, and a Heavy Advance at a full cap, marched to
+// their readings; out-of-range and negative dismiss
+// refusals with nothing changed; the Advance dismissed
+// (the Advance doctrine covered) with the HoldGround and
+// the Patrol unchanged; a Heavy Defend Core paid
+// redeployed at the freed slot (the full-cap removal
+// plus redeploy, price still 10, ore shown at every
+// step); the HoldGround dismissed (the HoldGround
+// doctrine covered) with the Patrol and the Defend Core
+// unchanged; a Vanguard Patrol deployed at the player
+// cell in the exact route-blocked shape Step 1 proved by
+// translation — west, south, and north walls around the
+// squad's cell, the east step cell open — so it counts
+// five refusals and reads Stuck, unmoved, while the
+// other two keep their readings; a pre-removal save that
+// still loads with the Defend Core present; the stuck
+// patrol re-rallied FREE through the stuck gate beside
+// that save, so the rescue and the removal are visibly
+// distinct choices; the Defend Core dismissed beside the
+// rescued patrol (the Defend Core doctrine covered) with
+// the Patrol and the rescued patrol unchanged; a
+// post-removal save that loads without the Defend Core
+// and with both remaining rallies kept; the rescued
+// patrol marched east to its new rally and turned onto
+// its new loop; the moving Recon Patrol dismissed (the
+// Patrol doctrine covered) with the rescued patrol
+// unchanged; a sacrificial HoldGround paid deployed at
+// the last-but-one ore, killed without a tick, and
+// refused as a dead squad with nothing changed; one
+// sweep tick removing the dead squad from the list while
+// the rescued patrol steps on; the rescued patrol itself
+// dismissed, leaving an empty field; an empty-list
+// dismiss refusal with nothing changed; and a final
+// HoldGround paid deployed with the last 10 ore and
+// marched to its rally, closing the field the player
+// rebuilt. No enemy is staged for a fire claim, so no
+// fire, chase, or damage claim is smuggled into a
+// removal demo: the demo proves the removal, its
+// refusals, its economy, its rescue distinction, and
+// its movement, and nothing else. What this demo cannot
+// show, by construction, is any adapter feel: no X key
+// press, no crosshair on a marker, and no confirm step
+// appear in a headless run, so the decided removal stays
+// in playtest-gate checklist item 41 (Windows-only,
+// standing beside items 40, 39, 37, 29, and
+// orbital-command item 13), not in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 22 Step 2 scenario — dismiss at a full cap, a stuck Patrol rescued beside a squad removed, refusals, and a rebuilt field, save/load round-trip");
+var simS22 = new Simulation(42);
+simS22.World.Player.Inventory.Add(BlockType.EmberOre, 70);
+simS22.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS22.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS22.BeginOrbitalPick();
+simS22.SetOrbitalRally(12, 5, 16);
+var s22Hold = simS22.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Vanguard HoldGround {(s22Hold == null ? "REJECTED" : "rally (12,5,16)")}, ore left {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches west to its rally)");
+simS22.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS22.OrbitalCommand.SelectKind(SquadKind.Recon);
+simS22.BeginOrbitalPick();
+simS22.SetOrbitalRally(20, 5, 20);
+var s22Patrol = simS22.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Recon Patrol {(s22Patrol == null ? "REJECTED" : "rally (20,5,20)")}, ore left {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches to its rally while the HoldGround marches west)");
+simS22.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Advance);
+simS22.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS22.BeginOrbitalPick();
+simS22.SetOrbitalRally(10, 5, 10);
+var s22Adv = simS22.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Heavy Advance {(s22Adv == null ? "REJECTED" : "rally (10,5,10)")}, ore left {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), cap now full at 3 live squads, and stays there with no enemy: Advance has no rally fallback and reads Idle)");
+foreach (var sq in OrbitalView.Snapshot(simS22.World))
+    Console.WriteLine($"Slice 22 snapshot before march: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity} HP {sq.Health}");
+for (int tick = 1; tick <= 9; tick++)
+{
+    simS22.World.Advance();
+    var hold = simS22.World.Squads[0];
+    var patrol = simS22.World.Squads[1];
+    var adv = simS22.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS22.World);
+    Console.WriteLine($"Slice 22 march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}, advance at ({adv.X},5,{adv.Z}) reads {snaps[2].Activity}");
+}
+Console.WriteLine($"Slice 22 after march: hold at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) reads Holding, patrol at ({simS22.World.Squads[1].X},5,{simS22.World.Squads[1].Z}) waypoint {simS22.World.Squads[1].PatrolWaypointIndex} reads Patrolling on its loop, advance at ({simS22.World.Squads[2].X},5,{simS22.World.Squads[2].Z}) reads Idle, ore {simS22.World.Player.Inventory.Get(BlockType.EmberOre)}");
+var s22OutOfRange = simS22.TryDismissSquad(3);
+var s22Negative = simS22.TryDismissSquad(-1);
+Console.WriteLine($"Slice 22 dismiss refusals before any removal: index 3 accepted: {s22OutOfRange}, index -1 accepted: {s22Negative} (ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)}, live squads still {simS22.World.Squads.Count}, hold still at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}), patrol still at ({simS22.World.Squads[1].X},5,{simS22.World.Squads[1].Z}), advance still at ({simS22.World.Squads[2].X},5,{simS22.World.Squads[2].Z})) — both refused fail-closed, nothing changed");
+var s22AdvDismiss = simS22.TryDismissSquad(2);
+Console.WriteLine($"Slice 22 Advance dismiss: accepted: {s22AdvDismiss}, live squads now {simS22.World.Squads.Count}, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (refund none), hold still at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) HP {simS22.World.Squads[0].Health} reads {OrbitalView.Snapshot(simS22.World)[0].Activity}, patrol still at ({simS22.World.Squads[1].X},5,{simS22.World.Squads[1].Z}) HP {simS22.World.Squads[1].Health} reads {OrbitalView.Snapshot(simS22.World)[1].Activity} — nothing else changed");
+simS22.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+simS22.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS22.BeginOrbitalPick();
+simS22.SetOrbitalRally(10, 5, 20);
+var s22Def = simS22.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads redeployed at the freed slot: Heavy DefendCore {(s22Def == null ? "REJECTED" : "rally (10,5,20)")}, ore left {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (a fresh 10 at the unchanged price, cap full again at 3; deploys at the player, (16,5,16), and reads Marching before any tick: away from the core with no attacker, it is on its return march, not at its post)");
+var s22HoldDismiss = simS22.TryDismissSquad(0);
+Console.WriteLine($"Slice 22 HoldGround dismiss: accepted: {s22HoldDismiss}, live squads now {simS22.World.Squads.Count}, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (refund none), patrol still at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) HP {simS22.World.Squads[0].Health} reads {OrbitalView.Snapshot(simS22.World)[0].Activity}, defendcore still at ({simS22.World.Squads[1].X},5,{simS22.World.Squads[1].Z}) HP {simS22.World.Squads[1].Health} reads {OrbitalView.Snapshot(simS22.World)[1].Activity} — nothing else changed");
+simS22.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS22.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS22.BeginOrbitalPick();
+simS22.SetOrbitalRally(12, 5, 16);
+var s22Stuck = simS22.ConfirmOrbitalDeploy();
+simS22.World.Chunk.TrySet(15, 5, 16, BlockType.Stone);
+simS22.World.Chunk.TrySet(16, 5, 17, BlockType.Stone);
+simS22.World.Chunk.TrySet(16, 5, 15, BlockType.Stone);
+Console.WriteLine($"Paid squads deployed: Vanguard Patrol {(s22Stuck == null ? "REJECTED" : "rally (12,5,16), the route-blocked shape: west, south, and north walls around the player cell, east step cell open")}, ore left {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (cap now full at 3 live squads; enclosure staged after this deploy, as in Slice 18)");
+foreach (var sq in OrbitalView.Snapshot(simS22.World))
+    Console.WriteLine($"Slice 22 snapshot before stuck phase: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS22.World.Advance();
+    var patrol = simS22.World.Squads[0];
+    var def = simS22.World.Squads[1];
+    var stuck = simS22.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS22.World);
+    Console.WriteLine($"Slice 22 stuck tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[0].Activity}, defendcore at ({def.X},5,{def.Z}) reads {snaps[1].Activity}, stuck at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} refusals {stuck.PatrolConsecutiveRefusals} reads {snaps[2].Activity}");
+}
+Console.WriteLine($"Slice 22 after stuck phase: stuck at ({simS22.World.Squads[2].X},5,{simS22.World.Squads[2].Z}) waypoint {simS22.World.Squads[2].PatrolWaypointIndex} refusals {simS22.World.Squads[2].PatrolConsecutiveRefusals} reads Stuck, unmoved, while the Patrol and the Defend Core keep their own readings");
+var saveS22Pre = simS22.SaveToJson();
+var simS22PreLoaded = new Simulation(99);
+Console.WriteLine($"Load (pre-removal copy): {simS22PreLoaded.LoadFromJson(saveS22Pre)}");
+foreach (var sq in OrbitalView.Snapshot(simS22PreLoaded.World))
+    Console.WriteLine($"Slice 22 snapshot after pre-removal load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 22 pre-removal load keeps all 3 squads, including the Defend Core at ({simS22PreLoaded.World.Squads[1].X},5,{simS22PreLoaded.World.Squads[1].Z}), and the stuck patrol reads Patrolling at index 0 with its counter reset to 0, as the load rule requires");
+var s22StuckReRally = simS22.TryReRallyStuckPatrol(2, 22, 5, 16);
+var s22StuckAfter = simS22.World.Squads[2];
+Console.WriteLine($"Slice 22 stuck free re-rally beside the removal to come: accepted: {s22StuckReRally}, stuck rally now ({s22StuckAfter.RallyX},5,{s22StuckAfter.RallyZ}), waypoint {s22StuckAfter.PatrolWaypointIndex}, refusals {s22StuckAfter.PatrolConsecutiveRefusals}, reads {OrbitalView.Snapshot(simS22.World)[2].Activity}, still at ({s22StuckAfter.X},5,{s22StuckAfter.Z}) (no teleport), ore {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (free: no charge, no refund), live squads {simS22.World.Squads.Count} (no cap slot freed) — the rescue is a different choice from the removal, not a cheaper form of it");
+var s22DefDismiss = simS22.TryDismissSquad(1);
+Console.WriteLine($"Slice 22 Defend Core dismiss beside the rescue: accepted: {s22DefDismiss}, live squads now {simS22.World.Squads.Count}, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (refund none), patrol still at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) HP {simS22.World.Squads[0].Health} rally ({simS22.World.Squads[0].RallyX},5,{simS22.World.Squads[0].RallyZ}) reads {OrbitalView.Snapshot(simS22.World)[0].Activity}, rescued patrol still at ({simS22.World.Squads[1].X},5,{simS22.World.Squads[1].Z}) HP {simS22.World.Squads[1].Health} rally ({simS22.World.Squads[1].RallyX},5,{simS22.World.Squads[1].RallyZ}) reads {OrbitalView.Snapshot(simS22.World)[1].Activity} — nothing else changed, and the rescue stays free and available beside the removal");
+var saveS22Post = simS22.SaveToJson();
+var simS22PostLoaded = new Simulation(99);
+Console.WriteLine($"Load (post-removal copy): {simS22PostLoaded.LoadFromJson(saveS22Post)}");
+foreach (var sq in OrbitalView.Snapshot(simS22PostLoaded.World))
+    Console.WriteLine($"Slice 22 snapshot after post-removal load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 22 post-removal load keeps 2 squads, no Defend Core entry, the Patrol keeping rally (20,5,20) and the rescued patrol keeping its new rally (22,5,16) — the removal persists, and the pre-removal save above still loads with the Defend Core present");
+for (int tick = 1; tick <= 6; tick++)
+{
+    simS22.World.Advance();
+    var patrol = simS22.World.Squads[0];
+    var rescued = simS22.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS22.World);
+    Console.WriteLine($"Slice 22 rescued march tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[0].Activity}, rescued at ({rescued.X},5,{rescued.Z}) waypoint {rescued.PatrolWaypointIndex} target ({rescued.PatrolTarget.X},5,{rescued.PatrolTarget.Z}) reads {snaps[1].Activity}");
+}
+simS22.World.Advance();
+Console.WriteLine($"Slice 22 rescued loop tick: patrol at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) waypoint {simS22.World.Squads[0].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS22.World)[0].Activity}, rescued at ({simS22.World.Squads[1].X},5,{simS22.World.Squads[1].Z}) waypoint {simS22.World.Squads[1].PatrolWaypointIndex} target ({simS22.World.Squads[1].PatrolTarget.X},5,{simS22.World.Squads[1].PatrolTarget.Z}) reads {OrbitalView.Snapshot(simS22.World)[1].Activity} (turned onto the new loop, east waypoint at the new rally plus radius 3)");
+var s22PatrolDismiss = simS22.TryDismissSquad(0);
+Console.WriteLine($"Slice 22 moving Patrol dismiss: accepted: {s22PatrolDismiss}, live squads now {simS22.World.Squads.Count}, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (refund none), rescued patrol still at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) HP {simS22.World.Squads[0].Health} rally ({simS22.World.Squads[0].RallyX},5,{simS22.World.Squads[0].RallyZ}) waypoint {simS22.World.Squads[0].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS22.World)[0].Activity} — nothing else changed");
+simS22.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS22.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS22.BeginOrbitalPick();
+simS22.SetOrbitalRally(20, 5, 16);
+var s22Sac = simS22.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: sacrificial Vanguard HoldGround {(s22Sac == null ? "REJECTED" : "rally (20,5,16)")}, ore left {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (cap now 2 live squads; this squad exists only to prove a dead squad refuses a dismiss, and is not a keeper)");
+s22Sac!.TakeDamage(90);
+var s22DeadDismiss = simS22.TryDismissSquad(1);
+Console.WriteLine($"Slice 22 dead-squad dismiss refusal: accepted: {s22DeadDismiss} (sacrificial squad at 0 HP still in the list, not yet swept by a tick; live squads still {simS22.World.Squads.Count} in list terms, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)}, rescued patrol still at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) HP {simS22.World.Squads[0].Health}) — refused fail-closed, nothing changed, because a dismiss is not a death and a dead squad is swept by the tick, not by the player");
+simS22.World.Advance();
+Console.WriteLine($"Slice 22 sweep tick: dead squad swept by the tick, live squads now {simS22.World.Squads.Count}, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)}, rescued patrol at ({simS22.World.Squads[0].X},5,{simS22.World.Squads[0].Z}) waypoint {simS22.World.Squads[0].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS22.World)[0].Activity} — the sweep, not a dismiss, removed the dead squad");
+var s22RescuedDismiss = simS22.TryDismissSquad(0);
+Console.WriteLine($"Slice 22 rescued Patrol dismiss, emptying the field: accepted: {s22RescuedDismiss}, live squads now {simS22.World.Squads.Count}, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (refund none), snapshot lists {OrbitalView.Snapshot(simS22.World).Count} squads");
+var s22EmptyDismiss = simS22.TryDismissSquad(0);
+Console.WriteLine($"Slice 22 empty-list dismiss refusal: accepted: {s22EmptyDismiss} (live squads still {simS22.World.Squads.Count}, ore still {simS22.World.Player.Inventory.Get(BlockType.EmberOre)}) — refused fail-closed, nothing changed");
+simS22.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS22.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS22.BeginOrbitalPick();
+simS22.SetOrbitalRally(20, 5, 16);
+var s22Final = simS22.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads redeployed with the last ore: Vanguard HoldGround {(s22Final == null ? "REJECTED" : "rally (20,5,16)")}, ore left {simS22.World.Player.Inventory.Get(BlockType.EmberOre)} (a fresh 10 at the unchanged price, cap 1; deploys at the player, (16,5,16), and marches east to its rally, rebuilding the emptied field)");
+for (int tick = 1; tick <= 4; tick++)
+{
+    simS22.World.Advance();
+    var fin = simS22.World.Squads[0];
+    var snaps = OrbitalView.Snapshot(simS22.World);
+    Console.WriteLine($"Slice 22 final march tick {tick}: final hold at ({fin.X},5,{fin.Z}) reads {snaps[0].Activity}");
+}
+var saveS22 = simS22.SaveToJson();
+var simS22Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS22Loaded.LoadFromJson(saveS22)}");
+foreach (var sq in OrbitalView.Snapshot(simS22Loaded.World))
+    Console.WriteLine($"Slice 22 snapshot after load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 22 loaded field: 1 squad, the rebuilt HoldGround at ({simS22Loaded.World.Squads[0].X},5,{simS22Loaded.World.Squads[0].Z}) rally (20,5,16) reading Holding, ore {simS22Loaded.World.Player.Inventory.Get(BlockType.EmberOre)}");
+simS22Loaded.World.Advance();
+Console.WriteLine($"Slice 22 loaded tick 1: final hold at ({simS22Loaded.World.Squads[0].X},5,{simS22Loaded.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS22Loaded.World)[0].Activity} (Holding at its rally, as before the save)");
+Console.WriteLine($"Slice 22 done: rebuilt {simS22.World.Squads[0].Kind} {simS22.World.Squads[0].Doctrine} + loaded hold, dismissals of Advance, HoldGround, Defend Core, both Patrols beside them, refusals for out-of-range, negative, dead, and empty indices, a free stuck re-rally beside a removal, and two save/load round-trips that preserve the field they were taken from, save JSON length: {saveS22.Length} chars");
