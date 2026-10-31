@@ -9585,5 +9585,227 @@ Eq(27, s25Rally.X, "slice25 audit rerally new loop east step is the new rally pl
 Eq((29, 5, 20), s25Rally.PatrolTarget, "slice25 audit rerally new loop east waypoint is the new rally plus radius 3");
 Check(!s25Rally.IsPatrolStuck, "slice25 audit rerally squad on the new loop is not stuck");
 
+// ---- Slice 25 Step 2: composed demo + review, closing Slice 25 (0.102.0) ----
+// One Simulation mirroring the demo, tick by tick: a Heavy
+// HoldGround marched away first, a Recon Patrol marched to its
+// rally and walking one full 24-step loop on the decided flat
+// cardinal cross shape at radius 3 and count 5, with the walked
+// coverage recorded cell by cell (22 distinct cells, Y 5
+// throughout, four square corners never visited); a Vanguard
+// Patrol staged in the audited route-blocked shape beside it
+// counting five step-cell refusals and reading Stuck; the fire
+// relation recomputed for the decided shape (rally to waypoint
+// 3, waypoint to waypoint 6, Vanguard exactly, Recon within,
+// Heavy beyond, no kind across); the same free re-rally Slice
+// 20 decided, a fourth paid deploy refused at the full cap,
+// the rescued march and loop turn onto the same shape
+// re-derived from the new rally, and a save/load round-trip
+// preserving both loop centres. No enemy is staged in the
+// main field, so no fire claim rides along as a demo result:
+// the fire section below recomputes from FindTarget on
+// separate worlds, exactly as Step 1's Audit C did, and a
+// diagonal sidestep case is not re-staged, because Step 1
+// already proved it and re-staging it would repeat the
+// audit, not compose it.
+var s25cSim = new Simulation(42);
+s25cSim.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+s25cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+s25cSim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s25cSim.BeginOrbitalPick();
+Check(s25cSim.SetOrbitalRally(10, 5, 10), "slice25 composed hold rally set");
+Check(s25cSim.ConfirmOrbitalDeploy() != null, "slice25 composed hold deploys paid");
+Eq(20, s25cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice25 composed ore after hold deploy is 20");
+Eq(100, s25cSim.World.Squads[0].Health, "slice25 composed hold health is 100");
+int[] s25cHoldX = { 15, 15, 14, 14, 13, 13 };
+int[] s25cHoldZ = { 16, 15, 15, 14, 14, 13 };
+for (int s25cTick = 0; s25cTick < 6; s25cTick++)
+{
+    s25cSim.World.Advance();
+    Eq(s25cHoldX[s25cTick], s25cSim.World.Squads[0].X, $"slice25 composed hold march tick {s25cTick + 1} hold x");
+    Eq(s25cHoldZ[s25cTick], s25cSim.World.Squads[0].Z, $"slice25 composed hold march tick {s25cTick + 1} hold z");
+    Eq(SquadActivity.Marching, OrbitalView.Snapshot(s25cSim.World)[0].Activity, $"slice25 composed hold march tick {s25cTick + 1} hold reads marching");
+}
+s25cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+s25cSim.OrbitalCommand.SelectKind(SquadKind.Recon);
+s25cSim.BeginOrbitalPick();
+Check(s25cSim.SetOrbitalRally(20, 5, 20), "slice25 composed patrol rally set");
+Check(s25cSim.ConfirmOrbitalDeploy() != null, "slice25 composed patrol deploys paid");
+Eq(10, s25cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice25 composed ore after patrol deploy is 10");
+Eq(40, s25cSim.World.Squads[1].Health, "slice25 composed patrol health is 40");
+int[] s25cMarchHoldX = { 12, 12, 11, 11, 10, 10, 10, 10 };
+int[] s25cMarchHoldZ = { 13, 12, 12, 11, 11, 10, 10, 10 };
+int[] s25cMarchPatrolX = { 17, 17, 18, 18, 19, 19, 20, 20 };
+int[] s25cMarchPatrolZ = { 16, 17, 17, 18, 18, 19, 19, 20 };
+for (int s25cTick = 0; s25cTick < 8; s25cTick++)
+{
+    s25cSim.World.Advance();
+    Eq(s25cMarchHoldX[s25cTick], s25cSim.World.Squads[0].X, $"slice25 composed patrol march tick {s25cTick + 1} hold x");
+    Eq(s25cMarchHoldZ[s25cTick], s25cSim.World.Squads[0].Z, $"slice25 composed patrol march tick {s25cTick + 1} hold z");
+    Eq(s25cMarchPatrolX[s25cTick], s25cSim.World.Squads[1].X, $"slice25 composed patrol march tick {s25cTick + 1} patrol x");
+    Eq(s25cMarchPatrolZ[s25cTick], s25cSim.World.Squads[1].Z, $"slice25 composed patrol march tick {s25cTick + 1} patrol z");
+    Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s25cSim.World)[1].Activity, $"slice25 composed patrol march tick {s25cTick + 1} patrol reads patrolling");
+}
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s25cSim.World)[0].Activity, "slice25 composed hold reads holding at its rally after the patrol march");
+Eq(0, s25cSim.World.Squads[1].PatrolWaypointIndex, "slice25 composed patrol is at its rally waypoint after the march");
+Eq((20, 5, 20), s25cSim.World.Squads[1].PatrolTarget, "slice25 composed patrol target after the march is its rally");
+int[] s25cLoopX = { 21, 22, 23, 22, 22, 21, 21, 20, 20, 19, 19, 18, 18, 17, 17, 18, 18, 19, 19, 20, 20, 20, 20, 20 };
+int[] s25cLoopZ = { 20, 20, 20, 20, 21, 21, 22, 22, 23, 23, 22, 22, 21, 21, 20, 20, 19, 19, 18, 18, 17, 18, 19, 20 };
+int[] s25cLoopIdx = { 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 0, 0, 0 };
+var s25cVisited = new HashSet<(int X, int Z)> { (20, 20) };
+for (int s25cTick = 0; s25cTick < 24; s25cTick++)
+{
+    s25cSim.World.Advance();
+    s25cVisited.Add((s25cSim.World.Squads[1].X, s25cSim.World.Squads[1].Z));
+    Eq(s25cLoopX[s25cTick], s25cSim.World.Squads[1].X, $"slice25 composed loop tick {s25cTick + 1} patrol x");
+    Eq(s25cLoopZ[s25cTick], s25cSim.World.Squads[1].Z, $"slice25 composed loop tick {s25cTick + 1} patrol z");
+    Eq(5, s25cSim.World.Squads[1].Y, $"slice25 composed loop tick {s25cTick + 1} patrol stays on the rally Y plane");
+    Eq(s25cLoopIdx[s25cTick], s25cSim.World.Squads[1].PatrolWaypointIndex, $"slice25 composed loop tick {s25cTick + 1} patrol waypoint");
+}
+Eq(20, s25cSim.World.Squads[1].X, "slice25 composed loop returns to the rally X in 24 steps");
+Eq(20, s25cSim.World.Squads[1].Z, "slice25 composed loop returns to the rally Z in 24 steps");
+Eq(0, s25cSim.World.Squads[1].PatrolWaypointIndex, "slice25 composed loop index is back to the rally waypoint");
+Eq(0, s25cSim.World.Squads[1].PatrolConsecutiveRefusals, "slice25 composed loop counts no refusals");
+Check(!s25cSim.World.Squads[1].IsPatrolStuck, "slice25 composed loop patrol is not stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s25cSim.World)[1].Activity, "slice25 composed loop patrol reads patrolling at its rally");
+Eq(22, s25cVisited.Count, "slice25 composed loop visits 22 distinct cells in 24 steps");
+Check(s25cVisited.Contains((23, 20)), "slice25 composed loop visits the east cardinal point");
+Check(s25cVisited.Contains((20, 23)), "slice25 composed loop visits the south cardinal point");
+Check(s25cVisited.Contains((17, 20)), "slice25 composed loop visits the west cardinal point");
+Check(s25cVisited.Contains((20, 17)), "slice25 composed loop visits the north cardinal point");
+Check(!s25cVisited.Contains((23, 23)), "slice25 composed loop never visits the south-east corner cell");
+Check(!s25cVisited.Contains((17, 23)), "slice25 composed loop never visits the south-west corner cell");
+Check(!s25cVisited.Contains((23, 17)), "slice25 composed loop never visits the north-east corner cell");
+Check(!s25cVisited.Contains((17, 17)), "slice25 composed loop never visits the north-west corner cell");
+Eq(10, s25cSim.World.Squads[0].X, "slice25 composed loop hold stays at its rally X");
+Eq(10, s25cSim.World.Squads[0].Z, "slice25 composed loop hold stays at its rally Z");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s25cSim.World)[0].Activity, "slice25 composed loop hold still reads holding");
+// Fire recomputed for the decided shape, on separate worlds
+// exactly as Step 1's Audit C: from the rally, Vanguard
+// engages the east waypoint at exactly 3, Recon within 5,
+// Heavy not beyond 2; from the east waypoint, no kind
+// engages another waypoint at distance 6, while both
+// Vanguard and Recon engage the rally at distance 3.
+var s25cFireWorld = new WorldZone(42);
+s25cFireWorld.Player.X = 20; s25cFireWorld.Player.Z = 20;
+var s25cFireVan = s25cFireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+var s25cFireRec = s25cFireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s25cFireHea = s25cFireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(s25cFireVan.FindTarget(new[] { new Enemy(23, 5, 20) }) != null, "slice25 composed fire vanguard on its rally engages the east waypoint at exactly range 3");
+Check(s25cFireRec.FindTarget(new[] { new Enemy(23, 5, 20) }) != null, "slice25 composed fire recon on its rally engages the east waypoint within range 5");
+Check(s25cFireHea.FindTarget(new[] { new Enemy(23, 5, 20) }) == null, "slice25 composed fire heavy on its rally does not engage the east waypoint beyond range 2");
+var s25cEastWorld = new WorldZone(42);
+s25cEastWorld.Player.X = 23; s25cEastWorld.Player.Z = 20;
+var s25cEastRec = s25cEastWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s25cEastVan = s25cEastWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s25cEastRec.FindTarget(new[] { new Enemy(20, 5, 23) }) == null, "slice25 composed fire recon on the east waypoint does not engage the south waypoint at distance 6");
+Check(s25cEastRec.FindTarget(new[] { new Enemy(17, 5, 20) }) == null, "slice25 composed fire recon on the east waypoint does not engage the west waypoint at distance 6");
+Check(s25cEastVan.FindTarget(new[] { new Enemy(20, 5, 23) }) == null, "slice25 composed fire vanguard on the east waypoint does not engage the south waypoint at distance 6");
+Check(s25cEastRec.FindTarget(new[] { new Enemy(20, 5, 20) }) != null, "slice25 composed fire recon on the east waypoint engages its rally at distance 3");
+Check(s25cEastVan.FindTarget(new[] { new Enemy(20, 5, 20) }) != null, "slice25 composed fire vanguard on the east waypoint engages its rally at exactly range 3");
+s25cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+s25cSim.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+s25cSim.BeginOrbitalPick();
+Check(s25cSim.SetOrbitalRally(12, 5, 16), "slice25 composed stuck patrol rally set");
+Check(s25cSim.ConfirmOrbitalDeploy() != null, "slice25 composed stuck patrol deploys paid");
+Eq(0, s25cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice25 composed ore after stuck deploy is 0");
+Eq(3, s25cSim.World.Squads.Count, "slice25 composed cap is full at 3 with the stuck patrol");
+Eq((12, 5, 16), s25cSim.World.Squads[2].PatrolTarget, "slice25 composed stuck patrol target before staging is its rally");
+Check(s25cSim.World.Chunk.TrySet(15, 5, 16, BlockType.Stone), "slice25 composed stuck stages a west wall");
+Check(s25cSim.World.Chunk.TrySet(16, 5, 17, BlockType.Stone), "slice25 composed stuck stages a south wall");
+Check(s25cSim.World.Chunk.TrySet(16, 5, 15, BlockType.Stone), "slice25 composed stuck stages a north wall");
+Eq(BlockType.Stone, s25cSim.World.Chunk.Get(15, 5, 16), "slice25 composed stuck east waypoint cell is stone, the blocked cell counted once");
+int[] s25cStuckWalkX = { 21, 22, 23, 22, 22 };
+int[] s25cStuckWalkZ = { 20, 20, 20, 20, 21 };
+int[] s25cStuckRefusals = { 1, 2, 3, 4, 5 };
+int[] s25cStuckWaypoint = { 1, 2, 3, 4, 0 };
+for (int s25cTick = 0; s25cTick < 5; s25cTick++)
+{
+    s25cSim.World.Advance();
+    Eq(s25cStuckWalkX[s25cTick], s25cSim.World.Squads[1].X, $"slice25 composed stuck tick {s25cTick + 1} walking patrol x");
+    Eq(s25cStuckWalkZ[s25cTick], s25cSim.World.Squads[1].Z, $"slice25 composed stuck tick {s25cTick + 1} walking patrol z");
+    Eq(16, s25cSim.World.Squads[2].X, $"slice25 composed stuck tick {s25cTick + 1} stuck x unmoved");
+    Eq(16, s25cSim.World.Squads[2].Z, $"slice25 composed stuck tick {s25cTick + 1} stuck z unmoved");
+    Eq(s25cStuckRefusals[s25cTick], s25cSim.World.Squads[2].PatrolConsecutiveRefusals, $"slice25 composed stuck tick {s25cTick + 1} refusals");
+    Eq(s25cStuckWaypoint[s25cTick], s25cSim.World.Squads[2].PatrolWaypointIndex, $"slice25 composed stuck tick {s25cTick + 1} waypoint");
+    Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s25cSim.World)[1].Activity, $"slice25 composed stuck tick {s25cTick + 1} walking patrol still reads patrolling");
+}
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s25cSim.World)[2].Activity, "slice25 composed stuck patrol reads stuck after five refusals");
+Check(s25cSim.World.Squads[2].IsPatrolStuck, "slice25 composed stuck patrol is stuck");
+Eq(22, s25cSim.World.Squads[1].X, "slice25 composed stuck phase walking patrol ends east on its loop");
+Eq(21, s25cSim.World.Squads[1].Z, "slice25 composed stuck phase walking patrol ends south on its loop");
+Eq(2, s25cSim.World.Squads[1].PatrolWaypointIndex, "slice25 composed stuck phase walking patrol waypoint is south");
+Check(s25cSim.TryReRallyStuckPatrol(2, 22, 5, 16), "slice25 composed stuck patrol re-rallies free");
+Eq(22, s25cSim.World.Squads[2].RallyX, "slice25 composed rescued rally is now 22");
+Eq(0, s25cSim.World.Squads[2].PatrolWaypointIndex, "slice25 composed rescued waypoint resets to 0");
+Eq(0, s25cSim.World.Squads[2].PatrolConsecutiveRefusals, "slice25 composed rescued counter resets to 0");
+Eq(16, s25cSim.World.Squads[2].X, "slice25 composed rescued position unchanged, no teleport");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s25cSim.World)[2].Activity, "slice25 composed rescued patrol reads patrolling at once");
+Eq(0, s25cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice25 composed rescue charges nothing");
+Eq(3, s25cSim.World.Squads.Count, "slice25 composed rescue frees no cap slot");
+s25cSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+s25cSim.OrbitalCommand.SelectKind(SquadKind.Heavy);
+s25cSim.BeginOrbitalPick();
+Check(s25cSim.SetOrbitalRally(10, 5, 10), "slice25 composed fourth rally set");
+Check(s25cSim.ConfirmOrbitalDeploy() == null, "slice25 composed fourth paid deploy at the full cap is refused");
+s25cSim.CancelOrbitalPick();
+Eq(0, s25cSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice25 composed fourth refusal charges nothing");
+Eq(3, s25cSim.World.Squads.Count, "slice25 composed fourth refusal adds no squad");
+Eq(22, s25cSim.World.Squads[2].RallyX, "slice25 composed fourth refusal leaves the rescued rally");
+int[] s25cRescuedX = { 17, 18, 19, 20, 21, 22 };
+int[] s25cRescueWalkX = { 21, 21, 20, 20, 19, 19 };
+int[] s25cRescueWalkZ = { 21, 22, 22, 23, 23, 22 };
+int[] s25cRescueWalkIdx = { 2, 2, 2, 2, 3, 3 };
+for (int s25cTick = 0; s25cTick < 6; s25cTick++)
+{
+    s25cSim.World.Advance();
+    Eq(s25cRescueWalkX[s25cTick], s25cSim.World.Squads[1].X, $"slice25 composed rescued march tick {s25cTick + 1} walking patrol x");
+    Eq(s25cRescueWalkZ[s25cTick], s25cSim.World.Squads[1].Z, $"slice25 composed rescued march tick {s25cTick + 1} walking patrol z");
+    Eq(s25cRescueWalkIdx[s25cTick], s25cSim.World.Squads[1].PatrolWaypointIndex, $"slice25 composed rescued march tick {s25cTick + 1} walking patrol waypoint");
+    Eq(s25cRescuedX[s25cTick], s25cSim.World.Squads[2].X, $"slice25 composed rescued march tick {s25cTick + 1} rescued x");
+    Eq(16, s25cSim.World.Squads[2].Z, $"slice25 composed rescued march tick {s25cTick + 1} rescued z");
+    Eq(0, s25cSim.World.Squads[2].PatrolWaypointIndex, $"slice25 composed rescued march tick {s25cTick + 1} rescued waypoint stays 0 toward its rally");
+    Eq(22, s25cSim.World.Squads[2].PatrolTarget.X, $"slice25 composed rescued march tick {s25cTick + 1} rescued target is its new rally");
+}
+Eq(22, s25cSim.World.Squads[2].X, "slice25 composed rescued march reaches its new rally X");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s25cSim.World)[2].Activity, "slice25 composed rescued patrol reads patrolling at its new rally");
+s25cSim.World.Advance();
+Eq(23, s25cSim.World.Squads[2].X, "slice25 composed rescued loop tick steps east onto its new loop");
+Eq(1, s25cSim.World.Squads[2].PatrolWaypointIndex, "slice25 composed rescued loop tick is waypoint 1");
+Eq(25, s25cSim.World.Squads[2].PatrolTarget.X, "slice25 composed rescued loop target is the new rally plus radius 3");
+Eq(18, s25cSim.World.Squads[1].X, "slice25 composed rescued loop tick walking patrol steps west on its loop");
+Eq(22, s25cSim.World.Squads[1].Z, "slice25 composed rescued loop tick walking patrol z");
+Eq(3, s25cSim.World.Squads[1].PatrolWaypointIndex, "slice25 composed rescued loop tick walking patrol waypoint is west");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s25cSim.World)[2].Activity, "slice25 composed rescued patrol reads patrolling on its new loop");
+var s25cSave = s25cSim.SaveToJson();
+var s25cLoaded = new Simulation(99);
+Check(s25cLoaded.LoadFromJson(s25cSave), "slice25 composed save loads");
+Eq(3, s25cLoaded.World.Squads.Count, "slice25 composed save keeps three squads");
+Eq(10, s25cLoaded.World.Squads[0].RallyX, "slice25 composed loaded hold rally kept");
+Eq(20, s25cLoaded.World.Squads[1].RallyX, "slice25 composed loaded walking patrol rally kept");
+Eq(22, s25cLoaded.World.Squads[2].RallyX, "slice25 composed loaded rescued rally kept, not the old one");
+Eq(10, s25cLoaded.World.Squads[0].X, "slice25 composed loaded hold position kept");
+Eq(18, s25cLoaded.World.Squads[1].X, "slice25 composed loaded walking patrol position kept");
+Eq(23, s25cLoaded.World.Squads[2].X, "slice25 composed loaded rescued position kept");
+Eq(0, s25cLoaded.World.Squads[0].PatrolWaypointIndex, "slice25 composed loaded hold index is 0");
+Eq(0, s25cLoaded.World.Squads[1].PatrolWaypointIndex, "slice25 composed loaded walking patrol index is 0");
+Eq(0, s25cLoaded.World.Squads[2].PatrolWaypointIndex, "slice25 composed loaded rescued index is 0");
+Eq(0, s25cLoaded.World.Player.Inventory.Get(BlockType.EmberOre), "slice25 composed loaded ore is still 0");
+Eq(100, s25cLoaded.World.Squads[0].Health, "slice25 composed loaded hold health kept");
+Eq(40, s25cLoaded.World.Squads[1].Health, "slice25 composed loaded walking patrol health kept");
+Eq(90, s25cLoaded.World.Squads[2].Health, "slice25 composed loaded rescued health kept");
+s25cLoaded.World.Advance();
+Eq(10, s25cLoaded.World.Squads[0].X, "slice25 composed loaded tick 1 hold stays at its rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s25cLoaded.World)[0].Activity, "slice25 composed loaded tick 1 hold reads holding");
+Eq(19, s25cLoaded.World.Squads[1].X, "slice25 composed loaded tick 1 walking patrol steps toward its rally");
+Eq(22, s25cLoaded.World.Squads[1].Z, "slice25 composed loaded tick 1 walking patrol z");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s25cLoaded.World)[1].Activity, "slice25 composed loaded tick 1 walking patrol reads patrolling");
+Eq(22, s25cLoaded.World.Squads[2].X, "slice25 composed loaded tick 1 rescued steps back to its new rally");
+Eq(0, s25cLoaded.World.Squads[2].PatrolWaypointIndex, "slice25 composed loaded tick 1 rescued waypoint is 0 at its rally");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice25 composed loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice25 composed loop waypoint count is still 5, not retuned");
+Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice25 composed vanguard range is 3, equal to the radius");
+Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice25 composed recon range is 5, above the radius");
+Eq(2, SquadShapes.For(SquadKind.Heavy).EngagementRange, "slice25 composed heavy range is 2, below the radius");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

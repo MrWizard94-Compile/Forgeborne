@@ -1973,3 +1973,159 @@ Console.WriteLine($"Slice 23 loaded indices: hold {simS23Loaded.World.Squads[0].
 simS23Loaded.World.Advance();
 Console.WriteLine($"Slice 23 loaded tick 1: hold at ({simS23Loaded.World.Squads[0].X},5,{simS23Loaded.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS23Loaded.World)[0].Activity}, patrol at ({simS23Loaded.World.Squads[1].X},5,{simS23Loaded.World.Squads[1].Z}) waypoint {simS23Loaded.World.Squads[1].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS23Loaded.World)[1].Activity}, re-rallied at ({simS23Loaded.World.Squads[2].X},5,{simS23Loaded.World.Squads[2].Z}) waypoint {simS23Loaded.World.Squads[2].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS23Loaded.World)[2].Activity} (re-rallied steps back to its new rally, as the index-reset load rule requires)");
 Console.WriteLine($"Slice 23 done: hold {simS23.World.Squads[0].Kind} {simS23.World.Squads[0].Doctrine} + loaded hold, patrol {simS23.World.Squads[1].Kind} {simS23.World.Squads[1].Doctrine} walking the kept loop + loaded patrol, re-rallied {simS23.World.Squads[2].Kind} {simS23.World.Squads[2].Doctrine} marched to its new rally and loaded with it, save JSON length: {saveS23.Length} chars");
+
+// Slice 25 Step 2 scenario: Slice 25 composed in one run —
+// the decided loop shape, proved in one field, not in
+// unit tests alone. One Simulation carries, in deploy
+// order: a Heavy HoldGround (the second-doctrine control,
+// marched away first so it is not standing on the player
+// cell when the stuck patrol deploys there); a Recon
+// Patrol (the walking control, marched to its rally and
+// then walking one full loop on the decided shape —
+// rally, east, south, west, north, rally again, all on
+// the rally's Y plane, at radius 3 and count 5, 24 steps
+// in all, a diamond perimeter visiting 22 distinct cells
+// with the four square corners never visited, which the
+// demo records after the loop rather than hiding); and
+// a Vanguard Patrol deployed at the player cell with its
+// rally four cells west, staged with the exact
+// route-blocked shape Step 1 audited by translation —
+// west, south, and north walls around the squad's cell,
+// the east step cell open — so it counts five refusals
+// and reads Stuck, unmoved, while the other two keep
+// their readings. The stuck classification is stated in
+// the lines below, not left as a shape: every attempted
+// step cell in those five ticks is stone, and the one
+// cell that is both a step cell and a waypoint — the
+// east waypoint (15,5,16), the rally plus radius 3 —
+// is counted once, as a blocked cell, not as a loop
+// shape. The fire relation is recomputed beside the
+// loop, not staged as a fire demo: rally to any waypoint
+// is Manhattan distance 3, waypoint to waypoint is 6, so
+// Vanguard engages a waypoint at exactly 3, Recon within
+// 5, Heavy not beyond 2, and no kind shoots across the
+// loop. The demo then proves, in order: the stuck patrol
+// accepts the same free re-rally Slice 20 decided,
+// charges nothing, frees no cap slot, and is not
+// teleported; a fourth paid deploy at the full cap is
+// still refused; the re-rallied patrol marches east to
+// its new rally in six ticks and turns onto the new loop
+// with the east waypoint at the new rally plus radius 3
+// — the same flat cardinal cross shape re-derived from
+// the new rally, not a reshaped loop; and a save/load
+// round-trip after the action loads both loop centres
+// (the walking patrol's (20,5,20) and the rescued
+// patrol's (22,5,16)), with patrol indices reset to 0
+// as before. No enemy is staged, so no fire, chase, or
+// damage claim is smuggled into a shape demo: the demo
+// proves the shape, its stuck classification, its rescue,
+// and its persistence, and nothing else. A diagonal
+// sidestep case is deliberately NOT re-staged here:
+// Step 1 already proved a single diagonal stair-step
+// block sidesteps while a cardinal block skips, and
+// re-staging it beside a stuck patrol would repeat the
+// audit, not compose it. What this demo cannot show, by
+// construction, is any adapter feel or any Windows
+// observation: no K or X key press, no crosshair on a
+// marker, and no loop fitting an ordinary map appear in
+// a headless run, so the decided shape stays observed
+// by playtest-gate items 37, 39, and 40 (Windows-only),
+// not in the numbers below, and no new gate item is
+// added by this step.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 25 Step 2 scenario — kept flat cardinal cross loop walked, stuck, rescued, and saved, save/load round-trip");
+var simS25 = new Simulation(42);
+simS25.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+simS25.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS25.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS25.BeginOrbitalPick();
+simS25.SetOrbitalRally(10, 5, 10);
+var s25Hold = simS25.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Heavy HoldGround {(s25Hold == null ? "REJECTED" : "rally (10,5,10)")}, ore left {simS25.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches to its rally)");
+foreach (var sq in OrbitalView.Snapshot(simS25.World))
+    Console.WriteLine($"Slice 25 snapshot before: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 6; tick++)
+{
+    simS25.World.Advance();
+    var hold = simS25.World.Squads[0];
+    var snaps = OrbitalView.Snapshot(simS25.World);
+    Console.WriteLine($"Slice 25 hold march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}");
+}
+simS25.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS25.OrbitalCommand.SelectKind(SquadKind.Recon);
+simS25.BeginOrbitalPick();
+simS25.SetOrbitalRally(20, 5, 20);
+var s25Patrol = simS25.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Recon Patrol {(s25Patrol == null ? "REJECTED" : "rally (20,5,20)")}, ore left {simS25.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches to its rally while the HoldGround keeps marching; decided shape: flat cardinal cross, rally, east, south, west, north, rally, radius {TacticalSquad.PatrolLoopRadius}, count {TacticalSquad.PatrolWaypointCount}, circuit 24 steps, ranges Vanguard {SquadShapes.For(SquadKind.Vanguard).EngagementRange} / Recon {SquadShapes.For(SquadKind.Recon).EngagementRange} / Heavy {SquadShapes.For(SquadKind.Heavy).EngagementRange})");
+for (int tick = 1; tick <= 8; tick++)
+{
+    simS25.World.Advance();
+    var hold = simS25.World.Squads[0];
+    var patrol = simS25.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS25.World);
+    Console.WriteLine($"Slice 25 patrol march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}");
+}
+Console.WriteLine($"Slice 25 after march: hold at ({simS25.World.Squads[0].X},5,{simS25.World.Squads[0].Z}) reads Holding, patrol at ({simS25.World.Squads[1].X},5,{simS25.World.Squads[1].Z}) waypoint {simS25.World.Squads[1].PatrolWaypointIndex} reads Patrolling at its rally (20,5,20), ore {simS25.World.Player.Inventory.Get(BlockType.EmberOre)}");
+var s25Visited = new HashSet<(int X, int Z)> { (20, 20) };
+for (int tick = 1; tick <= 24; tick++)
+{
+    simS25.World.Advance();
+    var patrol = simS25.World.Squads[1];
+    s25Visited.Add((patrol.X, patrol.Z));
+    var snaps = OrbitalView.Snapshot(simS25.World);
+    Console.WriteLine($"Slice 25 loop tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} target ({patrol.PatrolTarget.X},5,{patrol.PatrolTarget.Z}) reads {snaps[1].Activity}");
+}
+Console.WriteLine($"Slice 25 after loop: patrol back at ({simS25.World.Squads[1].X},5,{simS25.World.Squads[1].Z}) waypoint {simS25.World.Squads[1].PatrolWaypointIndex} reads Patrolling, 24 steps at radius 3 and count 5, refusals {simS25.World.Squads[1].PatrolConsecutiveRefusals} — the kept shape walked, not retuned, diamond perimeter of {s25Visited.Count} distinct cells on Y 5, square corners (17,17), (23,17), (17,23), (23,23) never visited");
+Console.WriteLine($"Slice 25 fire recomputed for the kept shape: rally to any waypoint Manhattan 3, waypoint to waypoint Manhattan 6 — Vanguard {SquadShapes.For(SquadKind.Vanguard).EngagementRange} engages a waypoint at exactly 3, Recon {SquadShapes.For(SquadKind.Recon).EngagementRange} within 5, Heavy {SquadShapes.For(SquadKind.Heavy).EngagementRange} not beyond 2, no kind shoots across the loop (distance 6); a radius property, not a shape virtue, and no enemy is staged to smuggle a fire claim into this shape demo");
+simS25.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS25.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS25.BeginOrbitalPick();
+simS25.SetOrbitalRally(12, 5, 16);
+var s25Stuck = simS25.ConfirmOrbitalDeploy();
+simS25.World.Chunk.TrySet(15, 5, 16, BlockType.Stone);
+simS25.World.Chunk.TrySet(16, 5, 17, BlockType.Stone);
+simS25.World.Chunk.TrySet(16, 5, 15, BlockType.Stone);
+Console.WriteLine($"Paid squads deployed: Vanguard Patrol {(s25Stuck == null ? "REJECTED" : "rally (12,5,16), the route-blocked shape: west, south, and north walls around the player cell, east step cell open")}, ore left {simS25.World.Player.Inventory.Get(BlockType.EmberOre)} (cap now full at 3 live squads; enclosure staged after this deploy, as in Slice 18; classification: every attempted step cell is stone — step-cell-caused, not loop-shape-caused, and the east waypoint (15,5,16) is the same blocked cell counted once)");
+foreach (var sq in OrbitalView.Snapshot(simS25.World))
+    Console.WriteLine($"Slice 25 snapshot before stuck phase: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS25.World.Advance();
+    var hold = simS25.World.Squads[0];
+    var patrol = simS25.World.Squads[1];
+    var stuck = simS25.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS25.World);
+    Console.WriteLine($"Slice 25 stuck tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}, stuck at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} refusals {stuck.PatrolConsecutiveRefusals} reads {snaps[2].Activity}");
+}
+Console.WriteLine($"Slice 25 after stuck phase: stuck at ({simS25.World.Squads[2].X},5,{simS25.World.Squads[2].Z}) waypoint {simS25.World.Squads[2].PatrolWaypointIndex} refusals {simS25.World.Squads[2].PatrolConsecutiveRefusals} reads Stuck, unmoved, while the HoldGround and the walking Patrol keep their own readings");
+var s25StuckRallyBefore = (simS25.World.Squads[2].RallyX, simS25.World.Squads[2].RallyZ);
+var s25ReRally = simS25.TryReRallyStuckPatrol(2, 22, 5, 16);
+var s25StuckAfter = simS25.World.Squads[2];
+Console.WriteLine($"Slice 25 re-rally on the main field: accepted: {s25ReRally}, stuck rally now ({s25StuckAfter.RallyX},5,{s25StuckAfter.RallyZ}) (was ({s25StuckRallyBefore.Item1},5,{s25StuckRallyBefore.Item2})), waypoint {s25StuckAfter.PatrolWaypointIndex}, refusals {s25StuckAfter.PatrolConsecutiveRefusals}, reads {OrbitalView.Snapshot(simS25.World)[2].Activity}, still at ({s25StuckAfter.X},5,{s25StuckAfter.Z}) (no teleport), ore {simS25.World.Player.Inventory.Get(BlockType.EmberOre)} (free: no charge, no refund), live squads {simS25.World.Squads.Count} (no cap slot freed)");
+simS25.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+simS25.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS25.BeginOrbitalPick();
+simS25.SetOrbitalRally(10, 5, 10);
+var s25Fourth = simS25.ConfirmOrbitalDeploy();
+simS25.CancelOrbitalPick();
+Console.WriteLine($"Slice 25 fourth paid deploy at the full cap: {(s25Fourth == null ? "REFUSED" : "DEPLOYED")} (ore still {simS25.World.Player.Inventory.Get(BlockType.EmberOre)}, live squads still {simS25.World.Squads.Count}, stuck rally still ({simS25.World.Squads[2].RallyX},5,{simS25.World.Squads[2].RallyZ})) — the rescue did not make room for a new squad");
+for (int tick = 1; tick <= 6; tick++)
+{
+    simS25.World.Advance();
+    var hold = simS25.World.Squads[0];
+    var patrol = simS25.World.Squads[1];
+    var stuck = simS25.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS25.World);
+    Console.WriteLine($"Slice 25 re-rally march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}, re-rallied at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} target ({stuck.PatrolTarget.X},5,{stuck.PatrolTarget.Z}) reads {snaps[2].Activity}");
+}
+simS25.World.Advance();
+Console.WriteLine($"Slice 25 re-rally loop tick: re-rallied at ({simS25.World.Squads[2].X},5,{simS25.World.Squads[2].Z}) waypoint {simS25.World.Squads[2].PatrolWaypointIndex} target ({simS25.World.Squads[2].PatrolTarget.X},5,{simS25.World.Squads[2].PatrolTarget.Z}) reads {OrbitalView.Snapshot(simS25.World)[2].Activity} (turned onto the new loop, same flat cardinal cross shape re-derived, east waypoint at the new rally plus radius 3)");
+var saveS25 = simS25.SaveToJson();
+var simS25Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS25Loaded.LoadFromJson(saveS25)}");
+foreach (var sq in OrbitalView.Snapshot(simS25Loaded.World))
+    Console.WriteLine($"Slice 25 snapshot after load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 25 loaded indices: hold {simS25Loaded.World.Squads[0].PatrolWaypointIndex}, patrol {simS25Loaded.World.Squads[1].PatrolWaypointIndex}, re-rallied {simS25Loaded.World.Squads[2].PatrolWaypointIndex} (all reset to 0 on load; the walking patrol keeps its rally (20,5,20) and the re-rallied patrol keeps its new rally (22,5,16), it does not revert to (12,5,16))");
+simS25Loaded.World.Advance();
+Console.WriteLine($"Slice 25 loaded tick 1: hold at ({simS25Loaded.World.Squads[0].X},5,{simS25Loaded.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS25Loaded.World)[0].Activity}, patrol at ({simS25Loaded.World.Squads[1].X},5,{simS25Loaded.World.Squads[1].Z}) waypoint {simS25Loaded.World.Squads[1].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS25Loaded.World)[1].Activity}, re-rallied at ({simS25Loaded.World.Squads[2].X},5,{simS25Loaded.World.Squads[2].Z}) waypoint {simS25Loaded.World.Squads[2].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS25Loaded.World)[2].Activity} (re-rallied steps back to its new rally, as the index-reset load rule requires)");
+Console.WriteLine($"Slice 25 done: hold {simS25.World.Squads[0].Kind} {simS25.World.Squads[0].Doctrine} + loaded hold, patrol {simS25.World.Squads[1].Kind} {simS25.World.Squads[1].Doctrine} walking the kept shape + loaded patrol, re-rallied {simS25.World.Squads[2].Kind} {simS25.World.Squads[2].Doctrine} marched to its new rally and loaded with it, save JSON length: {saveS25.Length} chars");

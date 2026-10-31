@@ -1,5 +1,108 @@
 # Forgeborne — Changelog
 
+## 0.102.0 — 2026-10-31 — Slice 25 Step 2:
+composed demo + review, closing Slice 25
+
+- Step taken: Slice 25 Step 2, the composed demo
+  plus documentation-only review closing Slice 25,
+  per docs/slice-25-scope.md. No new core system,
+  no adapter edit, no checklist item, by design;
+  Slice 26 is NOT scoped here.
+- Composition decided: one Simulation, three paid
+  squads, no enemy, 30 EmberOre spent on deploys
+  and nothing else — Heavy HoldGround marched away
+  first (rally (10,5,10), Holding from the sixth
+  patrol-march tick on), Recon Patrol marched to
+  its rally (20,5,20) in eight ticks and walking
+  one full 24-step loop on the decided flat
+  cardinal cross shape (east 3, south 6, west 6,
+  north 6, rally 3, index back to 0, refusals 0,
+  Y 5 throughout, 22 distinct cells, four square
+  corners never visited), with the fire relation
+  recomputed beside the loop (rally to waypoint 3,
+  waypoint to waypoint 6, Vanguard exactly, Recon
+  within, Heavy beyond, no kind across), then
+  Vanguard Patrol deployed at the player cell in
+  Step 1's exact route-blocked shape translated to
+  the player cell (rally (12,5,16); stone west,
+  south, and north of the squad's cell, east step
+  cell open), counting five refusals and reading
+  Stuck, unmoved, while the other two keep their
+  readings. Then, in order: the stuck patrol
+  accepting the same free re-rally Slice 20
+  decided, to (22,5,16), with index and counter
+  reset to 0, Patrolling at once, position
+  unchanged, ore unchanged at 0, cap count
+  unchanged at 3; a fourth paid deploy still
+  refused at the full cap; the re-rallied patrol
+  marching east to its new rally in six ticks and
+  turning onto the new loop on the next tick
+  (east waypoint (25,5,16), the same shape
+  re-derived, new rally plus radius 3); and a
+  save/load round-trip after the action loading
+  both loop centres (walking patrol (20,5,20),
+  re-rallied patrol (22,5,16), not the old
+  (12,5,16)), indices at 0, with the loaded
+  re-rallied patrol stepping back to its new
+  rally on loaded tick 1, as the index-reset load
+  rule requires.
+- Why this composition, stated in the review and
+  DECISIONS: the scope asked for the decided shape
+  together with its controls in one field. A second
+  stuck geometry is not re-staged because Step 1
+  already classified the enclosed and blocked-new-
+  loop shapes; a diagonal sidestep case is not
+  re-staged because Step 1 already proved a single
+  diagonal stair-step block sidesteps while a
+  cardinal block skips — re-staging either would
+  repeat the audit, not compose it. No enemy is
+  staged, so no fire claim rides along as a demo
+  result: the fire relation is recomputed from
+  FindTarget, not claimed from a staged kill.
+- Proof set: 331 composed-integration assertions
+  mirroring the demo tick by tick (hold march,
+  patrol march, 24-step loop with every position,
+  waypoint, and Y, plus the coverage set and
+  corner absences, the fire recomputation, the
+  stuck-phase refusals and waypoint cycle with
+  the walking patrol's loop positions beside
+  them, the free re-rally state and economy, the
+  fourth-deploy refusal, the six-tick march, the
+  loop turn with radius 3 and waypoint count 5
+  asserted unchanged, the post-action save/load
+  and loaded tick 1, and the range constants
+  re-asserted from the table). No test failures
+  at any point in this run's final test runs;
+  the first full run after the edits already
+  passed, so no test fix was needed.
+- Changes: demo/Forgeborne.Demo/Program.cs (new
+  Slice 25 scenario), tests/Forgeborne.Core.Tests/
+  Program.cs (+331 assertions), new docs/
+  slice-25-review.md, CHANGELOG 0.102.0,
+  DECISIONS.md.
+- Tests: 5053 passed, 0 failed (was 4722; +331,
+  no failures on the final runs, FAIL count 0).
+  Demo unchanged except the new scenario: Slice
+  23 save 44,041 chars, Slice 22 save 43,990
+  chars, Slice 21 save 44,040 chars, Slice 20
+  save 44,041 chars, Slice 19 save 43,965 chars,
+  Slice 18 save 44,015 chars, Slice 15 save
+  44,016 chars, Slice 17 save 43,974 chars. New
+  Slice 25 scenario save 44,041 chars, quoted as
+  its own entry (sharing Slice 23's length is a
+  consequence of the same field geometry at save
+  time, by design, not a shared field and not
+  proof by itself — the new proof is the coverage
+  and fire recomputation asserted beside it).
+- Checklist relation: no new item. Items 37, 39,
+  and 40 already observe the loop as kept,
+  superseding none, and the next free gate number
+  remains 44. Items 39, 40, 41, 42, and 43 remain
+  honestly pending their Windows observations.
+- Next step: scoping Slice 26 as its own decision
+  step, chosen from the ranked candidates the
+  review carries, not promised here.
+
 ## 0.101.0 — 2026-10-31 — Slice 25 Step 1:
 loop-shape decision — KEEP the flat cardinal
 cross loop, on audit evidence; no core change,

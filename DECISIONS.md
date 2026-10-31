@@ -10971,6 +10971,95 @@ marker proximity targeting, item 42
   closing Slice 25, per docs/
   slice-25-scope.md, not promised here.
 
+## 2026-10-31 — Slice 25 Step 2: composed demo + review, closing Slice 25 (0.102.0, under delegation)
+
+- Step taken: Slice 25 Step 2, the composed demo plus
+  documentation-only review closing Slice 25, per
+  docs/slice-25-scope.md and following the Slice 16
+  precedent for claims no headless run can prove. No
+  core file moved, no adapter file moved, no checklist
+  item added, no Slice 26 scope written. The review is
+  docs/slice-25-review.md, with the same decision
+  summarised in CHANGELOG 0.102.0.
+- Composition decided, stated plainly so the demo is not
+  misread as a new system: one Simulation, three paid
+  squads, no enemy, 30 EmberOre on deploys only — a Heavy
+  HoldGround marched away first, a Recon Patrol walking
+  one full 24-step loop on the decided flat cardinal cross
+  shape with its coverage recorded (22 distinct cells, Y 5
+  throughout, four square corners never visited), a
+  Vanguard Patrol in Step 1's route-blocked shape counting
+  five step-cell refusals and reading Stuck, the fire
+  relation recomputed beside the loop (rally to waypoint
+  3, waypoint to waypoint 6, Vanguard exactly, Recon
+  within, Heavy beyond, no kind across), the same free
+  re-rally to a new loop of the same shape re-derived
+  from the new rally, a fourth deploy refused at the full
+  cap, and a save/load round-trip preserving both loop
+  centres. A second stuck geometry and a diagonal sidestep
+  case are deliberately NOT re-staged: Step 1 already
+  classified and proved them, and re-staging them would
+  repeat the audit, not compose the shape with its
+  controls. No enemy is staged, so no fire, chase, or
+  damage claim rides along as a demo result.
+- Scope check, recorded step by step in the review and
+  summarised here so the decision stands without the review
+  open: Step 1 answered every question the scope gave it
+  (shape-caused stuck audit, fire computation, coverage
+  account, coupling answers, rejected alternatives with
+  mechanisms, checklist relation with no new item); Step 2
+  stages exactly what the scope asked for (walking patrol,
+  step-cell-caused stuck patrol, re-rallied patrol on the
+  re-derived shape, recomputed fire relation) with a proof
+  set mirroring the demo tick by tick, and finds no scope
+  deviation in either step. No radius, count, movement,
+  targeting, fire, economy, marker, material, light, fog,
+  model, or HUD rule moves in this step.
+- Verification, re-run in this step, not taken on the demo's
+  word: tests 5053/5053 (was 4722; +331 composed-integration
+  assertions, no failures on the first full run after the
+  edits, so no test fix was needed); demo Slice 25 save
+  44,041 chars, quoted as its own entry, with every earlier
+  save unchanged (Slice 23 44,041, Slice 22 43,990, Slice 21
+  44,040, Slice 20 44,041, Slice 19 43,965, Slice 18 44,015,
+  Slice 15 44,016, Slice 17 43,974 chars). The Slice 25 save
+  sharing Slice 23's length is a consequence of the same
+  field geometry at save time, by design, not a shared field
+  and not proof by itself. This re-check does not compile
+  an adapter, run a scene, press a key, or observe a marker
+  — those remain Windows work.
+- Claim split, kept explicit so the review cannot be misread
+  as a pass: the kept shape is headless-tested, not observed;
+  items 37, 39, and 40 already observe the loop as kept,
+  superseding none, and the next free gate number remains
+  44; items 39, 40, 41, 42, and 43 are attemptable and all
+  unchecked, closing only on their Windows observations
+  recorded here with the Unity version and GPU; the Slice 1
+  director playtest gate is still pending throughout and is
+  not closed by Slice 25. Step 1's reopen condition stands:
+  a Windows observation on a real map that traces to leg
+  shape rather than to blocked cells, not a staged enclosure
+  or a player-built wall.
+- Gaps carried, not closed by the review: Windows Unity
+  verification for Slices 1–25 and the director playtest; the
+  Slice 24 adapter gaps (identical-twin re-validation limit,
+  invisible pending dismiss, unparented re-rally pending
+  marker, same-frame K+X branch order, pending state not
+  auto-clearing on a target death); and the
+  Windows-evidence-gated graphics retune, re-rally price,
+  and dismiss refund decisions. The ranked candidates for
+  Slice 26 scoping are carried in the review, in the order
+  the Slice 25 scope carried them — not promised, and not
+  decided here.
+- Deliberately NOT in this step: any core or adapter change;
+  a radius or count re-decision; a movement, targeting, or
+  fire rule change; an economy change; a checklist item; a
+  Slice 26 scope; a claim that the shape works in a scene;
+  a claim that Slice 25 is playtested or Unity-verified.
+- Next step: scoping Slice 26 as its own decision step,
+  chosen from the ranked candidates the review carries, not
+  promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
