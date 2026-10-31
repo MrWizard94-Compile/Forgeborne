@@ -457,6 +457,11 @@ public class FpsInputAdapter : MonoBehaviour
             if (Simulation.OrbitalCommand.IsPicking) Simulation.CancelOrbitalPick();
             else Simulation.BeginOrbitalPick();
         }
+        // Slice 26 Step 1: each pending handler polls
+        // its target triple at its own top, before
+        // any key read, and auto-clears a stale pick
+        // there — the poll never opens a pick, because
+        // these branches run only while a flag is set.
         if (_pendingDismiss)
         {
             HandlePendingDismiss();
@@ -659,6 +664,44 @@ public class FpsInputAdapter : MonoBehaviour
 
     private void HandlePendingDismiss()
     {
+        // Slice 26 Step 1 (0.104.0): pending auto-clear,
+        // decided in that step (rationale in
+        // DECISIONS.md). The poll runs at the top of
+        // this handler, before any key read, and can
+        // only clear a pending state, never open one:
+        // if the stored triple no longer matches, the
+        // pick is already gone, so a Return pressed on
+        // the death frame does nothing instead of
+        // attempting a confirm that is already known
+        // to fail. The poll reuses the confirm's
+        // triple exactly, through
+        // PendingTargetMatches below, so poll and
+        // confirm are one rule, not two rules wearing
+        // one name. Cost: one snapshot list allocation
+        // per frame while a dismiss is pending, and
+        // nothing on any other frame — a new
+        // per-frame cost for this pick, which
+        // previously read keys only, accepted as
+        // bounded for a short-lived decision state.
+        // A count-only poll was rejected: any squad's
+        // death and sweep drops the live count, so it
+        // would clear a pick whose target is still
+        // alive. The identical-twin limit is NOT
+        // closed by this poll: a twin shifted into
+        // the stored position matches the triple, so
+        // the poll keeps the pick and confirm acts
+        // on the wrong twin, exactly as before.
+        if (!PendingTargetMatches(
+            _pendingDismissSnapshotPos,
+            _pendingDismissDoctrine,
+            _pendingDismissKind,
+            _pendingDismissRallyX,
+            _pendingDismissRallyY,
+            _pendingDismissRallyZ))
+        {
+            CancelPendingDismiss();
+            return;
+        }
         // Deliberately unread here: K (refuse-while-pending —
         // opening a re-rally pick on top of a dismiss would
         // stack two pending states and leave Return
@@ -705,35 +748,45 @@ public class FpsInputAdapter : MonoBehaviour
             // never be the shift source itself while one
             // is pending, because X is refused while
             // pending and no other adapter path dismisses.
-            // Pending state does NOT auto-clear when the
-            // target dies mid-decision: the adapter does
-            // not poll deaths, and the stale pending is
-            // caught at confirm instead, and cleared there
-            // with nothing changed.
-            var snapshot = OrbitalView.Snapshot(Simulation.World);
-            if (_pendingDismissSnapshotPos < snapshot.Count)
+            // Slice 26 Step 1: the stale-pending case
+            // is now auto-cleared at the top of
+            // HandlePendingDismiss, before any key
+            // read, through the same triple helper
+            // below — so a confirm-time mismatch here
+            // is a backstop only, not the first catch:
+            // the poll and the confirm read the same
+            // post-tick state (Simulation.Tick runs
+            // before the pending branch in Update),
+            // so a mismatch that reaches this line
+            // would need a snapshot change between
+            // poll and confirm that no frame performs.
+            // The backstop is kept, not removed, so
+            // the confirm stays fail-closed even if
+            // this handler is ever called from
+            // another path. A twin shifted into the
+            // stored position still passes, as noted
+            // in the handler above.
+            if (PendingTargetMatches(
+                _pendingDismissSnapshotPos,
+                _pendingDismissDoctrine,
+                _pendingDismissKind,
+                _pendingDismissRallyX,
+                _pendingDismissRallyY,
+                _pendingDismissRallyZ))
             {
-                var s = snapshot[_pendingDismissSnapshotPos];
-                if (s.Doctrine == _pendingDismissDoctrine
-                    && s.Kind == _pendingDismissKind
-                    && s.RallyX == _pendingDismissRallyX
-                    && s.RallyY == _pendingDismissRallyY
-                    && s.RallyZ == _pendingDismissRallyZ)
+                int gateIndex = SnapshotPosToGateIndex(_pendingDismissSnapshotPos);
+                if (gateIndex >= 0)
                 {
-                    int gateIndex = SnapshotPosToGateIndex(_pendingDismissSnapshotPos);
-                    if (gateIndex >= 0)
-                    {
-                        // Dismiss gate only. Its result is
-                        // not branched on: success and refusal
-                        // alike clear the pending state, so a
-                        // confirm is one attempt and a second
-                        // Return cannot re-apply a stale pick.
-                        // On success the squad's text line
-                        // and both markers vanish with its
-                        // snapshot entry under the existing
-                        // marker rule; no HUD word is added.
-                        Simulation.TryDismissSquad(gateIndex);
-                    }
+                    // Dismiss gate only. Its result is
+                    // not branched on: success and refusal
+                    // alike clear the pending state, so a
+                    // confirm is one attempt and a second
+                    // Return cannot re-apply a stale pick.
+                    // On success the squad's text line
+                    // and both markers vanish with its
+                    // snapshot entry under the existing
+                    // marker rule; no HUD word is added.
+                    Simulation.TryDismissSquad(gateIndex);
                 }
             }
         }
@@ -747,6 +800,42 @@ public class FpsInputAdapter : MonoBehaviour
 
     private void HandlePendingReRally()
     {
+        // Slice 26 Step 1 (0.104.0): pending auto-clear,
+        // decided in that step, symmetric with the
+        // dismiss poll above (rationale in
+        // DECISIONS.md). The poll runs at the top of
+        // this handler, before any key read, and can
+        // only clear, never open: if the stored
+        // triple no longer matches, CancelPendingReRally
+        // hides the orange candidate sphere at once
+        // through the existing cancel path — the only
+        // marker act this step allows, not a new
+        // marker or display change — so a Return
+        // pressed on the death frame does nothing
+        // instead of attempting a confirm already
+        // known to fail. The poll reuses the
+        // confirm's triple exactly, through
+        // PendingTargetMatches below. Cost: one
+        // snapshot list allocation per frame while
+        // a re-rally is pending, joining the
+        // per-frame raycast and marker update that
+        // already exist, so the marginal cost is
+        // one list. The identical-twin limit is NOT
+        // closed: a twin shifted into the stored
+        // position matches the triple, so the poll
+        // keeps the pick and confirm acts on the
+        // wrong twin, exactly as before.
+        if (!PendingTargetMatches(
+            _pendingReRallySnapshotPos,
+            _pendingReRallyDoctrine,
+            _pendingReRallyKind,
+            _pendingReRallyOldX,
+            _pendingReRallyOldY,
+            _pendingReRallyOldZ))
+        {
+            CancelPendingReRally();
+            return;
+        }
         if (Input.GetKeyDown(KeyCode.Return)) ConfirmPendingReRally();
         else if (Input.GetKeyDown(KeyCode.Escape)) CancelPendingReRally();
         else if (Input.GetKeyDown(KeyCode.K)) CancelPendingReRally();
@@ -789,33 +878,75 @@ public class FpsInputAdapter : MonoBehaviour
             // death plus a sweep between press and confirm.
             // Movement never invalidates: a walking squad
             // keeps its doctrine, kind, and rally.
-            var snapshot = OrbitalView.Snapshot(Simulation.World);
-            if (_pendingReRallySnapshotPos < snapshot.Count)
+            // Slice 26 Step 1: the stale-pending case
+            // is now auto-cleared at the top of
+            // HandlePendingReRally, before any key
+            // read, through the same triple helper
+            // below, so a confirm-time mismatch here
+            // is a backstop only, kept so the confirm
+            // stays fail-closed even if this handler
+            // is ever called from another path. A twin
+            // shifted into the stored position still
+            // passes, as noted in the handler above.
+            if (PendingTargetMatches(
+                _pendingReRallySnapshotPos,
+                _pendingReRallyDoctrine,
+                _pendingReRallyKind,
+                _pendingReRallyOldX,
+                _pendingReRallyOldY,
+                _pendingReRallyOldZ))
             {
-                var s = snapshot[_pendingReRallySnapshotPos];
-                if (s.Doctrine == _pendingReRallyDoctrine
-                    && s.Kind == _pendingReRallyKind
-                    && s.RallyX == _pendingReRallyOldX
-                    && s.RallyY == _pendingReRallyOldY
-                    && s.RallyZ == _pendingReRallyOldZ)
+                int gateIndex = SnapshotPosToGateIndex(_pendingReRallySnapshotPos);
+                if (gateIndex >= 0)
                 {
-                    int gateIndex = SnapshotPosToGateIndex(_pendingReRallySnapshotPos);
-                    if (gateIndex >= 0)
-                    {
-                        // General gate only (see the Slice 24
-                        // Step 1 note above). Its result is
-                        // not branched on: success and refusal
-                        // alike clear the pending state, so a
-                        // confirm is one attempt and a second
-                        // Return cannot re-apply a stale pick.
-                        Simulation.TryReRallySquad(
-                            gateIndex,
-                            _pendingReRallyX, _pendingReRallyY, _pendingReRallyZ);
-                    }
+                    // General gate only (see the Slice 24
+                    // Step 1 note above). Its result is
+                    // not branched on: success and refusal
+                    // alike clear the pending state, so a
+                    // confirm is one attempt and a second
+                    // Return cannot re-apply a stale pick.
+                    Simulation.TryReRallySquad(
+                        gateIndex,
+                        _pendingReRallyX, _pendingReRallyY, _pendingReRallyZ);
                 }
             }
         }
         CancelPendingReRally();
+    }
+
+    // Slice 26 Step 1: the one pending-target rule,
+    // shared by the auto-clear polls and by both
+    // confirms, so poll and confirm cannot drift
+    // into two rules wearing one name. The stored
+    // snapshot position must still hold a squad
+    // with the same doctrine, kind, and rally (the
+    // old rally, for a re-rally pick). Position and
+    // health are deliberately excluded — a walking
+    // squad changes cell every tick, and an enemy
+    // hit mid-decision must not void a pick — and
+    // a stored position past the shrunk live list
+    // (a sweep removed the target) is a mismatch,
+    // not an error. A twin (same doctrine, kind,
+    // and rally) shifted into the stored position
+    // matches, by design of the triple: this helper
+    // cannot distinguish twins without a core
+    // identity the save does not carry, and it
+    // does not invent one.
+    private bool PendingTargetMatches(
+        int snapshotPos,
+        TacticalDoctrine doctrine,
+        SquadKind kind,
+        int rallyX, int rallyY, int rallyZ)
+    {
+        if (Simulation == null) return false;
+        var snapshot = OrbitalView.Snapshot(Simulation.World);
+        if (snapshotPos < 0 || snapshotPos >= snapshot.Count) return false;
+        var s = snapshot[snapshotPos];
+        return s.Doctrine == doctrine
+            && s.Kind == kind
+            && s.RallyX == rallyX
+            && s.RallyY == rallyY
+            && s.RallyZ == rallyZ;
     }
 
     // The marker-to-index translation, in one place, reused

@@ -993,6 +993,62 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     until the observation is made there and recorded
     in DECISIONS.md.
 
+44. [ ] Pending auto-clear, decided 0.104.0
+    (adapter routing implemented, not yet observed
+    on Windows — no headless test proves a binding
+    reads in the scene, so the cited evidence is
+    only the Slice 26 Step 1 code reading: each
+    pending handler polls its target triple —
+    doctrine, kind, and rally, old rally for a
+    re-rally pick — at its own top, before any key
+    read, reusing the confirm's triple exactly
+    through one shared helper, and auto-clears a
+    mismatch at once, so a Return pressed on the
+    death frame does nothing because the pick is
+    already gone, and K or X again after an
+    auto-clear opens a fresh pick on the current
+    crosshair marker, as after any cancel): once
+    observed on Windows — in one scene, against
+    dark voxel, with an enemy already engaging the
+    target squad so its death can be staged on
+    demand, or with a staged lethal hit the scene
+    can actually deliver (if no such staging exists
+    in the checklist scene, this item stays
+    attemptable with that staging note, not faked
+    from a headless run) — open a re-rally pick on
+    a live squad's marker, have that squad die and
+    be swept while the pick is still pending, and
+    observe the orange candidate sphere hide
+    promptly with NO key press, and that pressing
+    Return then does nothing; then open a dismiss
+    on a live squad's marker, have that squad die
+    and be swept while the dismiss is still pending,
+    and observe that pressing Return then does
+    nothing, and that pressing X again opens a
+    fresh dismiss pick on whatever marker the
+    crosshair now sits on (or nothing, if it sits
+    on no live marker) rather than cancelling a
+    stale pick. Note explicitly that the X-again
+    reading here applies only after an auto-clear:
+    item 43's X-again-cancels reading still applies
+    while a dismiss is still live, and this item
+    does not change it. This item EXTENDS items 42
+    and 43: their readings stand unchanged, and
+    this item adds only the auto-clear readings,
+    which had no home in either item — neither
+    item stages a death while a pick is pending.
+    It does NOT supersede items 43, 42, 41, 40, 39,
+    37, 29, or orbital-command item 13, and it
+    leaves them standing. It does not claim any
+    tint, count, dusk, or view model observation,
+    and it does not close the identical-twin limit:
+    a twin shifted into the stored position still
+    matches the triple, so a poll that keeps the
+    pick and a confirm on the wrong twin remain
+    possible. Do not claim this verified in Unity
+    until the observation is made there and
+    recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

@@ -1,5 +1,113 @@
 # Forgeborne — Changelog
 
+## 0.104.0 — 2026-10-31 — Slice 26 Step 1:
+pending auto-clear decision — AUTO-CLEAR BOTH
+
+- Step taken: Slice 26 Step 1, the pending
+  auto-clear decision plus its adapter
+  implementation, decided in this step, per
+  docs/slice-26-scope.md. Slice 26 is NOT closed
+  here and Slice 27 is NOT scoped here.
+- Decision: AUTO-CLEAR for the re-rally pick AND
+  AUTO-CLEAR for the dismiss pick, symmetrically.
+  The visibility difference does not break the
+  symmetry Slice 24 built: a stale re-rally pick
+  leaves a visible orange sphere on a cell whose
+  squad is gone, and a stale dismiss pick leaves
+  nothing visible — but its target's own text line
+  and markers already vanish on death and sweep,
+  so the player is not left without a death signal.
+  One rule for both picks is the rule a player
+  can learn once: a pick whose target is gone is
+  gone, whichever key opened it.
+- Poll mechanism: reuse the confirm's triple
+  exactly, through one shared adapter helper,
+  PendingTargetMatches (snapshot position,
+  doctrine, kind, rally — old rally for a
+  re-rally pick; position and health excluded; a
+  stored position past the shrunk live list is a
+  mismatch). Both confirms were refactored to call
+  the same helper, so poll and confirm are one
+  rule, not two copies. A count-only poll was
+  rejected: any squad's death and sweep drops the
+  live count, so it would clear a pick whose
+  target is still alive.
+- Poll placement and death-frame Return: at the
+  top of each HandlePending method, before any key
+  read, and able only to clear, never to open.
+  Simulation.Tick runs before the pending branch
+  in Update, so a death on a tick is polled on
+  that same frame, and a Return pressed on the
+  death frame does nothing — the pick is already
+  gone — instead of attempting a confirm already
+  known to fail. Final state matches
+  catch-at-confirm; the key reading differs, and
+  is stated as such.
+- Per-frame cost, as a bound: one snapshot list
+  allocation per frame while a pick is pending,
+  nothing on any other frame. For re-rally that
+  joins an existing per-frame raycast and marker
+  update (marginal cost one list); for dismiss it
+  is a new per-frame cost where none existed,
+  accepted as bounded for a short-lived decision
+  state.
+- Re-press semantics: after an auto-clear, K or X
+  again opens a FRESH pick on whatever marker the
+  crosshair now sits on, as after any cancel —
+  not a cancelled stale pick. For dismiss that
+  reading is bounded: the target's display is
+  gone, so X again aims at a live marker or at
+  nothing (which opens nothing), and X-on-a-marker
+  always means "open a dismiss pick on this
+  marker".
+- Twin limit, NOT closed: a twin shifted into the
+  stored position matches the triple, so the poll
+  keeps the pick and confirm acts on the wrong
+  twin, exactly as before. No identity field was
+  invented; that is a core and save-format
+  decision carried after Slice 26.
+- Checklist relation: new item 44 IS added, taking
+  the next free number. Neither item 42 nor 43
+  stages a death while a pick is pending, so the
+  prompt marker hiding with no key press and the
+  re-press reading after an auto-clear have no
+  home in them. Item 44 EXTENDS items 42 and 43,
+  supersedes none, and states its own Windows
+  observation with its staging difficulty (an
+  enemy already engaging the target, or a staged
+  lethal hit the scene can actually deliver; if
+  no such staging exists, item 44 stays
+  attemptable with that note, not faked from a
+  headless run). It states explicitly that item
+  43's X-again-cancels reading still applies while
+  a dismiss is still live. Next free gate number
+  is now 45.
+- Changes: ForgeborneUnity/Assets/Scripts/
+  FpsInputAdapter.cs (auto-clear polls, shared
+  triple helper, confirms refactored to it, stale
+  "does not poll" comments corrected),
+  docs/orbital-command.md (pending auto-clear
+  section), docs/slice-01-playtest-gate.md (new
+  item 44), CHANGELOG 0.104.0, DECISIONS.md.
+- Tests: 5053 passed, 0 failed (unchanged, as
+  expected: adapter code is not compiled
+  headlessly, so no headless test proves a
+  binding, and no demo scenario belongs to this
+  step alone). Demo unchanged: Slice 25 save
+  44,041 chars, Slice 23 save 44,041 chars, Slice
+  22 save 43,990 chars, Slice 21 save 44,040
+  chars, Slice 20 save 44,041 chars, Slice 19 save
+  43,965 chars, Slice 18 save 44,015 chars, Slice
+  15 save 44,016 chars, Slice 17 save 43,974 chars.
+- Claim split: the adapter change is implemented
+  and read, not Unity-verified and not claimed as
+  working in a scene; item 44 is attemptable and
+  unchecked; the Slice 1 director playtest gate is
+  still pending throughout.
+- Next step: Slice 26 Step 2, the
+  documentation-only review closing Slice 26, per
+  docs/slice-26-scope.md.
+
 ## 0.103.0 — 2026-10-31 — Slice 26 scope:
 pending auto-clear, decided in Step 1; documentation only
 

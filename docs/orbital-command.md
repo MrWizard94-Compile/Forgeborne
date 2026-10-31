@@ -435,6 +435,43 @@ it honestly. A dismissed squad is gone, not stored.
   none of them, because dismiss readings are new
   and separate, not wider re-rally readings.
 
+## Pending auto-clear — Slice 26 Step 1 (0.104.0)
+
+Decided in that step (rationale in DECISIONS.md):
+AUTO-CLEAR BOTH pending picks, symmetrically.
+Each pending handler polls its target triple
+(doctrine, kind, rally — old rally for a
+re-rally pick) at its own top, before any key
+read, reusing the confirm's triple exactly
+through one shared adapter helper, so poll and
+confirm are one rule. A mismatch — including a
+stored position past the shrunk live list after
+a death and sweep — clears the pick at once:
+for re-rally, the orange candidate sphere hides
+through the existing cancel path; for dismiss,
+no marker exists to hide. A Return pressed on
+the death frame therefore does nothing, because
+the pick is already gone, rather than attempting
+a confirm already known to fail; the final state
+is the same as catch-at-confirm, but the key
+reading differs. Cost is one snapshot list
+allocation per frame while a pick is pending,
+and nothing on any other frame. After an
+auto-clear, K or X again opens a FRESH pick on
+whatever marker the crosshair now sits on, as
+after any cancel — not a cancelled stale pick.
+The identical-twin limit is NOT closed: a twin
+shifted into the stored position matches the
+triple, so the poll keeps the pick and confirm
+acts on the wrong twin, exactly as before. This
+binding change is observed only under
+playtest-gate item 44, once observed on Windows;
+items 42 and 43 stand, and item 44 EXTENDS them
+without superseding them. No core, save-format,
+economy, movement, fire, marker, or HUD rule
+moves in this step, and no headless test proves
+a binding.
+
 ## Second squad type — Recon (Slice 7 Step 1, 0.33.0)
 
 Chosen in that step from the recon / heavy / flyer pool the

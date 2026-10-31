@@ -11160,3 +11160,209 @@ marker proximity targeting, item 42
   as Slice 1 evidence arrives).
 - Release licence, monetisation, and release date — deferred to
   release stage, logged here when decided.
+
+## 2026-10-31 — Slice 26 Step 1: pending auto-clear, AUTO-CLEAR BOTH (0.104.0, under delegation)
+
+- Step taken: Slice 26 Step 1, the pending
+  auto-clear decision plus its adapter
+  implementation, decided in this step, per
+  docs/slice-26-scope.md. Slice 26 is NOT closed
+  here and Slice 27 is NOT scoped here; Step 2 is
+  the documentation-only review closing Slice 26.
+- Decision, one per binding, with symmetry
+  stated, not assumed: AUTO-CLEAR for the
+  re-rally pick AND AUTO-CLEAR for the dismiss
+  pick. The two answers are the same on purpose,
+  and the visibility difference does not justify
+  breaking the symmetry Slice 24 built. A stale
+  re-rally pick leaves a visible orange sphere on
+  a cell whose squad is gone, which is the
+  strongest visible case for clearing promptly;
+  a stale dismiss pick leaves nothing visible, but
+  its target's own text line and markers already
+  vanish with its snapshot entry on death and
+  sweep, so the player is not left without a
+  death signal — the dismiss pick's invisibility
+  is about the pick itself, not about the target's
+  fate. One routing rule for both picks is also
+  the rule a player can learn once: a pick whose
+  target is gone is gone, whichever key opened it.
+  An asymmetric rule would need a mechanism that
+  the visibility difference alone does not supply,
+  because both picks share the same triple, the
+  same death-and-sweep cause, and the same
+  confirm backstop.
+- Poll mechanism: reuse the confirm's triple
+  exactly, through one shared adapter helper,
+  PendingTargetMatches (snapshot position,
+  doctrine, kind, rally — old rally for a
+  re-rally pick; position and health excluded, as
+  in the confirms; a stored position past the
+  shrunk live list is a mismatch). Both confirms
+  were refactored to call the same helper, so poll
+  and confirm are one rule in one place, not two
+  copies that could drift: a poll that passed what
+  confirm would refuse, or refused what confirm
+  would pass, would be two rules wearing one name.
+  A cheaper signal was rejected on its false-clear
+  case, as the scope warned: a snapshot-count poll
+  would auto-clear a pick whose target is still
+  alive whenever ANY squad dies and is swept,
+  because the live count drops even though the
+  target's own triple still matches. The triple
+  poll has no such false-clear: it clears only
+  when the stored position no longer holds the
+  same doctrine, kind, and rally, which is
+  exactly the state confirm would refuse.
+- Poll placement and the death-frame Return
+  reading: at the top of each HandlePending
+  method, before any key read. Placement is what
+  makes the death-frame reading what it is.
+  Simulation.Tick runs before the pending branch
+  in Update, so a squad that dies on a tick is
+  already dead when that same frame's pending
+  branch runs; the poll therefore clears the pick
+  on the death frame itself, before the frame's
+  key read, and a Return pressed on that frame
+  does nothing — the pick is already gone —
+  instead of attempting a confirm that is already
+  known to fail. The final state is the same as
+  catch-at-confirm would reach (pick closed,
+  nothing changed), but the key reading differs,
+  and this step states that difference rather
+  than letting it be discovered in play. The poll
+  can only clear, never open: it runs only inside
+  a handler that runs only while its flag is set,
+  and the opener else-branch is untouched, so no
+  poll can set a flag or re-target after clearing.
+- Per-frame cost, stated as a bound: one
+  OrbitalView.Snapshot list allocation per frame
+  while a pick is pending, and nothing on any
+  other frame. For the re-rally pick that cost
+  joins a per-frame raycast and marker update
+  that already exist, so the marginal cost is one
+  list. For the dismiss pick it is a new per-frame
+  cost where none existed — HandlePendingDismiss
+  previously read keys only — and this step
+  accepts that bound for a short-lived player
+  decision state, rather than claiming the cost
+  is merely "cheap". No cost is claimed for
+  ordinary frames, where no pending state exists
+  to poll.
+- Re-press semantics after auto-clear, stated,
+  not discovered in play: after an auto-clear the
+  flags are already down, so the same key press
+  in the opener branch opens a FRESH pick on
+  whatever marker the crosshair now sits on — a
+  new target, not a cancelled old one — exactly
+  as after an Escape cancel. That reading is
+  accepted, including for dismiss: the surprise
+  the scope feared (X again opening a new dismiss
+  without the player ever seeing the first one
+  close) is bounded by two facts. First, the
+  target's own display is gone, so a player
+  pressing X again is aiming at a live marker or
+  at nothing, and X on no live marker opens
+  nothing. Second, X-on-a-marker always means
+  "open a dismiss pick on this marker" in every
+  other case, so the fresh pick is the same
+  action the key always performs, not a hidden
+  reinterpretation of a cancel. The confirm
+  re-validation is kept as a backstop behind the
+  poll, not removed: poll and confirm read the
+  same post-tick state with no Tick between them
+  in a frame, so a mismatch reaching confirm
+  would need a snapshot change no frame performs
+  — but the confirm stays fail-closed if its
+  handler is ever called from another path.
+- Twin limit, explicitly NOT closed: whatever
+  the poll does, a twin (same doctrine, kind,
+  and rally) shifted into the stored snapshot
+  position after the target's death and sweep
+  matches the triple, so the poll keeps the pick
+  and confirm acts on the wrong twin, exactly as
+  today. Auto-clear is a routing promptness
+  change, not a twin fix, and no identity field
+  was invented to close it: that field is a core
+  and save-format decision carried after Slice 26.
+  The bounded consequences stand as recorded in
+  Slice 24: a wrong-twin re-rally moves the wrong
+  twin to the candidate rally, a wrong-twin
+  dismiss frees one slot with no refund either way.
+- Checklist relation, decided here, not left to
+  Step 2: new item 44 IS needed, because the
+  auto-clear readings have no home in items 42 or
+  43. Neither item stages a death while a pick is
+  pending: item 42's readings are K-again cancel,
+  O nothing, click nothing, same-rally Return,
+  and no-pick Return/Escape, and item 43's are
+  the dismiss equivalents plus cross-pending
+  refusals. Prompt hiding of a stale candidate
+  marker with no key press, and the re-press
+  reading after an auto-clear (X again opening a
+  fresh pick rather than cancelling a stale one),
+  are new player-visible readings, not wider
+  versions of the old ones. Item 44 therefore
+  takes the next free number, 44, EXTENDS items
+  42 and 43 as applicable, supersedes none of
+  them, and states its own Windows observation
+  with its staging difficulty: a target death on
+  demand needs an enemy already engaging the
+  target, or a staged lethal hit the scene can
+  actually deliver, and if no such staging exists
+  in the checklist scene, item 44 stays
+  attemptable with that staging note, not faked
+  from a headless run. Item 44 also states
+  explicitly that item 43's X-again-cancels
+  reading still applies while a dismiss is still
+  live, so the new item cannot be misread as
+  changing it. The next free gate number after
+  this step is 45.
+- What was NOT changed, by the scope's boundary:
+  no core file, no save format, no economy (deploy
+  price 10 and cap 3 stand, re-rally stays free,
+  dismiss stays refund none with one slot freed),
+  no movement, targeting, fire, marker, material,
+  light, fog, model, or HUD rule — except hiding
+  the existing pending marker through the existing
+  cancel path, which the scope allows as the
+  auto-clear's own consequence, not a new marker
+  or display change. No new binding, no K-before-X
+  opener change, no MarkerRoot field, no pending
+  dismiss visual indicator, no same-frame K+X
+  priority redesign. No demo scenario belongs to
+  this step alone, per the Slice 24 precedent:
+  adapter code is not compiled headlessly, so no
+  headless demo can stage a pending pick, and the
+  proof for this step is a code reading plus the
+  suite standing, as Slice 24's steps were.
+- Claim split, kept explicit: the adapter change
+  is IMPLEMENTED and read, not Unity-verified and
+  not claimed as working in a scene; item 44 is
+  attemptable and unchecked, closing only on its
+  Windows observation recorded here with the Unity
+  version and GPU; the Slice 1 director playtest
+  gate is still pending throughout and is not
+  closed by this step. The suite stands at
+  5053/5053 and every demo save length stands
+  unchanged, with Slice 25 at 44,041 chars.
+- Gaps carried, not closed by this step: Windows
+  Unity verification for Slices 1–26 and the
+  director playtest; the four remaining Slice 24
+  adapter gaps minus the one closed here
+  (identical-twin limit, invisible pending
+  dismiss, unparented re-rally pending marker,
+  same-frame K+X branch order); and the
+  Windows-evidence-gated graphics retune,
+  re-rally price, and dismiss refund decisions.
+- Deliberately NOT in this step: a twin identity
+  field; a count-only poll; an asymmetric
+  auto-clear/keep split; a poll placed in the
+  opener branch or after key handling; a
+  pending-dismiss visual indicator; a Slice 26
+  review; a Slice 27 scope; a claim that any
+  pending routing works in a scene; a claim that
+  Slice 26 is playtested or Unity-verified.
+- Next step: Slice 26 Step 2, the
+  documentation-only review closing Slice 26, per
+  docs/slice-26-scope.md.
