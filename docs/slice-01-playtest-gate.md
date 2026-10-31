@@ -695,6 +695,47 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     verified in Unity until it is observed there and
     recorded in DECISIONS.md.
 
+37. [ ] Patrol route limits, decided 0.78.0 (core movement
+    and display changed, adapter code unchanged — the
+    text line already renders Activity.ToString(), so
+    no adapter edit was needed, and no headless test
+    proves a word reads in the scene, so the cited
+    headless evidence is only the Slice 18 Step 1
+    proof set: a diagonal blocked step sidesteps onto
+    a gap axis and keeps its waypoint, a single-axis
+    blocked step still skips, both gap axes blocked
+    still skips, an enemy-blocked step behaves like
+    a solid-blocked step, a skipped waypoint is
+    tried again on the next circuit and succeeds
+    once cleared, and a full circuit of five
+    consecutive refusals reads Stuck): in one scene,
+    against dark voxel, deploy a Patrol and observe
+    three cases together, reading the marker and the
+    text line for each — first, enclose a patrol on
+    all four sides and observe it stand still while
+    its text line changes from PATROLLING to STUCK
+    after a full circuit, and still fires at an enemy
+    in range while stuck; second, block only the
+    direct step of a diagonal leg and observe the
+    squad sidestep onto the other gap axis and keep
+    walking toward the same waypoint, rather than
+    skipping it; third, block a waypoint, watch the
+    patrol skip it for that circuit, clear the block,
+    and observe the patrol walk that waypoint on a
+    later circuit. This item EXTENDS item 29's Patrol
+    observation and orbital-command item 13: item
+    29's single-axis skip observation stands
+    unchanged (a single-axis block still skips, under
+    the decided rule), item 13's loop, fire-in-
+    passing, and save/load observations stand
+    unchanged, and this item adds only the decided
+    sidestep, stuck, and block-clears readings.
+    It does NOT supersede item 29 or item 13, and
+    it does not claim any dusk, tint, or count
+    observation. Do not claim this verified in
+    Unity until it is observed there and recorded
+    in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

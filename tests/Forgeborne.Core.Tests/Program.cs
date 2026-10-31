@@ -6035,5 +6035,304 @@ Eq(1, s17Step3Loaded.World.KineticBlocksGathered, "slice17 step3 composed loaded
 Eq(0, s17Step3Loaded.World.DestroyedMills, "slice17 step3 composed loaded destroyed stays 0");
 Eq(12, s17Step3Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice17 step3 composed loaded stone 12");
 
+// ---- Slice 18 Step 1: patrol route limits, decided here ----
+// Decision (rationale in DECISIONS.md): a refused direct
+// step first tries a distance-reducing sidestep on a
+// remaining gap axis, in MoveForPatrol only; only if
+// every gap axis is refused does the step skip that
+// waypoint for this circuit, as Slice 15 decided; and
+// after a full circuit of consecutive refusals (5, the
+// waypoint count) the patrol reads Stuck, not
+// Patrolling. Rejected here, with reasons in
+// DECISIONS.md: hold (freezes the whole loop on one
+// block and still misreads while stuck), keep-skip
+// unchanged (leaves the enclosed-patrol misread),
+// and a pathfinder (a new system, not a sidestep).
+// No price, cap, radius, waypoint count, fire rule,
+// or engagement range moves in this step.
+Eq(6, (int)SquadActivity.Stuck, "slice18 patrol stuck appended as 6");
+Eq(3, (int)TacticalDoctrine.Patrol, "slice18 patrol doctrine value unchanged");
+// Single-axis blocked, unchanged from Slice 15, plus
+// the refusal counter: the east step is solid, there
+// is no second gap axis, so the step skips (index 2,
+// no move, 1 refusal, still Patrolling), and the next
+// tick walks south and resets the counter.
+var s18SingleWorld = new WorldZone(42);
+s18SingleWorld.Player.X = 20; s18SingleWorld.Player.Z = 20;
+var s18Single = s18SingleWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18SingleWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol single-axis test stages a solid step cell");
+Check(!s18Single.MoveForPatrol(s18SingleWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol single-axis blocked step does not move");
+Eq(2, s18Single.PatrolWaypointIndex, "slice18 patrol single-axis blocked step skips to south");
+Eq(1, s18Single.PatrolConsecutiveRefusals, "slice18 patrol single-axis blocked step counts one refusal");
+Check(!s18Single.IsPatrolStuck, "slice18 patrol one refusal is not stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18SingleWorld)[0].Activity, "slice18 patrol one refusal still reads patrolling");
+Check(s18Single.MoveForPatrol(s18SingleWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol after a single-axis skip walks south");
+Eq(0, s18Single.PatrolConsecutiveRefusals, "slice18 patrol a move resets the refusal counter");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18SingleWorld)[0].Activity, "slice18 patrol after moving reads patrolling again");
+// Diagonal sidestep, solid block: the squad stands
+// diagonal to its rally waypoint, the primary west
+// step is solid, the south step is free and reduces
+// the Manhattan distance from 2 to 1, so it moves
+// south, keeps the rally waypoint (index 0), and
+// counts no refusal. The next tick steps west onto
+// the rally itself, proving the waypoint is resumed,
+// not skipped, after a sidestep.
+var s18SideWorld = new WorldZone(42);
+s18SideWorld.Player.X = 21; s18SideWorld.Player.Z = 21;
+var s18Side = s18SideWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18SideWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol sidestep test stages a solid primary step cell");
+Eq(2, Math.Abs(20 - s18Side.X) + Math.Abs(20 - s18Side.Z), "slice18 patrol sidestep distance before is 2");
+Check(s18Side.MoveForPatrol(s18SideWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol diagonal blocked step sidesteps instead of skipping");
+Eq(21, s18Side.X, "slice18 patrol sidestep keeps its X");
+Eq(20, s18Side.Z, "slice18 patrol sidestep steps south onto the gap axis");
+Eq(1, Math.Abs(20 - s18Side.X) + Math.Abs(20 - s18Side.Z), "slice18 patrol sidestep distance after is 1");
+Eq(0, s18Side.PatrolWaypointIndex, "slice18 patrol sidestep keeps the same waypoint");
+Eq(0, s18Side.PatrolConsecutiveRefusals, "slice18 patrol sidestep counts no refusal");
+Check(s18Side.MoveForPatrol(s18SideWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol after a sidestep steps onto its waypoint");
+Eq(20, s18Side.X, "slice18 patrol after a sidestep reaches the rally X");
+Eq(0, s18Side.PatrolWaypointIndex, "slice18 patrol waypoint index after reaching the rally");
+// Diagonal sidestep, all three kinds: movement is
+// kind-independent in code, but each kind is proved
+// to sidestep, not only Vanguard.
+var s18SideReconWorld = new WorldZone(42);
+s18SideReconWorld.Player.X = 21; s18SideReconWorld.Player.Z = 21;
+var s18SideRecon = s18SideReconWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+Check(s18SideReconWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol recon sidestep test stages a solid primary step cell");
+Check(s18SideRecon.MoveForPatrol(s18SideReconWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol recon diagonal blocked step sidesteps");
+Eq(20, s18SideRecon.Z, "slice18 patrol recon sidestep steps south");
+var s18SideHeavyWorld = new WorldZone(42);
+s18SideHeavyWorld.Player.X = 21; s18SideHeavyWorld.Player.Z = 21;
+var s18SideHeavy = s18SideHeavyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(s18SideHeavyWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol heavy sidestep test stages a solid primary step cell");
+Check(s18SideHeavy.MoveForPatrol(s18SideHeavyWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol heavy diagonal blocked step sidesteps");
+Eq(20, s18SideHeavy.Z, "slice18 patrol heavy sidestep steps south");
+// Diagonal, both gap axes blocked: no sidestep is
+// available, so the step falls back to the Slice 15
+// skip (index 1, no move, 1 refusal), not to a hold
+// — and the next tick walks east toward the next
+// waypoint, resetting the counter.
+var s18BothWorld = new WorldZone(42);
+s18BothWorld.Player.X = 21; s18BothWorld.Player.Z = 21;
+var s18Both = s18BothWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18BothWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol both-axes test stages a solid primary step cell");
+Check(s18BothWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol both-axes test stages a solid sidestep cell");
+Check(!s18Both.MoveForPatrol(s18BothWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol both gap axes blocked does not move");
+Eq(1, s18Both.PatrolWaypointIndex, "slice18 patrol both gap axes blocked skips to east");
+Eq(1, s18Both.PatrolConsecutiveRefusals, "slice18 patrol both gap axes blocked counts one refusal");
+Check(s18Both.MoveForPatrol(s18BothWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol after a both-axes skip walks east");
+Eq(22, s18Both.X, "slice18 patrol after a both-axes skip steps east");
+Eq(0, s18Both.PatrolConsecutiveRefusals, "slice18 patrol a move after a both-axes skip resets the counter");
+// Enemy-blocked step, single axis: the enemy blocks
+// the east step, so the patrol skips to south — and
+// when the enemy leaves before the next tick, the
+// patrol still walks south, not east. Skip and hold
+// differ observably here, and this is the skip.
+var s18EnemyWorld = new WorldZone(42);
+s18EnemyWorld.Player.X = 20; s18EnemyWorld.Player.Z = 20;
+var s18Enemy = s18EnemyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Blocker = new Enemy(21, 5, 20);
+Check(!s18Enemy.MoveForPatrol(s18EnemyWorld.Chunk, new[] { s18Blocker }), "slice18 patrol enemy-blocked step does not move");
+Eq(2, s18Enemy.PatrolWaypointIndex, "slice18 patrol enemy-blocked step skips to south");
+Check(s18Enemy.MoveForPatrol(s18EnemyWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol after an enemy-blocked skip walks south even though the enemy left");
+Eq(21, s18Enemy.Z, "slice18 patrol after an enemy-blocked skip steps south, not east");
+// Enemy-blocked step, diagonal: the enemy blocks the
+// primary west step, the sidestep south is free, so
+// the patrol sidesteps; once the enemy is gone the
+// next tick steps west onto the rally.
+var s18EnemySideWorld = new WorldZone(42);
+s18EnemySideWorld.Player.X = 21; s18EnemySideWorld.Player.Z = 21;
+var s18EnemySide = s18EnemySideWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18EnemySide.MoveForPatrol(s18EnemySideWorld.Chunk, new[] { new Enemy(20, 5, 21) }), "slice18 patrol enemy-blocked diagonal step sidesteps");
+Eq(20, s18EnemySide.Z, "slice18 patrol enemy-blocked diagonal sidestep steps south");
+Check(s18EnemySide.MoveForPatrol(s18EnemySideWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol after an enemy-blocked sidestep steps onto its waypoint");
+Eq(20, s18EnemySide.X, "slice18 patrol after an enemy-blocked sidestep reaches the rally");
+// Next-circuit retry, then resumption after the
+// block clears: the east step stays solid, so the
+// patrol walks its whole remaining loop, returns to
+// the rally at index 0, and on the next circuit
+// tries east again and skips again — the skip is
+// per-circuit, not permanent. Clearing the solid
+// cell and walking the loop again makes the same
+// retry step east successfully.
+var s18LoopWorld = new WorldZone(42);
+s18LoopWorld.Player.X = 20; s18LoopWorld.Player.Z = 20;
+var s18Loop = s18LoopWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18LoopWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol loop test stages a solid east step cell");
+Check(!s18Loop.MoveForPatrol(s18LoopWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol loop first east step is refused");
+Eq(2, s18Loop.PatrolWaypointIndex, "slice18 patrol loop first refusal skips to south");
+int s18LoopCalls = 0;
+while (s18LoopCalls < 40 && !(s18Loop.X == 20 && s18Loop.Z == 20 && s18Loop.PatrolWaypointIndex == 0))
+{
+    s18Loop.MoveForPatrol(s18LoopWorld.Chunk, Array.Empty<Enemy>());
+    s18LoopCalls++;
+}
+Eq(20, s18Loop.X, "slice18 patrol loop returns to the rally X");
+Eq(20, s18Loop.Z, "slice18 patrol loop returns to the rally Z");
+Eq(0, s18Loop.PatrolWaypointIndex, "slice18 patrol loop returns to the rally at index 0");
+Check(!s18Loop.MoveForPatrol(s18LoopWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol next-circuit east step is tried again and refused");
+Eq(2, s18Loop.PatrolWaypointIndex, "slice18 patrol next-circuit east refusal skips to south again");
+Check(s18LoopWorld.Chunk.TrySet(21, 5, 20, BlockType.Air), "slice18 patrol loop test clears the east step cell");
+s18LoopCalls = 0;
+while (s18LoopCalls < 40 && !(s18Loop.X == 20 && s18Loop.Z == 20 && s18Loop.PatrolWaypointIndex == 0))
+{
+    s18Loop.MoveForPatrol(s18LoopWorld.Chunk, Array.Empty<Enemy>());
+    s18LoopCalls++;
+}
+Eq(0, s18Loop.PatrolWaypointIndex, "slice18 patrol cleared loop returns to the rally at index 0");
+Check(s18Loop.MoveForPatrol(s18LoopWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol cleared east step moves east");
+Eq(21, s18Loop.X, "slice18 patrol cleared east step reaches the step cell");
+Eq(1, s18Loop.PatrolWaypointIndex, "slice18 patrol cleared east step keeps the east waypoint");
+Eq(0, s18Loop.PatrolConsecutiveRefusals, "slice18 patrol cleared east step resets refusals");
+// Fully enclosed patrol, threshold honesty: four
+// consecutive refusals still read Patrolling, the
+// fifth — a full circuit — reads Stuck, and further
+// refusals keep it Stuck, with no movement and no
+// crash over ten ticks.
+var s18StuckWorld = new WorldZone(42);
+s18StuckWorld.Player.X = 20; s18StuckWorld.Player.Z = 20;
+var s18Stuck = s18StuckWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18StuckWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol stuck test stages an east wall");
+Check(s18StuckWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol stuck test stages a west wall");
+Check(s18StuckWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol stuck test stages a south wall");
+Check(s18StuckWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice18 patrol stuck test stages a north wall");
+for (int s18Tick = 0; s18Tick < 4; s18Tick++) s18Stuck.MoveForPatrol(s18StuckWorld.Chunk, Array.Empty<Enemy>());
+Eq(4, s18Stuck.PatrolConsecutiveRefusals, "slice18 patrol four refusals counted");
+Check(!s18Stuck.IsPatrolStuck, "slice18 patrol four refusals is not yet stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18StuckWorld)[0].Activity, "slice18 patrol four refusals still reads patrolling");
+Check(!s18Stuck.MoveForPatrol(s18StuckWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol fifth refusal does not move");
+Eq(5, s18Stuck.PatrolConsecutiveRefusals, "slice18 patrol five refusals counted");
+Check(s18Stuck.IsPatrolStuck, "slice18 patrol five refusals is stuck");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18StuckWorld)[0].Activity, "slice18 patrol five refusals reads stuck");
+Eq(20, s18Stuck.X, "slice18 patrol stuck squad holds its X");
+Eq(20, s18Stuck.Z, "slice18 patrol stuck squad holds its Z");
+for (int s18Tick = 0; s18Tick < 5; s18Tick++) s18Stuck.MoveForPatrol(s18StuckWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s18Stuck.X, "slice18 patrol stuck squad still holds its X after ten ticks");
+Eq(20, s18Stuck.Z, "slice18 patrol stuck squad still holds its Z after ten ticks");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18StuckWorld)[0].Activity, "slice18 patrol still reads stuck after ten ticks");
+// Stuck, then unblocked: removing one wall lets the
+// patrol move again, resets the counter, and returns
+// the reading to Patrolling — Stuck is a live
+// reading, not a latch. After ten refusals the squad
+// is on the west waypoint (index 3), so the west and
+// north steps are still refused before the cleared
+// east step is tried and moves.
+Check(s18StuckWorld.Chunk.TrySet(21, 5, 20, BlockType.Air), "slice18 patrol unstuck test clears the east wall");
+Check(!s18Stuck.MoveForPatrol(s18StuckWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol unstuck west step is still refused");
+Check(!s18Stuck.MoveForPatrol(s18StuckWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol unstuck north step is still refused");
+Check(s18Stuck.MoveForPatrol(s18StuckWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol unstuck east step moves");
+Eq(21, s18Stuck.X, "slice18 patrol unstuck east step reaches the cleared cell");
+Eq(0, s18Stuck.PatrolConsecutiveRefusals, "slice18 patrol unblocked step resets refusals");
+Check(!s18Stuck.IsPatrolStuck, "slice18 patrol unblocked squad is not stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18StuckWorld)[0].Activity, "slice18 patrol unblocked squad reads patrolling again");
+// Save/load: a stuck patrol loads unstuck, at
+// index 0, and becomes stuck again after a fresh
+// full circuit of refusals in the loaded world —
+// the counter is live progress, like the index.
+var s18SaveWorld = new WorldZone(42);
+s18SaveWorld.Player.X = 20; s18SaveWorld.Player.Z = 20;
+var s18Save = s18SaveWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18SaveWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol save test stages an east wall");
+Check(s18SaveWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol save test stages a west wall");
+Check(s18SaveWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol save test stages a south wall");
+Check(s18SaveWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice18 patrol save test stages a north wall");
+for (int s18Tick = 0; s18Tick < 5; s18Tick++) s18Save.MoveForPatrol(s18SaveWorld.Chunk, Array.Empty<Enemy>());
+Check(s18Save.IsPatrolStuck, "slice18 patrol save source is stuck before the save");
+var s18SaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(s18SaveWorld));
+Eq(1, s18SaveLoaded.Squads.Count, "slice18 patrol save/load keeps the stuck squad");
+var s18Loaded = s18SaveLoaded.Squads[0];
+Eq(20, s18Loaded.X, "slice18 patrol save/load position preserved");
+Eq(0, s18Loaded.PatrolWaypointIndex, "slice18 patrol save/load waypoint index resets to 0");
+Eq(0, s18Loaded.PatrolConsecutiveRefusals, "slice18 patrol save/load refusal counter resets to 0");
+Check(!s18Loaded.IsPatrolStuck, "slice18 patrol save/load loaded squad is not stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18SaveLoaded)[0].Activity, "slice18 patrol save/load loaded squad reads patrolling");
+for (int s18Tick = 0; s18Tick < 5; s18Tick++) s18Loaded.MoveForPatrol(s18SaveLoaded.Chunk, Array.Empty<Enemy>());
+Check(s18Loaded.IsPatrolStuck, "slice18 patrol save/load loaded squad is stuck again after a full circuit");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18SaveLoaded)[0].Activity, "slice18 patrol save/load loaded squad reads stuck again");
+// Fire while stuck, through WorldZone.Advance, all
+// three kinds: a stuck patrol fires exactly as a
+// moving patrol fires, and the stuck reading does
+// not stop, start, or chase the fire. Recon (range
+// 5, 12 damage) kills its 30-HP enemy over three
+// ticks while the squad never moves; Vanguard
+// (range 3, 30 damage) kills in one tick; Heavy
+// (range 2, 16 damage) takes two ticks against an
+// enemy held at range 2 by its own wall.
+var s18FireReconWorld = new WorldZone(42);
+s18FireReconWorld.Player.X = 20; s18FireReconWorld.Player.Z = 20;
+var s18FireRecon = s18FireReconWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+Check(s18FireReconWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol recon fire test stages an east wall");
+Check(s18FireReconWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol recon fire test stages a west wall");
+Check(s18FireReconWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol recon fire test stages a south wall");
+Check(s18FireReconWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice18 patrol recon fire test stages a north wall");
+s18FireReconWorld.Enemies.Add(new Enemy(20, 5, 25));
+s18FireReconWorld.Advance();
+Eq(18, s18FireReconWorld.Enemies[0].Health, "slice18 patrol recon stuck fires 12 on tick 1");
+Eq(20, s18FireRecon.X, "slice18 patrol recon stuck squad does not move on tick 1");
+s18FireReconWorld.Advance();
+Eq(6, s18FireReconWorld.Enemies[0].Health, "slice18 patrol recon stuck fires 12 on tick 2");
+s18FireReconWorld.Advance();
+Eq(0, s18FireReconWorld.Enemies.Count, "slice18 patrol recon stuck kills the enemy on tick 3");
+s18FireReconWorld.Advance();
+s18FireReconWorld.Advance();
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18FireReconWorld)[0].Activity, "slice18 patrol recon stuck reads stuck after the kill");
+Eq(20, s18FireRecon.Z, "slice18 patrol recon stuck squad never moved");
+var s18FireVangWorld = new WorldZone(42);
+s18FireVangWorld.Player.X = 20; s18FireVangWorld.Player.Z = 20;
+var s18FireVang = s18FireVangWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s18FireVangWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol vanguard fire test stages an east wall");
+Check(s18FireVangWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol vanguard fire test stages a west wall");
+Check(s18FireVangWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol vanguard fire test stages a south wall");
+Check(s18FireVangWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice18 patrol vanguard fire test stages a north wall");
+s18FireVangWorld.Enemies.Add(new Enemy(20, 5, 23));
+s18FireVangWorld.Advance();
+Eq(0, s18FireVangWorld.Enemies.Count, "slice18 patrol vanguard stuck kills the enemy on tick 1");
+for (int s18Tick = 0; s18Tick < 4; s18Tick++) s18FireVangWorld.Advance();
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18FireVangWorld)[0].Activity, "slice18 patrol vanguard stuck reads stuck");
+Eq(20, s18FireVang.X, "slice18 patrol vanguard stuck squad never moved");
+var s18FireHeavyWorld = new WorldZone(42);
+s18FireHeavyWorld.Player.X = 20; s18FireHeavyWorld.Player.Z = 20;
+var s18FireHeavy = s18FireHeavyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(s18FireHeavyWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol heavy fire test stages an east wall");
+Check(s18FireHeavyWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol heavy fire test stages a west wall");
+Check(s18FireHeavyWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol heavy fire test stages a south wall");
+Check(s18FireHeavyWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice18 patrol heavy fire test stages a north wall");
+s18FireHeavyWorld.Enemies.Add(new Enemy(20, 5, 22));
+s18FireHeavyWorld.Advance();
+Eq(14, s18FireHeavyWorld.Enemies[0].Health, "slice18 patrol heavy stuck fires 16 on tick 1");
+s18FireHeavyWorld.Advance();
+Eq(0, s18FireHeavyWorld.Enemies.Count, "slice18 patrol heavy stuck kills the enemy on tick 2");
+for (int s18Tick = 0; s18Tick < 3; s18Tick++) s18FireHeavyWorld.Advance();
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18FireHeavyWorld)[0].Activity, "slice18 patrol heavy stuck reads stuck");
+Eq(20, s18FireHeavy.Z, "slice18 patrol heavy stuck squad never moved");
+// Other doctrines unchanged — the sidestep lives in
+// MoveForPatrol only, never in the shared rule.
+// HoldGround diagonal to its rally, primary step
+// solid, sidestep cell free: it does not sidestep.
+var s18HoldWorld = new WorldZone(42);
+s18HoldWorld.Player.X = 21; s18HoldWorld.Player.Z = 21;
+var s18Hold = s18HoldWorld.DeploySquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
+Check(s18HoldWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol contrast holdground test stages a solid primary step cell");
+Check(!s18Hold.MoveTowardRally(s18HoldWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol contrast holdground diagonal blocked step does not sidestep");
+Eq(21, s18Hold.X, "slice18 patrol contrast holdground holds its X");
+Eq(21, s18Hold.Z, "slice18 patrol contrast holdground holds its Z");
+// Advance diagonal to its prey, primary step solid,
+// sidestep cell free: it does not sidestep either.
+var s18AdvWorld = new WorldZone(42);
+s18AdvWorld.Player.X = 21; s18AdvWorld.Player.Z = 21;
+var s18Adv = s18AdvWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Advance)!;
+Check(s18AdvWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol contrast advance test stages a solid primary step cell");
+Check(!s18Adv.MoveTowardNearestEnemy(s18AdvWorld.Chunk, new[] { new Enemy(20, 5, 20) }), "slice18 patrol contrast advance diagonal blocked step does not sidestep");
+Eq(21, s18Adv.X, "slice18 patrol contrast advance holds its X");
+Eq(21, s18Adv.Z, "slice18 patrol contrast advance holds its Z");
+// Defend Core diagonal to its post, primary step
+// solid, sidestep cell free: it does not sidestep.
+var s18DefWorld = new WorldZone(42);
+s18DefWorld.Player.X = 29; s18DefWorld.Player.Z = 29;
+var s18Def = s18DefWorld.DeploySquad(20, 5, 20, TacticalDoctrine.DefendCore)!;
+Check(s18DefWorld.Chunk.TrySet(28, 5, 29, BlockType.Stone), "slice18 patrol contrast defendcore test stages a solid primary step cell");
+Check(!s18Def.MoveForDefendCore(s18DefWorld.Chunk, Array.Empty<Enemy>(), s18DefWorld.CoreX, s18DefWorld.CoreY, s18DefWorld.CoreZ), "slice18 patrol contrast defendcore diagonal blocked step does not sidestep");
+Eq(29, s18Def.X, "slice18 patrol contrast defendcore holds its X");
+Eq(29, s18Def.Z, "slice18 patrol contrast defendcore holds its Z");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

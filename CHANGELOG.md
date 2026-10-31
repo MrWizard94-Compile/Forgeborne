@@ -1,5 +1,100 @@
 # Forgeborne — Changelog
 
+## 0.78.0 — 2026-10-31 — Slice 18 Step 1: patrol route
+limits, sidestep plus stuck readout, decided
+
+- Decision, decided in this step (rationale in
+  DECISIONS.md): a refused patrol step first
+  tries a distance-reducing sidestep on a
+  remaining gap axis, in MoveForPatrol only, and
+  only if every gap axis is refused does it skip
+  that waypoint for the circuit, as Slice 15
+  decided; a patrol that refuses, with no sidestep
+  move, on every waypoint of a full circuit reads
+  Stuck, not Patrolling. The sidestep is one
+  voxel, largest gap first with the shared X,
+  then Y, then Z tie-break, refused into a solid
+  block, out of bounds, or onto a living enemy's
+  cell, and it reduces the Manhattan distance to
+  the waypoint by exactly one, so it can never
+  wander away from the route; it keeps the
+  waypoint index, so the next tick retries the
+  same waypoint from the closer cell. A
+  single-axis block therefore still skips, because
+  there is no second gap axis to sidestep onto.
+- Stuck readout, decided in this step (rationale
+  in DECISIONS.md): a new SquadActivity value,
+  Stuck, appended as 6, derived in
+  OrbitalView.Snapshot from a live counter,
+  PatrolConsecutiveRefusals, which increments on
+  each refused step with no sidestep move and
+  resets to 0 on any successful patrol step.
+  Stuck is true at or above PatrolWaypointCount
+  (5) consecutive refusals — exactly one full
+  circuit tried and refused — and four refusals
+  still read Patrolling. The counter is live
+  progress like the waypoint index: it starts at
+  0 on load, so a loaded patrol is never stuck
+  on arrival. Stuck changes the display word
+  only: a stuck patrol fires exactly as a moving
+  patrol fires, and the Unity text line already
+  renders Activity.ToString(), so no adapter
+  edit, marker change, or HUD change was needed.
+- Rejected in this step (rationale in
+  DECISIONS.md): hold (freezes the whole loop on
+  one block and still misreads while stuck); keep
+  the skip rule unchanged (leaves the enclosed
+  patrol reading Patrolling while never moving);
+  and a full pathfinder (a new system, not a
+  sidestep, with search work and route state this
+  step has no need to pay for). The mechanism
+  lives in MoveForPatrol alone, through a new
+  private TryStepOnAxis helper; the shared
+  MoveTowardPosition rule is untouched, and
+  contrast tests prove HoldGround, Advance, and
+  Defend Core do not sidestep. No price, cap,
+  radius, waypoint count, fire rule, engagement
+  range, delivery, precedence, conflict, rating,
+  cost, or phase rule moves; no new save field
+  is added, so old saves load unchanged.
+- Proof set, in tests: single blocked waypoint
+  (solid single-axis skip unchanged, diagonal
+  sidestep, both gap axes blocked falling back
+  to skip); fully enclosed patrol (Patrolling
+  through four refusals, Stuck at five, still
+  Stuck after ten ticks, unstuck by clearing one
+  wall); enemy-blocked steps (single-axis skip
+  then south even after the enemy leaves, proving
+  skip rather than hold; diagonal sidestep then
+  the rally); next-circuit retry and resumption
+  after clearing (retry refused again while the
+  block stands, then stepping east successfully
+  once cleared); fire while stuck through
+  WorldZone.Advance for all three kinds (Recon
+  12 per tick over three ticks, Vanguard 30 in
+  one tick, Heavy 16 per tick over two ticks);
+  all three kinds sidestepping; save/load (stuck
+  before the save, Patrolling with index 0 and
+  counter 0 after load, Stuck again after a fresh
+  full circuit); and other-doctrine contrasts
+  (HoldGround, Advance, Defend Core diagonal
+  blocked steps do not sidestep). No demo
+  scenario is added for this step alone, per the
+  scope; the composed demo belongs to Step 3.
+- Playtest-gate checklist item 37 added
+  (Windows-only, in docs/slice-01-playtest-gate.md):
+  an enclosed patrol reading STUCK while still
+  firing, a diagonal sidestep, and a block-clears
+  resumption, marker and text line read for each.
+  Item 37 EXTENDS item 29 and orbital-command
+  item 13; neither is superseded. Next free gate
+  number is now 38.
+- Tests: 2433 passed, 0 failed (was 2301; +132,
+  no failures on the final runs). Demo unchanged:
+  Slice 15 scenario save 44,016 chars, Slice 17
+  scenario save 43,974 chars, all earlier demo
+  saves as in the 0.77.0 entry.
+
 ## 0.77.0 — 2026-10-31 — Slice 18 scope: orbital remainders,
 documentation-only
 

@@ -49,9 +49,11 @@ public enum TacticalDoctrine
     /// order, forever. A squad deploys marching to waypoint 0
     /// like HoldGround, then keeps walking instead of holding.
     /// At a waypoint it turns and continues in the same tick
-    /// (no dwell); a refused step skips that waypoint for
-    /// this circuit instead of holding at a wall forever.
-    /// See MoveForPatrol and DECISIONS.md.</summary>
+    /// (no dwell); a refused step first tries a
+    /// distance-reducing sidestep, and only then skips
+    /// that waypoint for this circuit instead of holding
+    /// at a wall forever, and a full circuit of refusals
+    /// reads Stuck. See MoveForPatrol and DECISIONS.md.</summary>
     Patrol = 3,
 }
 
@@ -325,13 +327,45 @@ public sealed class TacticalSquad
     /// here. See MoveForPatrol and DECISIONS.md.</summary>
     public int PatrolWaypointIndex { get; private set; }
 
+    /// <summary>Slice 18 Step 1: consecutive Patrol ticks
+    /// that ended in a refused step with no sidestep
+    /// move, counting the skip that followed each one.
+    /// Live route progress, like PatrolWaypointIndex:
+    /// it resets to 0 on any successful Patrol step
+    /// (direct or sidestep) and starts at 0 on load,
+    /// because a loaded squad is a new object and no
+    /// save field carries it — a loaded patrol is
+    /// therefore never stuck on arrival, whatever it
+    /// was before the save. It is not a health, fire,
+    /// or economy value, and no other doctrine reads
+    /// it: HoldGround, Advance, and Defend Core have
+    /// no skip rule and no stuck reading.</summary>
+    public int PatrolConsecutiveRefusals { get; private set; }
+
+    /// <summary>Slice 18 Step 1: true only for a Patrol
+    /// squad that has refused a step, with no sidestep
+    /// move, on every waypoint of a full circuit —
+    /// PatrolConsecutiveRefusals at or above
+    /// PatrolWaypointCount. Fewer refusals, even four
+    /// in a row, are not stuck: a patrol that moved
+    /// anywhere in its circuit is still patrolling
+    /// the rest of its loop, and a single blocked
+    /// waypoint is a skip, not a stuck squad. The
+    /// threshold is the waypoint count itself, not a
+    /// new tuned number, so a full circuit is exactly
+    /// the proof that every waypoint was tried and
+    /// refused in turn.</summary>
+    public bool IsPatrolStuck => Doctrine == TacticalDoctrine.Patrol
+        && PatrolConsecutiveRefusals >= PatrolWaypointCount;
+
     /// <summary>Slice 15 Step 1: the cell of the current
     /// patrol waypoint, derived from the rally and
     /// PatrolWaypointIndex on every call, never stored.
     /// An out-of-bounds or solid waypoint is still a
-    /// waypoint: MoveForPatrol skips it when its step is
-    /// refused, rather than the derivation pretending
-    /// such a waypoint cannot exist.</summary>
+    /// waypoint: MoveForPatrol sidesteps and then skips
+    /// it when its step is refused (Slice 18 Step 1),
+    /// rather than the derivation pretending such a
+    /// waypoint cannot exist.</summary>
     public (int X, int Y, int Z) PatrolTarget => PatrolWaypointIndex switch
     {
         0 => (RallyX, RallyY, RallyZ),
@@ -354,43 +388,132 @@ public sealed class TacticalSquad
         }
     }
 
-    /// <summary>Slice 15 Step 1: one Patrol tick's single
-    /// move, decided once so the squad can never take two
-    /// steps in one tick. Standing on a waypoint advances
-    /// the index first (turn and continue, no dwell tick),
+    /// <summary>Slice 15 Step 1, decided further in Slice
+    /// 18 Step 1: one Patrol tick's single move, decided
+    /// once so the squad can never take two steps in
+    /// one tick. Standing on a waypoint advances the
+    /// index first (turn and continue, no dwell tick),
     /// then the squad steps toward the next waypoint
-    /// through the shared MoveTowardPosition rule — same
-    /// axis choice, tie-break, and solid / enemy-occupied
-    /// refusals as every other doctrine, so a patrol step
-    /// never walks through a block or onto an enemy to
-    /// stay on route. A refused step skips that waypoint
-    /// for this circuit (index advances, no move that
-    /// tick) instead of holding at a wall forever: the
-    /// skipped waypoint is tried again on the next
-    /// circuit, and a squad whose every waypoint is
-    /// blocked cycles its index without moving, which is
-    /// still not a hold — it is waiting on no single
-    /// waypoint. No pathfinder is added here: a wall on
-    /// the direct axis causes a skip, not a detour, and
-    /// that limit is stated, not hidden. The squad never
-    /// chases: enemies are handled by FindTarget's
-    /// fire-in-range rule, not by movement, so a patrol
-    /// that shoots in passing is still walking its route
-    /// on the next tick. Returns true if the squad
-    /// moved.</summary>
+    /// through the shared MoveTowardPosition rule —
+    /// same axis choice, tie-break, and solid /
+    /// enemy-occupied refusals as every other
+    /// doctrine, so a patrol step never walks through
+    /// a block or onto an enemy to stay on route.
+    /// Slice 18 Step 1 changes only what happens when
+    /// that direct step is refused, and only in this
+    /// method, never in the shared rule: first a
+    /// distance-reducing sidestep is tried — the
+    /// remaining gap axes, largest gap first with
+    /// the shared X, then Y, then Z tie-break, each
+    /// step still one voxel, still refused into a
+    /// solid block, out of bounds, or onto a living
+    /// enemy, and still reducing the Manhattan
+    /// distance to the waypoint by exactly one, so a
+    /// sidestep can never wander away from the route
+    /// or loop around a wall. A sidestep move keeps
+    /// the waypoint index, so the next tick retries
+    /// the same waypoint from the sidestepped cell.
+    /// Only if every gap axis is refused does the
+    /// step skip that waypoint for this circuit
+    /// (index advances, no move that tick, refusal
+    /// counter increments) instead of holding at a
+    /// wall forever: the skipped waypoint is tried
+    /// again on the next circuit. A single-axis
+    /// block therefore still skips, exactly as Slice
+    /// 15 proved, because there is no second gap axis
+    /// to sidestep onto; a diagonal block sidesteps
+    /// instead of skipping. A squad whose every
+    /// waypoint is blocked cycles its index without
+    /// moving, which is still not a hold — it is
+    /// waiting on no single waypoint — but after a
+    /// full circuit of such refusals it reads Stuck
+    /// (see IsPatrolStuck), not Patrolling, so a
+    /// player watching an enclosed patrol is not
+    /// told a dead route is being walked. No
+    /// pathfinder is added here: a sidestep is one
+    /// voxel on a gap axis, not a planned route, a
+    /// route cache, or a search over several cells.
+    /// The squad never chases: enemies are handled
+    /// by FindTarget's fire-in-range rule, not by
+    /// movement, so a patrol that shoots in passing
+    /// is still walking its route on the next tick,
+    /// and a stuck patrol fires exactly as a moving
+    /// patrol fires — the stuck reading changes the
+    /// display word, never the fire rule. Returns
+    /// true if the squad moved.</summary>
     public bool MoveForPatrol(VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
     {
         if (AtPatrolTarget) PatrolWaypointIndex = (PatrolWaypointIndex + 1) % PatrolWaypointCount;
         var target = PatrolTarget;
         bool moved = MoveTowardPosition(target.X, target.Y, target.Z, chunk, enemies);
-        if (!moved && (X != target.X || Y != target.Y || Z != target.Z))
+        if (moved)
         {
-            // Refused step (solid, enemy-occupied, or out of
-            // bounds): skip this waypoint for this circuit.
-            PatrolWaypointIndex = (PatrolWaypointIndex + 1) % PatrolWaypointCount;
-            return false;
+            PatrolConsecutiveRefusals = 0;
+            return true;
         }
-        return moved;
+        if (X == target.X && Y == target.Y && Z == target.Z) return false;
+        // Direct step refused: try a sidestep on the
+        // remaining gap axes, largest gap first, shared
+        // tie-break. The primary axis is already refused
+        // under this chunk and enemy list, so it is not
+        // retried. A successful sidestep is still one
+        // voxel, still distance-reducing, and keeps the
+        // waypoint: the route is resumed, not skipped.
+        int dx = target.X - X, dy = target.Y - Y, dz = target.Z - Z;
+        var axes = new (int Axis, int Abs, int Sign)[]
+        {
+            (0, Math.Abs(dx), Math.Sign(dx)),
+            (1, Math.Abs(dy), Math.Sign(dy)),
+            (2, Math.Abs(dz), Math.Sign(dz)),
+        };
+        // Bubble-sort three entries: largest gap first,
+        // ties X, then Y, then Z — the shared rule's
+        // tie-break, applied to the sidestep order too.
+        for (int i = 0; i < axes.Length; i++)
+            for (int j = i + 1; j < axes.Length; j++)
+                if (axes[j].Abs > axes[i].Abs
+                    || (axes[j].Abs == axes[i].Abs && axes[j].Axis < axes[i].Axis))
+                    (axes[i], axes[j]) = (axes[j], axes[i]);
+        foreach (var a in axes)
+        {
+            if (a.Abs == 0) continue;
+            if (a.Axis == axes[0].Axis) continue;
+            if (TryStepOnAxis(a.Axis, a.Sign, chunk, enemies))
+            {
+                PatrolConsecutiveRefusals = 0;
+                return true;
+            }
+        }
+        // Every gap axis refused (solid, enemy-occupied,
+        // or out of bounds): skip this waypoint for
+        // this circuit, as Slice 15 decided, and count
+        // the refusal toward the stuck reading.
+        PatrolConsecutiveRefusals++;
+        PatrolWaypointIndex = (PatrolWaypointIndex + 1) % PatrolWaypointCount;
+        return false;
+    }
+
+    /// <summary>Slice 18 Step 1: one voxel on a single
+    /// named axis, under the shared rule's refusals
+    /// (out of bounds, solid block, living enemy's
+    /// cell) and nothing else. Patrol's sidestep only:
+    /// no other doctrine calls it, and the shared
+    /// MoveTowardPosition rule is untouched, so no
+    /// other doctrine can gain a sidestep by
+    /// accident.</summary>
+    private bool TryStepOnAxis(int axis, int sign,
+        VoxelChunk chunk, IReadOnlyList<Enemy> enemies)
+    {
+        int nx = X, ny = Y, nz = Z;
+        if (axis == 0) nx += sign;
+        else if (axis == 1) ny += sign;
+        else nz += sign;
+        if (!VoxelChunk.InBounds(nx, ny, nz)) return false;
+        if (BlockInfo.IsSolid(chunk.Get(nx, ny, nz))) return false;
+        foreach (var e in enemies)
+            if (!e.IsDead && e.X == nx && e.Y == ny && e.Z == nz) return false;
+        X = nx; Y = ny; Z = nz;
+        return true;
     }
 
     /// <summary>
@@ -663,8 +786,12 @@ public sealed class OrbitalCommand
 /// Advance is documented to behave). A Defend Core squad is
 /// Guarding at its post, Hunting a core attacker, or Marching
 /// back to its post. A Patrol squad is Patrolling on its
-/// loop, firing in passing or not. The word is doctrine
-/// truth, not rally proximity.
+/// loop, firing in passing or not, or Stuck when a full
+/// circuit of its waypoints has been refused in turn
+/// (Slice 18 Step 1): Stuck is a Patrol reading only,
+/// never a word for another doctrine, and it changes
+/// the display word, never movement or fire. The word
+/// is doctrine truth, not rally proximity.
 /// </summary>
 public enum SquadActivity
 {
@@ -697,6 +824,21 @@ public enum SquadActivity
     /// the text line carries the doctrine word, the marker
     /// carries the kind shape.</summary>
     Patrolling = 5,
+    /// <summary>Slice 18 Step 1: a Patrol squad whose
+    /// every waypoint has been refused in turn, for a
+    /// full circuit of consecutive refusals, with no
+    /// sidestep move in between. Appended only, so no
+    /// earlier activity value moves. The Unity text
+    /// line already renders Activity.ToString(), so
+    /// this word reaches the scene with no adapter
+    /// edit and no marker change: the marker still
+    /// carries the kind shape, the text line now
+    /// carries the stuck truth instead of Patrolling.
+    /// A stuck patrol still fires in passing, exactly
+    /// as a moving patrol does — Stuck is a display
+    /// word, not a hold, not a fire rule, and not a
+    /// new doctrine.</summary>
+    Stuck = 6,
 }
 
 /// <summary>
@@ -802,11 +944,20 @@ public static class OrbitalView
                 // not, and never Hunting, because it chases
                 // nothing — prey stays null, so the snapshot
                 // cannot claim a target the movement will
-                // never walk toward. Display and movement
-                // agree because both read the same doctrine:
-                // MoveForPatrol walks the loop, this branch
-                // names the loop.
-                activity = SquadActivity.Patrolling;
+                // never walk toward. Slice 18 Step 1 adds
+                // the one exception that keeps route truth
+                // honest: a squad that has refused every
+                // waypoint in a full circuit reads Stuck,
+                // not Patrolling, because a dead route
+                // must not be named as a walked one. A
+                // stuck patrol still fires in passing, so
+                // Stuck changes the word, never the fire
+                // rule. Display and movement agree because
+                // both read the same doctrine and the
+                // same live refusal counter: MoveForPatrol
+                // walks the loop and counts refusals, this
+                // branch names the loop or its stuck state.
+                activity = s.IsPatrolStuck ? SquadActivity.Stuck : SquadActivity.Patrolling;
             }
             else
             {

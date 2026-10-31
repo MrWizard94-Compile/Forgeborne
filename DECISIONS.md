@@ -6978,6 +6978,218 @@ documentation-only
 - Next step: Slice 18 Step 1, the patrol route
   limits, decided in that step.
 
+## 0.78.0 — Slice 18 Step 1: patrol route limits,
+sidestep plus stuck readout, decided
+
+- State found on entry: remote main head
+  ce504f145bb5a4e56ab74575fa588c83314db293,
+  CHANGELOG 0.77.0 (Slice 18 scope), sync record
+  79 entries ending at that commit, local working
+  copy matched — no step was repeated: the 0.77.0
+  decision named Slice 18 Step 1, the patrol route
+  limits, decided in that step, and this run did
+  exactly that. Tests 2301 baseline re-run passing;
+  demo Slice 17 save 43,974 chars, Slice 15 save
+  44,016 chars.
+- Decision, in one quotable sentence: a refused
+  patrol step first sidesteps onto a remaining
+  gap axis, and only if every gap axis is refused
+  does it skip that waypoint for the circuit; a
+  patrol that refuses, with no sidestep move, on
+  every waypoint of a full circuit reads Stuck,
+  not Patrolling. This is a combination of two of
+  the scope's four hypotheses — sidestep for the
+  singly blocked case, keep-skip plus stuck
+  readout for the fully blocked case — because
+  neither hypothesis alone answers both cases the
+  scope asked about: a sidestep alone leaves a
+  single-axis block and a fully enclosed patrol
+  cycling silently, and a stuck readout alone
+  leaves a diagonal block skipping a waypoint
+  the squad could still reach. Combining them is
+  not scope creep: both mechanisms are the
+  scope's own hypotheses, both live in
+  MoveForPatrol alone, and neither moves a
+  settled system (see below).
+- Why a sidestep, and why this sidestep: a patrol
+  is a route, and a route that skips a waypoint
+  it could reach by one legal voxel has failed
+  at its own job for no reason. The sidestep is
+  deliberately narrow: it tries only axes with a
+  non-zero gap to the waypoint, largest gap first
+  with the shared X, then Y, then Z tie-break,
+  one voxel per tick, refused into a solid block,
+  out of bounds, or onto a living enemy's cell,
+  and it reduces the Manhattan distance to the
+  waypoint by exactly one. That distance rule is
+  the whole safety case: a sidestep can never
+  wander away from the route, orbit a wall, or
+  loop, because every sidestep is strictly closer
+  to the waypoint it is trying to reach, and the
+  waypoint index is kept, so the next tick retries
+  the same waypoint from the closer cell. A
+  single-axis block therefore still skips, exactly
+  as Slice 15 proved, because there is no second
+  gap axis to sidestep onto — that existing
+  behaviour is preserved, not re-decided, and the
+  Slice 15 blocked tests pass unchanged.
+- Why a stuck readout, and why this one: the
+  scope named the enclosed patrol as the orbital
+  equivalent of the single-cable misread Slice 17
+  fixed — a live claim about a dead route. A
+  patrol that never moves while reading Patrolling
+  tells the player a route is being walked when
+  it is not, and no movement change fixes that
+  reading, because a fully enclosed patrol has no
+  legal move to make. The readout is therefore a
+  display word, not a movement change: a new
+  SquadActivity value, Stuck, appended as 6, so
+  no earlier activity value moves, derived in
+  OrbitalView.Snapshot from a live counter,
+  PatrolConsecutiveRefusals, that increments on
+  each refused step with no sidestep move and
+  resets to 0 on any successful patrol step.
+  Stuck is true at or above PatrolWaypointCount
+  (5) consecutive refusals, because five refusals
+  are exactly one full circuit of waypoints tried
+  and refused in turn — the threshold is the
+  waypoint count itself, not a new tuned number,
+  and four refusals still read Patrolling, proved
+  by test, so a patrol that moved anywhere in its
+  circuit is not called stuck for one blocked
+  leg. The counter is live progress like the
+  waypoint index: it starts at 0 on load, because
+  a loaded squad is a new object and no save
+  field carries it, so a loaded patrol is never
+  stuck on arrival and must refuse a fresh full
+  circuit to read Stuck again, proved by test.
+  Stuck changes the display word only: a stuck
+  patrol fires exactly as a moving patrol fires,
+  proved for all three kinds through
+  WorldZone.Advance, and the Unity text line
+  already renders Activity.ToString(), so the
+  word STUCK reaches the scene with no adapter
+  edit, no marker shape or colour change, and no
+  HUD redesign — the marker still carries the
+  kind shape, the text line now carries the
+  stuck truth.
+- Rejected hypotheses, with reasons. Hold (stay
+  and retry the same waypoint each tick, like
+  HoldGround holding short): rejected because it
+  freezes the whole loop on one blocked waypoint
+  instead of patrolling the rest of it, and
+  because it does not fix the misread at all — an
+  enclosed patrol holding forever still reads
+  Patrolling while never moving, so hold trades
+  a skipping route for a frozen one and keeps
+  the false word. Keep the skip rule unchanged
+  with a stated reason: rejected because the
+  stated reason would have to be that a player
+  watching an enclosed patrol is not misled, and
+  that is not true — Patrolling is a claim about
+  walking, and a squad that has not moved for a
+  full circuit is not walking, whatever the route
+  doctrine's philosophy says about guarantees.
+  A full pathfinder (search over several cells, a
+  planned route, a route cache): rejected as a
+  new system, not a sidestep — it would add
+  per-tick search work, saved or live route
+  state, and an interaction with the
+  one-voxel-per-tick rule that this step has no
+  need to pay for, since a one-voxel gap-axis
+  sidestep already reaches every waypoint a
+  diagonal block hides, and a fully enclosed
+  patrol has no route for a pathfinder to find.
+- Scope of the change, proved: the mechanism
+  lives in MoveForPatrol alone, through a new
+  private TryStepOnAxis helper, and the shared
+  MoveTowardPosition rule is untouched. That is
+  why the other doctrines cannot gain a sidestep
+  by accident, and it is proved, not just
+  asserted, by contrast tests: a HoldGround squad
+  diagonal to its rally, an Advance squad
+  diagonal to its prey, and a Defend Core squad
+  diagonal to its post, each with its primary
+  step solid and its sidestep cell free, all stay
+  put. No price, cap, radius, waypoint count,
+  fire rule, engagement range, delivery,
+  precedence, conflict, rating, cost, or phase
+  rule moves in this step; no material, shader,
+  marker, light, fog, view model, or HUD rule
+  moves either, except the text-line word itself,
+  which the existing Activity rendering already
+  carries. No new save field is added, so old
+  saves load unchanged.
+- Proof set, as the scope required: a single
+  blocked waypoint (solid, single-axis skip
+  unchanged; diagonal sidestep; both gap axes
+  blocked falling back to skip); a fully enclosed
+  patrol (no movement, no crash, Patrolling
+  through four refusals, Stuck at five, still
+  Stuck after ten ticks, and unstuck by clearing
+  one wall — west and north still refused, then
+  the cleared east step moves); a step refused by
+  a living enemy's cell rather than a solid block
+  (single-axis enemy skip, then south on the
+  next tick even after the enemy leaves, proving
+  skip rather than hold; diagonal enemy sidestep,
+  then the rally on the next tick); a blocked
+  waypoint that later clears (next-circuit retry
+  attempted and refused again while the block
+  stands, then the same retry stepping east
+  successfully once the cell is cleared); fire
+  in passing while stuck (Recon 12 per tick over
+  three ticks to kill a 30-HP enemy, Vanguard 30
+  in one tick, Heavy 16 per tick over two ticks
+  against an enemy held at range 2 by its own
+  wall, each through WorldZone.Advance, each
+  ending Stuck and unmoved); all three kinds for
+  sidestep movement and for fire while stuck
+  (movement is kind-independent in code, but the
+  step proves each kind rather than relying on
+  that argument, because Recon's range 5 reaches
+  across its loop while Vanguard's 3 and Heavy's
+  2 do not); and save/load (stuck before the
+  save, Patrolling with index 0 and counter 0
+  after load, Stuck again after a fresh full
+  circuit in the loaded world). No demo scenario
+  is required of this step alone, per the scope;
+  the composed demo belongs to Step 3, which
+  stages the decided patrol behaviour together
+  with the decided deploy boundary.
+- Checklist relation: new playtest-gate item 37,
+  Windows-only, observing the decided behaviour
+  in one scene — an enclosed patrol reading
+  STUCK while still firing, a diagonal sidestep,
+  and a block-clears resumption, marker and text
+  line read for each. Item 37 EXTENDS item 29's
+  Patrol observation and orbital-command item 13:
+  item 29's single-axis skip observation stands
+  unchanged (that case still skips under the
+  decided rule), item 13's loop, fire-in-passing,
+  and save/load observations stand unchanged, and
+  item 37 adds only the sidestep, stuck, and
+  block-clears readings. It does NOT supersede
+  item 29 or item 13, and it does not claim any
+  dusk, tint, or count observation. Next free
+  gate number is now 38.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 18 Step 2, the free deploy
+  primitive enforcement, decided in that step,
+  with its cases stated independently of this
+  step's answer: a patrol deployed through the
+  paid path must behave exactly as decided here —
+  same loop, same sidestep, same skip, same
+  Stuck reading — or Step 2 must say why the
+  deploy path changes a doctrine's movement. It
+  should not.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
