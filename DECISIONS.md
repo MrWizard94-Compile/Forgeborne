@@ -9031,6 +9031,127 @@ closing Slice 21
   chosen from the ranked candidates the Slice 21 review
   carries, not promised here, per docs/slice-21-review.md.
 
+## 0.90.0 — Slice 22 scope: recall or dismiss
+(2026-10-31, silent scheduled run)
+
+- Step, decided in this step: the Slice 22 scope,
+  documentation-only, per docs/slice-22-scope.md.
+  No system built, no answer decided, by design.
+  Slice 23 is NOT scoped here; it is scoped
+  afterwards, the same way the Slice 22 scope
+  follows the Slice 21 review rather than
+  preceding it.
+- Theme, decided in this step: Slice 22 is the
+  removal slice, not a general squad-command
+  slice, not a reserve slice, and not a radius
+  slice. The motivating remainder is precise:
+  Slice 21 decided repositioning, and a
+  re-rallied squad is still on the field,
+  still counts toward the cap, and still costs
+  nothing to keep — so the player has no action
+  at all for freeing a cap slot except a squad's
+  death. The scope's question is therefore what
+  removal, if any, the player has for a live
+  squad — and nothing else in the slice is
+  allowed to answer a different question first.
+- Order, decided in this step: removal before
+  radius, because the ranked candidate order says
+  so in its first half and because the two
+  remainders are not the same kind of work: a
+  removal is a player action with no mechanism
+  yet, while a radius retune is a first-pass
+  value with no evidence behind changing it.
+  Reversing the order would not break either
+  decision, stated honestly: radius-first is
+  coherent, and it is chosen against here only
+  because an unmade player action outranks an
+  unproven value, not because the radius
+  question is unimportant.
+- Questions-not-answers, decided in this step:
+  the scope records hypotheses and proof
+  obligations, not decisions. Name and mechanism
+  (recall, dismiss, or one justified name, and
+  whether a reserve exists — it does not, unless
+  Step 1 defers to a reserve slice); refund and
+  cap as two separate answers (none, full 10, or
+  a defined partial, and slot freed or not, with
+  the two-gifts interaction stated); confirmation
+  placement (core state, headless-testable, or
+  adapter only, proved only by a Windows
+  observation); targeting (index rule reused or
+  replaced, with the post-removal list-shift
+  answer); timing (immediate or next-tick, with
+  the firing-tick interaction proved); scope per
+  doctrine and kind, with the stuck-Patrol
+  interaction stated (removal beside a free
+  rescue, or refused for stuck squads); state
+  changes (list entry gone, snapshot entry gone,
+  no death counter incremented — verified, not
+  assumed); display (no new HUD line unless
+  justified, marker vanishing verified per
+  doctrine); adapter binding checked against the
+  taken keys and the K proposal.
+- Grounding, decided in this step: the scope's
+  ground facts were verified against code this
+  run, not copied from review prose — no
+  live-removal API exists (grep finds no Recall,
+  Dismiss, RemoveSquad, or TryRemove), death
+  removal is Squads.RemoveAll dead in
+  WorldZone.Advance, economy is 10 ore and cap 3
+  with check-before-charge, the picker deploys
+  only through the paid path, the re-rally gates
+  are index-targeted and fail-closed, next free
+  gate number is 41, and K is taken by proposal.
+  A scope that had claimed a removal mechanism
+  already existed, or a reserve to recall into,
+  would have been wrong on the code as it stands.
+- Boundary, decided in this step: a removal
+  staged as lethal damage in a test is a death,
+  not a removal proof — the staged deaths in
+  Slices 20 and 21 were cap-staging devices, and
+  Step 1 must not quote them as removal evidence.
+  Likewise, a removal that teleports a squad to
+  the player before despawning it is not a
+  removal, and a "recall" that despawns with no
+  reserve behind it is a dismiss by another name
+  unless Step 1 justifies the name with a
+  mechanism.
+- Deliberately not in this step: a removal API;
+  a general squad-command system; a reserve,
+  bench, or redeploy-from-reserve system; a
+  radius, waypoint-count, or loop-shape change;
+  a movement, targeting, or fire rule change; a
+  delivery, precedence, conflict, rating, cost, or
+  phase rule change beyond Step 1's explicitly
+  decided refund and cap answers; a re-rally
+  repricing; a material, marker, light, fog,
+  model, or HUD change; a scene file, imported
+  asset, texture, or shader file; a Slice 23 scope.
+- Gaps carried, in priority order: Windows Unity
+  verification (Slices 1–22, items 25–27 and 30–40
+  still open, item 40 pending its binding); the
+  Slice 1 director playtest gate still pending;
+  first-pass graphics values unproven; Slice 13
+  scene-proof observations still unmade; a radius
+  or waypoint value revisited on evidence, as the
+  first Slice 23 candidate; a general re-rally
+  price on Windows playtest evidence, if free
+  repositioning proves abusive, as a later economy
+  decision. Closed by this step, not carried:
+  nothing is closed by a scope — Slice 21's
+  general re-rally question stays closed by its
+  own review, and the removal question is now
+  scoped, not decided.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 22 Step 1, the removal decision,
+  decided in that step, per docs/slice-22-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

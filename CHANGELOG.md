@@ -1,5 +1,85 @@
 # Forgeborne — Changelog
 
+## 0.90.0 — 2026-10-31 — Slice 22 scope:
+recall or dismiss — one removal decision,
+then demo + review; documentation only
+
+- Step taken: Slice 22 scope, documentation-only,
+  per docs/slice-22-scope.md. No system built, no
+  answer decided, by design; Slice 23 is NOT scoped
+  here.
+- Scope decided: Slice 22 is the one carried
+  patrol-route remainder, in order — Step 1, the
+  removal decision (recall, dismiss, or one action
+  under a justified name, with its refund — none,
+  full 10, or a defined partial — and its cap effect
+  answered as two separate answers, its confirmation
+  placed in core or in the adapter with the honesty
+  note about what each placement proves, its
+  targeting, timing, scope per doctrine and kind,
+  stuck-Patrol interaction, and checklist item from
+  41, all stated as questions, not answers); Step 2,
+  composed demo scenario plus documentation-only
+  review closing Slice 22. A reserve or bench is
+  NOT smuggled into the removal step: if Step 1
+  finds removal meaningless without one, it defers
+  itself to a reserve slice and says so. Radius 3
+  and the five-waypoint loop are carried as
+  first-pass values, NOT re-decided headlessly: a
+  removal moves no loop, and a Step 1 finding that
+  the radius caused a block is recorded as a gap for
+  a later radius decision, not a quiet widening.
+- Ground facts verified against code this run, not
+  copied from review prose: no live-squad removal
+  API exists in core (no Recall, Dismiss, RemoveSquad,
+  or TryRemove entry point); the only squad removal
+  in the game is death, via Squads.RemoveAll dead in
+  WorldZone.Advance, so a cap slot frees only when a
+  squad dies, as Slice 11 proved; deploy price 10
+  EmberOre and cap 3 concurrent live squads, with
+  LiveSquadCount counting only non-dead squads and
+  check-before-charge on refused deploys; the picker
+  deploys only through the paid path and no public
+  free spawn primitive exists since Slice 18 Step 2;
+  the re-rally gates target by squad list index and
+  refuse fail-closed, so a removal reusing that rule
+  must answer the post-removal list-shift question;
+  next free playtest-gate number is 41 (items run to
+  40, the general re-rally observation extending item
+  39); the proposed K binding for re-rally is a
+  comment in FpsInputAdapter.cs only, so K is taken
+  by proposal when Step 1 checks its removal binding
+  against the taken keys.
+- Changes: new docs/slice-22-scope.md (scope question,
+  gap-by-gap dispositions, ground facts, recall vs
+  dismiss naming, refund/cap two-gifts problem,
+  confirmation placement, scope/targeting/timing,
+  radius carried-not-re-decided, Step 1 proof set
+  incl. full-cap removal plus redeploy, stuck-Patrol
+  removal beside a free re-rally, confirmation
+  cancel and squad-dies-while-pending cases, and
+  save/load persistence, Step 2 composed demo
+  requirements incl. the removal persisting on load,
+  deliberately-not list, Slice 23 ranked candidates,
+  gate); CHANGELOG 0.90.0 and DECISIONS.md entries
+  (theme, order with reversal honesty,
+  questions-not-answers, boundary, deliberately-not
+  list, next step: Slice 22 Step 1, the removal
+  decision, decided in that step).
+- Tests: 3607 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 21
+  scenario save 44,040 chars, Slice 20 save 44,041
+  chars, Slice 19 save 43,965 chars, Slice 18 save
+  44,015 chars, Slice 15 save 44,016 chars, Slice 17
+  save 43,974 chars.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.89.0 — 2026-10-31 — Slice 21 Step 2:
 composed demo + review, closing Slice 21
 
