@@ -1,5 +1,74 @@
 # Forgeborne — Changelog
 
+## 0.84.0 — 2026-10-31 — Slice 20 scope:
+stuck-patrol player action, decided in later steps
+
+- Step taken, decided in this step: Slice 20
+  scope, documentation-only, 0.84.0. No system
+  built, no answer decided, by design; Slice 21
+  is NOT scoped here.
+- Scope decided: Slice 20 is the first-ranked
+  Slice 19 remainder, in order — Step 1, the
+  stuck-patrol player action (recall, re-rally,
+  both, or neither, decided in that step, with
+  its scope, targeting, state changes, economy
+  relation, movement boundary, display relation,
+  and checklist item from 39 all stated as
+  questions, not answers); Step 2, composed demo
+  scenario plus documentation-only review closing
+  Slice 20. Radius 3 and the five-waypoint loop
+  are carried as first-pass values, NOT re-decided
+  headlessly: a re-rally moves the loop's centre,
+  never its radius or waypoint count, and a Step 1
+  finding that the radius caused a block is
+  recorded as a gap for a later radius decision,
+  not a quiet widening.
+- Ground facts verified against code this run,
+  not copied from review prose: IsPatrolStuck is
+  Patrol-only at PatrolConsecutiveRefusals >=
+  PatrolWaypointCount (5), counter reset on any
+  successful Patrol step and on load, waypoint
+  index live progress reset on load, PatrolTarget
+  re-derived from rally and index so a changed
+  rally re-derives the loop with no new save field
+  (save already carries doctrine, kind, position,
+  and rally); Stuck is display only, still firing
+  in passing; no recall, dismiss, or live-squad
+  re-rally API exists (OrbitalCommand.SetRally is
+  pending-deploy only, fail-closed outside picking);
+  picker deploys only (O, Return, Escape, Alpha1–
+  Alpha7); economy fixed at 10 EmberOre, cap 3,
+  cap refusal with no oldest-squad recall, no
+  refund on death or otherwise, dead squads free
+  the cap; next free playtest-gate number is 39.
+- Changes: new docs/slice-20-scope.md (scope
+  question, inputs, radius carried-not-re-decided,
+  Step 1 proof set incl. enclosed-patrol starting
+  state, non-stuck and second-doctrine controls,
+  all-kinds-or-reason, save/load, paid-path
+  unchanged, re-rally-to-unreachable re-stuck
+  proof, checklist item from 39 and its relation
+  to items 37, 29, and orbital-command item 13;
+  Step 2 composed demo requirements; deliberately-
+  not list; Slice 21 ranked candidates; gate);
+  CHANGELOG 0.84.0 and DECISIONS.md entries
+  (theme, order with reversal honesty, questions-
+  not-answers, boundary, deliberately-not list,
+  next step: Slice 20 Step 1, the stuck-patrol
+  player action, decided in that step).
+- Tests: 2810 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice
+  19 scenario save 43,965 chars, Slice 18 save
+  44,015 chars, Slice 15 save 44,016 chars, Slice
+  17 save 43,974 chars.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.83.0 — 2026-10-31 — Slice 19 Step 2:
 composed demo + review, closing Slice 19
 

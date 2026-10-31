@@ -7992,6 +7992,127 @@ closing Slice 19
   chosen from the ranked candidates the Slice 19 review
   carries, not promised here.
 
+## 0.84.0 — Slice 20 scope: stuck-patrol player action
+
+- Step, decided in this step: the Slice 20 scope,
+  documentation-only, per docs/slice-20-scope.md.
+  No system built, no answer decided, by design.
+  Slice 21 is NOT scoped here; it is scoped
+  afterwards, the same way the Slice 20 scope
+  follows the Slice 19 review rather than
+  preceding it.
+- Theme, decided in this step: Slice 20 is the
+  stuck-patrol slice, not a radius slice, not a
+  general squad-command slice, and not a second
+  display-query slice. The motivating state is
+  precise and already proved: a patrol whose loop
+  is permanently blocked cycles its waypoint index
+  forever, reading Stuck, firing in passing, and
+  retrying every waypoint on every circuit, with
+  no player action defined for it. The scope's
+  question is therefore what the player can do
+  about that state — recall, re-rally, both, or
+  neither — and nothing else in the slice is
+  allowed to answer a different question first.
+- Order, decided in this step: stuck action
+  before radius, because the ranked candidate
+  order says so and because the two questions
+  are independent in the direction that matters:
+  a wider or narrower loop changes which patrols
+  get stuck, but it does not give the player
+  anything to do with one that is stuck, and a
+  stuck action changes nothing about which loops
+  fit their ground. Reversing the order would
+  not break either decision, stated honestly:
+  radius-first is chosen against here because a
+  headless radius retune has no evidence behind
+  it, while a stuck action has a proved starting
+  state (the Slice 18 enclosed patrol) and a
+  proved player dead end (no API, no key, no
+  picker path for a live squad).
+- Questions-not-answers, decided in this step:
+  the scope records hypotheses and proof
+  obligations, not decisions. Recall versus
+  re-rally versus both versus neither; stuck-only
+  versus any-patrol versus any-doctrine scope;
+  targeting by position, rally, list order, or a
+  defined identity, with miss behaviour
+  fail-closed or defined; index and counter reset
+  on re-rally and the snapshot word immediately
+  after; recall removal semantics and cap effect;
+  refund (none, full, partial) and re-rally price
+  (free, priced, stuck-only priced) against the
+  sunk-cost rule; and the adapter binding as a
+  Windows checklist item against the taken keys
+  (Alpha1–Alpha7 while picking, O, Return,
+  Escape, mouse fire when not picking). Any Step 1
+  answer that settles one of these without
+  recording its rejected alternatives has not met
+  this scope.
+- Boundary, decided in this step: movement stands
+  (sidestep, skip, Stuck threshold, no pathfinder,
+  no hold, no wider sidestep, no teleport to a new
+  rally — the squad walks under the existing step
+  rule, and a re-rally to an unreachable rally
+  must read Stuck again after a full circuit, or
+  the rescue has hidden the block); the deploy
+  price (10) and cap (3) stand except for the
+  economy answer Step 1 justifies explicitly; no
+  power, consumer, or save-format rule moves (a
+  re-rally reuses the saved rally field, a recall
+  removes a squad the way death already does, and
+  a new save field needs justification plus old-
+  save proof); no material, marker, light, fog,
+  model, or HUD rule moves except the snapshot
+  word immediately after the action, if Step 1
+  justifies a change there. The scope also draws
+  the line the cap rule drew: the rejected
+  oldest-squad recall was silent and automatic,
+  while a player-initiated recall is chosen — but
+  chosen destruction of a paid investment is still
+  destruction, so Step 1 must answer refund and
+  confirmation rather than treating "the player
+  chose it" as the whole answer.
+- Radius carried, not re-decided, decided in this
+  step: PatrolLoopRadius 3 and PatrolWaypointCount
+  5 stay first-pass values through Slice 20. A
+  re-rally moves the loop's centre, never its
+  radius or count, and a Step 1 finding that the
+  radius caused a block is recorded as a gap for
+  a later radius decision, not acted on by
+  widening. This repeats the Slice 19 review's
+  gap 5 in scope form so the step cannot mistake
+  a radius finding for a radius licence.
+- Grounding, decided in this step: every ground
+  fact in the scope was verified against code this
+  run — IsPatrolStuck and its counter/index/load
+  rules in Orbital.cs, the pending-deploy-only
+  SetRally and picker key map in Orbital.cs and
+  FpsInputAdapter.cs, the 10-ore / cap-3 / no-
+  refund economy in Orbital.cs and
+  docs/orbital-command.md — not copied from
+  review prose. The next free playtest-gate
+  number is 39, and Step 1's item 39 must state
+  its relation to item 37 (patrol route), item 29,
+  and orbital-command item 13.
+- Deliberately not in this step: a stuck action
+  decision itself; a radius, waypoint, or loop-
+  shape change; a movement, targeting, or fire
+  change; a general squad-command system; a
+  material, marker, light, fog, model, or HUD
+  change; a demo scenario (Step 2's work, by the
+  Slice 20 scope); a Slice 21 scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 20 Step 1, the stuck-patrol
+  player action, decided in that step, per
+  docs/slice-20-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
