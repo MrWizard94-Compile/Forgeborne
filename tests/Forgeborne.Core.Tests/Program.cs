@@ -1,3 +1,11 @@
+// Slice 18 Step 2: this file is the test assembly, the core's only
+// friend assembly (see src/Forgeborne.Core/AssemblyInfo.cs), so it
+// alone may call the internal test seam WorldZone.SpawnSquad. The
+// former public free entry points (WorldZone.DeploySquad,
+// Simulation.DeployOrbitalSquad) were removed in that step: any
+// other assembly calling them fails to compile, and any non-friend
+// caller of the seam fails to compile (observed CS1061 in the negative-compile proof). Play deploys go through the
+// paid path, never through this seam.
 using Forgeborne.Core;
 
 // Minimal test runner, no external packages: each Check must pass or the
@@ -463,7 +471,7 @@ Check(simMill.World.Player.Inventory.Get(BlockType.Stone) >= 1, "simulation kine
 // Player starts at (16,5,16) in a fresh WorldZone; y=5 is open air, so
 // X/Z movement at that height is unblocked unless a test places a block.
 var orbWorld = new WorldZone(42);
-var squad = orbWorld.DeploySquad(16, 5, 16);
+var squad = orbWorld.SpawnSquad(16, 5, 16);
 Check(squad != null, "orbital deploy at player rally succeeds");
 Eq(1, orbWorld.Squads.Count, "orbital deploy adds 1 squad");
 Eq(SquadKind.Vanguard, squad!.Kind, "orbital squad kind is Vanguard");
@@ -473,13 +481,13 @@ Eq(3, squad.AliveMembers, "orbital squad starts with 3 members");
 Eq(90, squad.Health, "orbital squad starts at 90 health");
 Eq(30, squad.DamagePerTick, "orbital squad deals 30 per tick at full strength");
 Check(squad.AtRally, "orbital squad at rally when rally is spawn point");
-Check(orbWorld.DeploySquad(-1, 5, 5) == null, "orbital deploy out-of-bounds rally rejected");
+Check(orbWorld.SpawnSquad(-1, 5, 5) == null, "orbital deploy out-of-bounds rally rejected");
 Eq(1, orbWorld.Squads.Count, "orbital rejected deploy adds no squad");
-Check(orbWorld.DeploySquad(5, 5, 5, (TacticalDoctrine)99) == null, "orbital deploy unknown doctrine rejected");
+Check(orbWorld.SpawnSquad(5, 5, 5, (TacticalDoctrine)99) == null, "orbital deploy unknown doctrine rejected");
 Eq(1, orbWorld.Squads.Count, "orbital unknown doctrine adds no squad");
 // Movement: one voxel per tick, largest-gap axis first, ties X before Z.
 var moveWorld = new WorldZone(42);
-var mover = moveWorld.DeploySquad(20, 5, 20)!;
+var mover = moveWorld.SpawnSquad(20, 5, 20)!;
 moveWorld.Advance();
 Eq(17, mover.X, "orbital squad moves one voxel in X first on diagonal rally");
 Eq(16, mover.Z, "orbital squad does not also move in Z on the same tick");
@@ -494,7 +502,7 @@ Eq(20, mover.Z, "orbital squad holds rally Z on later ticks");
 // Blocked movement: a solid block on the path stops the squad that tick.
 var blockWorld = new WorldZone(42);
 blockWorld.Chunk.TrySet(17, 5, 16, BlockType.Stone);
-var blocked = blockWorld.DeploySquad(20, 5, 16)!;
+var blocked = blockWorld.SpawnSquad(20, 5, 16)!;
 blockWorld.Advance();
 Eq(16, blocked.X, "orbital squad does not move into a solid block");
 Check(!blocked.AtRally, "orbital squad blocked short of rally is not at rally");
@@ -502,7 +510,7 @@ Check(!blocked.AtRally, "orbital squad blocked short of rally is not at rally");
 var pathWorld = new WorldZone(42);
 var pathEnemy = new Enemy(17, 5, 16);
 pathWorld.Enemies.Add(pathEnemy);
-var pathSquad = pathWorld.DeploySquad(20, 5, 16)!;
+var pathSquad = pathWorld.SpawnSquad(20, 5, 16)!;
 pathWorld.Advance();
 Eq(16, pathSquad.X, "orbital squad does not move into an enemy-occupied cell");
 Eq(30, pathEnemy.Health, "orbital moving squad does not fire at the blocking enemy");
@@ -510,14 +518,14 @@ Eq(30, pathEnemy.Health, "orbital moving squad does not fire at the blocking ene
 var routeWorld = new WorldZone(42);
 var routeEnemy = new Enemy(17, 5, 18); // distance 3 from spawn (16,5,16)
 routeWorld.Enemies.Add(routeEnemy);
-routeWorld.DeploySquad(22, 5, 16);
+routeWorld.SpawnSquad(22, 5, 16);
 routeWorld.Advance();
 Eq(30, routeEnemy.Health, "orbital en-route squad does not fire in-range enemy");
 // Holding squad fires: 3 members x 10 = 30 kills a 30 HP enemy in one tick.
 var holdWorld = new WorldZone(42);
 var holdEnemy = new Enemy(18, 5, 16); // distance 2 from rally (16,5,16)
 holdWorld.Enemies.Add(holdEnemy);
-holdWorld.DeploySquad(16, 5, 16);
+holdWorld.SpawnSquad(16, 5, 16);
 holdWorld.Advance();
 Eq(0, holdWorld.Enemies.Count, "orbital holding squad kills in-range enemy in one tick");
 // Range limit: distance 4 is out of the 3-range engagement. The
@@ -533,7 +541,7 @@ var rangeWorld = new WorldZone(42);
 var farEnemy = new Enemy(20, 5, 16); // distance 4 from rally (16,5,16)
 rangeWorld.Enemies.Add(farEnemy);
 rangeWorld.Chunk.TrySet(19, 5, 16, BlockType.Stone);
-rangeWorld.DeploySquad(16, 5, 16);
+rangeWorld.SpawnSquad(16, 5, 16);
 rangeWorld.Player.X = 28; rangeWorld.Player.Z = 28;
 rangeWorld.Advance();
 Eq(30, farEnemy.Health, "orbital holding squad does not fire beyond range 3");
@@ -542,7 +550,7 @@ Eq(1, rangeWorld.Enemies.Count, "orbital out-of-range enemy survives");
 var weakWorld = new WorldZone(42);
 var weakEnemy = new Enemy(18, 5, 16);
 weakWorld.Enemies.Add(weakEnemy);
-var weakSquad = weakWorld.DeploySquad(16, 5, 16)!;
+var weakSquad = weakWorld.SpawnSquad(16, 5, 16)!;
 weakSquad.TakeDamage(30);
 Eq(2, weakSquad.AliveMembers, "orbital squad drops to 2 members after 30 damage");
 Eq(20, weakSquad.DamagePerTick, "orbital 2-member squad deals 20 per tick");
@@ -553,7 +561,7 @@ Eq(10, weakEnemy.Health, "orbital 2-member squad leaves 10 HP on a 30 HP enemy")
 var hurtWorld = new WorldZone(42);
 var hurtEnemy = new Enemy(17, 5, 16); // adjacent to rally (16,5,16)
 hurtWorld.Enemies.Add(hurtEnemy);
-var hurtSquad = hurtWorld.DeploySquad(16, 5, 16)!;
+var hurtSquad = hurtWorld.SpawnSquad(16, 5, 16)!;
 hurtSquad.TakeDamage(60); // 90 -> 30, 1 member
 Eq(1, hurtSquad.AliveMembers, "orbital squad drops to 1 member after 60 damage");
 hurtWorld.Advance();
@@ -563,39 +571,39 @@ Eq(20, hurtSquad.Health, "orbital squad takes 10 from surviving adjacent enemy")
 var killWorld = new WorldZone(42);
 var killEnemy = new Enemy(17, 5, 16);
 killWorld.Enemies.Add(killEnemy);
-var killSquad = killWorld.DeploySquad(16, 5, 16)!;
+var killSquad = killWorld.SpawnSquad(16, 5, 16)!;
 killWorld.Advance();
 Eq(0, killWorld.Enemies.Count, "orbital full squad kills adjacent enemy before it can hit back");
 Eq(90, killSquad.Health, "orbital squad unharmed when it kills its adjacent attacker");
 // Dead squads are removed by Advance.
 var deadWorld = new WorldZone(42);
-var deadSquad = deadWorld.DeploySquad(16, 5, 16)!;
+var deadSquad = deadWorld.SpawnSquad(16, 5, 16)!;
 deadSquad.TakeDamage(90);
 Check(deadSquad.IsDead, "orbital squad dead at 0 health");
 deadWorld.Advance();
 Eq(0, deadWorld.Squads.Count, "orbital dead squad removed on tick");
 // Determinism: same deploy + advance gives the same squad position.
 var detA = new WorldZone(42); var detB = new WorldZone(42);
-var sA = detA.DeploySquad(20, 5, 16)!; var sB = detB.DeploySquad(20, 5, 16)!;
+var sA = detA.SpawnSquad(20, 5, 16)!; var sB = detB.SpawnSquad(20, 5, 16)!;
 detA.Advance(); detB.Advance();
 Check(sA.X == sB.X && sA.Z == sB.Z, "orbital squad movement is deterministic across worlds");
 // Simulation command: deploy via Simulation, squad moves on sim ticks.
 var simOrb = new Simulation(42);
-var simSquad = simOrb.DeployOrbitalSquad(20, 5, 16);
+var simSquad = simOrb.World.SpawnSquad(20, 5, 16);
 Check(simSquad != null, "simulation deploy orbital squad succeeds");
 Eq(1, simOrb.World.Squads.Count, "simulation deploy adds squad to world");
 simOrb.Tick(0.1f, 0, 0, false);
 Eq(17, simSquad!.X, "simulation orbital squad moves on sim tick");
-Check(simOrb.DeployOrbitalSquad(-1, 5, 5) == null, "simulation deploy out-of-bounds rally rejected");
+Check(simOrb.World.SpawnSquad(-1, 5, 5) == null, "simulation deploy out-of-bounds rally rejected");
 
 // ---- Slice 2 Step 7: Orbital squad save / load persistence ----
 // A wounded squad survives a save/load round-trip with position,
 // rally, health, and member count intact, and keeps moving after load.
 var saveSquadWorld = new WorldZone(42);
-var saveSquad = saveSquadWorld.DeploySquad(20, 5, 16)!;
+var saveSquad = saveSquadWorld.SpawnSquad(20, 5, 16)!;
 saveSquadWorld.Advance(); // squad moves 16 -> 17 toward its rally
 saveSquad.TakeDamage(60); // 90 -> 30, 1 member left
-var saveSquadFull = saveSquadWorld.DeploySquad(20, 5, 16)!;
+var saveSquadFull = saveSquadWorld.SpawnSquad(20, 5, 16)!;
 var saveSquadJson = SaveSystem.SaveZone(saveSquadWorld);
 var saveSquadLoaded = SaveSystem.LoadZone(saveSquadJson);
 Eq(2, saveSquadLoaded.Squads.Count, "save/load squad count preserved");
@@ -615,7 +623,7 @@ var oldLoaded = SaveSystem.LoadZone(oldJson);
 Eq(0, oldLoaded.Squads.Count, "old save without squads loads with no squads");
 // A dead squad in the save is skipped on load, not resurrected.
 var deadSaveWorld = new WorldZone(42);
-var deadSaveSquad = deadSaveWorld.DeploySquad(20, 5, 16)!;
+var deadSaveSquad = deadSaveWorld.SpawnSquad(20, 5, 16)!;
 deadSaveSquad.TakeDamage(90);
 var deadSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(deadSaveWorld));
 Eq(0, deadSaveLoaded.Squads.Count, "dead squad in save is skipped on load");
@@ -627,7 +635,7 @@ Eq(0, OrbitalView.Snapshot(viewEmpty).Count, "orbital view empty world snapshots
 // A deployed squad snapshots with position, rally, health, members,
 // damage, doctrine, and kind — holding at its spawn-point rally.
 var viewWorld = new WorldZone(42);
-viewWorld.DeploySquad(16, 5, 16);
+viewWorld.SpawnSquad(16, 5, 16);
 var viewSnap = OrbitalView.Snapshot(viewWorld);
 Eq(1, viewSnap.Count, "orbital view snapshot has 1 squad");
 Eq(16, viewSnap[0].X, "orbital view snapshot squad X");
@@ -643,7 +651,7 @@ Eq(TacticalDoctrine.HoldGround, viewSnap[0].Doctrine, "orbital view snapshot squ
 // advancing the world after the snapshot leaves the old snapshot
 // at its pre-tick position.
 var viewMove = new WorldZone(42);
-viewMove.DeploySquad(20, 5, 16);
+viewMove.SpawnSquad(20, 5, 16);
 var moveSnap = OrbitalView.Snapshot(viewMove);
 Check(moveSnap[0].IsMoving, "orbital view snapshot marching squad is moving");
 Check(!moveSnap[0].AtRally, "orbital view snapshot marching squad not at rally");
@@ -652,7 +660,7 @@ Eq(16, moveSnap[0].X, "orbital view snapshot is a copy, not the live squad");
 Eq(17, viewMove.Squads[0].X, "orbital view live squad moved after snapshot");
 // A wounded squad snapshots its reduced member count and damage.
 var viewWeak = new WorldZone(42);
-var weakViewSquad = viewWeak.DeploySquad(16, 5, 16)!;
+var weakViewSquad = viewWeak.SpawnSquad(16, 5, 16)!;
 weakViewSquad.TakeDamage(60);
 var weakSnap = OrbitalView.Snapshot(viewWeak);
 Eq(1, weakSnap[0].AliveMembers, "orbital view wounded snapshot has 1 member");
@@ -660,14 +668,14 @@ Eq(10, weakSnap[0].DamagePerTick, "orbital view wounded snapshot deals 10 per ti
 // Two squads snapshot in deploy order, and a dead squad (removed
 // by Advance) never appears in a snapshot.
 var viewTwo = new WorldZone(42);
-viewTwo.DeploySquad(16, 5, 16);
-var viewTwoDead = viewTwo.DeploySquad(20, 5, 16)!;
+viewTwo.SpawnSquad(16, 5, 16);
+var viewTwoDead = viewTwo.SpawnSquad(20, 5, 16)!;
 viewTwoDead.TakeDamage(90);
 viewTwo.Advance();
 Eq(1, OrbitalView.Snapshot(viewTwo).Count, "orbital view snapshot omits dead squad");
 // Snapshot through Simulation, the path the Unity adapter uses.
 var viewSim = new Simulation(42);
-viewSim.DeployOrbitalSquad(20, 5, 16);
+viewSim.World.SpawnSquad(20, 5, 16);
 Eq(1, OrbitalView.Snapshot(viewSim.World).Count, "orbital view snapshot via simulation world has 1 squad");
 
 // ---- Slice 2 composition: loot + skills + mill + squad in one Simulation ----
@@ -683,7 +691,7 @@ compSim.World.Player.Inventory.Add(BlockType.Stone, 10);
 compSim.World.Player.Inventory.Add(BlockType.Wood, 5);
 compSim.ApplyLook(-18.4f, -53f);
 Eq(BuildResult.Success, compSim.BuildKineticMillAhead(), "slice 2 composition kinetic mill builds");
-Check(compSim.DeployOrbitalSquad(compSim.World.Player.X, compSim.World.Player.Y, compSim.World.Player.Z) != null, "slice 2 composition squad deploys");
+Check(compSim.World.SpawnSquad(compSim.World.Player.X, compSim.World.Player.Y, compSim.World.Player.Z) != null, "slice 2 composition squad deploys");
 Eq(1, OrbitalView.Snapshot(compSim.World).Count, "slice 2 composition snapshot has 1 squad");
 var compLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(compSim.World));
 Eq(1, compLoaded.Squads.Count, "slice 2 composition save/load keeps the squad");
@@ -701,7 +709,7 @@ Eq(0f, tpFps.VelocityY, "fps teleport clears vertical velocity");
 var saveSource = new WorldZone(7);
 saveSource.Player.X = 10; saveSource.Player.Y = 5; saveSource.Player.Z = 12;
 saveSource.Player.Inventory.Add(BlockType.Stone, 4);
-saveSource.DeploySquad(10, 5, 12);
+saveSource.SpawnSquad(10, 5, 12);
 var saveJson = SaveSystem.SaveZone(saveSource);
 var restoreSim = new Simulation(42);
 var fpsBefore = restoreSim.Fps;
@@ -1025,12 +1033,14 @@ econSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
 Check(econSim.CanDeployOrbitalSquad(), "squad economy simulation funded can deploy");
 Check(econSim.DeployOrbitalSquadPaid(20, 5, 16) != null, "squad economy simulation paid deploy funded succeeds");
 Eq(0, econSim.World.Player.Inventory.Get(BlockType.EmberOre), "squad economy simulation paid deploy charges 10 ore");
-// The free direct path is deliberately unchanged for headless/demo
-// use: it still deploys with no ore. This is the documented
-// distinction, not a bypass in play — Unity play goes through the
-// picker, which is paid (see the picker tests above).
+// The free direct path is deliberately kept for headless test use
+// only, through the internal seam (World.SpawnSquad, friend assembly
+// only, since Slice 18 Step 2): it still deploys with no ore. This
+// is the documented distinction, not a bypass in play — Unity play
+// goes through the picker, which is paid (see the picker tests
+// above).
 var freeSim = new Simulation(42);
-Check(freeSim.DeployOrbitalSquad(20, 5, 16) != null, "squad economy free direct path still deploys without ore (headless only)");
+Check(freeSim.World.SpawnSquad(20, 5, 16) != null, "squad economy free direct path still deploys without ore (headless only)");
 Eq(1, freeSim.World.Squads.Count, "squad economy free direct path adds one squad");
 // Paid squads persist through a save/load round-trip like any squad.
 var paidSaveWorld = new WorldZone(42);
@@ -1099,7 +1109,7 @@ Eq(3, s3Snap[0].AliveMembers, "slice 3 demo loaded squad has 3 living members");
 // member so it deals 10 (not 30) and the enemy survives to show
 // both the move and the fire.
 var pursueWorld = new WorldZone(42);
-var pursueSquad = pursueWorld.DeploySquad(16, 5, 16)!;
+var pursueSquad = pursueWorld.SpawnSquad(16, 5, 16)!;
 pursueSquad.TakeDamage(60); // 90 -> 30, 1 member
 pursueWorld.Player.X = 28; pursueWorld.Player.Z = 28;
 var pursueEnemy = new Enemy(20, 5, 16);
@@ -1112,7 +1122,7 @@ Eq(30, pursueSquad.Health, "slice4 pursued squad unharmed at distance 3");
 // enemy starts equidistant at tick start (both at 16) — tie goes
 // to the player, so the enemy steps east toward the player.
 var nearPlayerWorld = new WorldZone(42);
-var nearSquad = nearPlayerWorld.DeploySquad(10, 5, 16)!;
+var nearSquad = nearPlayerWorld.SpawnSquad(10, 5, 16)!;
 var nearEnemy = new Enemy(20, 5, 16);
 nearPlayerWorld.Enemies.Add(nearEnemy);
 nearPlayerWorld.Advance();
@@ -1122,7 +1132,7 @@ Eq(15, nearSquad.X, "slice4 squad still marches west while enemy goes for player
 // 24, enemy at 20 — distance 4 to both. Player wins the tie, so
 // the enemy steps east (21), not west toward the squad (19).
 var tieWorld = new WorldZone(42);
-tieWorld.DeploySquad(16, 5, 16);
+tieWorld.SpawnSquad(16, 5, 16);
 tieWorld.Player.X = 24;
 var tieEnemy = new Enemy(20, 5, 16);
 tieWorld.Enemies.Add(tieEnemy);
@@ -1131,7 +1141,7 @@ Eq(21, tieEnemy.X, "slice4 tie goes to player, enemy moves toward player not squ
 // Dead squad never targeted: dead squad at 16 is nearer than the
 // player at 28, but the enemy still steps toward the player.
 var deadTargetWorld = new WorldZone(42);
-var deadTargetSquad = deadTargetWorld.DeploySquad(16, 5, 16)!;
+var deadTargetSquad = deadTargetWorld.SpawnSquad(16, 5, 16)!;
 deadTargetSquad.TakeDamage(90);
 deadTargetWorld.Player.X = 28;
 var deadTargetEnemy = new Enemy(20, 5, 16);
@@ -1142,7 +1152,7 @@ Eq(0, deadTargetWorld.Squads.Count, "slice4 dead squad removed on tick");
 // Moving squad targeted alike: squad marches east from 16, player
 // far away, enemy at 22 follows the squad's position tick by tick.
 var movingTargetWorld = new WorldZone(42);
-var movingTargetSquad = movingTargetWorld.DeploySquad(20, 5, 16)!;
+var movingTargetSquad = movingTargetWorld.SpawnSquad(20, 5, 16)!;
 movingTargetWorld.Player.X = 28; movingTargetWorld.Player.Z = 28;
 var movingTargetEnemy = new Enemy(22, 5, 16);
 movingTargetWorld.Enemies.Add(movingTargetEnemy);
@@ -1158,7 +1168,7 @@ Eq(18, movingTargetSquad.X, "slice4 moving squad marches while pursued tick 2");
 // not 30 (enemy phase hitting first would still leave 20 here,
 // so the killing case below is the sharper proof).
 var onceWorld = new WorldZone(42);
-var onceSquad = onceWorld.DeploySquad(16, 5, 16)!;
+var onceSquad = onceWorld.SpawnSquad(16, 5, 16)!;
 onceSquad.TakeDamage(60); // 90 -> 30, 1 member
 onceWorld.Player.X = 28; onceWorld.Player.Z = 28;
 var onceEnemy = new Enemy(17, 5, 16);
@@ -1171,7 +1181,7 @@ Eq(20, onceSquad.Health, "slice4 squad takes adjacent damage exactly once");
 // fired, the squad would be 80 even though it killed its attacker;
 // it stays 90, proving the enemy phase adds no squad damage.
 var killTargetWorld = new WorldZone(42);
-var killTargetSquad = killTargetWorld.DeploySquad(16, 5, 16)!;
+var killTargetSquad = killTargetWorld.SpawnSquad(16, 5, 16)!;
 killTargetWorld.Player.X = 28; killTargetWorld.Player.Z = 28;
 var killTargetEnemy = new Enemy(17, 5, 16);
 killTargetWorld.Enemies.Add(killTargetEnemy);
@@ -1182,7 +1192,7 @@ Eq(90, killTargetSquad.Health, "slice4 squad unharmed when it kills its adjacent
 // 1, the squad is then killed outright, and on tick 2 the enemy
 // turns toward the player (largest gap is Z, so it steps in Z).
 var retargetWorld = new WorldZone(42);
-var retargetSquad = retargetWorld.DeploySquad(16, 5, 16)!;
+var retargetSquad = retargetWorld.SpawnSquad(16, 5, 16)!;
 retargetSquad.TakeDamage(60); // 1 member, so tick 1 does not kill the enemy
 retargetWorld.Player.X = 28; retargetWorld.Player.Z = 28;
 var retargetEnemy = new Enemy(20, 5, 16);
@@ -1221,7 +1231,7 @@ Eq(16, genOccupied.X, "slice4 generalised movement blocked by occupied cell");
 // the enemy still pursues the nearer squad, because the target is
 // recomputed from saved positions and health, not read from a field.
 var saveTargetWorld = new WorldZone(42);
-var saveTargetSquad = saveTargetWorld.DeploySquad(16, 5, 16)!;
+var saveTargetSquad = saveTargetWorld.SpawnSquad(16, 5, 16)!;
 saveTargetSquad.TakeDamage(60);
 saveTargetWorld.Player.X = 28; saveTargetWorld.Player.Z = 28;
 saveTargetWorld.Enemies.Add(new Enemy(20, 5, 16));
@@ -1238,13 +1248,13 @@ Eq(20, saveTargetLoaded.Enemies[0].Health, "slice4 loaded squad fires at pursued
 // Defend Core and Patrol are deferred, not rejected (see DECISIONS).
 // Deploy accepts Advance; HoldGround behaviour is unchanged elsewhere.
 var advWorld = new WorldZone(42);
-var advSquad = advWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance)!;
+var advSquad = advWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.Advance)!;
 Eq(TacticalDoctrine.Advance, advSquad.Doctrine, "slice4 advance deploy doctrine is Advance");
 Eq(SquadKind.Vanguard, advSquad.Kind, "slice4 advance deploy kind stays Vanguard");
-Check(advWorld.DeploySquad(5, 5, 5, (TacticalDoctrine)99) == null, "slice4 advance unknown doctrine still rejected");
+Check(advWorld.SpawnSquad(5, 5, 5, (TacticalDoctrine)99) == null, "slice4 advance unknown doctrine still rejected");
 // No living enemy: an Advance squad stands still, it does NOT march to its rally.
 var advIdleWorld = new WorldZone(42);
-var advIdle = advIdleWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance)!;
+var advIdle = advIdleWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.Advance)!;
 for (int i = 0; i < 3; i++) advIdleWorld.Advance();
 Eq(16, advIdle.X, "slice4 advance with no enemy does not march to rally X");
 Eq(16, advIdle.Z, "slice4 advance with no enemy does not march to rally Z");
@@ -1255,7 +1265,7 @@ Eq(16, advIdle.Z, "slice4 advance with no enemy does not march to rally Z");
 // and the enemy steps east toward the player, then the squad
 // steps west toward the enemy and fires.
 var advWestWorld = new WorldZone(42);
-var advWest = advWestWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance)!;
+var advWest = advWestWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.Advance)!;
 advWest.TakeDamage(60); // 90 -> 30, 1 member
 advWestWorld.Enemies.Add(new Enemy(12, 5, 16));
 advWestWorld.Advance();
@@ -1266,7 +1276,7 @@ Eq(20, advWestWorld.Enemies[0].Health, "slice4 advance weakened squad deals 10 t
 // east. The step onto the enemy's cell is refused, so the squad
 // stays put and fires — HoldGround would stay silent while moving.
 var advFireWorld = new WorldZone(42);
-var advFire = advFireWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+var advFire = advFireWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance)!;
 advFire.TakeDamage(60); // 1 member, 10 damage
 advFireWorld.Player.X = 28; advFireWorld.Player.Z = 28;
 advFireWorld.Enemies.Add(new Enemy(17, 5, 16));
@@ -1279,7 +1289,7 @@ Eq(20, advFire.Health, "slice4 advance takes single adjacent damage after firing
 // enemy 4 away, player far so the enemy pursues the squad. Enemy
 // steps 20 -> 19, squad steps 16 -> 17 (distance 2), fires 10.
 var advRangeWorld = new WorldZone(42);
-var advRange = advRangeWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+var advRange = advRangeWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance)!;
 advRange.TakeDamage(60);
 advRangeWorld.Player.X = 28; advRangeWorld.Player.Z = 28;
 advRangeWorld.Enemies.Add(new Enemy(20, 5, 16));
@@ -1292,7 +1302,7 @@ Eq(20, advRangeWorld.Enemies[0].Health, "slice4 advance fires in the same tick i
 // the spawn is tied with both, so both enemies step toward the
 // player first, leaving a 3-3 tie the squad breaks west (first).
 var advTieWorld = new WorldZone(42);
-var advTie = advTieWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+var advTie = advTieWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance)!;
 advTie.TakeDamage(60);
 advTieWorld.Enemies.Add(new Enemy(12, 5, 16));
 advTieWorld.Enemies.Add(new Enemy(20, 5, 16));
@@ -1302,7 +1312,7 @@ Eq(15, advTie.X, "slice4 advance tie goes to first enemy in list order");
 // but still fires at the in-range enemy it cannot reach.
 var advBlockWorld = new WorldZone(42);
 advBlockWorld.Chunk.TrySet(17, 5, 16, BlockType.Stone);
-var advBlock = advBlockWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+var advBlock = advBlockWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance)!;
 advBlock.TakeDamage(60);
 advBlockWorld.Enemies.Add(new Enemy(20, 5, 16));
 advBlockWorld.Advance();
@@ -1312,7 +1322,7 @@ Eq(20, advBlockWorld.Enemies[0].Health, "slice4 advance blocked squad still fire
 // enemy on tick 1, then on tick 2 it stands still instead of
 // marching to the rally it was deployed with.
 var advStopWorld = new WorldZone(42);
-var advStop = advStopWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+var advStop = advStopWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance)!;
 advStopWorld.Player.X = 28; advStopWorld.Player.Z = 28;
 advStopWorld.Enemies.Add(new Enemy(19, 5, 16));
 advStopWorld.Advance();
@@ -1324,7 +1334,7 @@ Eq(17, advStop.X, "slice4 advance stands still after prey dies, no rally fallbac
 // loaded squad doctrine is Advance and it moves toward its enemy,
 // not toward the rally stored in the save.
 var advSaveWorld = new WorldZone(42);
-var advSave = advSaveWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance)!;
+var advSave = advSaveWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance)!;
 advSave.TakeDamage(60);
 advSaveWorld.Player.X = 28; advSaveWorld.Player.Z = 28;
 advSaveWorld.Enemies.Add(new Enemy(20, 5, 16));
@@ -1350,7 +1360,7 @@ Eq(0, advPickSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice4 advance
 Check(!advPickSim.OrbitalCommand.IsPicking, "slice4 advance picker closes after confirm");
 // Snapshot carries the new doctrine, so the Unity display can show it.
 var advViewWorld = new WorldZone(42);
-advViewWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+advViewWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance);
 Eq(TacticalDoctrine.Advance, OrbitalView.Snapshot(advViewWorld)[0].Doctrine, "slice4 advance snapshot doctrine");
 
 // ---- Slice 4 Step 3: demo scenario + review (0.23.0) ----
@@ -1718,13 +1728,13 @@ Eq(39, simPitch.Weapon.Mag, "pitched up 45 missed shots still consume ammo");
 // ---- Slice 6 Step 2: squad activity word + hunting target (0.29.0) ----
 // HoldGround reads by its rally: marching while away, holding at it, no prey ever.
 var actMarchWorld = new WorldZone(42);
-actMarchWorld.DeploySquad(20, 5, 16);
+actMarchWorld.SpawnSquad(20, 5, 16);
 var actMarch = OrbitalView.Snapshot(actMarchWorld)[0];
 Eq(SquadActivity.Marching, actMarch.Activity, "slice6 HoldGround marching squad reads MARCHING");
 Check(!actMarch.HasHuntingTarget, "slice6 marching squad has no hunting target");
 Check(actMarch.HuntingTargetX == null, "slice6 marching squad hunting target cell is null");
 var actHoldWorld = new WorldZone(42);
-actHoldWorld.DeploySquad(16, 5, 16);
+actHoldWorld.SpawnSquad(16, 5, 16);
 var actHold = OrbitalView.Snapshot(actHoldWorld)[0];
 Eq(SquadActivity.Holding, actHold.Activity, "slice6 HoldGround squad at rally reads HOLDING");
 // Advance with a living enemy reads HUNTING even beyond engagement
@@ -1732,7 +1742,7 @@ Eq(SquadActivity.Holding, actHold.Activity, "slice6 HoldGround squad at rally re
 // word would have called this same squad MOVING toward a rally it
 // ignores. The target is the prey cell, not the rally.
 var actHuntWorld = new WorldZone(42);
-actHuntWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actHuntWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance);
 actHuntWorld.Enemies.Add(new Enemy(20, 5, 16));
 var actHunt = OrbitalView.Snapshot(actHuntWorld)[0];
 Eq(SquadActivity.Hunting, actHunt.Activity, "slice6 Advance squad beyond range reads HUNTING not MOVING");
@@ -1744,17 +1754,17 @@ Eq(16, actHunt.HuntingTargetZ, "slice6 hunting target Z is the prey cell");
 // would have read HOLDING (at its rally) or MOVING (away from it)
 // for a squad that is, in fact, standing and firing.
 var actAdjWorld = new WorldZone(42);
-actAdjWorld.DeploySquad(16, 5, 16, TacticalDoctrine.Advance);
+actAdjWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.Advance);
 actAdjWorld.Enemies.Add(new Enemy(17, 5, 16));
 Eq(SquadActivity.Hunting, OrbitalView.Snapshot(actAdjWorld)[0].Activity, "slice6 Advance adjacent to prey reads HUNTING");
 // Advance with no living enemy reads IDLE and stands still —
 // documented behaviour, not a bug to hide — and a dead enemy
 // alone does not make it hunt.
 var actIdleWorld = new WorldZone(42);
-actIdleWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actIdleWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance);
 Eq(SquadActivity.Idle, OrbitalView.Snapshot(actIdleWorld)[0].Activity, "slice6 Advance with no enemy reads IDLE");
 var actDeadWorld = new WorldZone(42);
-actDeadWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actDeadWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance);
 var actDeadEnemy = new Enemy(20, 5, 16);
 actDeadWorld.Enemies.Add(actDeadEnemy);
 actDeadWorld.AttackEnemy(actDeadEnemy, 30);
@@ -1763,7 +1773,7 @@ Eq(SquadActivity.Idle, OrbitalView.Snapshot(actDeadWorld)[0].Activity, "slice6 A
 // same rule movement and fire use, so display cannot disagree
 // with either about the prey.
 var actTieWorld = new WorldZone(42);
-actTieWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actTieWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance);
 actTieWorld.Enemies.Add(new Enemy(12, 5, 16));
 actTieWorld.Enemies.Add(new Enemy(20, 5, 16));
 var actTie = OrbitalView.Snapshot(actTieWorld)[0];
@@ -1774,7 +1784,7 @@ Eq(12, actTie.HuntingTargetX, "slice6 hunting tie goes to first enemy in list or
 // while the old snapshot still shows the old prey (copy, as
 // with position since 0.11.0).
 var actReWorld = new WorldZone(42);
-actReWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actReWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance);
 var actPreyNear = new Enemy(20, 5, 16);
 var actPreyFar = new Enemy(12, 5, 16);
 actReWorld.Enemies.Add(actPreyNear);
@@ -1790,7 +1800,7 @@ Eq(SquadActivity.Hunting, actAfter.Activity, "slice6 squad still hunting after r
 // through save/load and still reads HUNTING at the same prey,
 // with no new save field created for it.
 var actSaveWorld = new WorldZone(42);
-actSaveWorld.DeploySquad(24, 5, 16, TacticalDoctrine.Advance);
+actSaveWorld.SpawnSquad(24, 5, 16, TacticalDoctrine.Advance);
 actSaveWorld.Enemies.Add(new Enemy(20, 5, 16));
 var actSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(actSaveWorld));
 var actSaveSnap = OrbitalView.Snapshot(actSaveLoaded)[0];
@@ -2001,14 +2011,14 @@ try { SquadShapes.For((SquadKind)99); } catch (ArgumentOutOfRangeException) { sh
 Check(shapeThrows, "slice7 unknown kind has no shape, throws rather than falling back to Vanguard");
 // A deployed Recon squad reads its own shape, not Vanguard's.
 var reconWorld = new WorldZone(42);
-var recon = reconWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+var recon = reconWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
 Eq(SquadKind.Recon, recon.Kind, "slice7 recon deploy kind");
 Eq(40, recon.Health, "slice7 recon full health is 40, not 90");
 Eq(40, recon.MaxHealth, "slice7 recon max health is 40");
 Eq(2, recon.AliveMembers, "slice7 recon full members");
 Eq(12, recon.DamagePerTick, "slice7 recon full damage per tick");
 var vanWorld = new WorldZone(42);
-var van = vanWorld.DeploySquad(20, 5, 16)!;
+var van = vanWorld.SpawnSquad(20, 5, 16)!;
 Eq(90, van.Health, "slice7 vanguard full health still 90");
 Eq(3, van.AliveMembers, "slice7 vanguard full members still 3");
 Eq(30, van.DamagePerTick, "slice7 vanguard full damage still 30");
@@ -2026,21 +2036,21 @@ Eq(0, recon.DamagePerTick, "slice7 dead recon deals nothing");
 // then the holding Recon fires 12. Vanguard at the same geometry
 // stays silent, and no kind fires at range 6.
 var reconRangeWorld = new WorldZone(42);
-var reconRange = reconRangeWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+var reconRange = reconRangeWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
 reconRangeWorld.Player.X = 28; reconRangeWorld.Player.Z = 28;
 reconRangeWorld.Enemies.Add(new Enemy(22, 5, 16));
 reconRangeWorld.Advance();
 Eq(21, reconRangeWorld.Enemies[0].X, "slice7 recon range enemy steps to distance 5");
 Eq(18, reconRangeWorld.Enemies[0].Health, "slice7 recon fires at range 5 for 12");
 var reconFarWorld = new WorldZone(42);
-reconFarWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+reconFarWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
 reconFarWorld.Player.X = 28; reconFarWorld.Player.Z = 28;
 reconFarWorld.Enemies.Add(new Enemy(23, 5, 16));
 reconFarWorld.Advance();
 Eq(22, reconFarWorld.Enemies[0].X, "slice7 recon range-6 enemy steps to distance 6");
 Eq(30, reconFarWorld.Enemies[0].Health, "slice7 recon does not fire at range 6");
 var vanRangeWorld = new WorldZone(42);
-vanRangeWorld.DeploySquad(16, 5, 16);
+vanRangeWorld.SpawnSquad(16, 5, 16);
 vanRangeWorld.Player.X = 28; vanRangeWorld.Player.Z = 28;
 vanRangeWorld.Enemies.Add(new Enemy(21, 5, 16));
 vanRangeWorld.Advance();
@@ -2049,13 +2059,13 @@ Eq(30, vanRangeWorld.Enemies[0].Health, "slice7 vanguard does not fire at range 
 // Movement is the shared rule: a Recon HoldGround squad marches
 // one voxel per tick toward its rally, exactly like Vanguard.
 var reconMarchWorld = new WorldZone(42);
-var reconMarch = reconMarchWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+var reconMarch = reconMarchWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
 reconMarchWorld.Advance();
 Eq(17, reconMarch.X, "slice7 recon marches one voxel toward rally");
 // Both doctrines work for Recon: an Advance Recon hunts west
 // toward its enemy, not east toward its rally, and fires.
 var reconAdvWorld = new WorldZone(42);
-var reconAdv = reconAdvWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance, SquadKind.Recon)!;
+var reconAdv = reconAdvWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.Advance, SquadKind.Recon)!;
 reconAdvWorld.Player.X = 28; reconAdvWorld.Player.Z = 28;
 reconAdvWorld.Enemies.Add(new Enemy(12, 5, 16));
 reconAdvWorld.Advance();
@@ -2106,8 +2116,8 @@ Eq(40, clampRecon.Health, "slice7 recon load clamp is 40, not vanguard 90");
 var clampVan = new TacticalSquad(16, 5, 16, 20, 5, 16, 999, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
 Eq(90, clampVan.Health, "slice7 vanguard load clamp still 90");
 var saveMixedWorld = new WorldZone(42);
-saveMixedWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
-var saveRecon = saveMixedWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
+saveMixedWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+var saveRecon = saveMixedWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon)!;
 saveRecon.TakeDamage(5); // 40 -> 35, still 2 members
 var saveMixedLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveMixedWorld));
 Eq(2, saveMixedLoaded.Squads.Count, "slice7 mixed save loads both squads");
@@ -2119,7 +2129,7 @@ Eq(2, saveMixedLoaded.Squads[1].AliveMembers, "slice7 mixed save recon members p
 // Targeting stays kind-blind: an enemy pursues the nearer Recon
 // squad, not the farther player, with no kind priority in the rule.
 var targetWorld = new WorldZone(42);
-targetWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+targetWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
 targetWorld.Player.X = 28; targetWorld.Player.Z = 28;
 targetWorld.Enemies.Add(new Enemy(20, 5, 16));
 targetWorld.Advance();
@@ -2127,7 +2137,7 @@ Eq(19, targetWorld.Enemies[0].X, "slice7 enemy pursues nearer recon squad over f
 // Snapshot carries the kind and its shape: a holding Recon
 // reads Holding with 2 members, 40 HP, 12 damage.
 var snapWorld = new WorldZone(42);
-snapWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+snapWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
 var snapRecon = OrbitalView.Snapshot(snapWorld)[0];
 Eq(SquadKind.Recon, snapRecon.Kind, "slice7 snapshot recon kind");
 Eq(2, snapRecon.AliveMembers, "slice7 snapshot recon members");
@@ -3544,7 +3554,7 @@ try { SquadShapes.For((SquadKind)99); } catch (ArgumentOutOfRangeException) { he
 Check(heavyShapeThrows, "slice11 unknown kind still has no shape, throws rather than falling back to Vanguard");
 // A deployed Heavy squad reads its own shape, not Vanguard's.
 var heavyWorld = new WorldZone(42);
-var heavy = heavyWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+var heavy = heavyWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
 Eq(SquadKind.Heavy, heavy.Kind, "slice11 heavy deploy kind");
 Eq(100, heavy.Health, "slice11 heavy full health is 100, not 90");
 Eq(100, heavy.MaxHealth, "slice11 heavy max health is 100");
@@ -3562,11 +3572,11 @@ Eq(0, heavy.DamagePerTick, "slice11 dead heavy deals nothing");
 // The anchor proof, stated exactly: 95 damage kills a Vanguard
 // (90 HP) outright and leaves a Heavy at 5 HP with 1 member.
 var anchorVanWorld = new WorldZone(42);
-var anchorVan = anchorVanWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
+var anchorVan = anchorVanWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard)!;
 anchorVan.TakeDamage(95);
 Check(anchorVan.IsDead, "slice11 anchor hit kills vanguard outright");
 var anchorHeavyWorld = new WorldZone(42);
-var anchorHeavy = anchorHeavyWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+var anchorHeavy = anchorHeavyWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
 anchorHeavy.TakeDamage(95);
 Eq(5, anchorHeavy.Health, "slice11 anchor hit leaves heavy at 5 hp");
 Eq(1, anchorHeavy.AliveMembers, "slice11 anchor hit leaves heavy with 1 member");
@@ -3575,14 +3585,14 @@ Check(!anchorHeavy.IsDead, "slice11 anchor hit does not kill heavy");
 // steps to 3 in the enemy phase, and the holding Heavy stays
 // silent; a Vanguard at the same geometry fires for 30.
 var heavyFarWorld = new WorldZone(42);
-heavyFarWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+heavyFarWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
 heavyFarWorld.Player.X = 28; heavyFarWorld.Player.Z = 28;
 heavyFarWorld.Enemies.Add(new Enemy(20, 5, 16));
 heavyFarWorld.Advance();
 Eq(19, heavyFarWorld.Enemies[0].X, "slice11 heavy range-3 enemy steps to distance 3");
 Eq(30, heavyFarWorld.Enemies[0].Health, "slice11 heavy does not fire at range 3");
 var vanFarWorld = new WorldZone(42);
-vanFarWorld.DeploySquad(16, 5, 16);
+vanFarWorld.SpawnSquad(16, 5, 16);
 vanFarWorld.Player.X = 28; vanFarWorld.Player.Z = 28;
 vanFarWorld.Enemies.Add(new Enemy(20, 5, 16));
 vanFarWorld.Advance();
@@ -3590,7 +3600,7 @@ Eq(0, vanFarWorld.Enemies.Count, "slice11 vanguard at same geometry fires for 30
 // Heavy fires at range 2 for 16: enemy starts 3 away, steps to 2,
 // then the holding Heavy fires.
 var heavyRangeWorld = new WorldZone(42);
-heavyRangeWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+heavyRangeWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
 heavyRangeWorld.Player.X = 28; heavyRangeWorld.Player.Z = 28;
 heavyRangeWorld.Enemies.Add(new Enemy(19, 5, 16));
 heavyRangeWorld.Advance();
@@ -3599,14 +3609,14 @@ Eq(14, heavyRangeWorld.Enemies[0].Health, "slice11 heavy fires at range 2 for 16
 // Movement is the shared rule: a Heavy HoldGround squad marches
 // one voxel per tick toward its rally, exactly like Vanguard.
 var heavyMarchWorld = new WorldZone(42);
-var heavyMarch = heavyMarchWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+var heavyMarch = heavyMarchWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
 heavyMarchWorld.Advance();
 Eq(17, heavyMarch.X, "slice11 heavy marches one voxel toward rally");
 // Both doctrines work for Heavy: an Advance Heavy hunts west
 // toward its enemy, not east toward its rally, and fires 16
 // once in range 2.
 var heavyAdvWorld = new WorldZone(42);
-var heavyAdv = heavyAdvWorld.DeploySquad(20, 5, 16, TacticalDoctrine.Advance, SquadKind.Heavy)!;
+var heavyAdv = heavyAdvWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.Advance, SquadKind.Heavy)!;
 heavyAdvWorld.Player.X = 28; heavyAdvWorld.Player.Z = 28;
 heavyAdvWorld.Enemies.Add(new Enemy(12, 5, 16));
 heavyAdvWorld.Advance();
@@ -3658,9 +3668,9 @@ Eq(100, clampHeavy.Health, "slice11 heavy load clamp is 100, not vanguard 90");
 var clampVan2 = new TacticalSquad(16, 5, 16, 20, 5, 16, 999, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
 Eq(90, clampVan2.Health, "slice11 vanguard load clamp still 90");
 var saveMixed3World = new WorldZone(42);
-saveMixed3World.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
-saveMixed3World.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
-var saveHeavy = saveMixed3World.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
+saveMixed3World.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Vanguard);
+saveMixed3World.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Recon);
+var saveHeavy = saveMixed3World.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy)!;
 saveHeavy.TakeDamage(10); // 100 -> 90, still 2 members
 var saveMixed3Loaded = SaveSystem.LoadZone(SaveSystem.SaveZone(saveMixed3World));
 Eq(3, saveMixed3Loaded.Squads.Count, "slice11 mixed save loads all three squads");
@@ -3673,7 +3683,7 @@ Eq(2, saveMixed3Loaded.Squads[2].AliveMembers, "slice11 mixed save heavy members
 // Targeting stays kind-blind: an enemy pursues the nearer Heavy
 // squad, not the farther player, with no kind priority in the rule.
 var heavyTargetWorld = new WorldZone(42);
-heavyTargetWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+heavyTargetWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
 heavyTargetWorld.Player.X = 28; heavyTargetWorld.Player.Z = 28;
 heavyTargetWorld.Enemies.Add(new Enemy(20, 5, 16));
 heavyTargetWorld.Advance();
@@ -3681,7 +3691,7 @@ Eq(19, heavyTargetWorld.Enemies[0].X, "slice11 enemy pursues nearer heavy squad 
 // Snapshot carries the kind and its shape: a holding Heavy
 // reads Holding with 2 members, 100 HP, 16 damage.
 var heavySnapWorld = new WorldZone(42);
-heavySnapWorld.DeploySquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
+heavySnapWorld.SpawnSquad(16, 5, 16, TacticalDoctrine.HoldGround, SquadKind.Heavy);
 var snapHeavy = OrbitalView.Snapshot(heavySnapWorld)[0];
 Eq(SquadKind.Heavy, snapHeavy.Kind, "slice11 snapshot heavy kind");
 Eq(2, snapHeavy.AliveMembers, "slice11 snapshot heavy members");
@@ -3707,14 +3717,14 @@ Eq(1, (int)TacticalDoctrine.Advance, "slice11 defendcore advance value unchanged
 Eq(2, (int)TacticalDoctrine.DefendCore, "slice11 defendcore appended as 2");
 Eq(8, TacticalSquad.DefendCoreChaseRadius, "slice11 defendcore chase radius is 8");
 var dcUnknownWorld = new WorldZone(42);
-Check(dcUnknownWorld.DeploySquad(20, 5, 16, (TacticalDoctrine)99) == null, "slice11 defendcore unknown doctrine still rejected");
+Check(dcUnknownWorld.SpawnSquad(20, 5, 16, (TacticalDoctrine)99) == null, "slice11 defendcore unknown doctrine still rejected");
 // March to the core, rally ignored: rally west, core east, and
 // the squad walks east one voxel per tick on the shared
 // largest-gap rule (X on the 12/12 tie, then Z), reaching the
 // core in 24 ticks and reading Guarding there, not Holding —
 // its rally (5,5,5) was never its destination.
 var dcMarchWorld = new WorldZone(42);
-var dcMarch = dcMarchWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcMarch = dcMarchWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcMarchWorld.Advance();
 Eq(17, dcMarch.X, "slice11 defendcore march tick 1 steps east toward core");
 Eq(16, dcMarch.Z, "slice11 defendcore march tick 1 does not step toward rally");
@@ -3730,16 +3740,16 @@ Check(!dcMarch.AtRally, "slice11 defendcore guarding is not rally holding");
 // HoldGround walks west to its rally, Advance stands still
 // with no prey, Defend Core walks east to the core.
 var dcContrastHoldWorld = new WorldZone(42);
-var dcContrastHold = dcContrastHoldWorld.DeploySquad(5, 5, 5, TacticalDoctrine.HoldGround)!;
+var dcContrastHold = dcContrastHoldWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.HoldGround)!;
 dcContrastHoldWorld.Advance();
 Eq(15, dcContrastHold.X, "slice11 defendcore contrast holdground walks to rally");
 var dcContrastAdvWorld = new WorldZone(42);
-var dcContrastAdv = dcContrastAdvWorld.DeploySquad(5, 5, 5, TacticalDoctrine.Advance)!;
+var dcContrastAdv = dcContrastAdvWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.Advance)!;
 dcContrastAdvWorld.Advance();
 Eq(16, dcContrastAdv.X, "slice11 defendcore contrast advance stands with no enemy");
 Eq(16, dcContrastAdv.Z, "slice11 defendcore contrast advance does not march to rally");
 var dcContrastCoreWorld = new WorldZone(42);
-var dcContrastCore = dcContrastCoreWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcContrastCore = dcContrastCoreWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcContrastCoreWorld.Advance();
 Eq(17, dcContrastCore.X, "slice11 defendcore contrast defendcore walks to core not rally");
 // Chase radius, direct (no enemy phase to move the target):
@@ -3748,30 +3758,30 @@ Eq(17, dcContrastCore.X, "slice11 defendcore contrast defendcore walks to core n
 // and a blocked chase step does not fall through to the core.
 var dcBoundWorld = new WorldZone(42);
 dcBoundWorld.Player.X = 28; dcBoundWorld.Player.Z = 28;
-var dcBound = dcBoundWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcBound = dcBoundWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 var dcBoundAttacker = new Enemy(20, 5, 28);
 Check(dcBound.MoveForDefendCore(dcBoundWorld.Chunk, new[] { dcBoundAttacker }, 28, 5, 28), "slice11 defendcore attacker at radius 8 is chased");
 Eq(27, dcBound.X, "slice11 defendcore chase step moves toward attacker");
 var dcFarDirectWorld = new WorldZone(42);
 dcFarDirectWorld.Player.X = 28; dcFarDirectWorld.Player.Z = 28;
-var dcFarDirect = dcFarDirectWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcFarDirect = dcFarDirectWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 Check(!dcFarDirect.MoveForDefendCore(dcFarDirectWorld.Chunk, new[] { new Enemy(19, 5, 28) }, 28, 5, 28), "slice11 defendcore enemy at radius 9 is not chased");
 Eq(28, dcFarDirect.X, "slice11 defendcore ignored enemy leaves guard at post");
 var dcDeadAttackerWorld = new WorldZone(42);
 dcDeadAttackerWorld.Player.X = 28; dcDeadAttackerWorld.Player.Z = 28;
-var dcDeadAttacker = dcDeadAttackerWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcDeadAttacker = dcDeadAttackerWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 var dcDeadEnemy = new Enemy(20, 5, 28);
 dcDeadEnemy.TakeDamage(30);
 Check(!dcDeadAttacker.MoveForDefendCore(dcDeadAttackerWorld.Chunk, new[] { dcDeadEnemy }, 28, 5, 28), "slice11 defendcore dead attacker is not chased");
 var dcTieWorld = new WorldZone(42);
 dcTieWorld.Player.X = 28; dcTieWorld.Player.Z = 28;
-var dcTie = dcTieWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcTie = dcTieWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcTie.MoveForDefendCore(dcTieWorld.Chunk, new[] { new Enemy(24, 5, 28), new Enemy(28, 5, 24) }, 28, 5, 28);
 Eq(27, dcTie.X, "slice11 defendcore attacker tie goes to first enemy in list");
 Eq(28, dcTie.Z, "slice11 defendcore attacker tie does not step toward second enemy");
 var dcBlockedWorld = new WorldZone(42);
 dcBlockedWorld.Player.X = 27; dcBlockedWorld.Player.Z = 28;
-var dcBlocked = dcBlockedWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcBlocked = dcBlockedWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcBlockedWorld.Chunk.TrySet(26, 5, 28, BlockType.Stone);
 Check(!dcBlocked.MoveForDefendCore(dcBlockedWorld.Chunk, new[] { new Enemy(25, 5, 28) }, 28, 5, 28), "slice11 defendcore blocked chase step is refused");
 Eq(27, dcBlocked.X, "slice11 defendcore blocked chase does not fall through to core in same tick");
@@ -3780,7 +3790,7 @@ Eq(27, dcBlocked.X, "slice11 defendcore blocked chase does not fall through to c
 // range, then steps back toward the core on the next ticks.
 var dcChaseWorld = new WorldZone(42);
 dcChaseWorld.Player.X = 28; dcChaseWorld.Player.Z = 28;
-var dcChase = dcChaseWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcChase = dcChaseWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcChaseWorld.Player.X = 0; dcChaseWorld.Player.Z = 0;
 dcChaseWorld.Enemies.Add(new Enemy(28, 5, 22));
 dcChaseWorld.Advance();
@@ -3801,7 +3811,7 @@ Eq(SquadActivity.Guarding, OrbitalView.Snapshot(dcChaseWorld)[0].Activity, "slic
 // same post hunts west toward that same enemy.
 var dcFarWorld = new WorldZone(42);
 dcFarWorld.Player.X = 28; dcFarWorld.Player.Z = 28;
-var dcFar = dcFarWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcFar = dcFarWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcFarWorld.Player.X = 0; dcFarWorld.Player.Z = 0;
 dcFarWorld.Enemies.Add(new Enemy(17, 5, 28));
 dcFarWorld.Advance();
@@ -3810,7 +3820,7 @@ Eq(18, dcFarWorld.Enemies[0].X, "slice11 defendcore far enemy steps closer but s
 Eq(SquadActivity.Guarding, OrbitalView.Snapshot(dcFarWorld)[0].Activity, "slice11 defendcore far enemy is not a hunting target");
 var dcFarAdvWorld = new WorldZone(42);
 dcFarAdvWorld.Player.X = 28; dcFarAdvWorld.Player.Z = 28;
-var dcFarAdv = dcFarAdvWorld.DeploySquad(5, 5, 5, TacticalDoctrine.Advance)!;
+var dcFarAdv = dcFarAdvWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.Advance)!;
 dcFarAdvWorld.Player.X = 0; dcFarAdvWorld.Player.Z = 0;
 dcFarAdvWorld.Enemies.Add(new Enemy(17, 5, 28));
 dcFarAdvWorld.Advance();
@@ -3819,7 +3829,7 @@ Eq(27, dcFarAdv.X, "slice11 defendcore contrast advance hunts the far enemy defe
 // an enemy in range that is NOT a core attacker (21 from the
 // core), but its step is still core-ward, not toward the enemy.
 var dcRetFireWorld = new WorldZone(42);
-var dcRetFire = dcRetFireWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcRetFire = dcRetFireWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcRetFire.TakeDamage(60); // 1 member, 10 damage, so the shot wounds instead of killing
 dcRetFireWorld.Enemies.Add(new Enemy(16, 5, 19));
 dcRetFireWorld.Advance();
@@ -3830,7 +3840,7 @@ Eq(20, dcRetFireWorld.Enemies[0].Health, "slice11 defendcore returning guard fir
 // stepped onto, so the guard stays on the core cell and fires.
 var dcPostWorld = new WorldZone(42);
 dcPostWorld.Player.X = 28; dcPostWorld.Player.Z = 28;
-var dcPost = dcPostWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
+var dcPost = dcPostWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore)!;
 dcPostWorld.Player.X = 0; dcPostWorld.Player.Z = 0;
 dcPostWorld.Enemies.Add(new Enemy(28, 5, 29));
 dcPostWorld.Advance();
@@ -3841,7 +3851,7 @@ Eq(0, dcPostWorld.Enemies.Count, "slice11 defendcore at-post guard kills adjacen
 // an attacker stepping adjacent is shot for 16, not 30.
 var dcHeavyPostWorld = new WorldZone(42);
 dcHeavyPostWorld.Player.X = 28; dcHeavyPostWorld.Player.Z = 28;
-var dcHeavyPost = dcHeavyPostWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
+var dcHeavyPost = dcHeavyPostWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
 dcHeavyPostWorld.Player.X = 0; dcHeavyPostWorld.Player.Z = 0;
 dcHeavyPostWorld.Enemies.Add(new Enemy(28, 5, 30));
 dcHeavyPostWorld.Advance();
@@ -3852,23 +3862,23 @@ Eq(14, dcHeavyPostWorld.Enemies[0].Health, "slice11 defendcore heavy guard fires
 // Defend Core squad away from its post still fires in range
 // where a HoldGround squad still marching does not.
 var dcFindHeavyWorld = new WorldZone(42);
-var dcFindHeavy = dcFindHeavyWorld.DeploySquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
+var dcFindHeavy = dcFindHeavyWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Heavy)!;
 Check(dcFindHeavy.FindTarget(new[] { new Enemy(19, 5, 16) }) == null, "slice11 defendcore heavy does not fire at range 3");
 var dcFindVanWorld = new WorldZone(42);
-var dcFindVan = dcFindVanWorld.DeploySquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Vanguard)!;
+var dcFindVan = dcFindVanWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Vanguard)!;
 Check(dcFindVan.FindTarget(new[] { new Enemy(19, 5, 16) }) != null, "slice11 defendcore vanguard fires at range 3");
 var dcFindReconWorld = new WorldZone(42);
-var dcFindRecon = dcFindReconWorld.DeploySquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
+var dcFindRecon = dcFindReconWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
 Check(dcFindRecon.FindTarget(new[] { new Enemy(21, 5, 16) }) != null, "slice11 defendcore recon fires at range 5");
 var dcFindHoldWorld = new WorldZone(42);
-var dcFindHold = dcFindHoldWorld.DeploySquad(20, 5, 16, TacticalDoctrine.HoldGround)!;
+var dcFindHold = dcFindHoldWorld.SpawnSquad(20, 5, 16, TacticalDoctrine.HoldGround)!;
 Check(dcFindHold.FindTarget(new[] { new Enemy(17, 5, 16) }) == null, "slice11 defendcore contrast holdground marching does not fire");
 // Recon under Defend Core (the third kind proved): a Recon
 // guard chases an attacker 8 from the core and stays silent
 // at range 6, beyond its range 5.
 var dcReconWorld = new WorldZone(42);
 dcReconWorld.Player.X = 28; dcReconWorld.Player.Z = 28;
-var dcRecon = dcReconWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
+var dcRecon = dcReconWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Recon)!;
 dcReconWorld.Player.X = 0; dcReconWorld.Player.Z = 0;
 dcReconWorld.Enemies.Add(new Enemy(28, 5, 20));
 dcReconWorld.Advance();
@@ -3898,9 +3908,9 @@ Check(!dcPickSim.World.Player.Inventory.Has(BlockType.EmberOre, 1), "slice11 def
 // Vanguard marches toward the core, not its rally.
 var dcSaveWorld = new WorldZone(42);
 dcSaveWorld.Player.X = 28; dcSaveWorld.Player.Z = 28;
-dcSaveWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Heavy);
+dcSaveWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Heavy);
 dcSaveWorld.Player.X = 16; dcSaveWorld.Player.Z = 16;
-dcSaveWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Vanguard);
+dcSaveWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore, SquadKind.Vanguard);
 var dcSaveLoaded = SaveSystem.LoadZone(SaveSystem.SaveZone(dcSaveWorld));
 Eq(2, dcSaveLoaded.Squads.Count, "slice11 defendcore save loads both squads");
 Eq(TacticalDoctrine.DefendCore, dcSaveLoaded.Squads[0].Doctrine, "slice11 defendcore save heavy doctrine preserved");
@@ -3916,24 +3926,24 @@ Eq(28, dcSaveLoaded.Squads[0].X, "slice11 defendcore loaded heavy stays at core"
 // post when the only enemy is far from the core.
 var dcSnapGuardWorld = new WorldZone(42);
 dcSnapGuardWorld.Player.X = 28; dcSnapGuardWorld.Player.Z = 28;
-dcSnapGuardWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+dcSnapGuardWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore);
 var dcSnapGuard = OrbitalView.Snapshot(dcSnapGuardWorld)[0];
 Eq(SquadActivity.Guarding, dcSnapGuard.Activity, "slice11 defendcore snapshot at post reads guarding");
 Check(!dcSnapGuard.HasHuntingTarget, "slice11 defendcore snapshot guarding has no hunting target");
 var dcSnapHuntWorld = new WorldZone(42);
 dcSnapHuntWorld.Player.X = 28; dcSnapHuntWorld.Player.Z = 28;
-dcSnapHuntWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+dcSnapHuntWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore);
 dcSnapHuntWorld.Enemies.Add(new Enemy(28, 5, 24));
 var dcSnapHunt = OrbitalView.Snapshot(dcSnapHuntWorld)[0];
 Eq(SquadActivity.Hunting, dcSnapHunt.Activity, "slice11 defendcore snapshot chasing attacker reads hunting");
 Check(dcSnapHunt.HasHuntingTarget, "slice11 defendcore snapshot hunting has a target");
 Eq(24, dcSnapHunt.HuntingTargetZ, "slice11 defendcore snapshot hunting target is the attacker cell");
 var dcSnapMarchWorld = new WorldZone(42);
-dcSnapMarchWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+dcSnapMarchWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore);
 Eq(SquadActivity.Marching, OrbitalView.Snapshot(dcSnapMarchWorld)[0].Activity, "slice11 defendcore snapshot returning reads marching");
 var dcSnapFarWorld = new WorldZone(42);
 dcSnapFarWorld.Player.X = 28; dcSnapFarWorld.Player.Z = 28;
-dcSnapFarWorld.DeploySquad(5, 5, 5, TacticalDoctrine.DefendCore);
+dcSnapFarWorld.SpawnSquad(5, 5, 5, TacticalDoctrine.DefendCore);
 dcSnapFarWorld.Enemies.Add(new Enemy(17, 5, 28));
 var dcSnapFar = OrbitalView.Snapshot(dcSnapFarWorld)[0];
 Eq(SquadActivity.Guarding, dcSnapFar.Activity, "slice11 defendcore snapshot far enemy does not turn guarding into hunting");
@@ -5316,14 +5326,14 @@ Eq(3, (int)TacticalDoctrine.Patrol, "slice15 patrol appended as 3");
 Eq(3, TacticalSquad.PatrolLoopRadius, "slice15 patrol loop radius is 3");
 Eq(5, TacticalSquad.PatrolWaypointCount, "slice15 patrol waypoint count is 5");
 var p15UnknownWorld = new WorldZone(42);
-Check(p15UnknownWorld.DeploySquad(20, 5, 20, (TacticalDoctrine)99) == null, "slice15 patrol unknown doctrine 99 still rejected");
-Check(p15UnknownWorld.DeploySquad(20, 5, 20, (TacticalDoctrine)4) == null, "slice15 patrol next undefined doctrine 4 still rejected");
+Check(p15UnknownWorld.SpawnSquad(20, 5, 20, (TacticalDoctrine)99) == null, "slice15 patrol unknown doctrine 99 still rejected");
+Check(p15UnknownWorld.SpawnSquad(20, 5, 20, (TacticalDoctrine)4) == null, "slice15 patrol next undefined doctrine 4 still rejected");
 // Route derivation: deployed AT its rally, the squad's first
 // waypoint is the rally itself, and its first step is east —
 // it does not hold at the rally the way HoldGround would.
 var p15RouteWorld = new WorldZone(42);
 p15RouteWorld.Player.X = 20; p15RouteWorld.Player.Z = 20;
-var p15Route = p15RouteWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var p15Route = p15RouteWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Eq(0, p15Route.PatrolWaypointIndex, "slice15 patrol starts at waypoint 0");
 Eq(20, p15Route.PatrolTarget.X, "slice15 patrol waypoint 0 is the rally X");
 Eq(20, p15Route.PatrolTarget.Z, "slice15 patrol waypoint 0 is the rally Z");
@@ -5355,14 +5365,14 @@ Eq(21, p15Route.X, "slice15 patrol repeat step is east again");
 // Contrast, same rally: HoldGround at its rally does not move.
 var p15HoldWorld = new WorldZone(42);
 p15HoldWorld.Player.X = 20; p15HoldWorld.Player.Z = 20;
-var p15Hold = p15HoldWorld.DeploySquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
+var p15Hold = p15HoldWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
 Check(!p15Hold.MoveTowardRally(p15HoldWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol contrast holdground at rally does not move");
 // No chase: an enemy off the route does not divert the step.
 // The squad heads east toward its waypoint while the enemy
 // stands south of the route, and the step is east, not south.
 var p15NoChaseWorld = new WorldZone(42);
 p15NoChaseWorld.Player.X = 20; p15NoChaseWorld.Player.Z = 20;
-var p15NoChase = p15NoChaseWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var p15NoChase = p15NoChaseWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 p15NoChase.MoveForPatrol(p15NoChaseWorld.Chunk, new[] { new Enemy(20, 5, 23) });
 Eq(21, p15NoChase.X, "slice15 patrol does not chase an off-route enemy");
 Eq(20, p15NoChase.Z, "slice15 patrol step stays on route with an enemy nearby");
@@ -5372,7 +5382,7 @@ Eq(20, p15NoChase.Z, "slice15 patrol step stays on route with an enemy nearby");
 // it does not march forever at the wall.
 var p15BlockedWorld = new WorldZone(42);
 p15BlockedWorld.Player.X = 20; p15BlockedWorld.Player.Z = 20;
-var p15Blocked = p15BlockedWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var p15Blocked = p15BlockedWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(p15BlockedWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice15 patrol blocked test stages a solid step cell");
 Check(!p15Blocked.MoveForPatrol(p15BlockedWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol blocked step does not move");
 Eq(2, p15Blocked.PatrolWaypointIndex, "slice15 patrol blocked step skips to the south waypoint");
@@ -5383,7 +5393,7 @@ Eq(21, p15Blocked.Z, "slice15 patrol after a skip steps toward the south waypoin
 // stepping toward it skips it and heads east instead.
 var p15SolidWpWorld = new WorldZone(42);
 p15SolidWpWorld.Player.X = 22; p15SolidWpWorld.Player.Z = 20;
-var p15SolidWp = p15SolidWpWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var p15SolidWp = p15SolidWpWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(p15SolidWpWorld.Chunk.TrySet(20, 5, 20, BlockType.Stone), "slice15 patrol blocked test stages a solid rally cell");
 Check(p15SolidWp.MoveForPatrol(p15SolidWpWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol steps west toward a solid rally first");
 Eq(21, p15SolidWp.X, "slice15 patrol solid-rally approach steps west once");
@@ -5397,7 +5407,7 @@ Eq(21, p15SolidWp.X, "slice15 patrol solid waypoint skip holds its cell that tic
 // enemy (it was already on the route) nor stops after the kill.
 var p15FireWorld = new WorldZone(42);
 p15FireWorld.Player.X = 20; p15FireWorld.Player.Z = 20;
-var p15Fire = p15FireWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var p15Fire = p15FireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 p15FireWorld.Player.X = 0; p15FireWorld.Player.Z = 0;
 p15FireWorld.Enemies.Add(new Enemy(24, 5, 20));
 p15FireWorld.Advance();
@@ -5409,25 +5419,25 @@ Eq(22, p15Fire.X, "slice15 patrol route continues east after the kill");
 // where HoldGround moving to its rally does not.
 var p15FireRuleWorld = new WorldZone(42);
 p15FireRuleWorld.Player.X = 20; p15FireRuleWorld.Player.Z = 20;
-var p15FireRule = p15FireRuleWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var p15FireRule = p15FireRuleWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 p15FireRule.MoveForPatrol(p15FireRuleWorld.Chunk, Array.Empty<Enemy>());
 Check(p15FireRule.FindTarget(new[] { new Enemy(21, 5, 23) }) != null, "slice15 patrol mid-route fires at an enemy in range");
 var p15HoldFireWorld = new WorldZone(42);
 p15HoldFireWorld.Player.X = 16; p15HoldFireWorld.Player.Z = 16;
-var p15HoldFire = p15HoldFireWorld.DeploySquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
+var p15HoldFire = p15HoldFireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
 Check(p15HoldFire.FindTarget(new[] { new Enemy(16, 5, 19) }) == null, "slice15 patrol contrast holdground moving does not fire");
 // Kinds: all three patrol, with their own shapes — Recon
 // (2 x 20 HP, 6 damage, range 5) and Heavy (2 x 50 HP, 8
 // damage, range 2) step east from the rally like Vanguard.
 var p15ReconWorld = new WorldZone(42);
 p15ReconWorld.Player.X = 20; p15ReconWorld.Player.Z = 20;
-var p15Recon = p15ReconWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var p15Recon = p15ReconWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
 Check(p15Recon.MoveForPatrol(p15ReconWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol recon steps east from the rally");
 Eq(12, p15Recon.DamagePerTick, "slice15 patrol recon damage");
 Eq(5, p15Recon.EngagementRange, "slice15 patrol recon range");
 var p15HeavyWorld = new WorldZone(42);
 p15HeavyWorld.Player.X = 20; p15HeavyWorld.Player.Z = 20;
-var p15Heavy = p15HeavyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+var p15Heavy = p15HeavyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
 Check(p15Heavy.MoveForPatrol(p15HeavyWorld.Chunk, Array.Empty<Enemy>()), "slice15 patrol heavy steps east from the rally");
 Eq(16, p15Heavy.DamagePerTick, "slice15 patrol heavy damage");
 Eq(2, p15Heavy.EngagementRange, "slice15 patrol heavy range");
@@ -5458,7 +5468,7 @@ Eq(10, p15PickWorld.Player.Inventory.Get(BlockType.EmberOre), "slice15 patrol ca
 // reads Patrolling mid-route.
 var p15SnapWorld = new WorldZone(42);
 p15SnapWorld.Player.X = 20; p15SnapWorld.Player.Z = 20;
-var p15Snap = p15SnapWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var p15Snap = p15SnapWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 p15SnapWorld.Enemies.Add(new Enemy(21, 5, 20));
 var p15Snap0 = OrbitalView.Snapshot(p15SnapWorld)[0];
 Eq(SquadActivity.Patrolling, p15Snap0.Activity, "slice15 patrol snapshot at rally reads patrolling");
@@ -5473,7 +5483,7 @@ Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(p15SnapWorld)[0].Activity, "sl
 // No save field was added, so old saves load unchanged.
 var p15SaveWorld = new WorldZone(42);
 p15SaveWorld.Player.X = 20; p15SaveWorld.Player.Z = 20;
-var p15Save = p15SaveWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var p15Save = p15SaveWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
 p15Save.MoveForPatrol(p15SaveWorld.Chunk, Array.Empty<Enemy>());
 p15Save.MoveForPatrol(p15SaveWorld.Chunk, Array.Empty<Enemy>());
 p15Save.MoveForPatrol(p15SaveWorld.Chunk, Array.Empty<Enemy>());
@@ -6059,7 +6069,7 @@ Eq(3, (int)TacticalDoctrine.Patrol, "slice18 patrol doctrine value unchanged");
 // tick walks south and resets the counter.
 var s18SingleWorld = new WorldZone(42);
 s18SingleWorld.Player.X = 20; s18SingleWorld.Player.Z = 20;
-var s18Single = s18SingleWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Single = s18SingleWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18SingleWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol single-axis test stages a solid step cell");
 Check(!s18Single.MoveForPatrol(s18SingleWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol single-axis blocked step does not move");
 Eq(2, s18Single.PatrolWaypointIndex, "slice18 patrol single-axis blocked step skips to south");
@@ -6079,7 +6089,7 @@ Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18SingleWorld)[0].Activity, "
 // not skipped, after a sidestep.
 var s18SideWorld = new WorldZone(42);
 s18SideWorld.Player.X = 21; s18SideWorld.Player.Z = 21;
-var s18Side = s18SideWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Side = s18SideWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18SideWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol sidestep test stages a solid primary step cell");
 Eq(2, Math.Abs(20 - s18Side.X) + Math.Abs(20 - s18Side.Z), "slice18 patrol sidestep distance before is 2");
 Check(s18Side.MoveForPatrol(s18SideWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol diagonal blocked step sidesteps instead of skipping");
@@ -6096,13 +6106,13 @@ Eq(0, s18Side.PatrolWaypointIndex, "slice18 patrol waypoint index after reaching
 // to sidestep, not only Vanguard.
 var s18SideReconWorld = new WorldZone(42);
 s18SideReconWorld.Player.X = 21; s18SideReconWorld.Player.Z = 21;
-var s18SideRecon = s18SideReconWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s18SideRecon = s18SideReconWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
 Check(s18SideReconWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol recon sidestep test stages a solid primary step cell");
 Check(s18SideRecon.MoveForPatrol(s18SideReconWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol recon diagonal blocked step sidesteps");
 Eq(20, s18SideRecon.Z, "slice18 patrol recon sidestep steps south");
 var s18SideHeavyWorld = new WorldZone(42);
 s18SideHeavyWorld.Player.X = 21; s18SideHeavyWorld.Player.Z = 21;
-var s18SideHeavy = s18SideHeavyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+var s18SideHeavy = s18SideHeavyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
 Check(s18SideHeavyWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol heavy sidestep test stages a solid primary step cell");
 Check(s18SideHeavy.MoveForPatrol(s18SideHeavyWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol heavy diagonal blocked step sidesteps");
 Eq(20, s18SideHeavy.Z, "slice18 patrol heavy sidestep steps south");
@@ -6113,7 +6123,7 @@ Eq(20, s18SideHeavy.Z, "slice18 patrol heavy sidestep steps south");
 // waypoint, resetting the counter.
 var s18BothWorld = new WorldZone(42);
 s18BothWorld.Player.X = 21; s18BothWorld.Player.Z = 21;
-var s18Both = s18BothWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Both = s18BothWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18BothWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol both-axes test stages a solid primary step cell");
 Check(s18BothWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol both-axes test stages a solid sidestep cell");
 Check(!s18Both.MoveForPatrol(s18BothWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol both gap axes blocked does not move");
@@ -6129,7 +6139,7 @@ Eq(0, s18Both.PatrolConsecutiveRefusals, "slice18 patrol a move after a both-axe
 // differ observably here, and this is the skip.
 var s18EnemyWorld = new WorldZone(42);
 s18EnemyWorld.Player.X = 20; s18EnemyWorld.Player.Z = 20;
-var s18Enemy = s18EnemyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Enemy = s18EnemyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 var s18Blocker = new Enemy(21, 5, 20);
 Check(!s18Enemy.MoveForPatrol(s18EnemyWorld.Chunk, new[] { s18Blocker }), "slice18 patrol enemy-blocked step does not move");
 Eq(2, s18Enemy.PatrolWaypointIndex, "slice18 patrol enemy-blocked step skips to south");
@@ -6141,7 +6151,7 @@ Eq(21, s18Enemy.Z, "slice18 patrol after an enemy-blocked skip steps south, not 
 // next tick steps west onto the rally.
 var s18EnemySideWorld = new WorldZone(42);
 s18EnemySideWorld.Player.X = 21; s18EnemySideWorld.Player.Z = 21;
-var s18EnemySide = s18EnemySideWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18EnemySide = s18EnemySideWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18EnemySide.MoveForPatrol(s18EnemySideWorld.Chunk, new[] { new Enemy(20, 5, 21) }), "slice18 patrol enemy-blocked diagonal step sidesteps");
 Eq(20, s18EnemySide.Z, "slice18 patrol enemy-blocked diagonal sidestep steps south");
 Check(s18EnemySide.MoveForPatrol(s18EnemySideWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol after an enemy-blocked sidestep steps onto its waypoint");
@@ -6156,7 +6166,7 @@ Eq(20, s18EnemySide.X, "slice18 patrol after an enemy-blocked sidestep reaches t
 // retry step east successfully.
 var s18LoopWorld = new WorldZone(42);
 s18LoopWorld.Player.X = 20; s18LoopWorld.Player.Z = 20;
-var s18Loop = s18LoopWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Loop = s18LoopWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18LoopWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol loop test stages a solid east step cell");
 Check(!s18Loop.MoveForPatrol(s18LoopWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol loop first east step is refused");
 Eq(2, s18Loop.PatrolWaypointIndex, "slice18 patrol loop first refusal skips to south");
@@ -6190,7 +6200,7 @@ Eq(0, s18Loop.PatrolConsecutiveRefusals, "slice18 patrol cleared east step reset
 // crash over ten ticks.
 var s18StuckWorld = new WorldZone(42);
 s18StuckWorld.Player.X = 20; s18StuckWorld.Player.Z = 20;
-var s18Stuck = s18StuckWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Stuck = s18StuckWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18StuckWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol stuck test stages an east wall");
 Check(s18StuckWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol stuck test stages a west wall");
 Check(s18StuckWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol stuck test stages a south wall");
@@ -6230,7 +6240,7 @@ Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18StuckWorld)[0].Activity, "s
 // the counter is live progress, like the index.
 var s18SaveWorld = new WorldZone(42);
 s18SaveWorld.Player.X = 20; s18SaveWorld.Player.Z = 20;
-var s18Save = s18SaveWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s18Save = s18SaveWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18SaveWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol save test stages an east wall");
 Check(s18SaveWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol save test stages a west wall");
 Check(s18SaveWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol save test stages a south wall");
@@ -6259,7 +6269,7 @@ Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18SaveLoaded)[0].Activity, "slice1
 // enemy held at range 2 by its own wall.
 var s18FireReconWorld = new WorldZone(42);
 s18FireReconWorld.Player.X = 20; s18FireReconWorld.Player.Z = 20;
-var s18FireRecon = s18FireReconWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s18FireRecon = s18FireReconWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
 Check(s18FireReconWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol recon fire test stages an east wall");
 Check(s18FireReconWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol recon fire test stages a west wall");
 Check(s18FireReconWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol recon fire test stages a south wall");
@@ -6278,7 +6288,7 @@ Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18FireReconWorld)[0].Activity, "sl
 Eq(20, s18FireRecon.Z, "slice18 patrol recon stuck squad never moved");
 var s18FireVangWorld = new WorldZone(42);
 s18FireVangWorld.Player.X = 20; s18FireVangWorld.Player.Z = 20;
-var s18FireVang = s18FireVangWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+var s18FireVang = s18FireVangWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
 Check(s18FireVangWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol vanguard fire test stages an east wall");
 Check(s18FireVangWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol vanguard fire test stages a west wall");
 Check(s18FireVangWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol vanguard fire test stages a south wall");
@@ -6291,7 +6301,7 @@ Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18FireVangWorld)[0].Activity, "sli
 Eq(20, s18FireVang.X, "slice18 patrol vanguard stuck squad never moved");
 var s18FireHeavyWorld = new WorldZone(42);
 s18FireHeavyWorld.Player.X = 20; s18FireHeavyWorld.Player.Z = 20;
-var s18FireHeavy = s18FireHeavyWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+var s18FireHeavy = s18FireHeavyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
 Check(s18FireHeavyWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 patrol heavy fire test stages an east wall");
 Check(s18FireHeavyWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 patrol heavy fire test stages a west wall");
 Check(s18FireHeavyWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol heavy fire test stages a south wall");
@@ -6310,7 +6320,7 @@ Eq(20, s18FireHeavy.Z, "slice18 patrol heavy stuck squad never moved");
 // solid, sidestep cell free: it does not sidestep.
 var s18HoldWorld = new WorldZone(42);
 s18HoldWorld.Player.X = 21; s18HoldWorld.Player.Z = 21;
-var s18Hold = s18HoldWorld.DeploySquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
+var s18Hold = s18HoldWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.HoldGround)!;
 Check(s18HoldWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol contrast holdground test stages a solid primary step cell");
 Check(!s18Hold.MoveTowardRally(s18HoldWorld.Chunk, Array.Empty<Enemy>()), "slice18 patrol contrast holdground diagonal blocked step does not sidestep");
 Eq(21, s18Hold.X, "slice18 patrol contrast holdground holds its X");
@@ -6319,7 +6329,7 @@ Eq(21, s18Hold.Z, "slice18 patrol contrast holdground holds its Z");
 // sidestep cell free: it does not sidestep either.
 var s18AdvWorld = new WorldZone(42);
 s18AdvWorld.Player.X = 21; s18AdvWorld.Player.Z = 21;
-var s18Adv = s18AdvWorld.DeploySquad(20, 5, 20, TacticalDoctrine.Advance)!;
+var s18Adv = s18AdvWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Advance)!;
 Check(s18AdvWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 patrol contrast advance test stages a solid primary step cell");
 Check(!s18Adv.MoveTowardNearestEnemy(s18AdvWorld.Chunk, new[] { new Enemy(20, 5, 20) }), "slice18 patrol contrast advance diagonal blocked step does not sidestep");
 Eq(21, s18Adv.X, "slice18 patrol contrast advance holds its X");
@@ -6328,11 +6338,120 @@ Eq(21, s18Adv.Z, "slice18 patrol contrast advance holds its Z");
 // solid, sidestep cell free: it does not sidestep.
 var s18DefWorld = new WorldZone(42);
 s18DefWorld.Player.X = 29; s18DefWorld.Player.Z = 29;
-var s18Def = s18DefWorld.DeploySquad(20, 5, 20, TacticalDoctrine.DefendCore)!;
+var s18Def = s18DefWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.DefendCore)!;
 Check(s18DefWorld.Chunk.TrySet(28, 5, 29, BlockType.Stone), "slice18 patrol contrast defendcore test stages a solid primary step cell");
 Check(!s18Def.MoveForDefendCore(s18DefWorld.Chunk, Array.Empty<Enemy>(), s18DefWorld.CoreX, s18DefWorld.CoreY, s18DefWorld.CoreZ), "slice18 patrol contrast defendcore diagonal blocked step does not sidestep");
 Eq(29, s18Def.X, "slice18 patrol contrast defendcore holds its X");
 Eq(29, s18Def.Z, "slice18 patrol contrast defendcore holds its Z");
+
+// ---- Slice 18 Step 2: free deploy primitive enforcement (0.79.0) ----
+// Decision, decided in this step (rationale in DECISIONS.md): the
+// public free primitives are REMOVED and headless tests use the
+// internal seam WorldZone.SpawnSquad (friend assembly only), so a
+// play-path call fails to compile; the paid path is unchanged. No
+// price, cap, doctrine, kind, or movement rule moves here, and no
+// checklist item is taken: a compile error is not a scene
+// behaviour to observe, so the next free gate number remains 38
+// after Step 1's item 37. Note the corrected history: this step
+// first tried Obsolete with error: true plus a test-file pragma,
+// and the build proved a pragma cannot suppress that error, so the
+// mechanism was changed to removal plus the internal seam rather
+// than weakened to a warning (see DECISIONS.md).
+// Paid-path matrix, all four doctrines x all three kinds: funded
+// deploys succeed and charge exactly 10, unfunded deploys refuse
+// with no squad and no charge. Each combination gets a fresh world,
+// so no combination's squad or ore leaks into another's proof.
+var s18Doctrines = new[] { TacticalDoctrine.HoldGround, TacticalDoctrine.Advance, TacticalDoctrine.DefendCore, TacticalDoctrine.Patrol };
+var s18Kinds = new[] { SquadKind.Vanguard, SquadKind.Recon, SquadKind.Heavy };
+foreach (var s18Doctrine in s18Doctrines)
+foreach (var s18Kind in s18Kinds)
+{
+    var s18PaidWorld = new WorldZone(42);
+    s18PaidWorld.Player.Inventory.Add(BlockType.EmberOre, 10);
+    var s18Paid = s18PaidWorld.TryDeployPaidSquad(20, 5, 20, s18Doctrine, s18Kind);
+    Check(s18Paid != null, $"slice18 deploy paid {s18Doctrine}/{s18Kind} funded succeeds");
+    Eq(s18Doctrine, s18Paid!.Doctrine, $"slice18 deploy paid {s18Doctrine}/{s18Kind} keeps its doctrine");
+    Eq(s18Kind, s18Paid.Kind, $"slice18 deploy paid {s18Doctrine}/{s18Kind} keeps its kind");
+    Eq(0, s18PaidWorld.Player.Inventory.Get(BlockType.EmberOre), $"slice18 deploy paid {s18Doctrine}/{s18Kind} charges exactly 10 ore");
+    var s18PoorWorld = new WorldZone(42);
+    Check(s18PoorWorld.TryDeployPaidSquad(20, 5, 20, s18Doctrine, s18Kind) == null, $"slice18 deploy paid {s18Doctrine}/{s18Kind} unfunded refused");
+    Eq(0, s18PoorWorld.Squads.Count, $"slice18 deploy paid {s18Doctrine}/{s18Kind} unfunded adds no squad");
+    Eq(0, s18PoorWorld.Player.Inventory.Get(BlockType.EmberOre), $"slice18 deploy paid {s18Doctrine}/{s18Kind} unfunded charges nothing");
+}
+// Cap through the paid path for the two doctrines whose cap was not
+// already proved per-doctrine (HoldGround cap rests on Slice 3/7/11
+// tests, Patrol cap on Slice 15 tests): three field, the fourth is
+// refused with ore untouched.
+foreach (var s18CapDoctrine in new[] { TacticalDoctrine.Advance, TacticalDoctrine.DefendCore })
+{
+    var s18CapWorld = new WorldZone(42);
+    s18CapWorld.Player.Inventory.Add(BlockType.EmberOre, 40);
+    Check(s18CapWorld.TryDeployPaidSquad(16, 5, 16, s18CapDoctrine) != null, $"slice18 deploy paid {s18CapDoctrine} cap deploy 1 succeeds");
+    Check(s18CapWorld.TryDeployPaidSquad(17, 5, 16, s18CapDoctrine) != null, $"slice18 deploy paid {s18CapDoctrine} cap deploy 2 succeeds");
+    Check(s18CapWorld.TryDeployPaidSquad(18, 5, 16, s18CapDoctrine) != null, $"slice18 deploy paid {s18CapDoctrine} cap deploy 3 succeeds");
+    Check(s18CapWorld.TryDeployPaidSquad(19, 5, 16, s18CapDoctrine) == null, $"slice18 deploy paid {s18CapDoctrine} 4th deploy refused at cap");
+    Eq(3, s18CapWorld.Squads.Count, $"slice18 deploy paid {s18CapDoctrine} refused 4th adds no squad");
+    Eq(10, s18CapWorld.Player.Inventory.Get(BlockType.EmberOre), $"slice18 deploy paid {s18CapDoctrine} refused 4th charges nothing");
+}
+// The mechanism itself, proved by reflection from inside the friend
+// assembly (a test in this file cannot prove a compile error by
+// calling a removed method — there is nothing to call): the public
+// free entry points are gone, and the seam is internal, not public.
+// A non-friend caller is proved to fail separately, outside this
+// suite, by a throwaway project built against the core in this run
+// (see DECISIONS.md): calling the old names fails as no-such-member
+// and calling the seam fails to compile (observed CS1061 in the negative-compile proof). What this suite CAN prove
+// is that the seam is internal and that the old names are absent.
+Check(typeof(WorldZone).GetMethod("SpawnSquad") == null, "slice18 deploy seam spawn is not public on world");
+Check(typeof(WorldZone).GetMethod("DeploySquad") == null, "slice18 deploy old world free name is gone");
+Check(typeof(Simulation).GetMethod("DeployOrbitalSquad") == null, "slice18 deploy old simulation free name is gone");
+Check(typeof(WorldZone).GetMethod("SpawnSquad", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) != null, "slice18 deploy seam spawn exists as an internal instance method");
+// Paid-path patrol identity: a Patrol deployed through the picker
+// keeps its doctrine and kind and pays, exactly as Step 1's patrol
+// behaves — the deploy step does not change a doctrine's movement.
+var s18PickPatrolSim = new Simulation(42);
+s18PickPatrolSim.World.Player.Inventory.Add(BlockType.EmberOre, 10);
+s18PickPatrolSim.BeginOrbitalPick();
+Check(s18PickPatrolSim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol), "slice18 deploy picker patrol doctrine selected");
+Check(s18PickPatrolSim.OrbitalCommand.SelectKind(SquadKind.Recon), "slice18 deploy picker patrol kind selected");
+Check(s18PickPatrolSim.SetOrbitalRally(20, 5, 20), "slice18 deploy picker patrol rally set");
+var s18PickPatrol = s18PickPatrolSim.ConfirmOrbitalDeploy();
+Check(s18PickPatrol != null, "slice18 deploy picker patrol confirm deploys funded");
+Eq(TacticalDoctrine.Patrol, s18PickPatrol!.Doctrine, "slice18 deploy picker patrol keeps patrol doctrine");
+Eq(SquadKind.Recon, s18PickPatrol.Kind, "slice18 deploy picker patrol keeps recon kind");
+Eq(0, s18PickPatrolSim.World.Player.Inventory.Get(BlockType.EmberOre), "slice18 deploy picker patrol charges 10 ore");
+Check(!s18PickPatrolSim.OrbitalCommand.IsPicking, "slice18 deploy picker patrol closes after confirm");
+// Paid-path patrol, Step 1 behaviour: the same fully enclosed setup
+// as Step 1's stuck test, but deployed through the paid path — four
+// refusals still read Patrolling, the fifth reads Stuck, unmoved.
+var s18PaidStuckWorld = new WorldZone(42);
+s18PaidStuckWorld.Player.X = 20; s18PaidStuckWorld.Player.Z = 20;
+s18PaidStuckWorld.Player.Inventory.Add(BlockType.EmberOre, 10);
+var s18PaidStuck = s18PaidStuckWorld.TryDeployPaidSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s18PaidStuck != null, "slice18 deploy paid patrol enclosed deploys funded");
+Eq(0, s18PaidStuckWorld.Player.Inventory.Get(BlockType.EmberOre), "slice18 deploy paid patrol enclosed charges 10 ore");
+Check(s18PaidStuckWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 deploy paid patrol enclosed test stages an east wall");
+Check(s18PaidStuckWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 deploy paid patrol enclosed test stages a west wall");
+Check(s18PaidStuckWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice18 deploy paid patrol enclosed test stages a south wall");
+Check(s18PaidStuckWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice18 deploy paid patrol enclosed test stages a north wall");
+for (int s18Tick = 0; s18Tick < 4; s18Tick++) s18PaidStuck.MoveForPatrol(s18PaidStuckWorld.Chunk, Array.Empty<Enemy>());
+Eq(4, s18PaidStuck.PatrolConsecutiveRefusals, "slice18 deploy paid patrol four refusals counted");
+Check(!s18PaidStuck.IsPatrolStuck, "slice18 deploy paid patrol four refusals is not yet stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s18PaidStuckWorld)[0].Activity, "slice18 deploy paid patrol four refusals still reads patrolling");
+Check(!s18PaidStuck.MoveForPatrol(s18PaidStuckWorld.Chunk, Array.Empty<Enemy>()), "slice18 deploy paid patrol fifth refusal does not move");
+Eq(5, s18PaidStuck.PatrolConsecutiveRefusals, "slice18 deploy paid patrol five refusals counted");
+Check(s18PaidStuck.IsPatrolStuck, "slice18 deploy paid patrol five refusals is stuck");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18PaidStuckWorld)[0].Activity, "slice18 deploy paid patrol five refusals reads stuck");
+Eq(20, s18PaidStuck.X, "slice18 deploy paid patrol stuck squad holds its X");
+Eq(20, s18PaidStuck.Z, "slice18 deploy paid patrol stuck squad holds its Z");
+// Post-charge refund guard, stated honestly: after the paid path's
+// checks pass, its spawn cannot fail through the public API (bounds
+// and validity were already checked), so no black-box test can force
+// the refund branch — the guard in TryDeployPaidSquad (refund in
+// full if SpawnSquad ever returned null after charging) is a code
+// reading, not a test claim, and this step does not pretend
+// otherwise. What is testable — refused-before-charge charges
+// nothing — is proved by the matrix and cap tests above.
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

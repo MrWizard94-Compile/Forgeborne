@@ -274,26 +274,21 @@ public sealed class Simulation
     /// cost — the same workstation, now placeable by aim.</summary>
     public BuildResult BuildWorkstationAhead() => BuildAimed(BlockType.Workstation);
 
-    /// <summary>
-    /// Orbital Tactical command from the headless loop: deploy a
-    /// Vanguard squad under the HoldGround doctrine. The squad
-    /// spawns at the player's grid position and moves to the rally
-    /// on subsequent ticks; see WorldZone.DeploySquad for the
-    /// rejection rules. Returns null if the rally is rejected.
-    /// This direct path remains for headless use and the demo
-    /// ONLY: it is the free spawn primitive and ignores the squad
-    /// economy. A deploy in play is always a picked rally through
-    /// ConfirmOrbitalDeploy (paid), or this paid headless path.
-    /// </summary>
-    public TacticalSquad? DeployOrbitalSquad(int rallyX, int rallyY, int rallyZ) =>
-        World.DeploySquad(rallyX, rallyY, rallyZ);
+    // REMOVED in Slice 18 Step 2: the former free
+    // Simulation.DeployOrbitalSquad no longer exists. Headless
+    // tests deploy through the internal test seam
+    // (World.SpawnSquad, friend assembly only) instead, and a
+    // deploy in play is always a picked rally through
+    // ConfirmOrbitalDeploy (paid), or the paid headless path
+    // (DeployOrbitalSquadPaid) below. A play path that tries
+    // the old free name fails to compile (no such member).
 
     /// <summary>True when a paid deploy would succeed right now: under the live-squad cap and able to pay 10 EmberOre.</summary>
     public bool CanDeployOrbitalSquad() => SquadEconomy.CanDeploy(World);
 
     /// <summary>
-    /// Paid headless deploy: same squad as DeployOrbitalSquad,
-    /// but through the squad economy — refused (null, no charge,
+    /// Paid headless deploy: same squad the internal test seam
+    /// would spawn, but through the squad economy — refused (null, no charge,
     /// no squad) when unaffordable or at the 3-live-squad cap.
     /// This is the headless equivalent of a picker Confirm.
     /// </summary>

@@ -972,18 +972,29 @@ public sealed class WorldZone
     }
 
     /// <summary>
-    /// Deploy an Orbital Tactical squad: it spawns at the player's
-    /// position and follows its doctrine toward the rally point.
-    /// The rally must be in bounds; a rally inside a solid block is
-    /// accepted (the squad then holds short of it, blocked) rather
-    /// than rejected, so a bad rally is visible, not silent. An
-    /// unknown doctrine is rejected. Returns null on rejection.
-    /// This is the free spawn primitive, for headless tests and
-    /// the demo only: it charges nothing and ignores the squad
-    /// cap. The play path is TryDeployPaidSquad, which the
-    /// picker uses; Unity play must never call this directly.
+    /// Test-only squad spawn (Slice 18 Step 2): the engine
+    /// behind deploy. It spawns at the player's position and
+    /// follows its doctrine toward the rally point. The rally
+    /// must be in bounds; a rally inside a solid block is
+    /// accepted (the squad then holds short of it, blocked)
+    /// rather than rejected, so a bad rally is visible, not
+    /// silent. An unknown doctrine is rejected. Returns null
+    /// on rejection. This method is internal, exposed to the
+    /// test assembly only through InternalsVisibleTo, so that
+    /// no outside assembly can reach a free spawn: the paid
+    /// path (TryDeployPaidSquad, same assembly) calls it after
+    /// checking cap and affordability, and the test assembly
+    /// calls it to isolate movement, fire, and targeting from
+    /// the economy. There is NO public free deploy entry point
+    /// any more: the former public WorldZone.DeploySquad was
+    /// removed in this step, so a play path that tries it
+    /// fails to compile (no such member), and a non-friend
+    /// caller that tries SpawnSquad fails to compile (observed CS1061 in the negative-compile proof)
+    /// (inaccessible). The play path is TryDeployPaidSquad,
+    /// which the picker uses; Unity play must never deploy
+    /// except through the picker.
     /// </summary>
-    public TacticalSquad? DeploySquad(int rallyX, int rallyY, int rallyZ,
+    internal TacticalSquad? SpawnSquad(int rallyX, int rallyY, int rallyZ,
         TacticalDoctrine doctrine = TacticalDoctrine.HoldGround, SquadKind kind = SquadKind.Vanguard)
     {
         if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return null;
@@ -1014,7 +1025,7 @@ public sealed class WorldZone
         int price = SquadEconomy.CostForKind(kind);
         if (!Player.Inventory.Has(BlockType.EmberOre, price)) return null;
         if (!Player.Inventory.Remove(BlockType.EmberOre, price)) return null;
-        var squad = DeploySquad(rallyX, rallyY, rallyZ, doctrine, kind);
+        var squad = SpawnSquad(rallyX, rallyY, rallyZ, doctrine, kind);
         if (squad == null) Player.Inventory.Add(BlockType.EmberOre, price);
         return squad;
     }

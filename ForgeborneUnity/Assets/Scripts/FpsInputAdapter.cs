@@ -236,6 +236,12 @@ public class FpsInputAdapter : MonoBehaviour
         }
         if (Simulation.OrbitalCommand.IsPicking)
         {
+            // Slice 18 Step 2 audit note: Enter deploys ONLY
+            // through ConfirmOrbitalDeploy (paid). The former
+            // free primitives (WorldZone.DeploySquad,
+            // Simulation.DeployOrbitalSquad) were removed in
+            // that step, so calling one from this file would
+            // fail to compile — this adapter must never do so.
             if (Input.GetKeyDown(KeyCode.Return)) Simulation.ConfirmOrbitalDeploy();
             else if (Input.GetKeyDown(KeyCode.Escape)) Simulation.CancelOrbitalPick();
             else if (Input.GetKeyDown(KeyCode.Alpha1))

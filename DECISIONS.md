@@ -7190,6 +7190,223 @@ sidestep plus stuck readout, decided
   deploy path changes a doctrine's movement. It
   should not.
 
+## 0.79.0 — Slice 18 Step 2: free deploy primitive
+enforcement, hard removal plus an internal test
+seam, decided
+
+- State found on entry: remote main head
+  f0867826dd5f1bc8e5c3a7b39241cb0ab66a4ea3,
+  CHANGELOG 0.78.0 (Slice 18 Step 1), sync record
+  80 entries ending at that commit, local working
+  copy matched — no step was repeated: the 0.78.0
+  decision named Slice 18 Step 2, the free deploy
+  primitive enforcement, decided in that step, and
+  this run did exactly that. Tests 2433 baseline
+  re-run passing; demo Slice 17 save 43,974 chars,
+  Slice 15 save 44,016 chars.
+- Decision, in one quotable sentence: the public
+  free deploy entry points are removed, and
+  headless tests deploy through an internal seam
+  that only the test assembly can reach, so a
+  play path that tries a free deploy fails to
+  compile instead of deploying a free squad. In
+  code: `WorldZone.DeploySquad` and
+  `Simulation.DeployOrbitalSquad` no longer
+  exist; `WorldZone.SpawnSquad` is the single
+  spawn engine, internal, called by the paid path
+  (same assembly, after cap and affordability
+  checks) and by the test assembly through
+  `InternalsVisibleTo("Forgeborne.Core.Tests")`
+  in `src/Forgeborne.Core/AssemblyInfo.cs`, which
+  names the test assembly as the core's only
+  friend. The paid path, the price, the cap, and
+  every doctrine, kind, and movement rule are
+  unchanged; only the free entry points move.
+- Why removal plus a seam, and why not the other
+  three scope hypotheses. Hard removal alone, with
+  every test migrated to the paid path, was
+  rejected on cost, not on principle: the test
+  file calls the free primitive on 133
+  `WorldZone` lines and 5 `Simulation` lines
+  (counted by grep for `.DeploySquad(` and
+  `.DeployOrbitalSquad(`), and those calls exist
+  precisely to isolate movement, fire, and
+  targeting from the economy — migrating them
+  would seed ore into every orbital test and
+  turn a movement suite into an economy suite,
+  with assertion churn across slices for no
+  player protection. The seam avoids that cost
+  entirely: the 138 call sites move to the seam
+  by rename only, no test seeds ore, no test
+  assertion changes for economy reasons, and the
+  demo needs no re-seeding at all — a correction
+  to the scope's ground fact, verified this run:
+  the demo already deploys through the paid path
+  and the picker, with zero free-path calls, so
+  the demo's save lengths cannot move in this
+  step and did not. Renaming the public primitive
+  to a test-deploy name was rejected because a
+  name alone stops nothing: a future play path
+  could still call the renamed method, and the
+  rename would touch the same 138 call sites for
+  a readability gain only. Keeping the rule-only
+  status was rejected because a rule is what
+  Slice 18 was asked to replace with enforcement:
+  the audit below shows no play path uses the
+  free path today, but a rule leaves the next
+  play path one careless call away from a free
+  squad, and "read the comment" is not a boundary.
+- Corrected history, stated openly because the
+  first mechanism in this step failed on evidence.
+  This step first implemented the scope's
+  compiler-marking hypothesis, strengthened to
+  `[Obsolete(..., error: true)]` with a test-file
+  pragma as the sanctioned seam — and the build
+  proved that combination unworkable: a pragma
+  cannot suppress a CS0619 error, so the suite
+  failed with 278 CS0619 errors despite the
+  pragma being present. Rather than silently
+  weakening the marking to a warning (which a
+  Unity console can scroll past, and which the
+  scope did not ask this step to settle for), the
+  step changed mechanism to removal plus the
+  internal seam, which is strictly stronger than
+  a warning and needs no pragma anywhere. The
+  failed attempt left no code behind: the
+  Obsolete wrappers were deleted, not commented
+  out, and the test file carries no pragma.
+- Honest limits of this mechanism, not hidden.
+  The enforcement is a compile-time boundary at
+  the core-assembly edge: a non-friend assembly
+  calling the old names gets no-such-member, and
+  calling the seam gets a compile error (observed
+  CS1061 for both in the negative-compile proof
+  below — the seam's inaccessibility surfaces as
+  "does not contain a definition" from outside
+  the assembly, not as CS0122, and this entry
+  quotes the observed diagnostic, not the
+  textbook one). Two dissolutions are named, not
+  denied: if the core source were ever vendored
+  into Unity's Assembly-CSharp, the assembly edge
+  dissolves and the adapter audit becomes the
+  guard again; and a future developer could make
+  the seam public or add another friend assembly
+  — but both are visible, reviewable, one-line
+  changes to the core's own boundary files, not
+  accidents a play path can commit by calling a
+  convenient method. The trigger to reopen this
+  question is therefore named: a second play
+  path, a Unity script that deploys directly, a
+  demo that becomes a play path, core source
+  vendored into a Unity assembly, or a new
+  consumer that genuinely needs a free spawn —
+  any of which reopens enforcement, not just the
+  rule.
+- Play-path audit, re-verified against the code
+  as it stands, not copied from the scope: the
+  picker (`OrbitalCommand.Confirm`) deploys
+  through `TryDeployPaidSquad`; the Unity adapter
+  deploys only through `ConfirmOrbitalDeploy`
+  (Enter while picking, in `FpsInputAdapter.cs`,
+  with a Step 2 audit comment added there); and
+  a grep over every adapter file finds no
+  reference to the old free names or to
+  `SpawnSquad` at all. The audit is an audit
+  claim, not a test-count claim, because adapter
+  code is not compiled headlessly — the same
+  honesty the scope requires.
+- Proof set, in tests (suite rises, never stands):
+  the paid-path matrix, all four doctrines by all
+  three kinds — funded deploy succeeds, keeps its
+  doctrine and kind, and charges exactly 10 ore;
+  unfunded deploy is refused, adds no squad, and
+  charges nothing (84 assertions); the cap
+  through the paid path for Advance and
+  DefendCore, the two doctrines whose per-doctrine
+  cap was not already proved (HoldGround rests
+  on Slice 3/7/11 tests, Patrol on Slice 15) —
+  three field, the fourth is refused with ore
+  untouched (12 assertions); reflection proofs
+  from inside the friend assembly that the old
+  public names are absent and the seam is not
+  public but exists as an internal instance method
+  (4 assertions); a picker Patrol (Recon, funded)
+  that keeps its doctrine and kind, charges 10,
+  and closes the picker (8 assertions); and the
+  paid-path patrol identity the scope demanded —
+  the Step 1 fully enclosed setup, deployed
+  through the paid path, reads Patrolling after
+  four refusals and Stuck, unmoved, after the
+  fifth (13 assertions, plus 4 staging checks).
+  Total rise: 2433 to 2556, no failures.
+- Forbidden-path proof, outside the suite because
+  a suite cannot prove a compile error by calling
+  a method that does not exist: a throwaway
+  project in /tmp (not committed) referencing the
+  core, calling the old `DeploySquad`, the seam
+  `SpawnSquad`, and the old
+  `Simulation.DeployOrbitalSquad`, failed to
+  build with CS1061 on all three call sites, and
+  no other error. The throwaway was deleted after
+  the proof; its errors are quoted here so the
+  claim is checkable without re-running it.
+- Post-charge refund, stated honestly: after the
+  paid path's checks pass, its spawn cannot fail
+  through the public API (bounds and validity
+  were already checked), so no black-box test can
+  force the refund branch in `TryDeployPaidSquad`.
+  The refund guard (ore returned in full if the
+  spawn ever returned null after charging) is
+  therefore a code reading, not a test claim, and
+  this step does not pretend otherwise. What is
+  testable — refused-before-charge charges
+  nothing — is proved by the matrix and cap
+  tests above, for every doctrine and kind.
+- Checklist relation: no new playtest-gate item
+  is taken, exactly as the scope allows for a
+  boundary with no scene change — a compile
+  error is not a scene behaviour to observe, and
+  inventing an item to watch a build fail would
+  be theatre, not verification. Next free gate
+  number remains 38 after Step 1's item 37.
+  No material, shader, marker, light, fog, model,
+  or HUD rule moves; the only adapter change is
+  the audit comment, and the only live-doc
+  changes are the enforcement notes in
+  `docs/orbital-command.md` and
+  `docs/orbital-view.md` plus code comments.
+  Historical slice scope/review documents still
+  say the free primitive "remains" — they are
+  history, left unedited under the supersession
+  pattern, and this entry supersedes them.
+- Deliberately not in this step: a price or cap
+  change (10 EmberOre, cap 3, no refund on
+  death), a doctrine, kind, or movement change
+  (paid Patrol moves, sidesteps, skips, and
+  reads Stuck exactly as Step 1 decided), a save
+  format change (no new field; `SpawnSquad` is
+  the old spawn body, moved, not a new spawn),
+  a demo scenario (the demo is unchanged, and
+  its Slice 15 save still reads 44,016 chars and
+  its Slice 17 save 43,974 chars), or a Slice 18
+  review — that belongs to Step 3.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 18 Step 3, the composed demo
+  scenario plus documentation-only review closing
+  Slice 18, decided in that step: a patrol
+  deployed through the paid path on a route that
+  is actually blocked, a fully blocked case, and
+  a save/load round-trip under Step 1's load
+  rule, with the demo using the paid path under
+  this step's enforcement, never the removed
+  free path.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

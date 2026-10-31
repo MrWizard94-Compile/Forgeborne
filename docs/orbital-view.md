@@ -126,8 +126,10 @@ immediately and fired at enemies in range 3, with no rally
 choice at all. That binding is gone. O now opens the doctrine
 menu / rally picker (`docs/orbital-command.md`): aim, Enter to
 deploy at the picked rally, Esc to cancel. The old instant
-deploy survives only as the headless `DeployOrbitalSquad`
-path, used by tests and the demo — not by the Unity adapter.
+deploy survives only as the internal test seam
+(`WorldZone.SpawnSquad`, friend assembly only, since Slice 18
+Step 2) — not by the demo, which deploys through the paid
+path, and not by the Unity adapter.
 
 ## Deliberately NOT in this step
 

@@ -633,8 +633,12 @@ public sealed class TacticalSquad
 /// nothing and deploys nothing — no partial charge, no
 /// half-deployed squad. The picker (OrbitalCommand.Confirm)
 /// deploys through that paid path, so the play path is priced;
-/// WorldZone.DeploySquad remains the free spawn primitive for
-/// headless tests and the demo only, never the Unity play path.
+/// Since Slice 18 Step 2 there is no public free spawn
+/// primitive at all: the former WorldZone.DeploySquad was
+/// removed, and headless tests use the internal test seam
+/// WorldZone.SpawnSquad (friend assembly only). The demo
+/// already deploys through the paid path and never used the
+/// free path. A free deploy is never the Unity play path.
 /// </summary>
 public static class SquadEconomy
 {
@@ -736,7 +740,7 @@ public sealed class OrbitalCommand
 
     /// <summary>
     /// Update the pending rally while picking. Only bounds are
-    /// checked here, matching WorldZone.DeploySquad: a rally inside
+    /// checked here, matching WorldZone.SpawnSquad: a rally inside
     /// a solid block is accepted and the squad then holds short of
     /// it, so a bad rally is visible, not silent.
     /// </summary>

@@ -1,5 +1,83 @@
 # Forgeborne — Changelog
 
+## 0.79.0 — 2026-10-31 — Slice 18 Step 2: free deploy
+primitive enforcement, hard removal plus internal
+test seam, decided
+
+- Decision, decided in this step (rationale in
+  DECISIONS.md): the public free deploy entry
+  points are removed — `WorldZone.DeploySquad`
+  and `Simulation.DeployOrbitalSquad` no longer
+  exist — and headless tests deploy through the
+  internal seam `WorldZone.SpawnSquad`, exposed
+  to the test assembly only through
+  `InternalsVisibleTo("Forgeborne.Core.Tests")`.
+  A play path that tries a free deploy now fails
+  to compile instead of deploying a free squad.
+  The paid path (`TryDeployPaidSquad`, picker
+  `Confirm`, `DeployOrbitalSquadPaid`) is
+  unchanged, as are the price (10 EmberOre), the
+  cap (3 live squads), every doctrine, kind, and
+  movement rule.
+- Corrected history: this step first tried the
+  scope's compiler-marking hypothesis, strengthened
+  to `[Obsolete(..., error: true)]` with a test-file
+  pragma as the seam, and the build proved a pragma
+  cannot suppress a CS0619 error (278 errors with
+  the pragma present). The mechanism was therefore
+  changed to removal plus the internal seam rather
+  than weakened to a warning; no Obsolete wrapper
+  and no pragma remain.
+- Migration cost, counted in the open: the test
+  file called the free primitive on 133
+  `WorldZone` lines and 5 `Simulation` lines
+  (grep for `.DeploySquad(` and
+  `.DeployOrbitalSquad(`), and all 138 move to the
+  seam by rename only — no test seeds ore, no
+  economy assertion churn, because those tests
+  isolate movement, fire, and targeting from the
+  economy by design. The demo needs no re-seeding:
+  verified this run, it already deploys through
+  the paid path with zero free-path calls, which
+  corrects the scope's ground fact that the demo
+  used the free path. Renaming the public primitive
+  was rejected (a name alone stops no call, same
+  138-site churn); keeping the rule-only status was
+  rejected (a comment is not a boundary).
+- Proof set, in tests: paid-path matrix, all four
+  doctrines by all three kinds — funded succeeds
+  with doctrine and kind kept and exactly 10 ore
+  charged, unfunded refused with no squad and no
+  charge; cap through the paid path for Advance
+  and DefendCore (HoldGround and Patrol caps rest
+  on earlier slices); reflection proofs that the
+  old public names are absent and the seam is
+  internal, not public; a picker Patrol that keeps
+  doctrine and kind and pays; and the paid-path
+  patrol identity the scope demanded — the Step 1
+  fully enclosed setup, deployed paid, reads
+  Patrolling after four refusals and Stuck,
+  unmoved, after the fifth. Play-path audit
+  re-verified: picker through `TryDeployPaidSquad`,
+  adapter Enter through `ConfirmOrbitalDeploy`,
+  no adapter file references the old names or the
+  seam. Forbidden-path proof outside the suite: a
+  throwaway non-friend project calling the old
+  names and the seam failed to build with CS1061
+  on all three call sites. Post-charge refund
+  guard: unreachable through the public API after
+  its checks pass, so it is a code reading, not a
+  test claim — refused-before-charge charging
+  nothing is what the matrix and cap tests prove.
+- Checklist relation: no new playtest-gate item —
+  a compile error is not a scene behaviour to
+  observe, so the next free gate number remains 38
+  after Step 1's item 37. No material, shader,
+  marker, light, fog, model, or HUD rule moves;
+  the only adapter change is an audit comment.
+  Demo unchanged: Slice 15 save 44,016 chars,
+  Slice 17 save 43,974 chars.
+
 ## 0.78.0 — 2026-10-31 — Slice 18 Step 1: patrol route
 limits, sidestep plus stuck readout, decided
 

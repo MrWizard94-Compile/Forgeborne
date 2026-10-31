@@ -161,11 +161,15 @@ final balance):
   over-cap confirm deploys nothing, charges nothing, and
   leaves the picker open for a re-pick after gathering more
   ore or after a slot frees up.
-- The direct `DeployOrbitalSquad` / `WorldZone.DeploySquad`
-  path remains the free spawn primitive for headless tests
-  and the demo only; it is not the play path and Unity play
-  must never call it. The demo's Slice 2 squad now deploys
-  through the paid path.
+- The direct free deploy path was REMOVED in Slice 18 Step 2
+  (0.79.0): `WorldZone.DeploySquad` and
+  `Simulation.DeployOrbitalSquad` no longer exist. Headless
+  tests use the internal test seam `WorldZone.SpawnSquad`
+  (friend assembly `Forgeborne.Core.Tests` only); any other
+  caller trying the old names fails to compile, and trying
+  the seam fails to compile (observed CS1061 in the negative-compile proof). It is not the play path and
+  Unity play must never call it. The demo deploys through
+  the paid path (no demo scenario ever called the free path).
 
 ## Second squad type — Recon (Slice 7 Step 1, 0.33.0)
 
