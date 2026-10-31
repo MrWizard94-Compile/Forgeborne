@@ -1086,3 +1086,82 @@ for (int tick = 1; tick <= 8; tick++)
     Console.WriteLine($"Slice 15 loaded tick {tick}: patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} target ({patrol.PatrolTarget.X},5,{patrol.PatrolTarget.Z}) reads {snaps[0].Activity}, heavy at ({heavy.X},5,{heavy.Z}) reads {snaps[1].Activity}, enemies {simS15Loaded.World.Enemies.Count}");
 }
 Console.WriteLine($"Slice 15 done: patrol {simS15.World.Squads[0].Kind} {simS15.World.Squads[0].Doctrine} + loaded patrol, heavy holding, save JSON length: {saveS15.Length} chars");
+
+// Slice 17 Step 3 scenario: Slice 17 composed in one run —
+// the two decided display queries agreeing in one wiring,
+// not just in their separate proof sets. On the y=20 plane,
+// in rows four cells apart so no row can leak voltage into
+// another through a face-adjacent neighbour, one Simulation
+// carries: a single-cable Conduit run to a mill (the Step 1
+// case, its cable Energised while its mill is Mismatched and
+// destroyed on tick 1 — the destruction is the live-network
+// evidence beside the tint reading); a two-cable Conduit run
+// to a mill (the already-tinted control, both cables
+// Energised, its mill also Mismatched and destroyed on tick
+// 1); a mixed-voltage Dynamo-plus-Conduit cable component
+// with no consumer (the still-untinted control, its cable
+// None, because component liveness does not resurrect a dead
+// network); a mill standing directly beside a Conduit (the
+// Step 2 case, its mill None, surviving, and its Conduit
+// counting as one lone source, with the POWER line read
+// before and after the tick); a mill fed LV directly by a
+// Dynamo (the feeding control, Powered, gathering every
+// tick, counting neither live nor lone); and a lone Conduit
+// with no neighbour at all (the lone control, the second
+// lone source in the POWER line). The layout is staged
+// directly with TrySet, exactly as the Step 1 and Step 2
+// tests stage theirs: aim placement of a Conduit was proved
+// in Slice 14 Step 1, and walking this layout in by aim
+// would prove walking, not wiring. What this demo cannot
+// show, by construction, is any adapter feel: no mesh tint
+// in a scene, no POWER line read aloud, and no M-key build
+// appear in a headless run, so the single-cable tint stays
+// in playtest-gate checklist item 35 and the direct-Conduit
+// count stays in item 36 (both Windows-only), not in the
+// numbers below — the numbers prove the queries, the items
+// prove the readings.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 17 Step 3 scenario — single-cable tint and direct-Conduit count agreeing in one wiring, save/load round-trip");
+var simS17 = new Simulation(42);
+void SeedPocketS17(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+simS17.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+simS17.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+simS17.World.Chunk.TrySet(12, 20, 10, BlockType.Conduit);
+SeedPocketS17(simS17.World, 10, 10);
+simS17.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+simS17.World.Chunk.TrySet(11, 20, 14, BlockType.Cable);
+simS17.World.Chunk.TrySet(12, 20, 14, BlockType.Cable);
+simS17.World.Chunk.TrySet(13, 20, 14, BlockType.Conduit);
+SeedPocketS17(simS17.World, 10, 14);
+simS17.World.Chunk.TrySet(10, 20, 18, BlockType.Dynamo);
+simS17.World.Chunk.TrySet(11, 20, 18, BlockType.Cable);
+simS17.World.Chunk.TrySet(12, 20, 18, BlockType.Conduit);
+simS17.World.Chunk.TrySet(10, 20, 22, BlockType.KineticMill);
+simS17.World.Chunk.TrySet(11, 20, 22, BlockType.Conduit);
+SeedPocketS17(simS17.World, 10, 22);
+simS17.World.Chunk.TrySet(10, 20, 26, BlockType.KineticMill);
+simS17.World.Chunk.TrySet(11, 20, 26, BlockType.Dynamo);
+SeedPocketS17(simS17.World, 10, 26);
+simS17.World.Chunk.TrySet(10, 20, 30, BlockType.Conduit);
+Console.WriteLine($"Slice 17 voltages before any tick: single-cable mill {simS17.World.DeliveredVoltage(10, 20, 10)}, two-cable mill {simS17.World.DeliveredVoltage(10, 20, 14)}, direct-Conduit mill {simS17.World.DeliveredVoltage(10, 20, 22)}, Dynamo mill {simS17.World.DeliveredVoltage(10, 20, 26)}");
+var s17HudBefore = simS17.Hud();
+Console.WriteLine($"Slice 17 HUD before: {s17HudBefore.PoweredMills}/{s17HudBefore.TotalMills} MILLS POWERED, WARNED: {s17HudBefore.WarnedMills} MILLS, POWER: {s17HudBefore.LiveNetworks} LIVE NETWORKS, {s17HudBefore.LoneSources} LONE SOURCES (0 live: both cable runs feed a mill, so no consumer count double-counts them; 2 lone: the direct Conduit beside its mill, Step 2, and the lone Conduit with no neighbour)");
+Console.WriteLine($"Slice 17 power states before: single-cable mill {simS17.World.PowerState(10, 20, 10)}, its cable {simS17.World.PowerState(11, 20, 10)} (Energised, Step 1: component liveness, not cell delivery), two-cable mill {simS17.World.PowerState(10, 20, 14)}, its cables {simS17.World.PowerState(11, 20, 14)}/{simS17.World.PowerState(12, 20, 14)} (both Energised, the already-tinted control), mixed cable {simS17.World.PowerState(11, 20, 18)} (None: a mixed component carries no voltage, so liveness resurrects nothing), direct-Conduit mill {simS17.World.PowerState(10, 20, 22)} (None: it is never fed), Dynamo mill {simS17.World.PowerState(10, 20, 26)} (Powered: LV direct, the feeding control)");
+simS17.World.Advance();
+var s17HudAfter1 = simS17.Hud();
+Console.WriteLine($"Slice 17 tick 1: single-cable mill cell now {simS17.World.Chunk.Get(10, 20, 10)}, two-cable mill cell now {simS17.World.Chunk.Get(10, 20, 14)} (both destroyed: HV mismatch), destroyed {simS17.World.DestroyedMills}, powered gathered {simS17.World.PoweredBlocksGathered}, kinetic gathered {simS17.World.KineticBlocksGathered}, direct-Conduit mill still {simS17.World.Chunk.Get(10, 20, 22)} (survives: it was never fed), POWER now {s17HudAfter1.LiveNetworks} LIVE NETWORKS, {s17HudAfter1.LoneSources} LONE SOURCES (the two destroyed mills' cable runs now feed nothing, so they count live; the direct Conduit still counts 1 lone inside the 2, as before the tick), single cable still {simS17.World.PowerState(11, 20, 10)}, two-cable cables still {simS17.World.PowerState(11, 20, 14)}/{simS17.World.PowerState(12, 20, 14)}, mixed cable still {simS17.World.PowerState(11, 20, 18)}");
+for (int tick = 2; tick <= 5; tick++) simS17.World.Advance();
+Console.WriteLine($"Slice 17 after 5 ticks: powered gathered {simS17.World.PoweredBlocksGathered} (Dynamo pocket exhausted, every tick), kinetic gathered {simS17.World.KineticBlocksGathered} (direct-Conduit mill, 1 in 5 ticks), destroyed {simS17.World.DestroyedMills}, stone {simS17.World.Player.Inventory.Get(BlockType.Stone)}");
+var saveS17 = simS17.SaveToJson();
+var simS17Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS17Loaded.LoadFromJson(saveS17)}");
+var s17LoadedHud = simS17Loaded.Hud();
+Console.WriteLine($"Slice 17 after load: single-cable mill cell {simS17Loaded.World.Chunk.Get(10, 20, 10)}, two-cable mill cell {simS17Loaded.World.Chunk.Get(10, 20, 14)} (both still gone, no resurrection), direct-Conduit mill {simS17Loaded.World.Chunk.Get(10, 20, 22)}, Dynamo mill {simS17Loaded.World.Chunk.Get(10, 20, 26)}, power {s17LoadedHud.PoweredMills}/{s17LoadedHud.TotalMills} mills, WARNED {s17LoadedHud.WarnedMills}, POWER: {s17LoadedHud.LiveNetworks} LIVE NETWORKS, {s17LoadedHud.LoneSources} LONE SOURCES (both readings re-derived, not saved: the single cable still {simS17Loaded.World.PowerState(11, 20, 10)}, the mixed cable still {simS17Loaded.World.PowerState(11, 20, 18)}, the direct mill still {simS17Loaded.World.PowerState(10, 20, 22)}, the Dynamo mill still {simS17Loaded.World.PowerState(10, 20, 26)}), session counters reset: powered {simS17Loaded.World.PoweredBlocksGathered}, kinetic {simS17Loaded.World.KineticBlocksGathered}, destroyed {simS17Loaded.World.DestroyedMills}, stone {simS17Loaded.World.Player.Inventory.Get(BlockType.Stone)}, player at ({simS17Loaded.World.Player.X},{simS17Loaded.World.Player.Y},{simS17Loaded.World.Player.Z})");
+SeedPocketS17(simS17Loaded.World, 10, 26);
+for (int i = 0; i < 5; i++) simS17Loaded.World.Advance();
+Console.WriteLine($"Slice 17 loaded phase after 5 ticks: powered gathered {simS17Loaded.World.PoweredBlocksGathered} (5 again, pocket re-seeded), kinetic gathered {simS17Loaded.World.KineticBlocksGathered} (1 again), destroyed {simS17Loaded.World.DestroyedMills} (no new destruction), stone {simS17Loaded.World.Player.Inventory.Get(BlockType.Stone)}");
+Console.WriteLine($"Slice 17 done: powered {simS17.World.PoweredBlocksGathered} + loaded {simS17Loaded.World.PoweredBlocksGathered}, kinetic {simS17.World.KineticBlocksGathered} + loaded {simS17Loaded.World.KineticBlocksGathered}, destroyed {simS17.World.DestroyedMills}, save JSON length: {saveS17.Length} chars");

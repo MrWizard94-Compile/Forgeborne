@@ -6673,6 +6673,167 @@ a non-delivering consumer-adjacent source counts as lone
   scenario plus documentation-only review closing
   Slice 17, decided in that step.
 
+## 0.76.0 — Slice 17 Step 3: composed demo plus
+documentation-only review, closing Slice 17
+
+- State found on entry: remote main head
+  942e75ff042bd051f58c84b20b8fa9f353cf4bd3,
+  CHANGELOG 0.75.0 (Slice 17 Step 2), sync record
+  ending at that commit, local working copy
+  matched — no step was repeated: the 0.75.0
+  decision named Slice 17 Step 3, the composed
+  demo scenario plus documentation-only review
+  closing Slice 17, decided in that step, and
+  this run did exactly that. Tests 2227 baseline
+  re-run passing; demo Slice 15 save 44,016
+  chars. (The local run log's top entry was
+  still 0.74.0, but the sync record and the
+  remote head both confirmed 0.75.0 as pushed,
+  so no step was re-implemented.)
+- Composition, decided in this step: one
+  Simulation, six rows on the y=20 plane four
+  cells apart in z, so no row can leak voltage
+  into another through a face-adjacent
+  neighbour — and every aggregate in the demo
+  is a total over all six rows, not a per-row
+  reading, because the composed claim is
+  exactly that the two decided readings agree
+  in one wiring, not that each reads correctly
+  in isolation (Steps 1 and 2 already proved
+  that). The rows are: single-cable Conduit run
+  to a mill (Step 1); two-cable Conduit run to
+  a mill (already-tinted control); mixed-voltage
+  Dynamo-plus-Conduit cable with no consumer
+  (still-untinted control); mill directly beside
+  a Conduit (Step 2); mill fed LV directly by a
+  Dynamo (feeding control); lone Conduit with
+  no neighbour (lone control). Pockets are
+  five-stone for every mill row, in the same
+  pattern as Slice 14 (west, above, below,
+  north, south — never the east cell, which
+  holds the cable, Conduit, or Dynamo), so the
+  powered and kinetic cadences are proved in
+  composition exactly as in Slice 14, not
+  assumed from the steps.
+- Why no enemy and no pylon in this demo,
+  stated explicitly: the scope's minimum demo
+  requires the mill's destruction as the
+  live-network evidence beside the tint
+  reading, and a pylon would prove firing, not
+  agreement between the two queries. A pylon
+  proof already exists in Slice 14 (and in
+  Step 1's delivery-unchanged proofs), so
+  adding one here would lengthen the demo
+  without strengthening the composed claim —
+  and an enemy moving toward the player at
+  (16,5,16) across a y=20 layout would add a
+  moving part to a wiring demo. The absence is
+  a scope judgement, not a gap: if a later
+  reader wants a pylon beside the tint in one
+  wiring, that is a new demo, not a correction
+  to this one.
+- Why the POWER numbers read as they do, so
+  they are not misquoted later: before any
+  tick, 0 LIVE is a proof, not an empty
+  reading — both cable runs feed a mill, so
+  neither counts live, and counting either
+  would double-count a delivery the consumer
+  counts already show. After tick 1, 2 LIVE is
+  the two destroyed mills' runs, which now
+  feed nothing; the lone number does not move
+  (2 before, 2 after, 2 after load), because
+  the direct Conduit survives its mill's
+  neighbour tick and the lone Conduit is
+  untouched — a lone number that moved on a
+  destruction tick would mean a source had
+  been destroyed, and none was. The direct
+  Conduit's contribution inside the 2 is proved
+  by the Step 2 tests, not by the total alone:
+  the demo total cannot separate the direct
+  Conduit from the lone Conduit, and this entry
+  does not pretend it can — the composed tests
+  assert the total, and the Step 2 tests assert
+  the per-source rule the total sums.
+- Why the loaded phase re-seeds only the Dynamo
+  pocket: the Dynamo pocket is exhausted after
+  5 powered ticks, so without re-seeding the
+  loaded phase would prove powered gathering 0,
+  which proves exhaustion, not repeatability.
+  The direct mill's pocket is not re-seeded,
+  because it still holds four stones after its
+  one kinetic gather, and its loaded kinetic
+  gather (the next stone in neighbour order)
+  proves the cadence repeats without a fresh
+  pocket — re-seeding it would hide whether
+  the loaded mill gathers from what survived.
+  Loaded stone 12 (6 carried plus 5 powered
+  plus 1 kinetic) is therefore a repeatability
+  proof, not a fresh-layout proof.
+- Test-file placement, stated so the next run
+  does not repeat the Slice 13 Step 4 repair:
+  the 74 composed assertions were inserted
+  before the test runner's summary and return,
+  not appended after them, and the suite rise
+  from 2227 to 2301 is the check that they
+  execute. One compile collision was fixed as
+  a test fix, not a code fix: the composed
+  section's loaded Simulation was first named
+  s17Loaded, already used by Step 1's save/load
+  tests in the same top-level scope, so it was
+  renamed s17Step3Loaded in the composed
+  section only — no Step 1 assertion changed.
+- Checklist relation: no new checklist item
+  was added, because the review exercises no
+  query the checklist does not already cover —
+  item 35 already observes the decided tint and
+  item 36 already observes the decided count,
+  and a review item observing the review would
+  be a checklist entry about a document, not
+  about a scene. The next free playtest-gate
+  number remains 37. Item 35's supersession of
+  item 28's honest-observation clause is for
+  the decided tint case only, and item 36's
+  extension of items 22 and 28 is restated in
+  the review, not moved by it.
+- Save length, stated so the coincidence is
+  not misread: the new Slice 17 scenario save
+  is 43,974 chars, the same length as several
+  earlier saves (Slices 5, 8, 10, 12, and 14).
+  That is a format coincidence only — a
+  different save, with different chunk bytes
+  (two destroyed mills, six rows) — and it is
+  quoted in the CHANGELOG and the review as
+  the Slice 17 entry, never as a change to an
+  earlier entry. A changed earlier save length
+  would have meant a save rule moved; none
+  did, and both Slice 17 readings are derived,
+  never saved, so the unchanged earlier lengths
+  are consistent with the decisions.
+- Deliberately not moved in this step: no
+  delivery, precedence, conflict, rating, cost,
+  or phase rule; no material, shader, marker,
+  light, fog, or view model value; no new HUD
+  line, word, colour, or layout; no new block,
+  kind, doctrine, source, or consumer; no
+  balance pass; no Slice 18 scope; and no claim
+  of Unity verification — items 35 and 36 are
+  observations to be made on Windows, not
+  results this headless run can close.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 18 as its own decision
+  step, chosen from the ranked candidates this
+  review carries (patrol route limits and the
+  free deploy primitive first, Slice 13 remainders
+  as observations second, first-pass graphics
+  retuning on Windows evidence third) — not
+  promised here, and not scoped in this step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

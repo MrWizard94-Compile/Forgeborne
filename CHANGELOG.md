@@ -1,5 +1,109 @@
 # Forgeborne — Changelog
 
+## 0.76.0 — 2026-10-31 — Slice 17 Step 3: composed demo
+plus documentation-only review, closing Slice 17
+
+- Step, decided in this step (rationale in
+  DECISIONS.md): the composed demo scenario
+  plus documentation-only review closing Slice
+  17, as the Slice 17 scope requires. No new
+  core system, no new query, no adapter edit,
+  no checklist item, by design; Slice 18 is
+  NOT scoped here.
+- Demo, decided in this step (rationale in
+  DECISIONS.md): demo/Forgeborne.Demo gains a
+  Slice 17 Step 3 scenario after the Slice 15
+  scenario — one Simulation, six rows on the
+  y=20 plane four cells apart in z, so no row
+  can leak voltage into another: a single-cable
+  Conduit run to a mill (Step 1 case, cable
+  Energised, mill Mismatched and destroyed on
+  tick 1); a two-cable Conduit run to a mill
+  (already-tinted control, both cables
+  Energised, mill also destroyed on tick 1); a
+  mixed-voltage Dynamo-plus-Conduit cable
+  component with no consumer (still-untinted
+  control, cable None); a mill directly beside
+  a Conduit (Step 2 case, mill None, surviving,
+  Conduit counting as one lone source, POWER
+  line read before and after); a mill fed LV
+  directly by a Dynamo (feeding control,
+  Powered, gathering every tick, counting
+  neither live nor lone); and a lone Conduit
+  with no neighbour (lone control, the second
+  lone source). No enemy is staged: the mill
+  destruction is the live-network evidence
+  beside the tint reading, as the scope
+  requires, and a pylon proof would prove
+  firing, not agreement between the two
+  queries.
+- Composed numbers, pinned so they are not
+  over-claimed later: before any tick, 1/4
+  mills powered, 2 warned, POWER 0 LIVE
+  NETWORKS, 2 LONE SOURCES (0 live is itself
+  a proof — both cable runs feed a mill, so
+  neither counts live and no consumer count is
+  double-counted; 2 lone is the direct Conduit
+  plus the lone Conduit, and only those two).
+  Tick 1: both cable-fed mills Air, destroyed
+  2, powered gathered 1, kinetic gathered 0,
+  direct-Conduit mill survives, POWER 2 LIVE,
+  2 LONE (the two destroyed runs now feed
+  nothing, so they count live; the lone number
+  does not move). After 5 ticks: powered
+  gathered 5 (Dynamo pocket exhausted), kinetic
+  gathered 1 (direct-Conduit mill, 1 in 5
+  ticks), destroyed 2, stone 6. After load:
+  both destroyed mills stay Air, direct and
+  Dynamo mills load, POWER still 2 LIVE, 2
+  LONE, single cable still Energised, mixed
+  cable still None, direct mill still None,
+  Dynamo mill still Powered — both readings
+  re-derived, not saved — counters reset
+  (powered 0, kinetic 0, destroyed 0), stone
+  stays 6, player at (16,5,16). Loaded phase,
+  Dynamo pocket re-seeded: powered gathered 5
+  again, kinetic gathered 1 again, destroyed 0,
+  stone 12.
+- Tests: 2301 passed, 0 failed (was 2227; +74
+  composed-integration assertions mirroring
+  the demo, inserted before the test runner's
+  summary so they execute — the Slice 13 Step
+  4 lesson — with no failures on the final
+  runs). Demo: all earlier demo saves as in
+  the 0.75.0 entry (Slice 1 43,881; Slice 2
+  43,921; Step 1 44,016; Step 3 44,103; Slice 4
+  44,026; Slice 5 43,974; Slice 6 44,024; Slice
+  7 44,013; Slice 8 43,974; Slice 9 43,975;
+  Slice 10 43,974; Slice 11 44,038; Slice 12
+  43,974; Slice 13 44,045; Slice 14 43,974;
+  Slice 15 44,016). New scenario save 43,974
+  chars, quoted as its own entry, not as a
+  change to any earlier save (it matches
+  several earlier lengths by format coincidence
+  only, a different save).
+- Review: new docs/slice-17-review.md (gate
+  checked against the scope, verdict: reviewed
+  and closed as two display queries decided
+  with tests and proved together in one wiring,
+  not playtested, not Unity-verified, gaps
+  carried in priority order, no new
+  playtest-gate checklist item — next free
+  number remains 37). Checklist relations
+  restated, not moved: item 35 supersedes
+  item 28's honest-observation clause for the
+  decided tint case only, item 36 extends
+  items 22 and 28, and neither new item claims
+  the other's observation.
+- Next, in order: scoping Slice 18 as its own
+  decision step, chosen from the ranked
+  candidates this review carries (patrol route
+  limits and the free deploy primitive first,
+  Slice 13 remainders as observations second,
+  first-pass graphics retuning on Windows
+  evidence third) — not promised here, and not
+  scoped in this step.
+
 ## 0.75.0 — 2026-10-30 — Slice 17 Step 2: direct-Conduit count query decided
 
 - Decision, decided in this step (rationale in

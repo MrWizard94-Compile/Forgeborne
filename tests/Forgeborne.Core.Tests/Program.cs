@@ -5915,5 +5915,125 @@ Eq(1, s17cLoaded.Hud().LoneSources, "slice17 step2 hud carries the direct condui
 Eq(0, s17cLoaded.Hud().PoweredMills, "slice17 step2 direct conduit mill is still not powered after load");
 Eq(1, s17cLoaded.Hud().TotalMills, "slice17 step2 direct conduit mill still totals one mill after load");
 
+// ---- Slice 17 Step 3 composed integration: the demo layout as
+// tests, so the demo numbers are proved, not just printed.
+// One Simulation carries the Step 1 single-cable run, the
+// two-cable control, the mixed-voltage control, the Step 2
+// direct-Conduit mill, the Dynamo-fed control mill, and the
+// lone Conduit together through ticks and a save/load
+// round-trip. Rows are four cells apart in z, so no row can
+// leak voltage into another through a face-adjacent
+// neighbour, and every aggregate below is a total over all
+// six rows, not a per-row reading — the composed claim is
+// exactly that the two decided readings agree in one wiring.
+var s17Sim = new Simulation(42);
+void SeedPocketS17Test(WorldZone w, int mx, int mz)
+{
+    foreach (var (x, y, z) in new[] { (mx - 1, 20, mz), (mx, 21, mz), (mx, 19, mz), (mx, 20, mz - 1), (mx, 20, mz + 1) })
+        w.Chunk.TrySet(x, y, z, BlockType.Stone);
+}
+s17Sim.World.Chunk.TrySet(10, 20, 10, BlockType.KineticMill);
+s17Sim.World.Chunk.TrySet(11, 20, 10, BlockType.Cable);
+s17Sim.World.Chunk.TrySet(12, 20, 10, BlockType.Conduit);
+SeedPocketS17Test(s17Sim.World, 10, 10);
+s17Sim.World.Chunk.TrySet(10, 20, 14, BlockType.KineticMill);
+s17Sim.World.Chunk.TrySet(11, 20, 14, BlockType.Cable);
+s17Sim.World.Chunk.TrySet(12, 20, 14, BlockType.Cable);
+s17Sim.World.Chunk.TrySet(13, 20, 14, BlockType.Conduit);
+SeedPocketS17Test(s17Sim.World, 10, 14);
+s17Sim.World.Chunk.TrySet(10, 20, 18, BlockType.Dynamo);
+s17Sim.World.Chunk.TrySet(11, 20, 18, BlockType.Cable);
+s17Sim.World.Chunk.TrySet(12, 20, 18, BlockType.Conduit);
+s17Sim.World.Chunk.TrySet(10, 20, 22, BlockType.KineticMill);
+s17Sim.World.Chunk.TrySet(11, 20, 22, BlockType.Conduit);
+SeedPocketS17Test(s17Sim.World, 10, 22);
+s17Sim.World.Chunk.TrySet(10, 20, 26, BlockType.KineticMill);
+s17Sim.World.Chunk.TrySet(11, 20, 26, BlockType.Dynamo);
+SeedPocketS17Test(s17Sim.World, 10, 26);
+s17Sim.World.Chunk.TrySet(10, 20, 30, BlockType.Conduit);
+Eq(Voltage.HV, s17Sim.World.DeliveredVoltage(10, 20, 10), "slice17 step3 composed single-cable mill voltage HV");
+Eq(Voltage.HV, s17Sim.World.DeliveredVoltage(10, 20, 14), "slice17 step3 composed two-cable mill voltage HV");
+Eq(Voltage.None, s17Sim.World.DeliveredVoltage(10, 20, 22), "slice17 step3 composed direct-conduit mill voltage None");
+Eq(Voltage.LV, s17Sim.World.DeliveredVoltage(10, 20, 26), "slice17 step3 composed dynamo mill voltage LV");
+Check(s17Sim.World.IsMismatched(10, 20, 10), "slice17 step3 composed single-cable mill is mismatched");
+Check(s17Sim.World.IsMismatched(10, 20, 14), "slice17 step3 composed two-cable mill is mismatched");
+Check(!s17Sim.World.IsPowered(10, 20, 22), "slice17 step3 composed direct-conduit mill is not powered");
+Check(!s17Sim.World.IsMismatched(10, 20, 22), "slice17 step3 composed direct-conduit mill is not mismatched");
+Check(s17Sim.World.IsPowered(10, 20, 26), "slice17 step3 composed dynamo mill is powered");
+Eq(CellPowerState.Mismatched, s17Sim.World.PowerState(10, 20, 10), "slice17 step3 composed single-cable mill state Mismatched");
+Eq(CellPowerState.Energised, s17Sim.World.PowerState(11, 20, 10), "slice17 step3 composed single cable state Energised");
+Eq(CellPowerState.Mismatched, s17Sim.World.PowerState(10, 20, 14), "slice17 step3 composed two-cable mill state Mismatched");
+Eq(CellPowerState.Energised, s17Sim.World.PowerState(11, 20, 14), "slice17 step3 composed two-cable run first cable Energised");
+Eq(CellPowerState.Energised, s17Sim.World.PowerState(12, 20, 14), "slice17 step3 composed two-cable run second cable Energised");
+Eq(CellPowerState.None, s17Sim.World.PowerState(11, 20, 18), "slice17 step3 composed mixed cable state None");
+Eq(CellPowerState.None, s17Sim.World.PowerState(10, 20, 22), "slice17 step3 composed direct-conduit mill state None");
+Eq(CellPowerState.Powered, s17Sim.World.PowerState(10, 20, 26), "slice17 step3 composed dynamo mill state Powered");
+Eq(CellPowerState.None, s17Sim.World.PowerState(12, 20, 10), "slice17 step3 composed single-run conduit state None by decision");
+Eq(CellPowerState.None, s17Sim.World.PowerState(11, 20, 22), "slice17 step3 composed direct conduit state None by decision");
+Eq(CellPowerState.None, s17Sim.World.PowerState(10, 20, 30), "slice17 step3 composed lone conduit state None by decision");
+Eq((0, 2), s17Sim.World.LivePowerCounts(), "slice17 step3 composed counts before the tick are 0 live, 2 lone");
+var s17HudBefore = s17Sim.Hud();
+Eq(1, s17HudBefore.PoweredMills, "slice17 step3 composed one mill powered before the tick");
+Eq(4, s17HudBefore.TotalMills, "slice17 step3 composed four mills total before the tick");
+Eq(2, s17HudBefore.WarnedMills, "slice17 step3 composed two mills warned before the tick");
+Eq(0, s17HudBefore.LiveNetworks, "slice17 step3 composed no live network before the tick: both cable runs feed a mill");
+Eq(2, s17HudBefore.LoneSources, "slice17 step3 composed two lone sources before the tick: direct conduit and lone conduit");
+Eq(0, s17Sim.World.Player.Inventory.Get(BlockType.Stone), "slice17 step3 composed stone starts at 0");
+s17Sim.World.Advance();
+Eq(BlockType.Air, s17Sim.World.Chunk.Get(10, 20, 10), "slice17 step3 composed single-cable mill destroyed on tick 1");
+Eq(BlockType.Air, s17Sim.World.Chunk.Get(10, 20, 14), "slice17 step3 composed two-cable mill destroyed on tick 1");
+Eq(2, s17Sim.World.DestroyedMills, "slice17 step3 composed two mills destroyed after tick 1");
+Eq(1, s17Sim.World.PoweredBlocksGathered, "slice17 step3 composed powered gathered 1 after tick 1");
+Eq(0, s17Sim.World.KineticBlocksGathered, "slice17 step3 composed kinetic gathered 0 after tick 1");
+Eq(BlockType.KineticMill, s17Sim.World.Chunk.Get(10, 20, 22), "slice17 step3 composed direct-conduit mill survives tick 1");
+Eq(CellPowerState.Energised, s17Sim.World.PowerState(11, 20, 10), "slice17 step3 composed single cable still Energised after tick 1");
+Eq(CellPowerState.Energised, s17Sim.World.PowerState(11, 20, 14), "slice17 step3 composed two-cable run first cable still Energised after tick 1");
+Eq(CellPowerState.Energised, s17Sim.World.PowerState(12, 20, 14), "slice17 step3 composed two-cable run second cable still Energised after tick 1");
+Eq(CellPowerState.None, s17Sim.World.PowerState(11, 20, 18), "slice17 step3 composed mixed cable still None after tick 1");
+var s17HudAfter1 = s17Sim.Hud();
+Eq(1, s17HudAfter1.PoweredMills, "slice17 step3 composed one mill powered after tick 1");
+Eq(2, s17HudAfter1.TotalMills, "slice17 step3 composed two mills total after tick 1");
+Eq(0, s17HudAfter1.WarnedMills, "slice17 step3 composed no mill warned after tick 1");
+Eq(2, s17HudAfter1.LiveNetworks, "slice17 step3 composed two live networks after tick 1: both destroyed mills' runs now feed nothing");
+Eq(2, s17HudAfter1.LoneSources, "slice17 step3 composed still two lone sources after tick 1: the direct conduit survives its mill's neighbour tick");
+for (int s17Tick = 0; s17Tick < 4; s17Tick++) s17Sim.World.Advance();
+Eq(5, s17Sim.World.PoweredBlocksGathered, "slice17 step3 composed powered gathered 5 after 5 ticks");
+Eq(1, s17Sim.World.KineticBlocksGathered, "slice17 step3 composed kinetic gathered 1 after 5 ticks");
+Eq(2, s17Sim.World.DestroyedMills, "slice17 step3 composed destroyed stays 2 after 5 ticks");
+Eq(6, s17Sim.World.Player.Inventory.Get(BlockType.Stone), "slice17 step3 composed stone 6 after 5 ticks");
+var s17Save = s17Sim.SaveToJson();
+var s17Step3Loaded = new Simulation(99);
+Check(s17Step3Loaded.LoadFromJson(s17Save), "slice17 step3 composed save loads");
+Eq(BlockType.Air, s17Step3Loaded.World.Chunk.Get(10, 20, 10), "slice17 step3 composed single-cable mill stays gone after load");
+Eq(BlockType.Air, s17Step3Loaded.World.Chunk.Get(10, 20, 14), "slice17 step3 composed two-cable mill stays gone after load");
+Eq(BlockType.KineticMill, s17Step3Loaded.World.Chunk.Get(10, 20, 22), "slice17 step3 composed direct-conduit mill loads");
+Eq(BlockType.KineticMill, s17Step3Loaded.World.Chunk.Get(10, 20, 26), "slice17 step3 composed dynamo mill loads");
+Eq(BlockType.Conduit, s17Step3Loaded.World.Chunk.Get(12, 20, 10), "slice17 step3 composed single-run conduit loads");
+Eq(BlockType.Conduit, s17Step3Loaded.World.Chunk.Get(11, 20, 22), "slice17 step3 composed direct conduit loads");
+Eq(BlockType.Conduit, s17Step3Loaded.World.Chunk.Get(10, 20, 30), "slice17 step3 composed lone conduit loads");
+var s17Step3LoadedHud = s17Step3Loaded.Hud();
+Eq(1, s17Step3LoadedHud.PoweredMills, "slice17 step3 composed one mill powered after load");
+Eq(2, s17Step3LoadedHud.TotalMills, "slice17 step3 composed two mills total after load");
+Eq(0, s17Step3LoadedHud.WarnedMills, "slice17 step3 composed no mill warned after load");
+Eq(2, s17Step3LoadedHud.LiveNetworks, "slice17 step3 composed two live networks after load");
+Eq(2, s17Step3LoadedHud.LoneSources, "slice17 step3 composed two lone sources after load: both readings re-derive");
+Eq(CellPowerState.Energised, s17Step3Loaded.World.PowerState(11, 20, 10), "slice17 step3 composed single cable state Energised after load");
+Eq(CellPowerState.Energised, s17Step3Loaded.World.PowerState(11, 20, 14), "slice17 step3 composed two-cable run first cable Energised after load");
+Eq(CellPowerState.None, s17Step3Loaded.World.PowerState(11, 20, 18), "slice17 step3 composed mixed cable state None after load");
+Eq(CellPowerState.None, s17Step3Loaded.World.PowerState(10, 20, 22), "slice17 step3 composed direct-conduit mill state None after load");
+Eq(CellPowerState.Powered, s17Step3Loaded.World.PowerState(10, 20, 26), "slice17 step3 composed dynamo mill state Powered after load");
+Eq(0, s17Step3Loaded.World.PoweredBlocksGathered, "slice17 step3 composed powered counter resets on load");
+Eq(0, s17Step3Loaded.World.KineticBlocksGathered, "slice17 step3 composed kinetic counter resets on load");
+Eq(0, s17Step3Loaded.World.DestroyedMills, "slice17 step3 composed destroyed counter resets on load");
+Eq(6, s17Step3Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice17 step3 composed stone stays 6 on load");
+Eq(16, s17Step3Loaded.World.Player.X, "slice17 step3 composed player X after load");
+Eq(16, s17Step3Loaded.World.Player.Z, "slice17 step3 composed player Z after load");
+SeedPocketS17Test(s17Step3Loaded.World, 10, 26);
+for (int s17Tick = 0; s17Tick < 5; s17Tick++) s17Step3Loaded.World.Advance();
+Eq(5, s17Step3Loaded.World.PoweredBlocksGathered, "slice17 step3 composed loaded powered gathered 5 again");
+Eq(1, s17Step3Loaded.World.KineticBlocksGathered, "slice17 step3 composed loaded kinetic gathered 1 again");
+Eq(0, s17Step3Loaded.World.DestroyedMills, "slice17 step3 composed loaded destroyed stays 0");
+Eq(12, s17Step3Loaded.World.Player.Inventory.Get(BlockType.Stone), "slice17 step3 composed loaded stone 12");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;
