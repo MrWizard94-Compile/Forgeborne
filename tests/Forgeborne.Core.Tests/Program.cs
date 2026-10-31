@@ -7234,5 +7234,276 @@ Check(s20PaidWorld.TryDeployPaidSquad(10, 5, 10, TacticalDoctrine.DefendCore, Sq
 Eq(10, s20PaidWorld.Player.Inventory.Get(BlockType.EmberOre), "slice20 re-rally paid test refused fourth deploy charges nothing");
 Eq(30, s20PaidPatrol.RallyX, "slice20 re-rally paid test patrol keeps its new rally after the cap refusal");
 
+// ---- Slice 20 Step 2: composed demo + review, closing Slice 20 (0.86.0) ----
+// One Simulation composing the Step 1 decision with its
+// controls through the paid path only, mirroring the demo
+// scenario exactly: a Heavy HoldGround marched away first,
+// a Recon Patrol marched to its rally and walking its loop,
+// then a Vanguard Patrol deployed at the player cell in the
+// route-blocked shape (west, south, and north walls, east
+// open) that counts five refusals and reads Stuck, unmoved,
+// while the other two keep their readings; then a
+// stuck-before-save load copy, the two fail-closed
+// refusals, the free re-rally, a refused fourth deploy at
+// the full cap, the six-tick march to the new rally, the
+// turn onto the new loop, and a save/load round-trip that
+// loads the new rally. No new core system, no adapter
+// edit, and no checklist item is added by this step: item
+// 39 already observes the action, and this step only
+// proves it together with its controls in one field.
+var s20Step2Sim = new Simulation(42);
+s20Step2Sim.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+s20Step2Sim.BeginOrbitalPick();
+Check(s20Step2Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround), "slice20 step2 composed hold doctrine selected");
+Check(s20Step2Sim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice20 step2 composed hold kind selected");
+Check(s20Step2Sim.SetOrbitalRally(10, 5, 10), "slice20 step2 composed hold rally set");
+var s20Step2Hold = s20Step2Sim.ConfirmOrbitalDeploy();
+Check(s20Step2Hold != null, "slice20 step2 composed hold deploys paid");
+Eq(TacticalDoctrine.HoldGround, s20Step2Hold!.Doctrine, "slice20 step2 composed hold keeps holdground doctrine");
+Eq(SquadKind.Heavy, s20Step2Hold.Kind, "slice20 step2 composed hold keeps heavy kind");
+Eq(20, s20Step2Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice20 step2 composed hold charges 10 ore");
+Eq(16, s20Step2Hold.X, "slice20 step2 composed hold deploys at the player X");
+Eq(16, s20Step2Hold.Z, "slice20 step2 composed hold deploys at the player Z");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s20Step2Sim.World)[0].Activity, "slice20 step2 composed hold reads marching before any tick");
+s20Step2Sim.World.Advance();
+Eq(15, s20Step2Hold.X, "slice20 step2 composed hold march tick 1 X");
+Eq(16, s20Step2Hold.Z, "slice20 step2 composed hold march tick 1 Z");
+s20Step2Sim.World.Advance();
+Eq(15, s20Step2Hold.X, "slice20 step2 composed hold march tick 2 X");
+Eq(15, s20Step2Hold.Z, "slice20 step2 composed hold march tick 2 Z");
+s20Step2Sim.World.Advance();
+Eq(14, s20Step2Hold.X, "slice20 step2 composed hold march tick 3 X");
+Eq(15, s20Step2Hold.Z, "slice20 step2 composed hold march tick 3 Z");
+s20Step2Sim.World.Advance();
+Eq(14, s20Step2Hold.X, "slice20 step2 composed hold march tick 4 X");
+Eq(14, s20Step2Hold.Z, "slice20 step2 composed hold march tick 4 Z");
+s20Step2Sim.World.Advance();
+Eq(13, s20Step2Hold.X, "slice20 step2 composed hold march tick 5 X");
+Eq(14, s20Step2Hold.Z, "slice20 step2 composed hold march tick 5 Z");
+s20Step2Sim.World.Advance();
+Eq(13, s20Step2Hold.X, "slice20 step2 composed hold march tick 6 X");
+Eq(13, s20Step2Hold.Z, "slice20 step2 composed hold march tick 6 Z");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s20Step2Sim.World)[0].Activity, "slice20 step2 composed hold still reads marching after 6 ticks");
+s20Step2Sim.BeginOrbitalPick();
+Check(s20Step2Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol), "slice20 step2 composed patrol doctrine selected");
+Check(s20Step2Sim.OrbitalCommand.SelectKind(SquadKind.Recon), "slice20 step2 composed patrol kind selected");
+Check(s20Step2Sim.SetOrbitalRally(20, 5, 20), "slice20 step2 composed patrol rally set");
+var s20Step2Patrol = s20Step2Sim.ConfirmOrbitalDeploy();
+Check(s20Step2Patrol != null, "slice20 step2 composed patrol deploys paid");
+Eq(TacticalDoctrine.Patrol, s20Step2Patrol!.Doctrine, "slice20 step2 composed patrol keeps patrol doctrine");
+Eq(SquadKind.Recon, s20Step2Patrol.Kind, "slice20 step2 composed patrol keeps recon kind");
+Eq(10, s20Step2Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice20 step2 composed patrol charges 10 ore");
+Eq(16, s20Step2Patrol.X, "slice20 step2 composed patrol deploys at the player X");
+Eq(16, s20Step2Patrol.Z, "slice20 step2 composed patrol deploys at the player Z");
+s20Step2Sim.World.Advance();
+Eq(12, s20Step2Hold.X, "slice20 step2 composed patrol march tick 1 hold X");
+Eq(13, s20Step2Hold.Z, "slice20 step2 composed patrol march tick 1 hold Z");
+Eq(17, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 1 patrol X");
+Eq(16, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 1 patrol Z");
+Eq(0, s20Step2Patrol.PatrolWaypointIndex, "slice20 step2 composed patrol march tick 1 patrol waypoint");
+s20Step2Sim.World.Advance();
+Eq(12, s20Step2Hold.X, "slice20 step2 composed patrol march tick 2 hold X");
+Eq(12, s20Step2Hold.Z, "slice20 step2 composed patrol march tick 2 hold Z");
+Eq(17, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 2 patrol X");
+Eq(17, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 2 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(11, s20Step2Hold.X, "slice20 step2 composed patrol march tick 3 hold X");
+Eq(12, s20Step2Hold.Z, "slice20 step2 composed patrol march tick 3 hold Z");
+Eq(18, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 3 patrol X");
+Eq(17, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 3 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(11, s20Step2Hold.X, "slice20 step2 composed patrol march tick 4 hold X");
+Eq(11, s20Step2Hold.Z, "slice20 step2 composed patrol march tick 4 hold Z");
+Eq(18, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 4 patrol X");
+Eq(18, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 4 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(10, s20Step2Hold.X, "slice20 step2 composed patrol march tick 5 hold X");
+Eq(11, s20Step2Hold.Z, "slice20 step2 composed patrol march tick 5 hold Z");
+Eq(SquadActivity.Marching, OrbitalView.Snapshot(s20Step2Sim.World)[0].Activity, "slice20 step2 composed patrol march tick 5 hold still reads marching");
+Eq(19, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 5 patrol X");
+Eq(18, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 5 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(10, s20Step2Hold.X, "slice20 step2 composed patrol march tick 6 hold X");
+Eq(10, s20Step2Hold.Z, "slice20 step2 composed patrol march tick 6 hold Z");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s20Step2Sim.World)[0].Activity, "slice20 step2 composed patrol march tick 6 hold reads holding at its rally");
+Eq(19, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 6 patrol X");
+Eq(19, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 6 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(20, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 7 patrol X");
+Eq(19, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 7 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(20, s20Step2Patrol.X, "slice20 step2 composed patrol march tick 8 patrol reaches its rally X");
+Eq(20, s20Step2Patrol.Z, "slice20 step2 composed patrol march tick 8 patrol reaches its rally Z");
+Eq(0, s20Step2Patrol.PatrolWaypointIndex, "slice20 step2 composed patrol march tick 8 patrol waypoint at the rally");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2Sim.World)[1].Activity, "slice20 step2 composed patrol march tick 8 patrol reads patrolling at its rally");
+s20Step2Sim.BeginOrbitalPick();
+Check(s20Step2Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol), "slice20 step2 composed stuck doctrine selected");
+Check(s20Step2Sim.OrbitalCommand.SelectKind(SquadKind.Vanguard), "slice20 step2 composed stuck kind selected");
+Check(s20Step2Sim.SetOrbitalRally(12, 5, 16), "slice20 step2 composed stuck rally set");
+var s20Step2Stuck = s20Step2Sim.ConfirmOrbitalDeploy();
+Check(s20Step2Stuck != null, "slice20 step2 composed stuck deploys paid");
+Eq(TacticalDoctrine.Patrol, s20Step2Stuck!.Doctrine, "slice20 step2 composed stuck keeps patrol doctrine");
+Eq(SquadKind.Vanguard, s20Step2Stuck.Kind, "slice20 step2 composed stuck keeps vanguard kind");
+Eq(0, s20Step2Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice20 step2 composed stuck charges the last 10 ore");
+Eq(3, s20Step2Sim.World.Squads.Count, "slice20 step2 composed three paid squads fielded, cap full");
+Eq(16, s20Step2Stuck.X, "slice20 step2 composed stuck deploys at the player X");
+Eq(16, s20Step2Stuck.Z, "slice20 step2 composed stuck deploys at the player Z");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2Sim.World)[2].Activity, "slice20 step2 composed stuck reads patrolling before its circuit");
+Check(s20Step2Sim.World.Chunk.TrySet(15, 5, 16, BlockType.Stone), "slice20 step2 composed test stages the west enclosure wall");
+Check(s20Step2Sim.World.Chunk.TrySet(16, 5, 17, BlockType.Stone), "slice20 step2 composed test stages the south enclosure wall");
+Check(s20Step2Sim.World.Chunk.TrySet(16, 5, 15, BlockType.Stone), "slice20 step2 composed test stages the north enclosure wall");
+Eq(BlockType.Air, s20Step2Sim.World.Chunk.Get(17, 5, 16), "slice20 step2 composed test east step cell stays open");
+s20Step2Sim.World.Advance();
+Eq(21, s20Step2Patrol.X, "slice20 step2 composed stuck tick 1 patrol X");
+Eq(20, s20Step2Patrol.Z, "slice20 step2 composed stuck tick 1 patrol Z");
+Eq(1, s20Step2Patrol.PatrolWaypointIndex, "slice20 step2 composed stuck tick 1 patrol waypoint is east");
+Eq(16, s20Step2Stuck.X, "slice20 step2 composed stuck tick 1 stuck X");
+Eq(16, s20Step2Stuck.Z, "slice20 step2 composed stuck tick 1 stuck Z");
+Eq(1, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed stuck tick 1 stuck waypoint");
+Eq(1, s20Step2Stuck.PatrolConsecutiveRefusals, "slice20 step2 composed stuck tick 1 one refusal counted");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2Sim.World)[2].Activity, "slice20 step2 composed stuck tick 1 one refusal still reads patrolling");
+s20Step2Sim.World.Advance();
+Eq(22, s20Step2Patrol.X, "slice20 step2 composed stuck tick 2 patrol X");
+Eq(2, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed stuck tick 2 stuck waypoint");
+Eq(2, s20Step2Stuck.PatrolConsecutiveRefusals, "slice20 step2 composed stuck tick 2 two refusals counted");
+s20Step2Sim.World.Advance();
+Eq(23, s20Step2Patrol.X, "slice20 step2 composed stuck tick 3 patrol reaches the east waypoint X");
+Eq(3, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed stuck tick 3 stuck waypoint");
+Eq(3, s20Step2Stuck.PatrolConsecutiveRefusals, "slice20 step2 composed stuck tick 3 three refusals counted");
+s20Step2Sim.World.Advance();
+Eq(22, s20Step2Patrol.X, "slice20 step2 composed stuck tick 4 patrol turns south X");
+Eq(2, s20Step2Patrol.PatrolWaypointIndex, "slice20 step2 composed stuck tick 4 patrol waypoint is south");
+Eq(4, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed stuck tick 4 stuck waypoint");
+Eq(4, s20Step2Stuck.PatrolConsecutiveRefusals, "slice20 step2 composed stuck tick 4 four refusals counted");
+Check(!s20Step2Stuck.IsPatrolStuck, "slice20 step2 composed stuck tick 4 four refusals is not yet stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2Sim.World)[2].Activity, "slice20 step2 composed stuck tick 4 four refusals still reads patrolling");
+s20Step2Sim.World.Advance();
+Eq(22, s20Step2Patrol.X, "slice20 step2 composed stuck tick 5 patrol X");
+Eq(21, s20Step2Patrol.Z, "slice20 step2 composed stuck tick 5 patrol Z");
+Eq(16, s20Step2Stuck.X, "slice20 step2 composed stuck tick 5 stuck X");
+Eq(16, s20Step2Stuck.Z, "slice20 step2 composed stuck tick 5 stuck Z");
+Eq(0, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed stuck tick 5 stuck waypoint cycles back to 0");
+Eq(5, s20Step2Stuck.PatrolConsecutiveRefusals, "slice20 step2 composed stuck tick 5 five refusals counted");
+Check(s20Step2Stuck.IsPatrolStuck, "slice20 step2 composed stuck tick 5 five refusals is stuck");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s20Step2Sim.World)[2].Activity, "slice20 step2 composed stuck tick 5 five refusals reads stuck");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s20Step2Sim.World)[0].Activity, "slice20 step2 composed stuck tick 5 hold still reads holding beside it");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2Sim.World)[1].Activity, "slice20 step2 composed stuck tick 5 moving patrol still reads patrolling beside it");
+// Stuck-before-save load copy, mirroring the demo's
+// load copy: the stuck patrol reads Patrolling at index
+// 0 on arrival and re-sticks after a fresh circuit,
+// while the other two keep their readings.
+var s20Step2StuckSave = s20Step2Sim.SaveToJson();
+var s20Step2StuckLoadedSim = new Simulation(99);
+Check(s20Step2StuckLoadedSim.LoadFromJson(s20Step2StuckSave), "slice20 step2 composed stuck-before-save copy loads");
+Eq(3, s20Step2StuckLoadedSim.World.Squads.Count, "slice20 step2 composed stuck-before-save copy keeps three squads");
+var s20Step2StuckLoaded = s20Step2StuckLoadedSim.World.Squads[2];
+Eq(16, s20Step2StuckLoaded.X, "slice20 step2 composed stuck-before-save loaded position preserved X");
+Eq(12, s20Step2StuckLoaded.RallyX, "slice20 step2 composed stuck-before-save loaded rally is the old rally");
+Eq(0, s20Step2StuckLoaded.PatrolWaypointIndex, "slice20 step2 composed stuck-before-save loaded index is 0");
+Eq(0, s20Step2StuckLoaded.PatrolConsecutiveRefusals, "slice20 step2 composed stuck-before-save loaded counter is 0");
+Check(!s20Step2StuckLoaded.IsPatrolStuck, "slice20 step2 composed stuck-before-save loaded patrol is not stuck on arrival");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2StuckLoadedSim.World)[2].Activity, "slice20 step2 composed stuck-before-save loaded patrol reads patrolling");
+for (int s20Step2Tick = 0; s20Step2Tick < 5; s20Step2Tick++) s20Step2StuckLoadedSim.World.Advance();
+Eq(16, s20Step2StuckLoaded.X, "slice20 step2 composed stuck-before-save loaded patrol stays unmoved after a fresh circuit X");
+Eq(16, s20Step2StuckLoaded.Z, "slice20 step2 composed stuck-before-save loaded patrol stays unmoved after a fresh circuit Z");
+Check(s20Step2StuckLoaded.IsPatrolStuck, "slice20 step2 composed stuck-before-save loaded patrol is stuck again after a full circuit");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s20Step2StuckLoadedSim.World)[2].Activity, "slice20 step2 composed stuck-before-save loaded patrol reads stuck again");
+// Refusals on the main field, then the decided action.
+Check(!s20Step2Sim.TryReRallyStuckPatrol(0, 22, 5, 16), "slice20 step2 composed holdground re-rally is refused");
+Eq(10, s20Step2Hold.RallyX, "slice20 step2 composed refused holdground keeps its rally X");
+Eq(10, s20Step2Hold.RallyZ, "slice20 step2 composed refused holdground keeps its rally Z");
+Check(!s20Step2Sim.TryReRallyStuckPatrol(1, 22, 5, 16), "slice20 step2 composed moving patrol re-rally is refused");
+Eq(20, s20Step2Patrol.RallyX, "slice20 step2 composed refused moving patrol keeps its rally X");
+Eq(20, s20Step2Patrol.RallyZ, "slice20 step2 composed refused moving patrol keeps its rally Z");
+Eq(22, s20Step2Patrol.X, "slice20 step2 composed refused moving patrol keeps its position X");
+Eq(21, s20Step2Patrol.Z, "slice20 step2 composed refused moving patrol keeps its position Z");
+Eq(12, s20Step2Stuck.RallyX, "slice20 step2 composed stuck keeps its old rally before the action");
+Check(s20Step2Sim.TryReRallyStuckPatrol(2, 22, 5, 16), "slice20 step2 composed stuck patrol accepts a free re-rally");
+Eq(22, s20Step2Stuck.RallyX, "slice20 step2 composed re-rally new rally X");
+Eq(16, s20Step2Stuck.RallyZ, "slice20 step2 composed re-rally new rally Z");
+Eq(0, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed re-rally waypoint index resets to 0");
+Eq(0, s20Step2Stuck.PatrolConsecutiveRefusals, "slice20 step2 composed re-rally refusal counter resets to 0");
+Check(!s20Step2Stuck.IsPatrolStuck, "slice20 step2 composed re-rallied patrol is not stuck immediately after the action");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2Sim.World)[2].Activity, "slice20 step2 composed re-rallied patrol reads patrolling immediately after the action");
+Eq(16, s20Step2Stuck.X, "slice20 step2 composed re-rally does not teleport the squad X");
+Eq(16, s20Step2Stuck.Z, "slice20 step2 composed re-rally does not teleport the squad Z");
+Eq(0, s20Step2Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice20 step2 composed re-rally charges no ore");
+Eq(3, s20Step2Sim.World.Squads.Count, "slice20 step2 composed re-rally frees no cap slot");
+// Fourth paid deploy at the full cap, still refused.
+s20Step2Sim.BeginOrbitalPick();
+Check(s20Step2Sim.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore), "slice20 step2 composed fourth doctrine selected");
+Check(s20Step2Sim.OrbitalCommand.SelectKind(SquadKind.Heavy), "slice20 step2 composed fourth kind selected");
+Check(s20Step2Sim.SetOrbitalRally(10, 5, 10), "slice20 step2 composed fourth rally set");
+Eq(null, s20Step2Sim.ConfirmOrbitalDeploy(), "slice20 step2 composed fourth deploy is refused at the cap");
+s20Step2Sim.CancelOrbitalPick();
+Check(!s20Step2Sim.OrbitalCommand.IsPicking, "slice20 step2 composed fourth deploy leaves the picker closed after cancel");
+Eq(0, s20Step2Sim.World.Player.Inventory.Get(BlockType.EmberOre), "slice20 step2 composed refused fourth deploy charges nothing");
+Eq(3, s20Step2Sim.World.Squads.Count, "slice20 step2 composed refused fourth deploy adds no squad");
+Eq(22, s20Step2Stuck.RallyX, "slice20 step2 composed re-rallied patrol keeps its new rally after the cap refusal");
+// Six-tick march to the new rally, then the turn onto
+// the new loop, mirroring the demo tick by tick.
+s20Step2Sim.World.Advance();
+Eq(17, s20Step2Stuck.X, "slice20 step2 composed re-rally march tick 1 stuck X");
+Eq(0, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed re-rally march tick 1 stuck waypoint");
+Eq((22, 5, 16), s20Step2Stuck.PatrolTarget, "slice20 step2 composed re-rally march tick 1 stuck target is the new rally");
+Eq(21, s20Step2Patrol.X, "slice20 step2 composed re-rally march tick 1 patrol X");
+Eq(21, s20Step2Patrol.Z, "slice20 step2 composed re-rally march tick 1 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(18, s20Step2Stuck.X, "slice20 step2 composed re-rally march tick 2 stuck X");
+Eq(21, s20Step2Patrol.X, "slice20 step2 composed re-rally march tick 2 patrol X");
+Eq(22, s20Step2Patrol.Z, "slice20 step2 composed re-rally march tick 2 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(19, s20Step2Stuck.X, "slice20 step2 composed re-rally march tick 3 stuck X");
+Eq(20, s20Step2Patrol.X, "slice20 step2 composed re-rally march tick 3 patrol X");
+Eq(22, s20Step2Patrol.Z, "slice20 step2 composed re-rally march tick 3 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(20, s20Step2Stuck.X, "slice20 step2 composed re-rally march tick 4 stuck X");
+Eq(20, s20Step2Patrol.X, "slice20 step2 composed re-rally march tick 4 patrol X");
+Eq(23, s20Step2Patrol.Z, "slice20 step2 composed re-rally march tick 4 patrol Z");
+s20Step2Sim.World.Advance();
+Eq(21, s20Step2Stuck.X, "slice20 step2 composed re-rally march tick 5 stuck X");
+Eq(19, s20Step2Patrol.X, "slice20 step2 composed re-rally march tick 5 patrol X");
+Eq(23, s20Step2Patrol.Z, "slice20 step2 composed re-rally march tick 5 patrol Z");
+Eq(3, s20Step2Patrol.PatrolWaypointIndex, "slice20 step2 composed re-rally march tick 5 patrol waypoint is west");
+s20Step2Sim.World.Advance();
+Eq(22, s20Step2Stuck.X, "slice20 step2 composed re-rally march tick 6 stuck reaches the new rally X");
+Eq(16, s20Step2Stuck.Z, "slice20 step2 composed re-rally march tick 6 stuck reaches the new rally Z");
+Eq(0, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed re-rally march tick 6 stuck waypoint at the new rally");
+Eq(19, s20Step2Patrol.X, "slice20 step2 composed re-rally march tick 6 patrol X");
+Eq(22, s20Step2Patrol.Z, "slice20 step2 composed re-rally march tick 6 patrol Z");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s20Step2Sim.World)[0].Activity, "slice20 step2 composed re-rally march tick 6 hold still reads holding");
+s20Step2Sim.World.Advance();
+Eq(23, s20Step2Stuck.X, "slice20 step2 composed re-rally loop tick stuck steps east onto the new loop");
+Eq(1, s20Step2Stuck.PatrolWaypointIndex, "slice20 step2 composed re-rally loop tick stuck waypoint is east");
+Eq((25, 5, 16), s20Step2Stuck.PatrolTarget, "slice20 step2 composed re-rally east waypoint is the new rally plus radius 3");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice20 step2 composed loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice20 step2 composed loop waypoint count is still 5, not retuned");
+// Save/load round-trip after the action: the new rally
+// loads, indices reset to 0, and the loaded re-rallied
+// patrol steps back toward its new rally on tick 1,
+// because index 0 targets the rally itself.
+var s20Step2Save = s20Step2Sim.SaveToJson();
+var s20Step2LoadedSim = new Simulation(99);
+Check(s20Step2LoadedSim.LoadFromJson(s20Step2Save), "slice20 step2 composed save loads");
+Eq(3, s20Step2LoadedSim.World.Squads.Count, "slice20 step2 composed save keeps three squads");
+var s20Step2Loaded = s20Step2LoadedSim.World.Squads[2];
+Eq(23, s20Step2Loaded.X, "slice20 step2 composed loaded re-rallied position preserved X");
+Eq(22, s20Step2Loaded.RallyX, "slice20 step2 composed loaded rally is the new rally, not the old one");
+Eq(16, s20Step2Loaded.RallyZ, "slice20 step2 composed loaded rally Z");
+Eq(0, s20Step2Loaded.PatrolWaypointIndex, "slice20 step2 composed loaded index is 0");
+Eq(0, s20Step2Loaded.PatrolConsecutiveRefusals, "slice20 step2 composed loaded counter is 0");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s20Step2LoadedSim.World)[2].Activity, "slice20 step2 composed loaded re-rallied patrol reads patrolling");
+Eq(10, s20Step2LoadedSim.World.Squads[0].X, "slice20 step2 composed loaded hold position preserved X");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s20Step2LoadedSim.World)[0].Activity, "slice20 step2 composed loaded hold reads holding");
+Eq(18, s20Step2LoadedSim.World.Squads[1].X, "slice20 step2 composed loaded patrol position preserved X");
+Eq(22, s20Step2LoadedSim.World.Squads[1].Z, "slice20 step2 composed loaded patrol position preserved Z");
+s20Step2LoadedSim.World.Advance();
+Eq(22, s20Step2Loaded.X, "slice20 step2 composed loaded tick 1 re-rallied steps back to its new rally X");
+Eq(0, s20Step2Loaded.PatrolWaypointIndex, "slice20 step2 composed loaded tick 1 re-rallied waypoint is the rally");
+Eq(19, s20Step2LoadedSim.World.Squads[1].X, "slice20 step2 composed loaded tick 1 patrol X");
+Eq(22, s20Step2LoadedSim.World.Squads[1].Z, "slice20 step2 composed loaded tick 1 patrol Z");
+Eq(0, s20Step2LoadedSim.World.Squads[1].PatrolWaypointIndex, "slice20 step2 composed loaded tick 1 patrol waypoint is its rally");
+Eq(SquadActivity.Holding, OrbitalView.Snapshot(s20Step2LoadedSim.World)[0].Activity, "slice20 step2 composed loaded tick 1 hold still reads holding");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

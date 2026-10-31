@@ -8386,6 +8386,129 @@ closing Slice 19
   Slice 20, decided in that step, per
   docs/slice-20-scope.md.
 
+## 0.86.0 — Slice 20 Step 2: composed demo + review,
+closing Slice 20 (2026-10-31, silent scheduled run)
+
+- Step, decided in this step: the composed demo plus
+  documentation-only review closing Slice 20, per
+  docs/slice-20-scope.md. No new core system, no
+  adapter edit, no checklist item, by design. Slice 21
+  is NOT scoped here; it is scoped afterwards, the
+  same way the Slice 20 scope followed the Slice 19
+  review rather than preceding it.
+- Composition, decided in this step: one Simulation,
+  three paid squads, no enemy, no pocket seeded beyond
+  the 30 EmberOre the three deploys spend. A Heavy
+  HoldGround is deployed first and marched away (rally
+  (10,5,10), Holding at its rally from the sixth
+  patrol-march tick on), so it is not standing on the
+  player cell when the stuck patrol deploys there and
+  its later Holding reading is a control, not an
+  accident of spawn. A Recon Patrol is deployed next
+  and marched to its rally (20,5,20) in eight ticks,
+  then walks its loop. A Vanguard Patrol is deployed
+  last at the player cell, rally (12,5,16), and the
+  route-blocked shape is staged after its deploy, as
+  in Slice 18: stone west, south, and north of the
+  squad's cell, east step cell open. Over five ticks
+  it counts refusals 1 through 5, its waypoint cycling
+  1, 2, 3, 4, then back to 0, reading Patrolling through
+  four refusals and Stuck at five, unmoved at
+  (16,5,16), while the HoldGround reads Holding and
+  the moving Patrol walks its loop beside it.
+- Why the route-blocked shape, not the fully enclosed
+  shape, is the composed stuck case: Step 1 proved both
+  shapes and they behave differently, and conflating
+  them would hide a limit either way. The enclosed
+  shape re-sticks on a new loop instead of marching
+  through a wall; the route-blocked shape marches.
+  The composition stages the shape that marches, so a
+  reader sees the action's intended effect — a walk to
+  a new rally and a turn onto a new loop — and the
+  enclosed shape's re-stick remains Step 1's proof,
+  cited in the review, not re-claimed as a composed
+  result. The translation is exact, not approximate:
+  Step 1's squad started at (24,5,20) with its rally at
+  (20,5,20) and walls west, south, and north of its
+  cell; the composed squad starts at (16,5,16) with its
+  rally at (12,5,16) and walls west, south, and north
+  of its cell, and reaches Stuck in the same five
+  refusals with the same waypoint cycle.
+- Proof set, decided in this step, mirroring the demo
+  tick by tick: HoldGround march positions over six
+  ticks and its Holding reading from the sixth
+  patrol-march tick on; Patrol march positions over
+  eight ticks to its rally and its loop positions
+  during the stuck phase; stuck-phase refusal counts,
+  waypoint indices, and the Stuck reading at five
+  refusals, with the other two readings beside it; a
+  stuck-before-save load copy that reads Patrolling at
+  index 0 with its old rally kept and re-sticks after
+  a fresh five-tick circuit, unmoved; refusals on the
+  HoldGround and the moving Patrol with rallies and
+  the moving Patrol's position unchanged; the free
+  re-rally to (22,5,16) with index and counter reset
+  to 0, Patrolling at once, position unchanged, ore
+  unchanged at 0, and cap count unchanged at 3; a
+  fourth paid deploy refused at the full cap with ore
+  and squad count unchanged and the new rally kept;
+  the six-tick march to the new rally with waypoint 0
+  and the new rally as target throughout, then the
+  turn onto the new loop at (23,5,16), waypoint 1,
+  target (25,5,16); radius 3 and waypoint count 5
+  asserted unchanged in the composition, not retuned;
+  and a save/load round-trip after the action that
+  loads the new rally (not the old one), indices at 0,
+  counters at 0, and a loaded tick 1 in which the
+  re-rallied patrol steps back to its new rally, as
+  the index-reset load rule requires. No fire, chase,
+  or damage claim is made in this composition: no enemy
+  is staged, so Step 1's world-tick fire proof is
+  cited, not repeated as a demo result.
+- Claim split, stated plainly: the headless evidence is
+  squad states before and after the action, refusal
+  counts, waypoint indices, rally values, ore and cap
+  counts, march positions, and two save/load round-
+  trips, plus a demo that prints those values for
+  three squads in one field. None of that proves a
+  player can press K, aim at a stuck marker, pick a
+  new rally, and watch the rally marker move in a
+  built scene. That is item 39, and item 39 is honestly
+  pending its own binding: the proposed K binding is a
+  comment in FpsInputAdapter.cs only, not implemented,
+  so the observation cannot even be attempted until a
+  later adapter step implements it. This review does
+  not close item 39 by counting tests.
+- Checklist relation, decided in this step: no new
+  item. Item 39 already observes every behaviour this
+  step exercises, and this step adds no behaviour
+  outside it. Item 39 EXTENDS item 37; item 37, item
+  29, and orbital-command item 13 stand unchanged and
+  are NOT superseded. Next free playtest-gate number
+  remains 40.
+- Deliberately not in this step: a new core system, an
+  adapter implementation of the proposed K binding, a
+  radius, waypoint-count, or loop-shape change, a
+  movement, targeting, or fire rule change, a delivery,
+  precedence, conflict, rating, cost, or phase rule
+  change, a price or cap change, a material, marker,
+  light, fog, model, or HUD change, a new block, kind,
+  doctrine, source, or consumer, a recall or dismiss
+  API, a general squad-command system, a scene file or
+  imported asset claimed as a built scene, a Slice 21
+  scope, or a claim of Unity verification made from a
+  headless run.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: scoping Slice 21 as its own decision step,
+  chosen from the ranked candidates the Slice 20 review
+  carries, not promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

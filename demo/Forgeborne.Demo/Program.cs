@@ -1321,3 +1321,142 @@ simS19Loaded.World.Advance();
 var s19LoadedHudAfter1 = simS19Loaded.Hud();
 Console.WriteLine($"Slice 19 loaded tick 1: Step 2 mill still {simS19Loaded.World.Chunk.Get(10, 20, 26)}, POWER still {s19LoadedHudAfter1.LiveNetworks} LIVE NETWORKS, {s19LoadedHudAfter1.LoneSources} LONE SOURCES, powered gathered {simS19Loaded.World.PoweredBlocksGathered}, kinetic gathered {simS19Loaded.World.KineticBlocksGathered}, destroyed {simS19Loaded.World.DestroyedMills} (the loaded field re-proves the same stability, it does not arrive with a saved count)");
 Console.WriteLine($"Slice 19 done: powered {simS19.World.PoweredBlocksGathered} + loaded {simS19Loaded.World.PoweredBlocksGathered}, kinetic {simS19.World.KineticBlocksGathered} + loaded {simS19Loaded.World.KineticBlocksGathered}, destroyed {simS19.World.DestroyedMills}, save JSON length: {saveS19.Length} chars");
+
+// Slice 20 Step 2 scenario: Slice 20 composed in one run —
+// the decided stuck-patrol action agreeing with its
+// controls in one field, through the paid path only.
+// One Simulation carries, in deploy order: a Heavy
+// HoldGround (the second-doctrine control, marched away
+// first so it is not standing on the player cell when the
+// stuck patrol deploys there); a Recon Patrol (the moving
+// control, marched to its rally and walking its loop);
+// and a Vanguard Patrol deployed at the player cell with
+// its rally four cells west, staged with the exact
+// route-blocked shape Step 1 proved by translation —
+// west, south, and north walls around the squad's cell,
+// the east step cell open — so it counts five refusals
+// and reads Stuck, unmoved, while the other two keep
+// moving beside it. The demo then proves, in order:
+// a stuck-before-save load copy reads Patrolling at
+// index 0 and re-sticks after a fresh full circuit; a
+// re-rally attempted on the HoldGround and on the moving
+// Patrol is refused with nothing changed; the stuck
+// patrol accepts a free re-rally to an eastern rally,
+// charges nothing, frees no cap slot, and is not
+// teleported; a fourth paid deploy at the full cap is
+// still refused; the re-rallied patrol marches east to
+// its new rally in six ticks and turns onto the new loop;
+// and a save/load round-trip after the action loads the
+// new rally, with patrol indices reset to 0 as before.
+// No enemy is staged, so no fire, chase, or damage claim
+// is smuggled into an action demo: the demo proves the
+// action, its refusals, its economy, and its movement,
+// and nothing else. What this demo cannot show, by
+// construction, is any adapter feel: no K key press, no
+// crosshair on a stuck marker, and no rally marker move
+// appear in a headless run, so the decided action stays
+// in playtest-gate checklist item 39 (Windows-only), not
+// in the numbers below.
+Console.WriteLine();
+Console.WriteLine("Forgeborne Slice 20 Step 2 scenario — free re-rally for a stuck Patrol beside a moving Patrol and a HoldGround, save/load round-trip");
+var simS20 = new Simulation(42);
+simS20.World.Player.Inventory.Add(BlockType.EmberOre, 30);
+simS20.OrbitalCommand.SelectDoctrine(TacticalDoctrine.HoldGround);
+simS20.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS20.BeginOrbitalPick();
+simS20.SetOrbitalRally(10, 5, 10);
+var s20Hold = simS20.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Heavy HoldGround {(s20Hold == null ? "REJECTED" : "rally (10,5,10)")}, ore left {simS20.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches to its rally)");
+foreach (var sq in OrbitalView.Snapshot(simS20.World))
+    Console.WriteLine($"Slice 20 snapshot before: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 6; tick++)
+{
+    simS20.World.Advance();
+    var hold = simS20.World.Squads[0];
+    var snaps = OrbitalView.Snapshot(simS20.World);
+    Console.WriteLine($"Slice 20 hold march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}");
+}
+simS20.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS20.OrbitalCommand.SelectKind(SquadKind.Recon);
+simS20.BeginOrbitalPick();
+simS20.SetOrbitalRally(20, 5, 20);
+var s20Patrol = simS20.ConfirmOrbitalDeploy();
+Console.WriteLine($"Paid squads deployed: Recon Patrol {(s20Patrol == null ? "REJECTED" : "rally (20,5,20)")}, ore left {simS20.World.Player.Inventory.Get(BlockType.EmberOre)} (deploys at the player, (16,5,16), and marches to its rally while the HoldGround keeps marching)");
+for (int tick = 1; tick <= 8; tick++)
+{
+    simS20.World.Advance();
+    var hold = simS20.World.Squads[0];
+    var patrol = simS20.World.Squads[1];
+    var snaps = OrbitalView.Snapshot(simS20.World);
+    Console.WriteLine($"Slice 20 patrol march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}");
+}
+simS20.OrbitalCommand.SelectDoctrine(TacticalDoctrine.Patrol);
+simS20.OrbitalCommand.SelectKind(SquadKind.Vanguard);
+simS20.BeginOrbitalPick();
+simS20.SetOrbitalRally(12, 5, 16);
+var s20Stuck = simS20.ConfirmOrbitalDeploy();
+simS20.World.Chunk.TrySet(15, 5, 16, BlockType.Stone);
+simS20.World.Chunk.TrySet(16, 5, 17, BlockType.Stone);
+simS20.World.Chunk.TrySet(16, 5, 15, BlockType.Stone);
+Console.WriteLine($"Paid squads deployed: Vanguard Patrol {(s20Stuck == null ? "REJECTED" : "rally (12,5,16), the route-blocked shape: west, south, and north walls around the player cell, east step cell open")}, ore left {simS20.World.Player.Inventory.Get(BlockType.EmberOre)} (cap now full at 3 live squads; enclosure staged after this deploy, as in Slice 18)");
+foreach (var sq in OrbitalView.Snapshot(simS20.World))
+    Console.WriteLine($"Slice 20 snapshot before stuck phase: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS20.World.Advance();
+    var hold = simS20.World.Squads[0];
+    var patrol = simS20.World.Squads[1];
+    var stuck = simS20.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS20.World);
+    Console.WriteLine($"Slice 20 stuck tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}, stuck at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} refusals {stuck.PatrolConsecutiveRefusals} reads {snaps[2].Activity}");
+}
+Console.WriteLine($"Slice 20 after stuck phase: stuck at ({simS20.World.Squads[2].X},5,{simS20.World.Squads[2].Z}) waypoint {simS20.World.Squads[2].PatrolWaypointIndex} refusals {simS20.World.Squads[2].PatrolConsecutiveRefusals} reads Stuck, unmoved, while the HoldGround and the moving Patrol keep their own readings");
+var saveS20Stuck = simS20.SaveToJson();
+var simS20StuckLoaded = new Simulation(99);
+Console.WriteLine($"Load (stuck-before-save copy): {simS20StuckLoaded.LoadFromJson(saveS20Stuck)}");
+foreach (var sq in OrbitalView.Snapshot(simS20StuckLoaded.World))
+    Console.WriteLine($"Slice 20 snapshot after stuck-before-save load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 20 stuck-before-save loaded indices: hold {simS20StuckLoaded.World.Squads[0].PatrolWaypointIndex}, patrol {simS20StuckLoaded.World.Squads[1].PatrolWaypointIndex}, stuck {simS20StuckLoaded.World.Squads[2].PatrolWaypointIndex} (all reset to 0 on load, and all refusal counters reset to 0, so the stuck patrol reads Patrolling on arrival, not Stuck)");
+for (int tick = 1; tick <= 5; tick++)
+{
+    simS20StuckLoaded.World.Advance();
+    var stuck = simS20StuckLoaded.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS20StuckLoaded.World);
+    Console.WriteLine($"Slice 20 stuck-before-save loaded tick {tick}: stuck at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} refusals {stuck.PatrolConsecutiveRefusals} reads {snaps[2].Activity}");
+}
+Console.WriteLine($"Slice 20 stuck-before-save loaded after 5 ticks: stuck at ({simS20StuckLoaded.World.Squads[2].X},5,{simS20StuckLoaded.World.Squads[2].Z}) reads Stuck again, unmoved, as before the save");
+var s20HoldRallyBefore = (simS20.World.Squads[0].RallyX, simS20.World.Squads[0].RallyZ);
+var s20PatrolRallyBefore = (simS20.World.Squads[1].RallyX, simS20.World.Squads[1].RallyZ);
+var s20HoldRefused = simS20.TryReRallyStuckPatrol(0, 22, 5, 16);
+var s20PatrolRefused = simS20.TryReRallyStuckPatrol(1, 22, 5, 16);
+Console.WriteLine($"Slice 20 refusals on the main field: HoldGround re-rally accepted: {s20HoldRefused} (rally still ({simS20.World.Squads[0].RallyX},5,{simS20.World.Squads[0].RallyZ}), was ({s20HoldRallyBefore.Item1},5,{s20HoldRallyBefore.Item2})), moving Patrol re-rally accepted: {s20PatrolRefused} (rally still ({simS20.World.Squads[1].RallyX},5,{simS20.World.Squads[1].RallyZ}), was ({s20PatrolRallyBefore.Item1},5,{s20PatrolRallyBefore.Item2})) — both refused fail-closed, nothing changed");
+var s20ReRally = simS20.TryReRallyStuckPatrol(2, 22, 5, 16);
+var s20StuckAfter = simS20.World.Squads[2];
+Console.WriteLine($"Slice 20 re-rally on the main field: accepted: {s20ReRally}, stuck rally now ({s20StuckAfter.RallyX},5,{s20StuckAfter.RallyZ}), waypoint {s20StuckAfter.PatrolWaypointIndex}, refusals {s20StuckAfter.PatrolConsecutiveRefusals}, reads {OrbitalView.Snapshot(simS20.World)[2].Activity}, still at ({s20StuckAfter.X},5,{s20StuckAfter.Z}) (no teleport), ore {simS20.World.Player.Inventory.Get(BlockType.EmberOre)} (free: no charge, no refund), live squads {simS20.World.Squads.Count} (no cap slot freed)");
+simS20.OrbitalCommand.SelectDoctrine(TacticalDoctrine.DefendCore);
+simS20.OrbitalCommand.SelectKind(SquadKind.Heavy);
+simS20.BeginOrbitalPick();
+simS20.SetOrbitalRally(10, 5, 10);
+var s20Fourth = simS20.ConfirmOrbitalDeploy();
+simS20.CancelOrbitalPick();
+Console.WriteLine($"Slice 20 fourth paid deploy at the full cap: {(s20Fourth == null ? "REFUSED" : "DEPLOYED")} (ore still {simS20.World.Player.Inventory.Get(BlockType.EmberOre)}, live squads still {simS20.World.Squads.Count}, stuck rally still ({simS20.World.Squads[2].RallyX},5,{simS20.World.Squads[2].RallyZ})) — the rescue did not make room for a new squad");
+for (int tick = 1; tick <= 6; tick++)
+{
+    simS20.World.Advance();
+    var hold = simS20.World.Squads[0];
+    var patrol = simS20.World.Squads[1];
+    var stuck = simS20.World.Squads[2];
+    var snaps = OrbitalView.Snapshot(simS20.World);
+    Console.WriteLine($"Slice 20 re-rally march tick {tick}: hold at ({hold.X},5,{hold.Z}) reads {snaps[0].Activity}, patrol at ({patrol.X},5,{patrol.Z}) waypoint {patrol.PatrolWaypointIndex} reads {snaps[1].Activity}, re-rallied at ({stuck.X},5,{stuck.Z}) waypoint {stuck.PatrolWaypointIndex} target ({stuck.PatrolTarget.X},5,{stuck.PatrolTarget.Z}) reads {snaps[2].Activity}");
+}
+simS20.World.Advance();
+Console.WriteLine($"Slice 20 re-rally loop tick: re-rallied at ({simS20.World.Squads[2].X},5,{simS20.World.Squads[2].Z}) waypoint {simS20.World.Squads[2].PatrolWaypointIndex} target ({simS20.World.Squads[2].PatrolTarget.X},5,{simS20.World.Squads[2].PatrolTarget.Z}) reads {OrbitalView.Snapshot(simS20.World)[2].Activity} (turned onto the new loop, east waypoint at the new rally plus radius 3)");
+var saveS20 = simS20.SaveToJson();
+var simS20Loaded = new Simulation(99);
+Console.WriteLine($"Load: {simS20Loaded.LoadFromJson(saveS20)}");
+foreach (var sq in OrbitalView.Snapshot(simS20Loaded.World))
+    Console.WriteLine($"Slice 20 snapshot after load: {sq.Kind} {sq.Doctrine} at ({sq.X},5,{sq.Z}) rally ({sq.RallyX},5,{sq.RallyZ}) reads {sq.Activity}");
+Console.WriteLine($"Slice 20 loaded indices: hold {simS20Loaded.World.Squads[0].PatrolWaypointIndex}, patrol {simS20Loaded.World.Squads[1].PatrolWaypointIndex}, re-rallied {simS20Loaded.World.Squads[2].PatrolWaypointIndex} (all reset to 0 on load; the re-rallied patrol keeps its new rally (22,5,16), it does not revert to (12,5,16))");
+simS20Loaded.World.Advance();
+Console.WriteLine($"Slice 20 loaded tick 1: hold at ({simS20Loaded.World.Squads[0].X},5,{simS20Loaded.World.Squads[0].Z}) reads {OrbitalView.Snapshot(simS20Loaded.World)[0].Activity}, patrol at ({simS20Loaded.World.Squads[1].X},5,{simS20Loaded.World.Squads[1].Z}) waypoint {simS20Loaded.World.Squads[1].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS20Loaded.World)[1].Activity}, re-rallied at ({simS20Loaded.World.Squads[2].X},5,{simS20Loaded.World.Squads[2].Z}) waypoint {simS20Loaded.World.Squads[2].PatrolWaypointIndex} reads {OrbitalView.Snapshot(simS20Loaded.World)[2].Activity}");
+Console.WriteLine($"Slice 20 done: hold {simS20.World.Squads[0].Kind} {simS20.World.Squads[0].Doctrine} + loaded hold, patrol {simS20.World.Squads[1].Kind} {simS20.World.Squads[1].Doctrine} + loaded patrol, re-rallied {simS20.World.Squads[2].Kind} {simS20.World.Squads[2].Doctrine} marched to its new rally and loaded with it, save JSON length: {saveS20.Length} chars");

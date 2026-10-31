@@ -1,5 +1,121 @@
 # Forgeborne — Changelog
 
+## 0.86.0 — 2026-10-31 — Slice 20 Step 2:
+composed demo + review, closing Slice 20
+
+- Step taken, decided in this step: Slice 20 Step 2,
+  the composed demo scenario plus documentation-only
+  review closing Slice 20, per docs/slice-20-scope.md.
+  No new core system, no adapter edit, no checklist
+  item, by design. Slice 21 is NOT scoped here; it is
+  scoped afterwards, the same way the Slice 20 scope
+  followed the Slice 19 review rather than preceding
+  it.
+- Composition, decided in this step: one Simulation,
+  three paid squads, no enemy, no pocket seeded beyond
+  the 30 EmberOre the three deploys spend — a Heavy
+  HoldGround marched away first (rally (10,5,10),
+  Holding at its rally from the sixth patrol-march
+  tick on), a Recon Patrol marched to its rally and
+  walking its loop (rally (20,5,20), at its rally
+  after eight march ticks), and then a Vanguard Patrol
+  deployed at the player cell in the exact route-
+  blocked shape Step 1 proved, translated to the
+  player cell (rally (12,5,16); stone west, south,
+  and north of the squad's cell, east step cell open),
+  so it counts five refusals and reads Stuck, unmoved,
+  while the other two keep their readings. The demo
+  then proves, in order: a stuck-before-save load copy
+  that reads Patrolling at index 0 and re-sticks after
+  a fresh full circuit; re-rally refusals on the
+  HoldGround and on the moving Patrol, with nothing
+  changed; the stuck patrol accepting a free re-rally
+  to (22,5,16) with no charge, no refund, and no cap
+  slot freed, and not teleported; a fourth paid deploy
+  still refused at the full cap; the re-rallied patrol
+  marching east to its new rally in six ticks and
+  turning onto the new loop on the next tick (east
+  waypoint (25,5,16), the new rally plus radius 3);
+  and a save/load round-trip after the action that
+  loads the new rally, with patrol indices reset to 0
+  as before — the loaded re-rallied patrol steps back
+  to its new rally on loaded tick 1, because index 0
+  targets the rally itself.
+- Why the route-blocked shape, not the fully enclosed
+  shape, is the composed stuck case, stated plainly:
+  Step 1 proved both shapes and they behave
+  differently — the route-blocked patrol marches after
+  a re-rally, the fully enclosed patrol re-sticks on
+  the new loop instead of marching through a wall —
+  and a composition that staged only the enclosed shape
+  would show a re-rally followed by a re-stick, which
+  is the honest limit but not the march the action is
+  for. The composed demo therefore stages the shape
+  that marches, and the enclosed shape's re-stick
+  remains Step 1's proof, cited in the review, not
+  re-claimed as a composed result. Staging the stuck
+  patrol at the player cell, after the other two have
+  marched away, is what makes the translation exact:
+  the squad starts at its own cell with its rally four
+  cells west, exactly as Step 1's squad started at
+  (24,5,20) with its rally at (20,5,20).
+- Claim split, stated plainly: the headless evidence is
+  squad states before and after the action for staged
+  layouts, refusal counts, waypoint indices, rally
+  values, ore and cap counts across deploys and the
+  rescue, march positions across ticks, and two save/
+  load round-trips that preserve the field, plus a demo
+  that prints those values for three squads in one
+  field. None of that proves a player can press K, aim
+  at a stuck marker, pick a new rally, and watch the
+  rally marker move in a built scene. That is a Windows
+  observation (item 39), which is also honestly pending
+  its own binding: the proposed K binding is not yet
+  implemented in an adapter, so the observation cannot
+  even be attempted until a later adapter step
+  implements it.
+- Checklist relation, decided in this step: no new
+  playtest-gate item. Item 39 already observes the
+  decided action (enclosed patrol to Stuck, re-rally to
+  open ground to Patrolling with a walk and a moved
+  rally marker, re-rally to a still-blocked rally to
+  Stuck again, and refusals on a moving patrol and a
+  HoldGround squad), and this step exercises no
+  behaviour item 39 does not already cover. Item 39
+  EXTENDS item 37; item 37, item 29, and orbital-
+  command item 13 stand unchanged and are NOT
+  superseded. Next free playtest-gate number remains
+  40.
+- Tests: 3165 passed, 0 failed (was 2968; +197 composed-
+  integration assertions mirroring the demo, inserted
+  before the test runner's summary so they execute).
+  Demo: every earlier demo save length unchanged
+  (Slice 1 43,881; Slice 2 43,921; Step 1 44,016; Step 3
+  44,103; Slice 4 44,026; Slice 5 43,974; Slice 6
+  44,024; Slice 7 44,013; Slice 8 43,974; Slice 9
+  43,975; Slice 10 43,974; Slice 11 44,038; Slice 12
+  43,974; Slice 13 44,045; Slice 14 43,974; Slice 15
+  44,016; Slice 17 43,974; Slice 18 44,015; Slice 19
+  43,965). New Slice 20 scenario save 44,041 chars,
+  quoted as its own entry, not as a change to any
+  earlier save.
+- Review: docs/slice-20-review.md, checking the slice
+  against docs/slice-20-scope.md step by step, verdict
+  reviewed and closed as one stuck-patrol action
+  decided with tests and proved together in one demo —
+  not playtested, not Unity-verified, not a visual
+  result. Gaps carried in priority order: Windows Unity
+  verification (Slices 1–20, items 25–27 and 30–39
+  still open, item 39 pending its binding); the Slice 1
+  director playtest gate still pending; first-pass
+  graphics values unproven; Slice 13 scene-proof
+  observations still unmade; patrol route remaining
+  questions (radius on evidence, or a general recall/
+  re-rally for other doctrines as its own decision).
+  Closed by this slice, not carried: the stuck-patrol
+  action remainder from the Slice 19 review's gap 5 /
+  Slice 18 gap 6.
+
 ## 0.85.0 — 2026-10-31 — Slice 20 Step 1:
 stuck-patrol player action decided — free re-rally,
 stuck Patrol only
