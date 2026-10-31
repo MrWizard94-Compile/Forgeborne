@@ -658,6 +658,43 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     Unity until it is observed there and recorded
     in DECISIONS.md.
 
+36. [ ] Direct-Conduit count, decided 0.75.0 (core count
+    changed, adapter code unchanged — the LivePowerText line
+    already renders LoneSources, so no adapter edit was
+    needed, and no headless test proves a HUD line reads in
+    the scene, so the cited headless evidence is only the
+    Slice 17 Step 2 LivePowerCounts proof set: a Conduit
+    beside a mill, a workstation, and a pylon each read 0
+    LIVE NETWORKS, 1 LONE SOURCE, while a Dynamo beside a
+    mill reads 0 / 0 with the mill powered and an Alternator
+    beside a mill reads 0 / 0 with the mill warned): wire
+    LivePowerText in the Inspector to a HUD line; place a
+    Conduit beside a mill and read the POWER line aloud
+    for that placement — 0 LIVE NETWORKS, 1 LONE SOURCE —
+    while the mill itself reads 0 powered, 0 warned, 1
+    total and keeps running at kinetic cadence, proving
+    the lone number is the readout for a placement that
+    went nowhere, not a delivery claim; replace the Conduit
+    with a Dynamo beside the same mill and read the line
+    aloud again — 0 LIVE NETWORKS, 0 LONE SOURCES —
+    with the mill now reading powered, proving a feeding
+    source does not become lone; then place a lone Conduit
+    with no neighbour at all and read the line aloud a
+    third time — 0 LIVE NETWORKS, 1 LONE SOURCE —
+    proving the no-neighbour control still counts. This
+    item EXTENDS item 22's live-network and lone-source
+    display (a lone Conduit observation is added to the
+    lone Dynamo and Alternator observations item 22
+    already asks for; item 22 stands) and EXTENDS item
+    28's Conduit observation (item 28's mill observation
+    — kinetic cadence, no warning — stands unchanged;
+    item 36 adds the POWER line reading for that same
+    placement, which item 28 did not ask for). It does
+    NOT supersede item 28's mill clause, and it does not
+    claim item 35's tint observation. Do not claim this
+    verified in Unity until it is observed there and
+    recorded in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

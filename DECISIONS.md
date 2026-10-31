@@ -6394,6 +6394,285 @@ component liveness decided
   feeding no consumer) is a network count, not a
   cell tint, and the two must not be conflated.
 
+## 0.75.0 — Slice 17 Step 2: direct-Conduit count query,
+a non-delivering consumer-adjacent source counts as lone
+
+- State found on entry: remote main head
+  944a56467e4aba670ce9e68aa8e7331a4bdc8c72,
+  CHANGELOG 0.74.0 (Slice 17 Step 1), sync record
+  ending at that commit, local working copy
+  matched — no step was repeated: the 0.74.0
+  decision named Slice 17 Step 2, the
+  direct-Conduit count query, decided in that
+  step, and this run did exactly that. Tests
+  2169 baseline re-run passing; demo Slice 15
+  save 44,016 chars.
+- Decision, in one sentence a later reader can
+  quote: lone now means a source with no cable
+  or transformer neighbour, and no consumer
+  neighbour that it feeds directly — so a
+  Conduit beside a consumer counts as lone,
+  because it feeds no consumer directly, while
+  a Dynamo or Alternator beside a consumer
+  still does not.
+- Why not keep the definition unchanged. Keeping
+  it was a decision, not a default, and it was
+  rejected for a specific, testable reason: under
+  it, a Conduit beside a mill read 0 LIVE / 0
+  LONE, which is the same POWER line as no
+  source at all — and the consumer counts do
+  not rescue the reading, because a mill beside
+  a Conduit (0 powered, 0 warned, 1 total) is
+  also the same consumer reading as a mill with
+  no source beside it at all. The mill's None
+  state and kinetic cadence are therefore not
+  sufficient as the readout for this placement:
+  they are visible only to a player who already
+  looks at that mill and already knows its
+  cadence, while the POWER line is the wiring
+  readout a player reads while wiring. A player
+  who placed a Conduit beside a mill made a
+  wiring mistake (or a deliberate staging
+  choice), and the count that tells them the
+  placement went nowhere is exactly the count
+  that read nothing. The keep hypothesis's one
+  honest virtue — that adjacency is wiring, so
+  a source beside a consumer is wired in the
+  count's terms — is answered by the delivery
+  shape, not denied: for a Dynamo or Alternator,
+  adjacency IS wiring, because the direct
+  branch feeds through it; for a Conduit,
+  adjacency to a consumer is not wiring, because
+  no branch feeds through it. The distinction is
+  the Conduit's own decided distinctness from
+  Slice 14 Step 1 (cable-only delivery), applied
+  to the count, not a new rule invented for the
+  count.
+- Why fold into the existing lone number, not a
+  distinct third readout. A third number (a new
+  word on the same line, or a new line) would
+  split one delivery fact — a source feeding
+  nothing — into two numbers differing only by
+  adjacency history: a lone Conduit with no
+  neighbour and a lone Conduit beside a mill
+  would be two counts for the same fact, and a
+  reader would have to learn which adjacency
+  histories belong in which number before either
+  number meant anything. That is a HUD redesign
+  claim for an edge case, and HUD discipline
+  (art-direction rule 4) is law, not a variable
+  this step can spend: the existing POWER line
+  already has a lone slot, and the decided
+  reading fits it, because both the no-neighbour
+  Conduit and the consumer-beside Conduit are
+  sources feeding nothing through any neighbour
+  they can feed. Folding is therefore not a
+  compromise that hides the distinction: the
+  distinction the player needs — feeding versus
+  non-feeding — is exactly what the folded
+  number now draws, and the distinction it
+  erases — adjacent-to-nothing versus adjacent-
+  to-a-consumer-it-cannot-feed — is one no
+  wiring decision turns on, because neither
+  placement feeds anything. The cost is stated
+  openly: readers of pre-0.75.0 documents who
+  learned lone as "adjacent to nothing" must
+  relearn it as the sentence above, and this
+  entry, the WorldZone comment, and the
+  WeaponHud comment all carry the new sentence
+  so the old wording is not left standing
+  anywhere as the current rule.
+- Why transformer adjacency stays disqualifying,
+  stated explicitly as the scope requires. A
+  Conduit beside a transformer alone also
+  delivers nothing (the transformer outputs
+  None with no other input, proved by a probe
+  mill reading None), yet it still counts
+  neither live nor lone, and that is not an
+  oversight left over from the consumer rule:
+  a transformer is wiring, not a consumer
+  endpoint. The precedent is the dead cable
+  component: a source touching a cable whose
+  component resolves to None also delivers
+  nothing to any consumer, yet it counts
+  neither, because adjacency to wiring
+  disqualifies even when the wiring is dead.
+  A transformer beside a Conduit is the same
+  shape — a placed source against a wiring
+  component whose output may change when
+  another input arrives — and the count's job
+  is to say whether a source is wired, not
+  whether its wiring currently delivers. The
+  one asymmetry this leaves is stated, not
+  hidden: a Conduit beside a transformer alone
+  still reads 0 / 0, a second invisibility of
+  the same kind as the one this step fixes for
+  consumers. It is narrower, and it is kept
+  deliberately: a consumer is an endpoint whose
+  powered / warned / total counts already exist
+  to be read beside the lone number, while a
+  transformer has no consumer count beside it,
+  and folding a transformer-adjacent Conduit
+  into lone would make lone mean "adjacent to
+  wiring that currently outputs None", which
+  would then also have to cover the dead-cable
+  case to be consistent — a wider redefinition
+  than this step's question asks for. If a later
+  step decides that second invisibility too, it
+  decides it with its own proof set, not by
+  inheriting this step's sentence.
+- Why "feeds directly" means the direct branch,
+  not the delivered voltage, and why the
+  conflict case proves it. A Dynamo beside a
+  pylon delivers LV, which is the pylon's
+  mismatch level, and an Alternator beside a
+  mill delivers HV, which destroys it — both
+  still count neither live nor lone, because
+  "feeds" here means "is a direct-branch source
+  for that consumer", not "delivers its rated
+  voltage": a mismatched direct source still
+  delivers a voltage, just the wrong one, and
+  counting it as lone would call a source that
+  destroys its mill "unwired". The conflict
+  case is the sharp end of the same point: a
+  Dynamo and an Alternator beside one mill
+  deliver None collectively, yet neither counts
+  as lone, because each is a direct-branch
+  source whose presence is exactly what makes
+  the delivery None. A pure delivered-voltage
+  definition of lone ("counts when it delivers
+  nothing") would count both conflict sources as
+  lone and hide the conflict behind a lone
+  number; the branch definition does not. The
+  same reasoning covers the fed-mill cases: a
+  Conduit beside a Dynamo-fed mill (LV) or an
+  Alternator-fed mill (HV mismatched) counts as
+  lone, because the Conduit itself still feeds
+  nothing directly, even though its neighbour
+  mill is fed by another source — the count is
+  per source cell, and the other source's
+  feeding does not make the Conduit fed.
+- Per source cell, not per consumer or per pair.
+  Two Conduits beside one mill are two lone
+  sources, because two placed sources feed
+  nothing, not one mistake; one Conduit beside
+  two mills is one lone source, because one
+  placed source feeds nothing, not two. The
+  count answers "how many sources feed
+  nothing", and a pair count would answer a
+  different question ("how many source-consumer
+  adjacencies exist") that no wiring decision
+  asks, while double-counting one source across
+  two mills.
+- Step 1 independence, stated explicitly as the
+  scope and the 0.74.0 decision require. Step 1
+  decides cable tint: for a cable cell,
+  Energised means its component carries a
+  non-None voltage. This step's cases have no
+  cable, so Step 1's answer changes no Step 2
+  case — there is no cable cell whose tint could
+  move, and no component for component liveness
+  to attach to. The counts keep the Slice 12
+  meaning of "live" (a network carrying a
+  non-None voltage, feeding no consumer) and do
+  not adopt Step 1's tint vocabulary: a direct
+  Conduit is not a component, a lone count is
+  not a tint, and the one case where the two
+  steps meet — a Conduit beside a mill that
+  also touches a cable — is kept separate by
+  construction: its cable cell's tint is Step
+  1's question, its count (fed network 0 / 0,
+  free network 1 / 0, never both) is this
+  step's, and neither number is derived from
+  the other's vocabulary.
+- HUD line: the decided count folds into the
+  existing POWER line's lone number, so the
+  LivePowerText line text ("POWER: n LIVE
+  NETWORKS, m LONE SOURCES") is unchanged and
+  no adapter edit was needed — the adapter
+  already renders HudState.LoneSources, and
+  this step changes only which sources that
+  derived number counts. No new HUD line, no
+  new HUD word, no new HUD colour or layout:
+  the count question is decided inside the
+  line that already exists for it, which is
+  what HUD discipline permits. Powered, warned,
+  and total consumer counts do not move in any
+  case, proved alongside the POWER line in
+  every proof case: they are consumer counts,
+  and a source-count decision that moved them
+  would have smuggled a consumer change into a
+  count step.
+- Delivery boundary: no delivery, precedence,
+  conflict, rating, cost, or phase rule moves.
+  A Conduit beside a mill still delivers None
+  and its mill still gathers kinetically and
+  survives its tick; a Dynamo beside a mill
+  still delivers LV and powers it; an Alternator
+  beside a mill still delivers HV, warns it,
+  and destroys it on the tick. The change lives
+  in LivePowerCounts' lone loop only, plus its
+  comments and the WeaponHud comment: the loop
+  now disqualifies on a cable or transformer
+  neighbour for every source, and on a consumer
+  neighbour only for Dynamo and Alternator.
+  No material, shader, marker, light, fog, or
+  view model value moves in this step.
+- Checklist relation: new item 36 is the
+  post-decision count observation — a Conduit
+  beside a mill, a Dynamo beside a mill, and a
+  lone Conduit, with the POWER line read aloud
+  for each (0 / 1, 0 / 0, 0 / 1). Item 36
+  extends item 22's live-network and
+  lone-source display: item 22's lone Dynamo
+  and Alternator observations stand, and item
+  36 adds the lone-Conduit observation to the
+  same display. Item 36 extends item 28's
+  Conduit observation: item 28's mill clause
+  (kinetic cadence, no warning) stands
+  unchanged, and item 36 adds the POWER line
+  reading for that same placement, which item
+  28 did not ask for. Item 36 does not
+  supersede item 28's mill clause, does not
+  supersede item 22, and does not claim item
+  35's tint observation. The next free
+  playtest-gate number is now 37.
+- Superseded assertions, stated openly: three
+  earlier assertions were updated, not deleted
+  — the Slice 14 Step 2 composed lone counts
+  before the tick, after tick 1, and after
+  load, each from 0 to 1 — each now asserting
+  the decided reading, each with its history
+  kept in the assertion text and in the section
+  header comment, and the Slice 14 demo's
+  printed text updated the same way. No test
+  was weakened to pass: the three updated
+  assertions assert a stronger, decided reading,
+  and the suite rose by 58 new assertions on
+  top of them, with no failures.
+- Deliberately not moved in this step: no
+  delivery, precedence, conflict, rating, cost,
+  or phase rule; no material, shader, marker,
+  light, fog, or view model value; no new HUD
+  line, word, colour, or layout; no transformer-
+  adjacency redefinition (the second
+  invisibility above is carried, not fixed);
+  no demo scenario (the composed demo belongs
+  to Step 3); no Slice 18 scope; and no claim
+  of Unity verification — item 36 is an
+  observation to be made on Windows, not a
+  result this headless run can close.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 17 Step 3, the composed demo
+  scenario plus documentation-only review closing
+  Slice 17, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

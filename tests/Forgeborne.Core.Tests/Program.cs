@@ -5151,11 +5151,14 @@ Eq(CellPowerState.Powered, condLoaded.PowerState(17, 5, 16), "slice14 step1 cond
 // Dynamo mill, the direct-Conduit mill, the Conduit cable
 // pylon, and the Conduit step-down workstation together
 // through ticks and a save/load round-trip. One finding from
-// Step 1 is asserted here as a composition fact, not smoothed
-// over: a Conduit standing directly beside a mill counts as
-// neither a live network nor a lone source, because the
-// Slice 12 lone rule disqualifies any source beside a
-// consumer. The other Step 1 finding — a single cable cell
+// Step 1 was asserted here as a composition fact, not smoothed
+// over, until Slice 17 Step 2 (0.75.0) superseded it: a Conduit
+// standing directly beside a mill then counted as neither a
+// live network nor a lone source, because the Slice 12 lone
+// rule disqualified any source beside a consumer — under the
+// decided Step 2 rule it counts as one lone source, and the
+// assertions below were updated to the decided reading rather
+// than left asserting the superseded one. The other Step 1 finding — a single cable cell
 // touching a Conduit reading None in PowerState while its
 // pylon fires — was superseded by Slice 17 Step 1 (0.74.0):
 // that cable now reads Energised, and the assertions below
@@ -5222,7 +5225,7 @@ Eq(1, s14HudBefore.WarnedMills, "slice14 step2 composed one mill warned before t
 Eq(0, s14HudBefore.WarnedWorkstations, "slice14 step2 composed no workstation warned before the tick");
 Eq(0, s14HudBefore.WarnedPylons, "slice14 step2 composed no pylon warned before the tick");
 Eq(0, s14HudBefore.LiveNetworks, "slice14 step2 composed no live network before the tick");
-Eq(0, s14HudBefore.LoneSources, "slice14 step2 composed no lone source before the tick: the direct conduit beside a mill counts neither");
+Eq(1, s14HudBefore.LoneSources, "slice17 step2 composed one lone source before the tick: the direct conduit beside a mill now counts as lone, superseding the slice14 step2 reading that it counted neither");
 Eq(65, s14Sim.World.Player.Shields, "slice14 step2 composed shields 65 after 20 damage");
 Eq(10, s14Sim.World.EffectiveWorkstationRegen(), "slice14 step2 composed step-down bench regen 10 at spawn");
 Eq(0, s14Sim.World.Player.Inventory.Get(BlockType.Stone), "slice14 step2 composed stone starts at 0");
@@ -5236,7 +5239,7 @@ Eq(BlockType.KineticMill, s14Sim.World.Chunk.Get(10, 20, 18), "slice14 step2 com
 var s14HudAfter1 = s14Sim.Hud();
 Eq(0, s14HudAfter1.WarnedMills, "slice14 step2 composed no mill warned after tick 1");
 Eq(1, s14HudAfter1.LiveNetworks, "slice14 step2 composed destroyed mill cable run counts live after tick 1");
-Eq(0, s14HudAfter1.LoneSources, "slice14 step2 composed still no lone source after tick 1");
+Eq(1, s14HudAfter1.LoneSources, "slice17 step2 composed still one lone source after tick 1: the direct conduit survives its mill's neighbour tick");
 Eq(75, s14Sim.World.Player.Shields, "slice14 step2 composed shields 75 after tick 1 regen");
 Eq(20, s14Sim.World.Enemies[0].Health, "slice14 step2 composed pylon fires 10 on tick 1");
 Eq(11, s14Sim.World.Enemies[0].X, "slice14 step2 composed enemy steps east on tick 1");
@@ -5272,7 +5275,7 @@ Eq(1, s14LoadedHud.PoweredWorkstations, "slice14 step2 composed one workstation 
 Eq(1, s14LoadedHud.PoweredPylons, "slice14 step2 composed one pylon powered after load");
 Eq(0, s14LoadedHud.WarnedMills, "slice14 step2 composed no mill warned after load");
 Eq(1, s14LoadedHud.LiveNetworks, "slice14 step2 composed one live network after load");
-Eq(0, s14LoadedHud.LoneSources, "slice14 step2 composed no lone source after load");
+Eq(1, s14LoadedHud.LoneSources, "slice17 step2 composed one lone source after load: the direct conduit count re-derives");
 Eq(CellPowerState.Powered, s14Loaded.World.PowerState(10, 20, 14), "slice14 step2 composed dynamo mill state Powered after load");
 Eq(CellPowerState.None, s14Loaded.World.PowerState(10, 20, 18), "slice14 step2 composed direct conduit mill state None after load");
 Eq(CellPowerState.Powered, s14Loaded.World.PowerState(10, 5, 16), "slice14 step2 composed pylon state Powered after load");
@@ -5742,6 +5745,175 @@ var s17Loaded = new Simulation(99);
 Check(s17Loaded.LoadFromJson(s17LoadJson), "slice17 step1 single-cable world loads");
 Eq(CellPowerState.Energised, s17Loaded.World.PowerState(17, 20, 16), "slice17 step1 single cable reads Energised after load");
 Eq(CellPowerState.Mismatched, s17Loaded.World.PowerState(16, 20, 16), "slice17 step1 conduit cable mill reads Mismatched after load");
+
+// ---- Slice 17 Step 2: direct-Conduit count query ----
+// Decision, decided in this step (rationale in DECISIONS.md):
+// a Conduit beside a consumer counts as lone, folded into the
+// existing POWER line's lone number — no new line, no new word.
+// Lone now means: a source with no cable or transformer neighbour,
+// and no consumer neighbour that it feeds directly. Dynamo and
+// Alternator feed any adjacent consumer directly (rated or
+// mismatched alike), so a consumer neighbour still disqualifies
+// them; a Conduit feeds no adjacent consumer, so it does not.
+// A cable or transformer neighbour still disqualifies every
+// source, Conduit included, even when that wiring delivers
+// nothing — a transformer is wiring, not a consumer endpoint,
+// and the dead-cable precedent says adjacency to wiring
+// disqualifies even when the wiring is dead. The count is per
+// source cell, not per consumer or per pair. Step 1 independence,
+// stated explicitly: Step 1 decides cable tint (component
+// liveness), and these cases have no cable, so Step 1's answer
+// changes no Step 2 case; the counts keep the Slice 12 meaning
+// of "live" (carrying a non-None voltage, feeding no consumer)
+// and do not adopt Step 1's tint vocabulary for counts.
+// Motivating case: a Conduit directly beside a mill.
+var s17cMill = new WorldZone(42);
+s17cMill.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cMill.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+Eq((0, 1), s17cMill.LivePowerCounts(), "slice17 step2 conduit beside a mill counts 0 live networks, 1 lone source");
+Eq(Voltage.None, s17cMill.DeliveredVoltage(16, 20, 16), "slice17 step2 direct conduit mill delivery is still None");
+Eq(CellPowerState.None, s17cMill.PowerState(16, 20, 16), "slice17 step2 direct conduit mill power state is still None");
+Eq(0, HudState.FromWorld(s17cMill, new Weapon()).PoweredMills, "slice17 step2 direct conduit mill is not powered in the consumer count");
+Eq(1, HudState.FromWorld(s17cMill, new Weapon()).TotalMills, "slice17 step2 direct conduit mill still totals one mill");
+Eq(0, HudState.FromWorld(s17cMill, new Weapon()).WarnedMills, "slice17 step2 direct conduit mill is not warned in the consumer count");
+Eq(1, HudState.FromWorld(s17cMill, new Weapon()).LoneSources, "slice17 step2 hud carries the direct conduit as one lone source");
+s17cMill.Advance();
+Eq(BlockType.KineticMill, s17cMill.Chunk.Get(16, 20, 16), "slice17 step2 direct conduit mill still survives its tick");
+Eq((0, 1), s17cMill.LivePowerCounts(), "slice17 step2 direct conduit still counts 1 lone source after its mill's tick");
+// One rule for all three consumers: workstation, then pylon.
+var s17cWs = new WorldZone(42);
+s17cWs.Chunk.TrySet(17, 5, 16, BlockType.Workstation);
+s17cWs.Chunk.TrySet(18, 5, 16, BlockType.Conduit);
+Eq((0, 1), s17cWs.LivePowerCounts(), "slice17 step2 conduit beside a workstation counts 0 live networks, 1 lone source");
+Eq(Voltage.None, s17cWs.DeliveredVoltage(17, 5, 16), "slice17 step2 direct conduit workstation delivery is still None");
+Check(!s17cWs.IsWorkstationPowered(17, 5, 16), "slice17 step2 direct conduit workstation is not powered");
+Check(!s17cWs.IsWorkstationMismatched(17, 5, 16), "slice17 step2 direct conduit workstation is not mismatched");
+Eq(0, HudState.FromWorld(s17cWs, new Weapon()).PoweredWorkstations, "slice17 step2 direct conduit workstation is not powered in the consumer count");
+Eq(1, HudState.FromWorld(s17cWs, new Weapon()).TotalWorkstations, "slice17 step2 direct conduit workstation still totals one workstation");
+var s17cPylon = new WorldZone(42);
+s17cPylon.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+s17cPylon.Chunk.TrySet(18, 5, 16, BlockType.Conduit);
+Eq((0, 1), s17cPylon.LivePowerCounts(), "slice17 step2 conduit beside a pylon counts 0 live networks, 1 lone source");
+Eq(Voltage.None, s17cPylon.DeliveredVoltage(17, 5, 16), "slice17 step2 direct conduit pylon delivery is still None");
+Check(!s17cPylon.IsPylonPowered(17, 5, 16), "slice17 step2 direct conduit pylon is not powered");
+Check(!s17cPylon.IsPylonMismatched(17, 5, 16), "slice17 step2 direct conduit pylon is not mismatched");
+Eq(0, HudState.FromWorld(s17cPylon, new Weapon()).PoweredPylons, "slice17 step2 direct conduit pylon is not powered in the consumer count");
+Eq(1, HudState.FromWorld(s17cPylon, new Weapon()).TotalPylons, "slice17 step2 direct conduit pylon still totals one pylon");
+// Feeding cases: neither a Dynamo nor an Alternator beside a
+// mill becomes lone under the new rule, whatever it delivers.
+var s17cDyn = new WorldZone(42);
+s17cDyn.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cDyn.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+Eq((0, 0), s17cDyn.LivePowerCounts(), "slice17 step2 dynamo beside a mill counts neither live nor lone");
+Eq(Voltage.LV, s17cDyn.DeliveredVoltage(16, 20, 16), "slice17 step2 dynamo beside a mill still delivers LV");
+Check(s17cDyn.IsPowered(16, 20, 16), "slice17 step2 dynamo beside a mill is still powered");
+var s17cAlt = new WorldZone(42);
+s17cAlt.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cAlt.Chunk.TrySet(17, 20, 16, BlockType.Alternator);
+Eq((0, 0), s17cAlt.LivePowerCounts(), "slice17 step2 alternator beside a mill counts neither live nor lone");
+Eq(Voltage.HV, s17cAlt.DeliveredVoltage(16, 20, 16), "slice17 step2 alternator beside a mill still delivers HV");
+Check(s17cAlt.IsMismatched(16, 20, 16), "slice17 step2 alternator beside a mill is still mismatched");
+Eq(1, HudState.FromWorld(s17cAlt, new Weapon()).WarnedMills, "slice17 step2 alternator beside a mill still warns one mill");
+var s17cDynPylon = new WorldZone(42);
+s17cDynPylon.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+s17cDynPylon.Chunk.TrySet(18, 5, 16, BlockType.Dynamo);
+Eq((0, 0), s17cDynPylon.LivePowerCounts(), "slice17 step2 dynamo beside a pylon counts neither live nor lone, mismatched LV included");
+Check(s17cDynPylon.IsPylonMismatched(17, 5, 16), "slice17 step2 dynamo beside a pylon is still mismatched LV");
+var s17cAltPylon = new WorldZone(42);
+s17cAltPylon.Chunk.TrySet(17, 5, 16, BlockType.ShockPylon);
+s17cAltPylon.Chunk.TrySet(18, 5, 16, BlockType.Alternator);
+Eq((0, 0), s17cAltPylon.LivePowerCounts(), "slice17 step2 alternator beside a pylon counts neither live nor lone");
+Check(s17cAltPylon.IsPylonPowered(17, 5, 16), "slice17 step2 alternator beside a pylon is still powered HV");
+// Conflict is still feeding, not lone: a Dynamo and an
+// Alternator beside one mill deliver None collectively, and
+// neither source counts as lone — counting either would hide
+// the conflict behind a lone number.
+var s17cConflict = new WorldZone(42);
+s17cConflict.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cConflict.Chunk.TrySet(17, 20, 16, BlockType.Dynamo);
+s17cConflict.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+Eq((0, 0), s17cConflict.LivePowerCounts(), "slice17 step2 dynamo plus alternator beside one mill count neither live nor lone");
+Eq(Voltage.None, s17cConflict.DeliveredVoltage(16, 20, 16), "slice17 step2 direct-source conflict still delivers None");
+Check(!s17cConflict.IsPowered(16, 20, 16), "slice17 step2 conflicted mill is not powered");
+Check(!s17cConflict.IsMismatched(16, 20, 16), "slice17 step2 conflicted mill is not mismatched, None is neither");
+// A Conduit beside an already-fed mill is still lone: it feeds
+// nothing itself, even though its neighbour mill is powered
+// by another source, or mismatched by one.
+var s17cDynPlus = new WorldZone(42);
+s17cDynPlus.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cDynPlus.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s17cDynPlus.Chunk.TrySet(15, 20, 16, BlockType.Dynamo);
+Eq((0, 1), s17cDynPlus.LivePowerCounts(), "slice17 step2 conduit beside a dynamo-fed mill counts 1 lone source, dynamo counts neither");
+Eq(Voltage.LV, s17cDynPlus.DeliveredVoltage(16, 20, 16), "slice17 step2 dynamo still decides a mill beside a conduit at LV");
+var s17cAltPlus = new WorldZone(42);
+s17cAltPlus.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cAltPlus.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s17cAltPlus.Chunk.TrySet(15, 20, 16, BlockType.Alternator);
+Eq((0, 1), s17cAltPlus.LivePowerCounts(), "slice17 step2 conduit beside an alternator-fed mill counts 1 lone source, alternator counts neither");
+Check(s17cAltPlus.IsMismatched(16, 20, 16), "slice17 step2 alternator still mismatches a mill beside a conduit");
+// A Conduit beside a mill that also touches a cable is not
+// double-counted: the fed network counts as fed (0 live, 0
+// lone), and the free network counts as live (1 live, 0 lone).
+var s17cFedCable = new WorldZone(42);
+s17cFedCable.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cFedCable.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s17cFedCable.Chunk.TrySet(17, 20, 17, BlockType.Cable);
+s17cFedCable.Chunk.TrySet(16, 20, 17, BlockType.Cable);
+Eq((0, 0), s17cFedCable.LivePowerCounts(), "slice17 step2 conduit beside a mill and touching its feeding cable counts neither live nor lone");
+Eq(Voltage.HV, s17cFedCable.DeliveredVoltage(16, 20, 16), "slice17 step2 conduit cable mill still delivers HV through the cable");
+var s17cFreeCable = new WorldZone(42);
+s17cFreeCable.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cFreeCable.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s17cFreeCable.Chunk.TrySet(18, 20, 16, BlockType.Cable);
+Eq((1, 0), s17cFreeCable.LivePowerCounts(), "slice17 step2 conduit beside a mill and touching a free cable counts 1 live network, 0 lone sources");
+// Per source cell, not per consumer or per pair.
+var s17cTwoMill = new WorldZone(42);
+s17cTwoMill.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cTwoMill.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s17cTwoMill.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 2), s17cTwoMill.LivePowerCounts(), "slice17 step2 two conduits beside one mill count 2 lone sources");
+var s17cTwoConsumer = new WorldZone(42);
+s17cTwoConsumer.Chunk.TrySet(15, 20, 16, BlockType.KineticMill);
+s17cTwoConsumer.Chunk.TrySet(16, 20, 16, BlockType.Conduit);
+s17cTwoConsumer.Chunk.TrySet(17, 20, 16, BlockType.KineticMill);
+Eq((0, 1), s17cTwoConsumer.LivePowerCounts(), "slice17 step2 one conduit beside two mills counts 1 lone source, not one per pair");
+Eq(Voltage.None, s17cTwoConsumer.DeliveredVoltage(15, 20, 16), "slice17 step2 one conduit beside two mills delivers nothing to the first mill");
+Eq(Voltage.None, s17cTwoConsumer.DeliveredVoltage(17, 20, 16), "slice17 step2 one conduit beside two mills delivers nothing to the second mill");
+// Transformer adjacency stays disqualifying on its own grounds:
+// a transformer is wiring, not a consumer endpoint, so a
+// Conduit beside one counts neither, even though the transformer
+// outputs None with no other input — and even when the
+// transformer is live through another source.
+var s17cTx = new WorldZone(42);
+s17cTx.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s17cTx.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+s17cTx.Chunk.TrySet(17, 20, 15, BlockType.KineticMill);
+Eq((0, 0), s17cTx.LivePowerCounts(), "slice17 step2 conduit beside a transformer counts neither live nor lone");
+Eq(Voltage.None, s17cTx.DeliveredVoltage(17, 20, 15), "slice17 step2 transformer beside a conduit alone outputs None to its probe mill");
+var s17cTxLive = new WorldZone(42);
+s17cTxLive.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s17cTxLive.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s17cTxLive.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+s17cTxLive.Chunk.TrySet(17, 20, 15, BlockType.KineticMill);
+Eq((0, 0), s17cTxLive.LivePowerCounts(), "slice17 step2 conduit beside a live transformer feeding a mill counts neither live nor lone");
+Eq(Voltage.HV, s17cTxLive.DeliveredVoltage(17, 20, 15), "slice17 step2 dynamo-fed transformer still outputs stepped-up HV to its probe mill");
+// Control: a lone Conduit with no neighbour at all still counts.
+var s17cLone = new WorldZone(42);
+s17cLone.Chunk.TrySet(16, 20, 16, BlockType.Conduit);
+Eq((0, 1), s17cLone.LivePowerCounts(), "slice17 step2 lone conduit with no neighbour still counts 1 lone source");
+// Save/load re-derivation: the decided count is derived, never
+// saved, so a loaded direct-Conduit world reads it again.
+var s17cSim = new Simulation(42);
+s17cSim.World.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s17cSim.World.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+Eq((0, 1), s17cSim.World.LivePowerCounts(), "slice17 step2 direct conduit counts 1 lone source before save");
+var s17cSave = s17cSim.SaveToJson();
+var s17cLoaded = new Simulation(99);
+Check(s17cLoaded.LoadFromJson(s17cSave), "slice17 step2 direct conduit world loads");
+Eq((0, 1), s17cLoaded.World.LivePowerCounts(), "slice17 step2 direct conduit counts 1 lone source after load");
+Eq(1, s17cLoaded.Hud().LoneSources, "slice17 step2 hud carries the direct conduit lone count after load");
+Eq(0, s17cLoaded.Hud().PoweredMills, "slice17 step2 direct conduit mill is still not powered after load");
+Eq(1, s17cLoaded.Hud().TotalMills, "slice17 step2 direct conduit mill still totals one mill after load");
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

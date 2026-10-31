@@ -104,8 +104,11 @@ public sealed class HudState
     /// that is not None, and standalone transformer groups with a
     /// non-None output, each feeding no consumer), and how many
     /// lone sources (LoneSources: Dynamo / Alternator / Conduit
-    /// cells with no cable, transformer, or consumer adjacent;
-    /// a Conduit counts since Slice 14 Step 1). See
+    /// cells with no cable or transformer neighbour and no
+    /// consumer neighbour they feed directly; since Slice 17
+    /// Step 2 a Conduit beside a consumer counts as lone,
+    /// because it feeds no consumer directly, while a Dynamo
+    /// or Alternator beside a consumer still does not). See
     /// WorldZone.LivePowerCounts for the decided rules: networks
     /// not cells, no voltage split (LV and HV count alike), and
     /// this count is not a warning — an HV network counted here

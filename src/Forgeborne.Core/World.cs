@@ -602,6 +602,28 @@ public sealed class WorldZone
     ///   Source-to-source adjacency does not disqualify:
     ///   sources are not conductors, so two adjacent Dynamos
     ///   are two lone sources, not one network.
+    ///   Slice 17 Step 2 redecides one clause of that rule,
+    ///   and only that clause: a Conduit beside a consumer
+    ///   now counts as lone, because a Conduit is absent
+    ///   from the direct branch — it feeds no consumer
+    ///   face-adjacent, so a consumer neighbour is not
+    ///   wiring for a Conduit the way it is for a Dynamo
+    ///   or Alternator. Lone now means, in one sentence:
+    ///   a source with no cable or transformer neighbour,
+    ///   and no consumer neighbour that it feeds directly
+    ///   (Dynamo and Alternator feed any adjacent consumer
+    ///   directly, rated or mismatched alike, so a consumer
+    ///   neighbour still disqualifies them; a Conduit feeds
+    ///   no adjacent consumer, so it does not). A cable or
+    ///   transformer neighbour still disqualifies every
+    ///   source, Conduit included, even when that wiring
+    ///   currently delivers nothing — a transformer is
+    ///   wiring, not a consumer endpoint, and the dead
+    ///   cable-component precedent says adjacency to wiring
+    ///   disqualifies even when the wiring is dead. The
+    ///   count is per source cell, not per consumer or per
+    ///   pair: two Conduits beside one mill are two lone
+    ///   sources, one Conduit beside two mills is one.
     /// - No voltage split: LV and HV networks count alike in the
     ///   one number. The count answers "how many live wirings
     ///   have no consumer yet", not "what voltage"; a split
@@ -661,7 +683,13 @@ public sealed class WorldZone
                 int nx = x + dx, ny = y + dy, nz = z + dz;
                 if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
                 var neighbour = Chunk.Get(nx, ny, nz);
-                if (neighbour is BlockType.Cable or BlockType.Transformer || IsConsumer(neighbour)) { lone = false; break; }
+                // Slice 17 Step 2: cable and transformer neighbours
+                // disqualify every source, but a consumer neighbour
+                // disqualifies only a source that feeds it directly
+                // (Dynamo, Alternator) — never a Conduit, which is
+                // absent from the direct branch.
+                if (neighbour is BlockType.Cable or BlockType.Transformer) { lone = false; break; }
+                if (IsConsumer(neighbour) && block is BlockType.Dynamo or BlockType.Alternator) { lone = false; break; }
             }
             if (lone) loneSources++;
         }

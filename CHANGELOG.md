@@ -1,5 +1,136 @@
 # Forgeborne — Changelog
 
+## 0.75.0 — 2026-10-30 — Slice 17 Step 2: direct-Conduit count query decided
+
+- Decision, decided in this step (rationale in
+  DECISIONS.md): a Conduit standing directly
+  beside a consumer now counts as one lone
+  source, folded into the existing POWER line's
+  lone number — no new line, no new word, no
+  HUD redesign. Lone now means, in one
+  sentence: a source with no cable or
+  transformer neighbour, and no consumer
+  neighbour that it feeds directly. A Dynamo or
+  Alternator beside a consumer still counts
+  neither live nor lone, because it feeds that
+  consumer directly (rated or mismatched
+  alike); a Conduit feeds no consumer directly,
+  because it is absent from the direct branch,
+  so a consumer neighbour alone no longer
+  disqualifies it. A cable or transformer
+  neighbour still disqualifies every source,
+  Conduit included, even when that wiring
+  delivers nothing — a transformer is wiring,
+  not a consumer endpoint. The count is per
+  source cell, not per consumer or per pair:
+  two Conduits beside one mill are two lone
+  sources, one Conduit beside two mills is one.
+- Proof set, decided in this step (rationale in
+  DECISIONS.md): the Slice 17 scope's cases,
+  each proved by test — a Conduit beside a mill,
+  a workstation, and a pylon (one rule for all
+  three consumers, each reading 0 LIVE / 1
+  LONE with its consumer's delivery still None
+  and its consumer counts unmoved); a Dynamo
+  beside a mill (LV, powered, 0 / 0) and an
+  Alternator beside a mill (HV, mismatched and
+  warned, 0 / 0), plus a Dynamo beside a pylon
+  (LV mismatch, 0 / 0) and an Alternator beside
+  a pylon (HV powered, 0 / 0); a Dynamo plus an
+  Alternator beside one mill (direct-source
+  conflict, None, 0 / 0, neither counted as
+  lone, so the conflict is not hidden behind a
+  lone number); a Conduit beside a Dynamo-fed
+  mill (LV, 0 / 1) and beside an
+  Alternator-fed mill (HV mismatched, 0 / 1);
+  a Conduit beside a mill that also touches a
+  cable (fed network 0 / 0, free network
+  1 / 0 — never double-counted as both); two
+  Conduits beside one mill (0 / 2) and one
+  Conduit beside two mills (0 / 1); a Conduit
+  beside a transformer alone (0 / 0, probe
+  mill reads None) and beside a Dynamo-fed
+  transformer (0 / 0, probe mill reads stepped
+  HV); a lone Conduit with no neighbour (0 / 1,
+  the control case); and save/load
+  re-derivation (0 / 1 before and after load,
+  HUD lone 1, consumer counts unmoved).
+- Step 1 independence, stated explicitly: Step
+  1 decides cable tint (component liveness),
+  and this step's cases have no cable, so
+  Step 1's answer changes no Step 2 case. The
+  counts keep the Slice 12 meaning of "live"
+  (carrying a non-None voltage, feeding no
+  consumer) and do not adopt Step 1's tint
+  vocabulary for counts: a direct Conduit is
+  not a cable component, so component liveness
+  has nothing to attach to here.
+- HUD line, decided in this step (rationale in
+  DECISIONS.md): the decided count folds into
+  the existing POWER line's lone number, so
+  HudDisplay's LivePowerText line text is
+  unchanged and no adapter edit was needed.
+  The rejected alternatives were keeping the
+  definition unchanged (0 / 0 for a placement
+  that went nowhere, indistinguishable from no
+  source at all) and adding a distinct third
+  readout (a second number for the same
+  delivery fact — a source feeding nothing —
+  split only by adjacency history, at the cost
+  of a new HUD word against HUD discipline).
+  Powered, warned, and total consumer counts
+  do not move in any case: they are consumer
+  counts, not source counts, and every case
+  above proves them alongside the POWER line.
+- Delivery boundary, decided in this step: no
+  delivery, precedence, conflict, rating, cost,
+  or phase rule moves. A Conduit beside a mill
+  still delivers nothing and its mill still
+  gathers kinetically and survives its tick; a
+  Dynamo or Alternator beside a mill still
+  delivers exactly as before. No material,
+  shader, marker, light, fog, or view model
+  value moves in this step.
+- Checklist relation, decided in this step
+  (rationale in DECISIONS.md): new playtest-gate
+  checklist item 36, a Windows-only observation
+  of the decided count — a Conduit beside a
+  mill, a Dynamo beside a mill, and a lone
+  Conduit, with the POWER line read aloud for
+  each. Item 36 extends item 22's live-network
+  and lone-source display (a lone-Conduit
+  observation added; item 22 stands) and
+  extends item 28's Conduit observation (item
+  28's mill clause — kinetic cadence, no
+  warning — stands; item 36 adds the POWER
+  line reading item 28 did not ask for). It
+  does not supersede item 28's mill clause and
+  does not claim item 35's tint observation.
+  The next free playtest-gate number is now 37.
+- Superseded assertions, stated openly: three
+  earlier assertions that recorded the old
+  reading (the Slice 14 Step 2 composed lone
+  counts before the tick, after tick 1, and
+  after load) were updated from 0 to 1, each
+  with its history kept in the assertion text
+  and in the section header comment, and the
+  Slice 14 demo's printed text was updated the
+  same way — no assertion was deleted silently
+  and no history was rewritten as if the old
+  reading had never existed. No test was
+  weakened to pass: the three updated
+  assertions assert a stronger, decided
+  reading, and the suite rose by 58 new
+  assertions on top of them, with no failures.
+- Tests: 2227 passed, 0 failed (was 2169; +58,
+  no failures on the final runs). Demo
+  unchanged except for the Slice 14 print
+  wording: Slice 15 scenario save 44,016 chars,
+  all earlier demo saves as in the 0.74.0 entry.
+- Next, in order: Slice 17 Step 3, the composed
+  demo scenario plus documentation-only review
+  closing Slice 17, decided in that step.
+
 ## 0.74.0 — 2026-10-30 — Slice 17 Step 1: single-cable tint query decided
 
 - Decision, decided in this step (rationale in
