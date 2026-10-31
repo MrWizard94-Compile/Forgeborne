@@ -1,5 +1,72 @@
 # Forgeborne — Changelog
 
+## 0.106.0 — 2026-10-31 — Integration Step 1:
+manifest package name and editor version, documentation of a
+local-only fix, NOT yet pushed
+
+- Step taken: Integration Step 1, the first proper
+  integration step after the silent schedule was paused
+  2026-10-31, per
+  workspace/goals/forgeborne-game-foundation/files/forgeborne-integration-scope.md.
+  Two project files move, no code file moves, no core
+  rule changes, no demo scenario, no checklist item
+  is added or marked passed, and Slice 27 is NOT
+  scoped here.
+- Change 1, manifest: ForgeborneUnity/Packages/
+  manifest.json, com.unity.input-system (with
+  hyphen, a package Unity cannot find) becomes
+  com.unity.inputsystem (no hyphen, Unity's
+  official package name). Version is kept at
+  1.11.0 in this step, deliberately, not guessed
+  to a newer version. Rob confirmed 2026-10-31
+  that he made the same hyphen removal on his
+  Windows PC copy, so this change matches his
+  local edit and does not introduce a second,
+  different manifest.
+- Change 2, editor version, added at Rob's
+  direction 2026-10-31 ("may as well go ahead
+  and change it to 6000.3.27f2 as well"):
+  ForgeborneUnity/ProjectSettings/
+  ProjectVersion.txt, m_EditorVersion 6000.0.0f1
+  (placeholder, with a Hub security alert for
+  that version) becomes 6000.3.27f2, the editor
+  Rob installed in Unity Hub on Windows
+  2026-10-31. The revision hash is NOT invented
+  here; the revision line records that Unity is
+  to set it on open.
+- Claim split, kept explicit: the manifest name
+  is corrected and the manifest JSON parses,
+  and the ProjectVersion file now names the
+  editor Rob actually has installed. Neither
+  claim is a Unity verification: Package Manager
+  resolution for 1.11.0 on 6000.3.27f2, and a
+  clean Unity open with that editor version,
+  are still owed on Windows and are not claimed
+  here. The 1.11.0 version may need updating in
+  Package Manager on Windows; if it does, that
+  update is its own recorded change, not a
+  silent edit to this step.
+- Why no code or demo in this step: a manifest
+  name and an editor version are project
+  metadata, not gameplay. Staging a demo for
+  them would prove nothing a player walks, and
+  changing a core rule to pay for a metadata
+  fix would be scope drift.
+- Changes: ForgeborneUnity/Packages/
+  manifest.json, ForgeborneUnity/ProjectSettings/
+  ProjectVersion.txt, CHANGELOG 0.106.0,
+  DECISIONS.md.
+- Tests: 5053 passed, 0 failed (unchanged,
+  metadata-only step; manifest and
+  ProjectVersion do not affect the headless
+  .NET suite). Demo unchanged: Slice 25 save
+  44,041 chars.
+- Next step: push this step as its own commit,
+  with Rob's push approval, after the 0.105.0
+  push that preceded it; then Integration
+  Step 2, the core multi-target DLL, not
+  promised here.
+
 ## 0.105.0 — 2026-10-31 — Slice 26 Step 2:
 documentation-only review, closing Slice 26
 

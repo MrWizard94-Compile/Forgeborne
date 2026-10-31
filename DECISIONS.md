@@ -11458,3 +11458,65 @@ marker proximity targeting, item 42
 - Next step: scoping Slice 27 as its own decision
   step, chosen from the ranked candidates the
   review carries, not promised here.
+
+## 2026-10-31 — Integration Step 1: manifest package name and editor version (0.106.0, under delegation, schedule paused)
+
+- Step taken: Integration Step 1, the first proper
+  integration step after Rob paused the silent
+  schedule 2026-10-31 and rejected a quick fix.
+  Two project metadata files move, no code file
+  moves, no core, save-format, economy, movement,
+  targeting, fire, marker, material, light, fog,
+  model, or HUD rule changes, and Slice 27 is
+  NOT scoped here.
+- Manifest decision, with evidence: Unity's
+  official Input System package name is
+  com.unity.inputsystem, with no hyphen, per
+  Unity's own manual. The repo manifest said
+  com.unity.input-system, with a hyphen, which
+  is why Unity's Package Manager reported
+  "Package [com.unity.input-system@1.11.0]
+  cannot be found" on Rob's Windows PC
+  2026-10-31. The fix is the name only, in
+  this step; the version is kept at 1.11.0,
+  deliberately not guessed to a newer version
+  that has not been verified for 6000.3.27f2.
+  Rob confirmed 2026-10-31 that he removed
+  the hyphen on his PC copy, so this repo
+  change matches his local edit; it does not
+  introduce a competing manifest.
+- Editor version decision, at Rob's direction:
+  Rob, 2026-10-31, "may as well go ahead and
+  change it to 6000.3.27f2 as well." ProjectVersion
+  therefore moves from the 6000.0.0f1 placeholder
+  (flagged in Hub with a security alert for that
+  version) to 6000.3.27f2, the editor Rob
+  installed in Unity Hub on Windows 2026-10-31.
+  The revision hash is not invented in the
+  file; Unity is to set it on open, and that
+  open is still owed as verification.
+- Claim split, kept explicit: the manifest JSON
+  parses with the corrected name, and the
+  ProjectVersion file names the installed
+  editor. Neither is claimed as a Unity
+  verification. Package Manager resolution for
+  1.11.0 on 6000.3.27f2, and a clean open with
+  6000.3.27f2, are Windows observations still
+  owed, and if Package Manager updates the
+  Input System version on Windows, that update
+  is recorded as its own change.
+- Deliberately NOT in this step: a copy of core
+  source into Assets (rejected by Rob as a
+  quick fix, and technically wrong for record
+  struct, required, and ThrowIfNull reasons
+  recorded in the integration scope); a
+  multi-target core DLL (that is Step 2);
+  a nullable fix; a URP asset or scene; a
+  checklist item marked passed; a claim that
+  Unity now opens cleanly or that the game is
+  playable.
+- Next step: push this step as its own commit,
+  with Rob's push approval, after the 0.105.0
+  push that preceded it; then Integration
+  Step 2, the core multi-target DLL, not
+  promised here.
