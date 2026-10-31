@@ -108,7 +108,11 @@ public sealed class HudState
     /// consumer neighbour they feed directly; since Slice 17
     /// Step 2 a Conduit beside a consumer counts as lone,
     /// because it feeds no consumer directly, while a Dynamo
-    /// or Alternator beside a consumer still does not). See
+    /// or Alternator beside a consumer still does not; since
+    /// Slice 19 Step 1 a Conduit beside only dead standalone
+    /// transformers counts as lone, because it feeds no
+    /// transformer directly either, while a Dynamo or
+    /// Alternator beside any transformer still does not). See
     /// WorldZone.LivePowerCounts for the decided rules: networks
     /// not cells, no voltage split (LV and HV count alike), and
     /// this count is not a warning — an HV network counted here

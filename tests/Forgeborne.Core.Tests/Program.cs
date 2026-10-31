@@ -5889,16 +5889,22 @@ s17cTwoConsumer.Chunk.TrySet(17, 20, 16, BlockType.KineticMill);
 Eq((0, 1), s17cTwoConsumer.LivePowerCounts(), "slice17 step2 one conduit beside two mills counts 1 lone source, not one per pair");
 Eq(Voltage.None, s17cTwoConsumer.DeliveredVoltage(15, 20, 16), "slice17 step2 one conduit beside two mills delivers nothing to the first mill");
 Eq(Voltage.None, s17cTwoConsumer.DeliveredVoltage(17, 20, 16), "slice17 step2 one conduit beside two mills delivers nothing to the second mill");
-// Transformer adjacency stays disqualifying on its own grounds:
-// a transformer is wiring, not a consumer endpoint, so a
-// Conduit beside one counts neither, even though the transformer
-// outputs None with no other input — and even when the
-// transformer is live through another source.
+// Transformer adjacency stayed disqualifying in Slice 17 Step 2
+// on its own grounds: a transformer is wiring, not a consumer
+// endpoint, so a Conduit beside one counted neither, even
+// though the transformer outputs None with no other input.
+// Slice 19 Step 1 (0.82.0) supersedes that reading for a dead
+// standalone transformer only: a Conduit is absent from the
+// transformer's direct branch, so a dead group is not wiring
+// for it, and the Conduit below now counts as one lone source
+// — the history is kept, the assertion is not weakened, it is
+// re-decided. A Conduit beside a live transformer still counts
+// neither, as the next world proves.
 var s17cTx = new WorldZone(42);
 s17cTx.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
 s17cTx.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
 s17cTx.Chunk.TrySet(17, 20, 15, BlockType.KineticMill);
-Eq((0, 0), s17cTx.LivePowerCounts(), "slice17 step2 conduit beside a transformer counts neither live nor lone");
+Eq((0, 1), s17cTx.LivePowerCounts(), "slice19 step1 conduit beside a dead transformer counts 0 live networks, 1 lone source, superseding slice17 step2");
 Eq(Voltage.None, s17cTx.DeliveredVoltage(17, 20, 15), "slice17 step2 transformer beside a conduit alone outputs None to its probe mill");
 var s17cTxLive = new WorldZone(42);
 s17cTxLive.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
@@ -6643,6 +6649,211 @@ Eq(2, s18Step3LoadedEnclosed.PatrolWaypointIndex, "slice18 step3 composed loaded
 Eq(5, s18Step3LoadedEnclosed.PatrolConsecutiveRefusals, "slice18 step3 composed loaded tick 5 enclosed five refusals counted again");
 Check(s18Step3LoadedEnclosed.IsPatrolStuck, "slice18 step3 composed loaded tick 5 enclosed is stuck again");
 Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s18Step3Loaded.World)[1].Activity, "slice18 step3 composed loaded tick 5 enclosed reads stuck again");
+
+// ---- Slice 19 Step 1: transformer-adjacency count query ----
+// Decision, decided in this step (rationale in DECISIONS.md):
+// a Conduit beside a dead standalone transformer counts as
+// lone, folded into the existing POWER line's lone number —
+// no new line, no new word. A Conduit is absent from
+// TransformerOutput's direct branch, so a transformer is not
+// wiring for a Conduit the way it is for a Dynamo or
+// Alternator; the exception holds only while the group is
+// dead (every cell outputs None) and standalone (no cable
+// neighbour). The four hypotheses, weighed: keep unchanged
+// (rejected — the motivating case then stays invisible on
+// every count, and the player's placement went nowhere with
+// no readout anywhere); count as lone (adopted, in the
+// branch-limited form above); a distinct readout (rejected
+// — HUD discipline, art-direction rule 4, and the lone
+// number already means a placed source delivering nothing
+// since Slice 17 Step 2, so a third number would split one
+// question across two numbers); redefine live to include
+// dead wiring (rejected — live has meant carrying a
+// non-None voltage since Slice 12, and a dead group counted
+// as live would make the live number lie about the very
+// thing it exists to report). No delivery rule moves: a
+// Conduit beside a transformer still delivers nothing
+// directly, a transformer beside a Conduit alone still
+// outputs None, and no consumer predicate moves.
+// Motivating case: a Conduit beside a transformer alone.
+var s19Tx = new WorldZone(42);
+s19Tx.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19Tx.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 1), s19Tx.LivePowerCounts(), "slice19 step1 conduit beside a transformer alone counts 0 live networks, 1 lone source");
+Eq(0, HudState.FromWorld(s19Tx, new Weapon()).LiveNetworks, "slice19 step1 hud carries no live network for the dead transformer case");
+Eq(1, HudState.FromWorld(s19Tx, new Weapon()).LoneSources, "slice19 step1 hud carries the dead-transformer conduit as one lone source");
+// Dead group feeding a consumer: the consumer's presence does
+// not block the lone count — the group's deadness decides,
+// and the mill's own counts (total, unpowered) do not
+// double-count the source.
+var s19TxMill = new WorldZone(42);
+s19TxMill.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19TxMill.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+s19TxMill.Chunk.TrySet(17, 20, 15, BlockType.KineticMill);
+Eq((0, 1), s19TxMill.LivePowerCounts(), "slice19 step1 conduit beside a dead transformer beside a mill counts 0 live networks, 1 lone source");
+Eq(Voltage.None, s19TxMill.DeliveredVoltage(17, 20, 15), "slice19 step1 dead transformer mill delivery is still None");
+Check(!s19TxMill.IsPowered(17, 20, 15), "slice19 step1 dead transformer mill is not powered");
+Check(!s19TxMill.IsMismatched(17, 20, 15), "slice19 step1 dead transformer mill is not mismatched");
+Eq(1, HudState.FromWorld(s19TxMill, new Weapon()).TotalMills, "slice19 step1 dead transformer mill still totals one mill");
+Eq(0, HudState.FromWorld(s19TxMill, new Weapon()).PoweredMills, "slice19 step1 dead transformer mill is not powered in the consumer count");
+Eq(0, HudState.FromWorld(s19TxMill, new Weapon()).WarnedMills, "slice19 step1 dead transformer mill is not warned in the consumer count");
+// No double count: a Conduit beside a live transformer gains
+// no lone count, whether the group feeds a consumer or not.
+var s19TxLive = new WorldZone(42);
+s19TxLive.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s19TxLive.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19TxLive.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((1, 0), s19TxLive.LivePowerCounts(), "slice19 step1 conduit beside a live transformer counts 1 live network, 0 lone sources, no double count");
+Eq(1, HudState.FromWorld(s19TxLive, new Weapon()).LiveNetworks, "slice19 step1 hud carries the live transformer group as one live network");
+var s19TxLiveFed = new WorldZone(42);
+s19TxLiveFed.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s19TxLiveFed.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19TxLiveFed.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+s19TxLiveFed.Chunk.TrySet(17, 20, 15, BlockType.KineticMill);
+Eq((0, 0), s19TxLiveFed.LivePowerCounts(), "slice19 step1 conduit beside a live transformer feeding a mill counts neither live nor lone");
+Eq(Voltage.HV, s19TxLiveFed.DeliveredVoltage(17, 20, 15), "slice19 step1 dynamo-fed transformer still delivers stepped-up HV to its mill");
+Check(s19TxLiveFed.IsMismatched(17, 20, 15), "slice19 step1 dynamo-fed transformer mill is still mismatched, delivery unchanged");
+// Live controls: a Dynamo or Alternator beside a transformer
+// alone still reads live, and neither becomes lone.
+var s19DynTx = new WorldZone(42);
+s19DynTx.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s19DynTx.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+Eq((1, 0), s19DynTx.LivePowerCounts(), "slice19 step1 dynamo beside a transformer alone counts 1 live network, 0 lone sources");
+var s19AltTx = new WorldZone(42);
+s19AltTx.Chunk.TrySet(16, 20, 16, BlockType.Alternator);
+s19AltTx.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+Eq((1, 0), s19AltTx.LivePowerCounts(), "slice19 step1 alternator beside a transformer alone counts 1 live network, 0 lone sources");
+// Per source cell, not per transformer or per pair.
+var s19TwoCondOneTx = new WorldZone(42);
+s19TwoCondOneTx.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19TwoCondOneTx.Chunk.TrySet(16, 20, 16, BlockType.Conduit);
+s19TwoCondOneTx.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 2), s19TwoCondOneTx.LivePowerCounts(), "slice19 step1 two conduits beside one dead transformer count 2 lone sources");
+var s19OneCondTwoTx = new WorldZone(42);
+s19OneCondTwoTx.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+s19OneCondTwoTx.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s19OneCondTwoTx.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+Eq((0, 1), s19OneCondTwoTx.LivePowerCounts(), "slice19 step1 one conduit beside two dead transformers counts 1 lone source, not one per pair");
+// Chain and ring with no source: the group is counted once
+// in the sense that matters here — one idle source beside it
+// counts once, however many dead cells the group has.
+var s19Chain = new WorldZone(42);
+s19Chain.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+s19Chain.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19Chain.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 1), s19Chain.LivePowerCounts(), "slice19 step1 conduit beside a dead transformer chain counts 1 lone source");
+var s19Ring = new WorldZone(42);
+s19Ring.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+s19Ring.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19Ring.Chunk.TrySet(17, 20, 17, BlockType.Transformer);
+s19Ring.Chunk.TrySet(16, 20, 17, BlockType.Transformer);
+s19Ring.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 1), s19Ring.LivePowerCounts(), "slice19 step1 conduit beside a sourceless transformer ring counts 1 lone source");
+// Conflicted transformer: Dynamo plus Alternator, output
+// None, two placed sources at 0 / 0 — the feeding kinds do
+// not become lone, so the conflict is not hidden behind a
+// lone number. A Conduit beside that same conflicted group
+// does count, because it feeds nothing into it.
+var s19Conflict = new WorldZone(42);
+s19Conflict.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s19Conflict.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19Conflict.Chunk.TrySet(18, 20, 16, BlockType.Alternator);
+s19Conflict.Chunk.TrySet(17, 20, 15, BlockType.KineticMill);
+Eq((0, 0), s19Conflict.LivePowerCounts(), "slice19 step1 dynamo plus alternator beside one conflicted transformer count neither live nor lone");
+Eq(Voltage.None, s19Conflict.DeliveredVoltage(17, 20, 15), "slice19 step1 conflicted transformer mill delivery is still None");
+Check(!s19Conflict.IsPowered(17, 20, 15), "slice19 step1 conflicted transformer mill is not powered");
+Check(!s19Conflict.IsMismatched(17, 20, 15), "slice19 step1 conflicted transformer mill is not mismatched, None is neither");
+var s19ConflictCond = new WorldZone(42);
+s19ConflictCond.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s19ConflictCond.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19ConflictCond.Chunk.TrySet(18, 20, 16, BlockType.Alternator);
+s19ConflictCond.Chunk.TrySet(17, 20, 15, BlockType.Conduit);
+Eq((0, 1), s19ConflictCond.LivePowerCounts(), "slice19 step1 conduit beside a conflicted transformer counts 1 lone source, its feeding neighbours count neither");
+// Which neighbour wins: a Conduit beside both a mill and a
+// dead transformer counts lone under both rules at once —
+// neither neighbour disqualifies, because the mill alone
+// already counted it lone in Slice 17 Step 2 and the dead
+// transformer adds nothing delivering.
+var s19MillDeadTx = new WorldZone(42);
+s19MillDeadTx.Chunk.TrySet(16, 20, 16, BlockType.KineticMill);
+s19MillDeadTx.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s19MillDeadTx.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+Eq((0, 1), s19MillDeadTx.LivePowerCounts(), "slice19 step1 conduit beside both a mill and a dead transformer counts 1 lone source");
+Eq(Voltage.None, s19MillDeadTx.DeliveredVoltage(16, 20, 16), "slice19 step1 mill beside a dead-transformer conduit still receives None");
+Check(!s19MillDeadTx.IsPowered(16, 20, 16), "slice19 step1 mill beside a dead-transformer conduit is not powered");
+Check(!s19MillDeadTx.IsMismatched(16, 20, 16), "slice19 step1 mill beside a dead-transformer conduit is not mismatched");
+// Only dead counts: a Conduit beside one dead and one live
+// transformer is not lone — the live wiring disqualifies —
+// and a cable neighbour disqualifies even beside a dead
+// transformer, because a Conduit feeds a cable directly.
+var s19MixedTx = new WorldZone(42);
+s19MixedTx.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+s19MixedTx.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s19MixedTx.Chunk.TrySet(18, 20, 16, BlockType.Transformer);
+s19MixedTx.Chunk.TrySet(19, 20, 16, BlockType.Dynamo);
+Eq((1, 0), s19MixedTx.LivePowerCounts(), "slice19 step1 conduit beside one dead and one live transformer counts 1 live network, 0 lone sources");
+var s19CableWins = new WorldZone(42);
+s19CableWins.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+s19CableWins.Chunk.TrySet(17, 20, 16, BlockType.Conduit);
+s19CableWins.Chunk.TrySet(17, 20, 17, BlockType.Cable);
+Eq((1, 0), s19CableWins.LivePowerCounts(), "slice19 step1 conduit beside a dead transformer and touching a cable counts 1 live network, 0 lone sources");
+// Cable story: a transformer beside a cable belongs to that
+// component, not to a standalone group — for a live cable
+// and for a dead, mixed-voltage cable alike, the Conduit
+// beside it stays cable-story, not lone.
+var s19CableStoryLive = new WorldZone(42);
+s19CableStoryLive.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19CableStoryLive.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+s19CableStoryLive.Chunk.TrySet(17, 20, 17, BlockType.Cable);
+s19CableStoryLive.Chunk.TrySet(16, 20, 17, BlockType.Dynamo);
+Eq((1, 0), s19CableStoryLive.LivePowerCounts(), "slice19 step1 conduit beside a transformer beside a live cable counts 1 live network, 0 lone sources");
+var s19CableStoryDead = new WorldZone(42);
+s19CableStoryDead.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19CableStoryDead.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+s19CableStoryDead.Chunk.TrySet(17, 20, 17, BlockType.Cable);
+s19CableStoryDead.Chunk.TrySet(16, 20, 17, BlockType.Dynamo);
+s19CableStoryDead.Chunk.TrySet(17, 20, 18, BlockType.Alternator);
+Eq((0, 0), s19CableStoryDead.LivePowerCounts(), "slice19 step1 conduit beside a transformer beside a dead mixed-voltage cable counts neither live nor lone");
+// Dead-cable consistency, met in the open: a Dynamo and a
+// Conduit touching one mixed-voltage component read 0 / 0
+// today, and stay 0 / 0 — the distinction is the branch, not
+// a preference. A Conduit is a full cable source (HV into
+// the component), so cable adjacency is genuine wiring for
+// it, while transformer adjacency is not; a rule that
+// counted cable-adjacent dead sources as lone would count
+// sources that feed the very component that died. A cable
+// component fed only by a dead transformer is a cable case,
+// not a transformer case: the component's voltage is a cable
+// computation, its transformer is cable-story, and it reads
+// 0 / 0 with no source to count.
+var s19DeadCable = new WorldZone(42);
+s19DeadCable.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s19DeadCable.Chunk.TrySet(16, 20, 16, BlockType.Dynamo);
+s19DeadCable.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 0), s19DeadCable.LivePowerCounts(), "slice19 step1 dynamo plus conduit beside one dead mixed-voltage cable count neither live nor lone");
+Eq(0, HudState.FromWorld(s19DeadCable, new Weapon()).LoneSources, "slice19 step1 hud carries no lone source for the dead cable case");
+var s19DeadTxCable = new WorldZone(42);
+s19DeadTxCable.Chunk.TrySet(17, 20, 16, BlockType.Cable);
+s19DeadTxCable.Chunk.TrySet(16, 20, 16, BlockType.Transformer);
+Eq((0, 0), s19DeadTxCable.LivePowerCounts(), "slice19 step1 cable fed only by a dead transformer counts neither live nor lone, a cable case");
+// Control: a lone Conduit with no neighbour at all still
+// counts, exactly as before.
+var s19Lone = new WorldZone(42);
+s19Lone.Chunk.TrySet(16, 20, 16, BlockType.Conduit);
+Eq((0, 1), s19Lone.LivePowerCounts(), "slice19 step1 lone conduit with no neighbour still counts 1 lone source");
+// Save/load re-derivation: the decided count is derived,
+// never saved, so a loaded dead-transformer world reads it
+// again.
+var s19Sim = new Simulation(42);
+s19Sim.World.Chunk.TrySet(17, 20, 16, BlockType.Transformer);
+s19Sim.World.Chunk.TrySet(18, 20, 16, BlockType.Conduit);
+Eq((0, 1), s19Sim.World.LivePowerCounts(), "slice19 step1 dead transformer conduit counts 1 lone source before save");
+var s19Save = s19Sim.SaveToJson();
+var s19Loaded = new Simulation(99);
+Check(s19Loaded.LoadFromJson(s19Save), "slice19 step1 dead transformer world loads");
+Eq((0, 1), s19Loaded.World.LivePowerCounts(), "slice19 step1 dead transformer conduit counts 1 lone source after load");
+Eq(1, s19Loaded.Hud().LoneSources, "slice19 step1 hud carries the dead transformer conduit lone count after load");
+Eq(0, s19Loaded.Hud().LiveNetworks, "slice19 step1 hud carries no live network for the dead transformer case after load");
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

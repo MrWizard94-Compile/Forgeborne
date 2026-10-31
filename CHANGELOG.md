@@ -1,5 +1,102 @@
 # Forgeborne — Changelog
 
+## 0.82.0 — 2026-10-31 — Slice 19 Step 1:
+transformer-adjacency count query, decided
+
+- Decision, decided in this step (rationale in
+  DECISIONS.md): a Conduit beside a dead
+  standalone transformer counts as lone, folded
+  into the existing POWER line's lone number —
+  no new line, no new word. The exception holds
+  only while the transformer group is dead (every
+  cell outputs None) and standalone (no cable
+  neighbour), and only for a Conduit, because a
+  Conduit is absent from TransformerOutput's
+  direct branch (Dynamo LV and Alternator HV
+  only): a transformer is not wiring for a
+  Conduit the way it is for a Dynamo or
+  Alternator, by the same branch logic Slice 17
+  Step 2 used for consumers. A Conduit beside a
+  live transformer gains no lone count (1 LIVE,
+  0 LONE, no double count, feeding or not); a
+  Dynamo or Alternator beside any transformer
+  still gains none, even a conflicted one, so a
+  conflict is not hidden behind a lone number;
+  a cable neighbour still disqualifies every
+  source, even a dead component, because every
+  source kind is a cable input (Dynamo LV,
+  Alternator HV, Conduit HV) — the dead-cable
+  asymmetry is that branch difference, stated
+  openly, and the dead-cable case stays 0 / 0.
+  A transformer touching a cable stays
+  cable-story, not standalone, for a live cable
+  and a dead mixed-voltage cable alike; a cable
+  component fed only by a dead transformer is a
+  cable case, not a transformer case, and reads
+  0 / 0. Counting is per source cell: two
+  Conduits beside one dead transformer are two
+  lone sources, one Conduit beside two dead
+  transformers is one, and one Conduit beside a
+  dead chain or ring is one. A consumer touching
+  a dead group does not block the count, and a
+  Conduit beside both a mill and a dead
+  transformer counts lone under both rules at
+  once — neither neighbour disqualifies.
+- Hypotheses weighed, decided in this step: keep
+  unchanged (rejected — the motivating case
+  then stays invisible on every count); count as
+  lone (adopted, in the branch-limited form
+  above); a distinct readout (rejected — HUD
+  discipline, art-direction rule 4, and the lone
+  number already means a placed source
+  delivering nothing since Slice 17 Step 2);
+  redefine live to include dead wiring (rejected
+  — live has meant carrying a non-None voltage
+  since Slice 12, and a dead group counted as
+  live would make the live number lie about the
+  very thing it exists to report).
+- Delivery boundary, decided in this step: no
+  delivery, precedence, conflict, rating, cost,
+  or phase rule moves. A Conduit beside a
+  transformer still delivers nothing directly, a
+  transformer beside a Conduit alone still
+  outputs None, a Dynamo-fed transformer still
+  delivers stepped-up HV to its mill, and no
+  consumer's powered, mismatched, or warned
+  predicate moves — proved by delivery and HUD
+  consumer assertions in the proof set, not
+  asserted beside it. No material, marker,
+  light, fog, model, or tint value moves; the
+  lone sentence is restated whole in
+  LivePowerCounts, not left as two
+  half-sentences for two neighbour kinds.
+- Superseded assertion, kept as history: the
+  Slice 17 Step 2 transformer world (Conduit
+  beside a transformer beside a mill) moves from
+  0 / 0 to 0 / 1 under this decision, with its
+  comment rewritten to say so; its live
+  counterpart (Dynamo-fed transformer feeding a
+  mill) still reads 0 / 0, unchanged. No test
+  weakened — one reading re-decided, with the
+  reason recorded.
+- Checklist: new playtest-gate item 38 (Windows
+  only) observing the decided count — a Conduit
+  beside a transformer alone, a Dynamo beside a
+  transformer alone, and a lone Conduit, with
+  the POWER line read aloud for each. Item 38
+  extends item 36 and item 22 and supersedes
+  neither; next free gate number is 39. No
+  adapter edit was needed: LivePowerText already
+  renders LoneSources. No demo scenario in this
+  step, by the Slice 19 scope: the composed demo
+  belongs to Step 2.
+- Tests: 2733 passed, 0 failed (was 2690; +43,
+  no failures on the final runs). Demo
+  unchanged: Slice 18 scenario save 44,015
+  chars, Slice 15 scenario save 44,016 chars,
+  Slice 17 scenario save 43,974 chars, and all
+  others as in the 0.80.0 entry.
+
 ## 0.81.0 — 2026-10-31 — Slice 19 scope: transformer-adjacency
 count remainder, documentation-only
 

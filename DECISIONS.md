@@ -7690,6 +7690,214 @@ count remainder, documentation-only, decided
   that step, with the proof set and consistency
   condition in docs/slice-19-scope.md.
 
+## 0.82.0 — Slice 19 Step 1: transformer-adjacency
+count query, decided
+
+- Decision, decided in this step: a Conduit
+  beside a dead standalone transformer counts as
+  lone, folded into the existing POWER line's
+  lone number. Lone, restated whole: a source
+  with no cable neighbour, no consumer neighbour
+  that it feeds directly, and no transformer
+  neighbour except a Conduit beside only dead
+  standalone transformers. The motivating case
+  (Conduit beside a transformer alone) now reads
+  0 LIVE, 1 LONE instead of 0 / 0; the live
+  controls (Dynamo or Alternator beside a
+  transformer alone) still read 1 LIVE, 0 LONE;
+  the no-neighbour Conduit control still reads
+  0 / 1.
+- Why the branch, not the adjacency, decides:
+  TransformerOutput's direct branch lists Dynamo
+  and Alternator only — there is deliberately no
+  Conduit branch, since Slice 14 Step 1, because
+  a Conduit delivers nothing face-adjacent. A
+  transformer neighbour therefore carries a
+  Conduit's power nowhere, exactly as a consumer
+  neighbour carries it nowhere in Slice 17 Step
+  2's logic, and the step extends that logic
+  rather than inventing a second one. The
+  extension is deliberately narrow: it is not
+  "a source beside dead wiring counts lone",
+  which would also count Dynamo and Alternator
+  beside a conflicted transformer and Dynamo and
+  Alternator beside a dead cable, and would
+  collapse three different wirings into one
+  word. It is "a source beside wiring it does
+  not feed, where that wiring delivers nothing,
+  counts lone" — and the code, not an analogy,
+  says which wirings each kind feeds.
+- Why live groups do not count lone: a live
+  group is already counted (1 LIVE when it feeds
+  no consumer) or already shown (a consumer's
+  powered/warned/total counts when it feeds one),
+  so a lone count beside it would report one
+  wiring twice, once as live and once as idle.
+  The proof set carries both live cases — group
+  free (1 / 0) and group feeding a mill (0 / 0,
+  mill mismatched HV by the unchanged delivery)
+  — so the no-double-count claim is proved, not
+  just stated. The "only dead" clause is checked
+  per group, and a Conduit beside one dead and
+  one live transformer is proved not lone, so a
+  single live neighbour defeats the exception.
+- Why feeding kinds never count lone beside a
+  transformer, even a dead one: Dynamo and
+  Alternator are direct inputs, so a conflicted
+  transformer (Dynamo plus Alternator, output
+  None) is fed by both, collectively to nothing.
+  Counting either as lone would hide the
+  conflict behind a lone number — the exact
+  reason Slice 17 Step 2 gave for the
+  mill-conflict case, and the step keeps the two
+  conflict rules aligned. The proof set proves
+  the alignment both ways: the conflicted group
+  alone reads 0 / 0 for two placed sources, and
+  a Conduit beside that same conflicted group
+  reads 0 / 1, because the Conduit is the one
+  source in the layout that feeds nothing into
+  it.
+- Dead-cable consistency, met in the open: a
+  Dynamo and a Conduit touching one
+  mixed-voltage component read 0 / 0 and stay
+  0 / 0. The stated distinction is the input
+  branch: CableNetworkVoltage lists all three
+  kinds (Dynamo LV, Alternator HV, Conduit HV),
+  so a Conduit feeds a cable component and its
+  power dies in the component's conflict — cable
+  adjacency is genuine wiring for a Conduit, and
+  counting it lone would count a source that
+  feeds the very component that died. By
+  contrast, TransformerOutput lists no Conduit,
+  so transformer adjacency is not wiring for a
+  Conduit at all. The asymmetry is therefore a
+  consequence of the two delivery functions'
+  branch lists, and a future delivery change
+  that gave Conduits a transformer branch would
+  have to re-decide this count with it, not
+  silently inherit it. A cable component fed
+  only by a dead transformer is classified as a
+  cable case: its voltage is a cable computation
+  with the transformer as an input, its
+  transformer is cable-story, and it reads 0 / 0
+  with no source to count — the transformer case
+  is reserved for standalone groups.
+- Cable-story and cable-wins cases: a Conduit
+  beside a transformer beside a cable stays
+  cable-story, proved for a live cable (1 / 0:
+  the component's live count, not a lone count)
+  and for a dead mixed-voltage cable (0 / 0).
+  A Conduit that touches a cable directly is
+  disqualified by the cable neighbour even when
+  it also touches a dead transformer (1 / 0, the
+  cable's live count), so no case lets a
+  transformer exception override a cable fact.
+- Consumer-touching dead groups, and the
+  mill-plus-transformer case: a dead group
+  touching a consumer does not block the count
+  (0 / 1, mill total 1, powered 0, warned 0),
+  because the consumer's counts and the source
+  count measure different things and double-count
+  nothing, and because Step 2 already counts a
+  Conduit beside a consumer as lone — a
+  one-hop consumer cannot make a Conduit feed
+  anything. The mill-plus-transformer case is
+  therefore not a contest with a winner: the
+  Conduit counts lone under Step 2's consumer
+  rule and under this step's dead-transformer
+  rule at once, and both rules point the same
+  way, which is why the old reading (transformer
+  disqualifies, 0 / 0) was the odd one out, not
+  a principle to preserve.
+- Hypotheses weighed and rejected, with
+  reasons, not defaults: keep unchanged — the
+  motivating placement would stay invisible on
+  every count, and "the transformer's None
+  output is the readout" fails because None is
+  also the readout for no placement at all, so
+  the count cannot distinguish a mistake from
+  nothing; distinct readout — a third number or
+  new line for one edge case would split one
+  question (is this placed source delivering
+  anything?) across two numbers, against HUD
+  discipline (art-direction rule 4), when the
+  lone number has meant exactly that since Step
+  2; redefine live — live has meant carrying a
+  non-None voltage since Slice 12, and a dead
+  group counted as live would make the live
+  number report a voltage that is not there.
+  Keeping the definition was treated as a
+  decision to defend, not a default to fall back
+  on, and it did not survive the motivating case.
+- HUD line, decided in this step: fold into the
+  existing POWER line's lone number. No new
+  line, no new word, no other HUD line moves:
+  powered, warned, and total consumer counts are
+  proved unchanged in the proof set for the
+  transformer-plus-mill, conflicted-transformer,
+  and mill-plus-transformer cases, and warned
+  counts do not move anywhere. No adapter edit
+  was needed because LivePowerText already
+  renders LoneSources; like item 36, the Windows
+  observation, not a headless test, is what
+  proves the line reads in the scene.
+- Delivery boundary, stated and proved: no
+  delivery, precedence, conflict, rating, cost,
+  or phase rule moves. The proof set asserts
+  DeliveredVoltage, IsPowered, and IsMismatched
+  for the dead-transformer mill (None, neither),
+  the Dynamo-fed transformer mill (HV,
+  mismatched), the conflicted-transformer mill
+  (None, neither), and the mill beside a
+  dead-transformer Conduit (None, neither) — so
+  a delivery move would have failed a test, not
+  hidden behind a count. If a future step finds
+  the honest answer to a related question needs
+  a Conduit transformer branch, that is a
+  delivery step with its own decision, deferred
+  here, not smuggled in as a count fix.
+- Superseded assertion, kept as history: the
+  Slice 17 Step 2 transformer world moves from
+  0 / 0 to 0 / 1, with its comment rewritten to
+  name Slice 19 Step 1 as the superseding
+  decision. Its live counterpart still reads
+  0 / 0. No test was weakened: one reading was
+  re-decided, and the suite rose from 2690 to
+  2733 with no failures.
+- Checklist relation, decided in this step: new
+  playtest-gate item 38 (Windows only) observes
+  the decided count for a Conduit beside a
+  transformer alone, a Dynamo beside a
+  transformer alone, and a lone Conduit, with
+  the POWER line read aloud for each. Item 38
+  extends item 36 (whose mill, workstation, and
+  pylon readings stand) and extends item 22
+  (whose live-network and lone-source display
+  stands), and supersedes neither. Next free
+  gate number is 39. Item 38, like items 35–37,
+  is an observation to be made on Windows and
+  recorded in DECISIONS.md when observed, not
+  closed by this document or by the test count.
+- Deliberately not in this step: a delivery
+  move (notably a Conduit transformer branch);
+  a HUD redesign; a material, marker, light,
+  fog, model, or tint value move; a patrol
+  recall, re-rally, radius, or waypoint decision;
+  a demo scenario (Step 2's work, by the Slice
+  19 scope); a Slice 20 scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 19 Step 2, the composed demo
+  plus review closing Slice 19, decided in that
+  step, staging the decided count together with
+  its controls in one Simulation, per
+  docs/slice-19-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

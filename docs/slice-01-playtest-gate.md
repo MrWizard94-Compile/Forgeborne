@@ -736,6 +736,40 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     Unity until it is observed there and recorded
     in DECISIONS.md.
 
+38. [ ] Dead-transformer count, decided 0.82.0 (core count
+    changed, adapter code unchanged — the LivePowerText line
+    already renders LoneSources, so no adapter edit was
+    needed, and no headless test proves a HUD line reads in
+    the scene, so the cited headless evidence is only the
+    Slice 19 Step 1 LivePowerCounts proof set: a Conduit
+    beside a transformer alone reads 0 LIVE NETWORKS, 1
+    LONE SOURCE, while a Dynamo beside a transformer alone
+    and an Alternator beside a transformer alone each read
+    1 LIVE NETWORKS, 0 LONE SOURCES, and a Conduit beside
+    a live transformer reads 1 LIVE NETWORKS, 0 LONE
+    SOURCES with no double count): wire LivePowerText in
+    the Inspector to a HUD line; place a Conduit beside a
+    transformer alone and read the POWER line aloud for
+    that placement — 0 LIVE NETWORKS, 1 LONE SOURCE —
+    proving a placement that went nowhere now has a
+    readout; replace the Conduit with a Dynamo beside the
+    same transformer and read the line aloud again — 1
+    LIVE NETWORKS, 0 LONE SOURCES — proving a live
+    transformer group does not become lone; then place a
+    lone Conduit with no neighbour at all and read the
+    line aloud a third time — 0 LIVE NETWORKS, 1 LONE
+    SOURCE — proving the no-neighbour control still
+    counts. This item EXTENDS item 36's direct-Conduit
+    observation (item 36's mill, workstation, and pylon
+    readings stand unchanged; this item adds the
+    dead-transformer reading for that same Conduit kind)
+    and EXTENDS item 22's live-network and lone-source
+    display (item 22 stands). It does NOT supersede item
+    36 or item 22, and it does not claim any tint, patrol,
+    or dusk observation. Do not claim this verified in
+    Unity until it is observed there and recorded
+    in DECISIONS.md.
+
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest
 section as pass or fail.

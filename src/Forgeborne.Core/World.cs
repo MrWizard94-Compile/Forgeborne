@@ -608,22 +608,50 @@ public sealed class WorldZone
     ///   from the direct branch — it feeds no consumer
     ///   face-adjacent, so a consumer neighbour is not
     ///   wiring for a Conduit the way it is for a Dynamo
-    ///   or Alternator. Lone now means, in one sentence:
-    ///   a source with no cable or transformer neighbour,
-    ///   and no consumer neighbour that it feeds directly
-    ///   (Dynamo and Alternator feed any adjacent consumer
-    ///   directly, rated or mismatched alike, so a consumer
-    ///   neighbour still disqualifies them; a Conduit feeds
-    ///   no adjacent consumer, so it does not). A cable or
-    ///   transformer neighbour still disqualifies every
-    ///   source, Conduit included, even when that wiring
-    ///   currently delivers nothing — a transformer is
-    ///   wiring, not a consumer endpoint, and the dead
-    ///   cable-component precedent says adjacency to wiring
-    ///   disqualifies even when the wiring is dead. The
-    ///   count is per source cell, not per consumer or per
-    ///   pair: two Conduits beside one mill are two lone
-    ///   sources, one Conduit beside two mills is one.
+    ///   or Alternator. Slice 19 Step 1 extends that same
+    ///   branch logic to wiring neighbours, and restates
+    ///   the rule whole, so no two half-sentences are left
+    ///   for two neighbour kinds. Lone now means, in one
+    ///   sentence: a source with no cable neighbour, no
+    ///   consumer neighbour that it feeds directly, and
+    ///   no transformer neighbour except a Conduit beside
+    ///   only dead standalone transformers. A Conduit is
+    ///   absent from TransformerOutput's direct branch
+    ///   (Dynamo LV and Alternator HV only), so a
+    ///   transformer neighbour is not wiring for a
+    ///   Conduit the way it is for a Dynamo or Alternator
+    ///   — but the exception holds only while the group
+    ///   is dead: every cell outputs None, and the group
+    ///   is standalone (no cable neighbour). A Conduit
+    ///   beside a live group does not count lone, because
+    ///   that wiring is already counted live (or feeding,
+    ///   so a consumer count shows it), and counting it
+    ///   lone too would double-count one wiring as both
+    ///   live and idle. A Dynamo or Alternator beside any
+    ///   transformer still does not count lone, even a
+    ///   conflicted one: both are direct inputs, so they
+    ///   feed the transformer (collectively None in a
+    ///   conflict), and counting either would hide the
+    ///   conflict behind a lone number, as Slice 17 Step
+    ///   2's mill-conflict rule. A cable neighbour still
+    ///   disqualifies every source, even a dead component:
+    ///   every source kind is a cable input (Dynamo LV,
+    ///   Alternator HV, Conduit HV), so a cable is genuine
+    ///   wiring for all three, unlike a transformer for
+    ///   a Conduit — the dead-cable asymmetry is that
+    ///   branch difference, not an oversight, and a dead
+    ///   cable component stays 0 / 0. A transformer that
+    ///   touches a cable still disqualifies, because it
+    ///   belongs to that cable component's story, never
+    ///   to a standalone group. A consumer touching a
+    ///   dead group does not block the Conduit: the dead
+    ///   group's consumer counts (total, unpowered) do not
+    ///   double-count the source, and Step 2 already
+    ///   counts a Conduit beside a consumer as lone. The
+    ///   count is per source cell, not per transformer or
+    ///   per pair: two Conduits beside one dead
+    ///   transformer are two lone sources, one Conduit
+    ///   beside two dead transformers is one.
     /// - No voltage split: LV and HV networks count alike in the
     ///   one number. The count answers "how many live wirings
     ///   have no consumer yet", not "what voltage"; a split
@@ -683,12 +711,24 @@ public sealed class WorldZone
                 int nx = x + dx, ny = y + dy, nz = z + dz;
                 if (!VoxelChunk.InBounds(nx, ny, nz)) continue;
                 var neighbour = Chunk.Get(nx, ny, nz);
-                // Slice 17 Step 2: cable and transformer neighbours
-                // disqualify every source, but a consumer neighbour
-                // disqualifies only a source that feeds it directly
-                // (Dynamo, Alternator) — never a Conduit, which is
-                // absent from the direct branch.
-                if (neighbour is BlockType.Cable or BlockType.Transformer) { lone = false; break; }
+                // Slice 17 Step 2: a consumer neighbour disqualifies
+                // only a source that feeds it directly (Dynamo,
+                // Alternator) — never a Conduit, which is absent
+                // from the direct branch. Slice 19 Step 1: a cable
+                // neighbour disqualifies every source, but a
+                // transformer neighbour disqualifies a Conduit
+                // only when it is not a dead standalone group —
+                // a Conduit is absent from the transformer's
+                // direct branch too, so a dead standalone group
+                // is not wiring for it; live groups, cable-story
+                // transformers, and Dynamo/Alternator neighbours
+                // of any transformer still disqualify.
+                if (neighbour == BlockType.Cable) { lone = false; break; }
+                if (neighbour == BlockType.Transformer)
+                {
+                    if (block == BlockType.Conduit && !HasCableNeighbour(nx, ny, nz) && TransformerGroupDead(nx, ny, nz)) continue;
+                    lone = false; break;
+                }
                 if (IsConsumer(neighbour) && block is BlockType.Dynamo or BlockType.Alternator) { lone = false; break; }
             }
             if (lone) loneSources++;
@@ -758,6 +798,22 @@ public sealed class WorldZone
             }
         }
         return group;
+    }
+
+    /// <summary>Slice 19 Step 1 dead-group test for the lone rule:
+    /// every cell of the standalone transformer group containing
+    /// this cell outputs None. A group with a live cell is wiring
+    /// that is already counted (or feeding), never an idle
+    /// source's neighbour; a group with no live cell delivers
+    /// nothing, so a Conduit beside it is not wired in the
+    /// count's terms. Callers check the cable-story case first:
+    /// this method does not itself exclude transformers that
+    /// touch a cable.</summary>
+    private bool TransformerGroupDead(int x, int y, int z)
+    {
+        foreach (var (gx, gy, gz) in TransformerGroup(x, y, z))
+            if (TransformerOutput(gx, gy, gz, new HashSet<(int, int, int)>(), null) != Voltage.None) return false;
+        return true;
     }
 
     /// <summary>Slice 10 Step 1 effective regen, decided here: scan
