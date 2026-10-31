@@ -11366,3 +11366,95 @@ marker proximity targeting, item 42
 - Next step: Slice 26 Step 2, the
   documentation-only review closing Slice 26, per
   docs/slice-26-scope.md.
+
+## 2026-10-31 — Slice 26 Step 2: documentation-only review, closing Slice 26 (0.105.0, under delegation)
+
+- Step taken: Slice 26 Step 2, the
+  documentation-only review closing Slice 26, per
+  docs/slice-26-scope.md and following the Slice 16
+  precedent for claims no headless run can prove.
+  No code file moves, no checklist item is added
+  beyond what Step 1 decided, no demo scenario is
+  added, and Slice 27 is NOT scoped here.
+- Review method, stated so the review is checkable
+  rather than trusted: the suite and the demo were
+  re-run before any edit (5053/5053, Slice 25 save
+  44,041 chars), then the adapter code behind each
+  Step 1 answer was re-read — both HandlePending
+  methods, the shared PendingTargetMatches helper,
+  both refactored confirms, the Update tail branch
+  order, and the Tick placement — and item 44 was
+  re-read in full, instead of repeating Step 1's
+  record. A review that only quoted Step 1 would
+  have proved nothing new; this one re-reads the
+  code the decision leans on.
+- Scope check verdict: no scope deviation found in
+  the scope step or in Step 1, and this review does
+  not re-decide the auto-clear decision. The scope
+  narrowed candidate 5 to the auto-clear gap alone
+  and carried the other four gaps, disposed of
+  candidates 1 through 4 as not Slice 26 work for
+  the reasons it gives, built no system, and
+  decided no answer. Step 1 answered every
+  question the scope put to it — one decision per
+  binding, poll mechanism with its false-clear
+  case, placement with its death-frame Return
+  reading, cost as a bound, re-press semantics,
+  twin limit as not closed, checklist relation
+  decided in the step — and moved exactly one code
+  file, with no core, save-format, economy,
+  movement, targeting, fire, marker, material,
+  light, fog, model, or HUD rule changed except
+  hiding the existing pending marker through the
+  existing cancel path, which the scope allows.
+- The one re-reading worth naming, because it is
+  the load-bearing fact for the death-frame claim:
+  Simulation.Tick runs in Update well before the
+  pending branch, so a squad that dies on a tick is
+  already dead when that frame's pending branch
+  runs, and the poll clears the pick on the death
+  frame itself, before the frame's key read. The
+  handlers return at once on a poll mismatch, so
+  no key is read on the auto-clear frame. That
+  ordering is a code-reading claim, not a scene
+  observation: it says what the code does when run
+  in Unity, and item 44 is still the observation
+  that proves it in a scene.
+- Why no Step 2 demo, recorded so a later run does
+  not mistake the absence for an omission: adapter
+  code is not compiled headlessly, so no headless
+  demo can stage a pending pick, a death while a
+  pick is pending, or a Return on the death frame.
+  Staging one in core would prove a path no player
+  walks, since the pending state lives in the
+  adapter. The proof for this slice is a code
+  reading plus the suite standing, as Slice 24's
+  steps were, and a demo scenario here would have
+  been a claim without a mechanism.
+- Claim split, kept explicit: the auto-clear
+  routing is IMPLEMENTED and read, not
+  Unity-verified and not claimed as working in a
+  scene; item 44 is attemptable and unchecked,
+  closing only on its Windows observation recorded
+  here with the Unity version and GPU; the Slice 1
+  director playtest gate is still pending
+  throughout and is not closed by Slice 26. The
+  suite stands at 5053/5053 and every demo save
+  length stands unchanged, with Slice 25 at 44,041
+  chars.
+- Gaps carried, not closed by this review: Windows
+  Unity verification for Slices 1–26 and the
+  director playtest; the four remaining Slice 24
+  adapter gaps (identical-twin limit, invisible
+  pending dismiss, unparented re-rally pending
+  marker, same-frame K+X branch order); and the
+  Windows-evidence-gated graphics retune,
+  re-rally price, and dismiss refund decisions.
+- Deliberately NOT in this step: a Slice 27 scope;
+  a re-decision of the auto-clear routing; a demo
+  scenario; a checklist item; a claim that any
+  pending routing works in a scene; a claim that
+  Slice 26 is playtested or Unity-verified.
+- Next step: scoping Slice 27 as its own decision
+  step, chosen from the ranked candidates the
+  review carries, not promised here.

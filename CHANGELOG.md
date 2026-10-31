@@ -1,5 +1,75 @@
 # Forgeborne — Changelog
 
+## 0.105.0 — 2026-10-31 — Slice 26 Step 2:
+documentation-only review, closing Slice 26
+
+- Step taken: Slice 26 Step 2, the
+  documentation-only review closing Slice 26, per
+  docs/slice-26-scope.md and following the Slice 16
+  precedent for claims no headless run can prove.
+  No code file moves, no checklist item is added
+  beyond what Step 1 decided, no demo scenario is
+  added, and Slice 27 is NOT scoped here.
+- Scope check, re-verified in this run, not taken
+  on Step 1's word: both pending handlers poll
+  their target triple at their own top, before any
+  key read, through the shared PendingTargetMatches
+  helper, and return at once on a mismatch, so no
+  key is read on the auto-clear frame; the Update
+  tail runs dismiss before re-rally, picker, and
+  opener, and Simulation.Tick runs in Update well
+  before the pending branch, so the death-frame
+  Return reading holds as code-reading (a Return
+  on the death frame does nothing, the pick being
+  already gone); both confirms were refactored to
+  the same helper and keep their fail-closed
+  backstop, clearing pending on any outcome; the
+  dismiss handler previously read keys only and now
+  polls first, and the re-rally handler polls
+  before its raycast and marker update, so on an
+  auto-clear frame the marker is hidden through the
+  existing cancel path, the only marker act the
+  scope allows; the twin limit is stated as not
+  closed in the code comments, in orbital-command,
+  and in DECISIONS; item 44 was re-read in full
+  and its relation wording matches Step 1's record
+  (EXTENDS items 42 and 43, supersedes none, item
+  43's X-again-cancels reading still applies while
+  a dismiss is still live, staging difficulty
+  stated). No scope deviation found in Step 1, and
+  this review does not re-decide it.
+- Why no Step 2 demo: adapter code is not compiled
+  headlessly, so no headless demo can stage a
+  pending pick, a death while a pick is pending,
+  or a Return on the death frame; staging one in
+  core would prove a path no player walks, since
+  the pending state lives in the adapter. The proof
+  for this slice is a code reading plus the suite
+  standing, as Slice 24's steps were.
+- Claim split: the auto-clear routing is
+  implemented and read, not Unity-verified and not
+  claimed as working in a scene; item 44 is
+  attemptable and unchecked, closing only on its
+  Windows observation recorded in DECISIONS.md
+  with the Unity version and GPU; the Slice 1
+  director playtest gate is still pending
+  throughout and is not closed by Slice 26.
+- Checklist relation: item 44, decided in Step 1,
+  stands as the slice's one new item; the next
+  free gate number is now 45.
+- Changes: new docs/slice-26-review.md, CHANGELOG
+  0.105.0, DECISIONS.md.
+- Tests: 5053 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice
+  25 save 44,041 chars, Slice 23 save 44,041 chars,
+  Slice 22 save 43,990 chars, Slice 21 save 44,040
+  chars, Slice 20 save 44,041 chars, Slice 19 save
+  43,965 chars, Slice 18 save 44,015 chars, Slice
+  15 save 44,016 chars, Slice 17 save 43,974 chars.
+- Next step: scoping Slice 27 as its own decision
+  step, chosen from the ranked candidates the
+  review carries, not promised here.
+
 ## 0.104.0 — 2026-10-31 — Slice 26 Step 1:
 pending auto-clear decision — AUTO-CLEAR BOTH
 
