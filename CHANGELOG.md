@@ -1,5 +1,71 @@
 # Forgeborne — Changelog
 
+## 0.99.0 — 2026-10-31 — Slice 24 Step 3:
+review closing Slice 24, documentation only —
+two bindings implemented and read, not
+playtested, not Unity-verified; Slice 25
+NOT scoped here
+
+- Step taken: Slice 24 Step 3, the
+  documentation-only review closing Slice 24, per
+  docs/slice-24-scope.md and following the Slice 16
+  precedent for claims no headless run can prove.
+  No core file, no adapter file, no material,
+  marker, light, fog, or view model value moved;
+  no checklist item added; no demo scenario added,
+  because a demo staging K or X would be a
+  core-call demo in disguise and the core calls are
+  already proved by Slices 20–22. Slice 25 is NOT
+  scoped here; it is scoped afterwards, chosen from
+  the ranked candidates this review carries.
+- Scope check, in brief: Step 1 (0.97.0) decided the
+  general gate alone, an own pending flag, the
+  picker's centre-raycast rally selection with an
+  adapter-owned orange pending marker, the
+  SnapshotPosToGateIndex translation, and the
+  fail-closed cases, adding item 42 for the
+  pending-routing readings with no home in items 39
+  or 40. Step 2 (0.98.0) decided an own pending
+  flag, refuse-while-pending both ways against the
+  re-rally pick, the Step 1 translation reused, no
+  doctrine filter, and the fail-closed cases, adding
+  item 43 for the pending-routing readings with no
+  home in item 41. Neither step touched core, moved
+  an economy value, added a HUD word or marker
+  change, or scoped Slice 25.
+- Verification re-checked in this review run, not
+  taken on the steps' word: the adapter routing
+  order (O guard on both pending flags, then
+  dismiss, re-rally, picker, free branch), both
+  openers testing squad centres only with the
+  recorded proximity and occlusion rules and the
+  recorded doctrine difference, both confirms
+  re-validating by doctrine, kind, and rally and
+  clearing on any outcome, and the single shared
+  translation helper were all re-read in
+  FpsInputAdapter.cs and found consistent with the
+  step records. Suite re-run unchanged: 4577/4577
+  tests. Demo re-run unchanged: Slice 23 save
+  44,041 chars, every earlier save unchanged, no
+  new scenario length to quote.
+- Claim split, stated honestly: the K and X
+  bindings are implemented and read, not observed;
+  items 39, 40, 41, 42, and 43 are attemptable and
+  all unchecked, closing only on their Windows
+  observations recorded in DECISIONS.md with the
+  Unity version and GPU; the Slice 1 director
+  playtest gate is still pending throughout and is
+  not closed by Slice 24. Gaps carried include the
+  identical-twin re-validation limit, the invisible
+  pending dismiss, the unparented re-rally pending
+  marker, same-frame K+X branch order, pending
+  state not auto-clearing on a target death, and
+  the Windows-evidence-gated graphics retune,
+  re-rally price, and dismiss refund decisions.
+- Next step: scoping Slice 25 as its own decision
+  step, chosen from the ranked candidates the
+  review carries, not promised here.
+
 ## 0.98.0 — 2026-10-31 — Slice 24 Step 2:
 X dismiss binding implemented in the adapter —
 own pending flag, refuse-while-pending both ways,

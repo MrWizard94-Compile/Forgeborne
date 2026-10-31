@@ -10528,6 +10528,82 @@ marker proximity targeting, item 42
   that alone can close items 39, 40, 41, 42, and 43, and carrying the
   gaps that remain, without scoping Slice 25.
 
+## 2026-10-31 — Slice 24 Step 3: review closing Slice 24 (0.99.0, under delegation)
+
+- Step taken: Slice 24 Step 3, the documentation-only review closing
+  Slice 24, per docs/slice-24-scope.md and following the Slice 16
+  precedent for claims no headless run can prove. No code file moved,
+  no checklist item added, no demo scenario added, no Slice 25 scope
+  written. The review is docs/slice-24-review.md, with the same
+  decision summarised in CHANGELOG 0.99.0.
+- Why documentation-only, stated as the scope states it: adapter code
+  is not compiled headlessly, no demo scenario can stage a key press,
+  and no test count can prove a binding. A demo staging K or X would
+  be a core-call demo in disguise, and the core calls are already
+  proved by Slices 20–22, so adding one would repeat a proof under a
+  false name. The honest outcome for this step is therefore a suite
+  and demo that stand still, not a rise.
+- Scope check, recorded step by step in the review and summarised
+  here so the decision stands without the review open: Step 1 decided
+  the general gate alone, an own pending flag, the picker raycast
+  rally selection with an adapter-owned pending marker, the
+  SnapshotPosToGateIndex translation, and the fail-closed cases, and
+  added item 42 for pending-routing readings with no home in items 39
+  or 40; Step 2 decided an own pending flag, refuse-while-pending
+  both ways, the Step 1 translation reused, no doctrine filter, and
+  the fail-closed cases, and added item 43 for pending-routing
+  readings with no home in item 41, including the cross-pending
+  readings Step 1 left open. Neither step touched core, moved an
+  economy value, added a HUD word or marker change, or scoped
+  Slice 25, and this review finds no scope deviation in either.
+- Verification re-checked in this review run, not taken on the steps'
+  word: the adapter Update routing order (O guard on both pending
+  flags, then dismiss, re-rally, picker, free branch), both openers
+  testing squad centres only with the recorded proximity and
+  occlusion rules and the recorded doctrine difference, both confirms
+  re-validating by doctrine, kind, and rally and clearing on any
+  outcome, and the single shared translation helper were re-read in
+  FpsInputAdapter.cs and found consistent with the step records.
+  Standing suite and demo re-run unchanged: 4577/4577 tests, Slice 23
+  demo save 44,041 chars, every earlier save unchanged (Slice 22
+  43,990, Slice 21 44,040, Slice 20 44,041, Slice 19 43,965, Slice 18
+  44,015, Slice 15 44,016, Slice 17 43,974 chars, and all earlier saves
+  as in the 0.95.0 entry). No new scenario exists, so no new length
+  is quoted. This re-check does not compile the adapter, run a scene,
+  press a key, or observe a marker — those remain Windows work.
+- Claim split, kept explicit so the review cannot be misread as a
+  pass: the K and X bindings are implemented and read, not observed;
+  items 39, 40, 41, 42, and 43 are attemptable and all unchecked, and
+  each closes only on its Windows observation recorded here with the
+  Unity version and GPU; the Slice 1 director playtest gate is still
+  pending throughout and is not closed by Slice 24. No step in this
+  slice marks an item passed from headless work, and this review does
+  not either.
+- Gaps carried, not closed by the review: Windows Unity verification
+  for Slices 1–24 and the director playtest; the identical-twin
+  re-validation limit (a twin shifting into the stored snapshot
+  position after a target death and sweep passes, with bounded
+  consequences — a free re-rally or a refund-none dismiss of the
+  wrong twin); the invisible pending dismiss (no marker or word,
+  by design, because a dismiss has no candidate cell to mark);
+  the unparented re-rally pending marker (adapter-owned, one reused
+  instance, no MarkerRoot field — whether it reads correctly in a
+  scene is a Windows observation); same-frame K+X branch order
+  (re-rally pick only, routing determinism, not a designed priority);
+  pending state not auto-clearing on a target death (caught at
+  confirm instead, by design); and the Windows-evidence-gated
+  graphics retune, re-rally price, and dismiss refund decisions.
+  The ranked candidates for Slice 25 scoping are carried in the
+  review, updated for items 39–41 now being attemptable and items 42
+  and 43 being added — not promised, and not decided here.
+- Deliberately NOT in this step: any code change; a checklist item;
+  a demo scenario; a Slice 25 scope; a claim that K or X works in a
+  scene; a claim that Slice 24 is playtested or Unity-verified; any
+  re-decision of the bindings, the economy, the graphics values, or
+  the loop shape on headless grounds.
+- Next step: scoping Slice 25 as its own decision step, chosen from
+  the ranked candidates the review carries, not promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
