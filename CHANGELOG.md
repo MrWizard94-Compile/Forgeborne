@@ -1,5 +1,120 @@
 # Forgeborne — Changelog
 
+## 0.98.0 — 2026-10-31 — Slice 24 Step 2:
+X dismiss binding implemented in the adapter —
+own pending flag, refuse-while-pending both ways,
+Step 1 translation reused; item 41 attemptable,
+new item 43; NOT Unity-verified
+
+- Step taken: Slice 24 Step 2, the X dismiss
+  binding, decided in this step per
+  docs/slice-24-scope.md. Adapter-only: one file
+  changed in code
+  (ForgeborneUnity/Assets/Scripts/FpsInputAdapter.cs),
+  no core file touched, no economy, movement,
+  targeting, fire, marker, material, light, fog,
+  model, or HUD rule moved, no demo scenario added.
+  Slice 25 is NOT scoped here; Slice 24 Step 3 (the
+  documentation-only review closing Slice 24) is
+  next, not promised here.
+- Pending-state shape: an OWN adapter flag, NOT
+  the picker flag and NOT shared with the re-rally
+  flag. A shared flag would need a discriminator
+  anyway, and two flags plus a routing order that
+  reads exactly one pending branch make "Return
+  confirms exactly one action" provable by reading
+  the Update tail. The pending state stores the
+  target's snapshot position plus its doctrine,
+  kind, and rally — the movement-invariant triple
+  Step 1 uses — so Confirm re-validates instead of
+  silently dismissing a different squad after a
+  death sweep shifts the list. No pending marker
+  and no HUD word are added: a dismiss has no
+  candidate cell to mark, and a highlight would be
+  a marker change smuggled inside a bindings step.
+  The invisible-pending readability gap is owned
+  as a known limit, for a later display step to
+  weigh on Windows evidence.
+- Cross-pending, decided both ways as
+  refuse-while-pending: X while a re-rally pick is
+  pending does nothing, and K while a dismiss is
+  pending does nothing — cancel-first would
+  silently discard an aimed rally pick, and
+  replace would let Return dismiss a squad the
+  player thought they were re-rallying. O does
+  nothing while either pending state is open, so
+  no deploy picker stacks on top of either.
+  Builders are suppressed and the mouse does not
+  fire while a dismiss is pending, as while a
+  re-rally pick is pending; E / Q / R keep their
+  pre-existing unsuppressed behaviour, as while
+  picking, because a dismiss charges nothing and
+  no build can break a confirm's affordability.
+  X again cancels its own pending dismiss
+  (toggle-off, symmetric with K again cancelling
+  a re-rally pick). Return and Escape with no
+  pending dismiss do nothing.
+- Target selection and translation: Step 1's
+  marker-centre proximity rule reused exactly
+  (angle within max(2 degrees, atan(0.6 /
+  distance)), distance at most 30f, occlusion
+  raycast, smallest angle wins, ties to the first
+  snapshot position) with NO doctrine filter,
+  because TryDismissSquad consults no doctrine —
+  an Advance or Defend Core marker that K refuses
+  is a valid dismiss target, not an error. The
+  marker-to-index translation is Step 1's
+  SnapshotPosToGateIndex, reused, not re-decided:
+  a dead squad awaiting its sweep cannot shift a
+  snapshot position into the wrong gate index.
+  Confirm clears the pending state whether the
+  gate succeeds or refuses: a confirm is one
+  attempt, and a retry re-selects its target fresh.
+  A dismiss can never be the list-shift source
+  while one is pending, because X is refused
+  while pending and no other adapter path
+  dismisses; death remains the only shift source,
+  and the triple re-validation catches it except
+  for the identical-twin case (same doctrine,
+  kind, and rally after a twin death plus a
+  sweep), whose bounded consequence — dismissing
+  the wrong twin, one slot freed and no refund
+  either way — is owned, not hidden, and no
+  identity field is invented to close it.
+- Checklist relation: no item is marked passed
+  from headless work — adapter code is not
+  compiled headlessly, so no test count proves X.
+  Item 41 moves from proposed-only to
+  implemented-not-observed, and stays unchecked
+  until a Windows observation is made and
+  recorded in DECISIONS.md. New item 43 (dismiss
+  pending-state routing, including the
+  cross-pending readings Step 1 left open)
+  EXTENDS item 41, supersedes nothing, and
+  leaves items 41, 40, 39, 37, 29, item 42, and
+  orbital-command item 13 standing. Next free
+  gate number is 44.
+- Verification, stated honestly: a code reading
+  (every new branch traced against the existing
+  Update routing, the picker routing, and the gate
+  signature; brace balance checked; every
+  fail-closed case walked to a nothing-changed
+  exit), plus the standing suite and demo re-run
+  unchanged — 4577/4577 tests, Slice 23 demo save
+  44,041 chars, every earlier save unchanged, no
+  new scenario. A step that moved either number
+  would have had to say why; this step moves
+  neither, because adapter code is never compiled
+  by the headless runner.
+- Docs updated beside the code: the dismiss
+  section of docs/orbital-command.md now reads
+  IMPLEMENTED 0.98.0, NOT Unity-verified, instead
+  of PROPOSED ONLY, and docs/slice-01-playtest-gate.md
+  item 41 reads implemented-not-observed with item
+  43 added. The K binding is untouched except for
+  the cross-pending routing note, which now reads
+  decided instead of belonging to a later step.
+
 ## 0.97.0 — 2026-10-31 — Slice 24 Step 1:
 K re-rally binding implemented in the adapter —
 general gate alone, own pending flag, marker

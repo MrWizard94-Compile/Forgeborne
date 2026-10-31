@@ -861,9 +861,9 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     in DECISIONS.md.
 
 41. [ ] Dismiss, decided 0.91.0 (core action changed,
-    adapter binding PROPOSED ONLY and not yet
-    implemented — no headless test proves a binding reads
-    in the scene, and no headless test proves a proposed
+    adapter binding IMPLEMENTED 0.98.0 and not yet
+    observed on Windows — no headless test proves a binding reads
+    in the scene, and no headless test proves an implemented
     key works, so the cited headless evidence is only the
     Slice 22 Step 1 proof set: any live squad of any
     doctrine and any kind dismisses at once by snapshot
@@ -876,7 +876,7 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     nothing and leaves no half-tick behind; and a
     post-dismiss save has no entry for the removed squad
     while a pre-dismiss save still loads with it
-    present): once the proposed binding is implemented
+    present): once the implemented binding is observed
     on Windows — X while not picking, crosshair on any
     live squad's marker, Return to confirm, Escape to
     cancel, doing nothing while picking, nothing when
@@ -948,6 +948,50 @@ Unity 6000 on Windows, in `ForgeborneUnity/`:
     not claim this verified in Unity until the
     observation is made there and recorded in
     DECISIONS.md.
+
+43. [ ] Dismiss pending-state routing, decided 0.98.0
+    (adapter binding implemented, not yet observed on
+    Windows — no headless test proves a binding reads
+    in the scene, so the cited evidence is only the
+    Slice 24 Step 2 code reading: the pending dismiss
+    is an own adapter flag, never the picker flag and
+    never shared with the re-rally flag, so Return
+    confirms exactly one pending action and never a
+    paid deploy; confirm re-validates the target by
+    doctrine, kind, and rally and clears the pending
+    state whether the gate succeeds or refuses, never
+    re-targeting silently; no pending marker or HUD
+    word is added, because a dismiss has no candidate
+    cell to mark): once observed on Windows — X while
+    not picking, crosshair on any live squad's
+    marker — in one scene, against dark voxel, open
+    a dismiss and press X again and observe the
+    pending state cancel with nothing changed; open
+    a second dismiss and press O and observe nothing
+    happen (no deploy picker opens on top of the
+    pending dismiss); open a third dismiss and click
+    and observe no weapon fire while it is pending;
+    open a fourth dismiss and press K and observe
+    nothing happen (no re-rally pick opens on top of
+    the pending dismiss); then open a re-rally pick
+    and press X and observe nothing happen (no
+    dismiss opens on top of the re-rally pick);
+    finally, press Return with no pending dismiss
+    open and press Escape with no pending dismiss
+    open and observe nothing change in either case.
+    This item EXTENDS item 41's dismiss observation:
+    item 41's dismiss readings stand unchanged, and
+    this item adds only the pending-routing readings,
+    which had no home in item 41, including the
+    cross-pending readings Step 1 left open for Step
+    2. It does NOT supersede items 41, 40, 39, 37,
+    29, or orbital-command item 13, and it leaves
+    them standing, including item 42's re-rally-only
+    routing, which this item does not widen. It does
+    not claim any tint, count, dusk, or view model
+    observation. Do not claim this verified in Unity
+    until the observation is made there and recorded
+    in DECISIONS.md.
 
 Record the result of each step, with the Unity version and GPU,
 in DECISIONS.md, and only then mark the director playtest

@@ -10358,6 +10358,176 @@ marker proximity targeting, item 42
   cases, with item 43 available if Step 2 finds a
   reading with no home.
 
+## 2026-10-31 — Slice 24 Step 2: X dismiss binding (0.98.0, under delegation)
+
+- Step taken: Slice 24 Step 2, the X dismiss binding, decided in
+  this step per docs/slice-24-scope.md. Adapter-only: one code file
+  changed (ForgeborneUnity/Assets/Scripts/FpsInputAdapter.cs), no
+  core file touched, no economy, movement, targeting, fire, marker,
+  material, light, fog, model, or HUD rule moved, no demo scenario
+  added. Slice 25 is NOT scoped here.
+- Pending-state shape: an OWN adapter flag (_pendingDismiss, with
+  the target's snapshot position, doctrine, kind, and rally), NOT
+  the picker flag and NOT shared with the re-rally flag. The picker
+  flag is refused for Step 1's reason: while picking, Return deploys
+  a paid squad, so a dismiss pending under that flag would turn a
+  confirm into a deploy. A shared pending-action flag was considered
+  and refused: it would need a discriminator field to say which
+  action is pending, which is a flag plus a tag rather than a simpler
+  shape, and two flags with a routing order that reads exactly one
+  pending branch (dismiss, then re-rally, then picker, then the free
+  branch) make "Return confirms exactly one action" provable by
+  reading the Update tail. The two flags are mutually exclusive by
+  routing, not by a runtime assertion: each opener runs only from
+  the else branch where neither flag is set and the picker is closed,
+  so no frame can set both, and a stale-flag pair cannot arise
+  without a code path this step did not add.
+- Cross-pending, decided both ways as refuse-while-pending: X while
+  a re-rally pick is pending does nothing (the re-rally branch reads
+  no X key), and K while a dismiss is pending does nothing (the
+  dismiss branch reads no K key). Cancel-first was rejected for the
+  re-rally side: a player who aimed a rally pick and pressed X by
+  mistake would lose the pick silently, and the scope's cancel-first
+  reading gives no warning before that loss. Replace was rejected
+  both ways for the hazard the scope names: a player confirming a
+  dismiss they thought was a re-rally, or opening a re-rally pick
+  they thought was a dismiss, is a deletion (or a move) under a
+  false belief, and no in-step indicator distinguishes the two
+  pending states — the dismiss deliberately adds no marker or word.
+  Refuse-while-pending is fail-closed on both sides and consistent
+  with Step 1's O rule: the player cancels the open state (K again,
+  X again, or Escape) and then presses the other key. O does nothing
+  while either pending state is open, extending Step 1's O rule to
+  the dismiss, so no deploy picker stacks on top of either pending
+  state. A same-frame K+X press opens the re-rally pick only, because
+  the else branch checks K first; that frame order is routing
+  determinism, not a designed key priority, and the player re-presses
+  X after closing the re-rally pick to dismiss instead.
+- Routing while a dismiss is pending, walked branch by branch:
+  builders suppressed (guard extended with !_pendingDismiss), O
+  refused (guard extended the same way), mouse does not fire (the
+  else branch that fires never runs while pending), picker keys do
+  nothing (the picker branch never runs while pending), E / Q / R
+  keep their pre-existing unsuppressed behaviour, as while picking
+  and while a re-rally pick is pending: a dismiss charges nothing
+  and refunds nothing, so no build can break a confirm's
+  affordability, and changing E / Q / R would be a second modal
+  change bundled into a bindings step. Return confirms, Escape
+  cancels, X again cancels (toggle-off, symmetric with K again
+  cancelling a re-rally pick). Return or Escape with no pending
+  dismiss does nothing, because neither key is read in the free
+  branch. X while picking does nothing, because the picker branch
+  reads no X key.
+- Target selection: Step 1's marker-centre proximity rule reused
+  exactly — angle from the centre ray within max(2 degrees, atan(0.6
+  / distance)), distance at most 30f (the picker range), a per-centre
+  occlusion raycast (a voxel hit before the centre means an honestly
+  occluded marker is not selectable), smallest angle wins, ties to
+  the first snapshot position — with NO doctrine filter, because
+  TryDismissSquad consults no doctrine and no rally. An Advance or
+  Defend Core marker that K refuses is therefore a valid dismiss
+  target, not an error, and Step 1's "never opens a pick" rule for
+  those doctrines does not carry over: the two bindings differ in
+  eligibility because their gates differ, and the scope states that
+  difference plainly. A rally marker never selects, because only
+  squad centres are tested; a crosshair on a rally cell whose squad
+  stands elsewhere opens nothing, exactly as in Step 1.
+- Marker-to-index translation: Step 1's SnapshotPosToGateIndex,
+  reused, not re-decided — the scope's question is answered once
+  for both bindings, and two bindings that both target "the squad
+  under the crosshair" now agree about which squad that is. The
+  translation walks Simulation.World.Squads in order skipping dead
+  squads, exactly as OrbitalView.Snapshot does, so a dead squad
+  awaiting its sweep cannot shift a snapshot position into the wrong
+  gate index. A list shift between press and confirm has exactly one
+  source while a dismiss is pending — death, because a dismiss
+  cannot be the shift source (X is refused while pending and no
+  other adapter path dismisses) — and the confirm re-validation
+  catches it, below.
+- Confirm and exits: Return re-validates (stored snapshot position
+  still holds the same doctrine, kind, and rally) and then calls the
+  dismiss gate with the freshly translated gate index; any mismatch
+  clears the pending state with nothing changed and makes NO gate
+  call, so a death-plus-sweep between press and confirm cannot
+  silently dismiss the squad that shifted into the stored position.
+  Position is deliberately NOT part of the re-validation: a walking
+  squad changes cell every tick, so a position check would void
+  legitimate confirms. Health is not part of it either, because an
+  enemy hit mid-decision must not void a confirm. Movement never
+  invalidates, for the same reason Step 1 gives: a walking squad
+  keeps its doctrine, kind, and rally. Return clears the pending
+  state whether the gate succeeds or refuses: a confirm is one
+  attempt, and leaving it open after a refusal would invite a second
+  Return to re-apply a stale pick; a retry re-selects its target
+  fresh. Pending state does NOT auto-clear when the target dies
+  mid-decision: the adapter does not poll deaths, and the stale
+  pending is caught at confirm instead, and cleared there with
+  nothing changed. What the player reads on confirm is the existing
+  marker rule, not a new reading: the squad's text line and both its
+  markers vanish with its snapshot entry, as item 41 already observes.
+- Known limits, owned, not hidden: (1) An identical twin (same
+  doctrine, kind, and rally) shifting into the stored snapshot
+  position after the target's death and sweep passes re-validation,
+  because no adapter-visible field distinguishes the twins without
+  inventing a core identity the save does not carry. The hazard
+  needs all three conditions together — twins sharing a rally, a
+  target death, and a sweep between press and confirm — and the
+  consequence is bounded: dismissing the wrong twin frees one cap
+  slot and refunds nothing either way, never a charge or a second
+  deletion; the difference from the intended dismiss is which twin's
+  position and health are lost. Inventing an identity field would be
+  a core and save-format change inside an adapter step, so it is
+  refused here, as in Step 1, and carried as a gap for a later step
+  to weigh. (2) A pending dismiss has no visual indicator: unlike a
+  re-rally pick, which marks a candidate rally, a dismiss has no
+  candidate cell to mark, and inventing a highlight or HUD word
+  would be a marker / HUD change smuggled inside a bindings step.
+  The player reads the target's own markers, which do not change
+  until confirm, so a pending dismiss can be mistaken for "X did
+  nothing" until Return is pressed. If Windows playtest finds that
+  confusing, a later display step — not a bindings patch — should
+  weigh a pending-dismiss reading on that evidence.
+- Checklist relation: item 43 (dismiss pending-state routing) is
+  added because the X-again cancel, O-ignored, mouse-suppressed,
+  builder-suppressed, cross-pending refuse-both-ways, and
+  Return/Escape-with-no-pending readings had no home in item 41,
+  whose fail-closed list covers picking, no-marker, target-refuses,
+  and Escape-after-X but not pending-state routing. Item 43 EXTENDS
+  item 41, supersedes nothing, and leaves items 41, 40, 39, 37, 29,
+  item 42, and orbital-command item 13 standing; item 42's
+  re-rally-only routing is not widened by this step, and the
+  cross-pending readings Step 1 left open now live in item 43, not
+  retrofitted into item 42. Item 41 is now attemptable, not passed,
+  and stays unchecked until Windows observations are made and
+  recorded here. Next free gate number is 44.
+- Verification: adapter code is not compiled headlessly, so this
+  step's proof is a code reading, recorded here: every new branch
+  traced against the existing Update routing (tick and camera first,
+  then E / Q / R, then builders, then O, then the pending / picker /
+  fire tail, with the dismiss branch first in that tail), every gate
+  call checked against Simulation.TryDismissSquad's signature and
+  the dismiss gate's eligibility (any live squad, no doctrine or
+  kind check), every fail-closed case walked to a nothing-changed
+  exit, brace balance checked (45 open, 45 close), and the
+  marker-to-index translation walked through the dead-in-list case.
+  Standing suite and demo re-run unchanged: 4577/4577 tests, Slice
+  23 demo save 44,041 chars, every earlier save unchanged, no new
+  scenario. No core touch, so no core proof set could move — and
+  none did.
+- Deliberately NOT in this step: a core touch of any kind (no
+  helper, no passthrough, no snapshot field was needed — the adapter
+  reads only existing public core surface, and SnapshotPosToGateIndex
+  already existed); a HUD word, marker change, material, light, fog,
+  or view model change; a new binding, rebinding, or modifier scheme
+  (K-first frame order is routing, not a priority scheme); a Slice 25
+  scope; any claim that X works in a scene.
+- Next step: Slice 24 Step 3, the documentation-only review closing
+  Slice 24, following the Slice 16 precedent — checking this slice
+  against docs/slice-24-scope.md step by step, separating
+  adapter-implemented claims from the Windows-checklist observations
+  that alone can close items 39, 40, 41, 42, and 43, and carrying the
+  gaps that remain, without scoping Slice 25.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

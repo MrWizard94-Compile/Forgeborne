@@ -59,6 +59,37 @@ public class FpsInputAdapter : MonoBehaviour
     private GameObject? _pendingReRallyMarker;
     private Material? _pendingReRallyMaterial;
 
+    // Slice 24 Step 2 (0.98.0): X dismiss pending state, decided
+    // in that step (rationale in DECISIONS.md). An OWN adapter
+    // flag, separate from the re-rally flag above and from
+    // OrbitalCommand.IsPicking, for the same reason Step 1
+    // refused the picker flag: Return must confirm exactly
+    // one pending action, never a paid deploy and never
+    // both a dismiss and a re-rally. The pending state
+    // stores the target's snapshot position plus its
+    // doctrine, kind, and rally — the adapter-visible
+    // fields that do not change when the squad moves — so
+    // Confirm can re-validate the target instead of
+    // silently dismissing a different squad after a death
+    // sweep shifts the list. There is NO pending marker
+    // for a dismiss: a dismiss has no candidate cell to
+    // mark, and inventing a highlight or HUD word would
+    // be a marker / HUD change smuggled inside a bindings
+    // step. While pending, the player reads the target
+    // squad's own text line and markers, which vanish
+    // with its snapshot entry on confirm under the
+    // existing marker rule; the invisible-pending
+    // readability gap is owned as a known limit in
+    // DECISIONS.md, for a later display step to weigh
+    // on Windows evidence, not patched here.
+    private bool _pendingDismiss;
+    private int _pendingDismissSnapshotPos;
+    private TacticalDoctrine _pendingDismissDoctrine;
+    private SquadKind _pendingDismissKind;
+    private int _pendingDismissRallyX;
+    private int _pendingDismissRallyY;
+    private int _pendingDismissRallyZ;
+
     void Update()
     {
         if (Simulation == null) return;
@@ -185,7 +216,12 @@ public class FpsInputAdapter : MonoBehaviour
         // a solid candidate rally is accepted by the gate
         // anyway, so a Q wall in that cell changes nothing
         // the gate would refuse.
-        if (!Simulation.OrbitalCommand.IsPicking && !_pendingReRally)
+        // Slice 24 Step 2: builders are suppressed while a
+        // dismiss is pending on the same rule — a pending
+        // dismiss is a pick-like modal state, and a builder
+        // firing while the player decides on a removal
+        // would spend resources mid-decision for no reason.
+        if (!Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
         {
             // Slice 13 Step 3: each builder refreshes on success
             // only, by the event set above — see the E / Q note.
@@ -339,35 +375,56 @@ public class FpsInputAdapter : MonoBehaviour
         // re-selects its target fresh. Observed only
         // under playtest-gate items 39 and 40, plus the
         // pending-routing readings in item 42, never from
-        // a headless test. The X dismiss binding is still
-        // PROPOSED ONLY below; X while a re-rally pick is
-        // pending does nothing yet, and the cross-pending
-        // answer belongs to Slice 24 Step 2.
-        // Slice 22 Step 1, PROPOSED ONLY, no code in this
-        // step and nothing claimed as working in a scene:
-        // a dismiss (core: WorldZone.TryDismissSquad, any
-        // live squad, by snapshot index) is proposed for a
-        // future adapter step as X while NOT picking,
-        // with the crosshair on any live squad's marker
-        // (every doctrine is eligible, unlike K's re-rally,
-        // so an Advance or Defend Core marker qualifies
-        // here), opening an adapter pending dismiss that
-        // Return confirms and Escape cancels — the pending
-        // state lives in the adapter, not in core, so the
-        // core call itself still removes on a single call
-        // and no headless test proves the confirm step.
-        // X is free: used keys are WASD / Space / E /
-        // Q / R / O / Return / Esc / Alpha1-7 / T / Y /
-        // U / I / B / N / P / M / mouse click, and K is
-        // taken by the re-rally proposal above, so X
-        // collides with neither. The binding must do
-        // nothing while picking, nothing when the raycast
-        // hits no live marker, nothing when the target
-        // squad refuses the action, nothing on Return
-        // with no pending dismiss, and nothing on a
-        // cancelled confirmation — and the whole binding
-        // is observed only under playtest-gate item 41,
-        // never from a headless test.
+        // a headless test. The X dismiss binding below is
+        // IMPLEMENTED in Slice 24 Step 2, and the
+        // cross-pending answer is decided there:
+        // refuse-while-pending both ways — X while a
+        // re-rally pick is pending does nothing, and K
+        // while a dismiss is pending does nothing — so
+        // Return can never confirm an action the player
+        // thought was the other one.
+        // Slice 24 Step 2 (0.98.0): X dismiss binding,
+        // IMPLEMENTED in this adapter, NOT Unity-verified
+        // and NOT claimed as working in a scene — adapter
+        // code is not compiled headlessly, so no test
+        // count proves this key. It serves the dismiss
+        // action (Slice 22 Step 1) through its gate alone
+        // (Simulation.TryDismissSquad): any live squad of
+        // any doctrine and any kind, by snapshot index,
+        // refund none, one cap slot freed. X while NOT
+        // picking, with the crosshair on any live squad's
+        // marker (every doctrine is eligible, unlike K's
+        // re-rally, so an Advance or Defend Core marker
+        // qualifies here), opens an adapter pending
+        // dismiss that Return confirms and Escape cancels
+        // — the pending state lives in the adapter, not in
+        // core, so the core call itself still removes on
+        // a single call and no headless test proves the
+        // confirm step. X is free: used keys are WASD /
+        // Space / E / Q / R / O / Return / Esc / Alpha1-7 /
+        // T / Y / U / I / B / N / P / M / K / mouse click,
+        // and K is taken by the re-rally binding above,
+        // so X collides with neither. Targeting reuses
+        // Step 1's marker-centre proximity rule exactly
+        // (angle within max(2 degrees, atan(0.6 /
+        // distance)), distance at most 30f, occlusion
+        // raycast, smallest angle wins, ties to the first
+        // snapshot position) with the one difference the
+        // dismiss scope requires: NO doctrine filter, so
+        // an Advance or Defend Core marker that K refuses
+        // is a valid dismiss target, not an error. The
+        // marker-to-index translation is Step 1's
+        // SnapshotPosToGateIndex, reused, not re-decided:
+        // a dead squad awaiting its sweep cannot shift a
+        // snapshot position into the wrong gate index.
+        // The binding does nothing while picking, nothing
+        // when the crosshair selects no live marker,
+        // nothing when the target squad refuses, nothing
+        // on Return with no pending dismiss, and nothing
+        // on a cancelled confirmation — and the whole
+        // binding is observed only under playtest-gate
+        // item 41, plus the pending-routing readings in
+        // item 43, never from a headless test.
         // Since 0.18.0 a picker deploy costs 10 EmberOre and at
         // most 3 live squads may be fielded, enforced in core by
         // Confirm — see docs/orbital-command.md. Since Slice 7
@@ -382,15 +439,29 @@ public class FpsInputAdapter : MonoBehaviour
         // below never runs while pending, so its O-cancel
         // cannot clear the re-rally pick. Escape (or K
         // again) cancels the re-rally pick; O works again
-        // once it is closed. This is refuse-while-pending
-        // for the O key specifically; the K/X cross-pending
-        // answer belongs to Slice 24 Step 2.
-        if (Input.GetKeyDown(KeyCode.O) && !_pendingReRally)
+        // once it is closed.
+        // Slice 24 Step 2: O does nothing while a dismiss
+        // is pending, on the same refuse-while-pending
+        // rule, and the K/X cross-pending answer is now
+        // decided symmetrically: X while a re-rally pick
+        // is pending does nothing (the re-rally branch
+        // above reads no X key), and K while a dismiss
+        // is pending does nothing (the dismiss branch
+        // below reads no K key). The two pending flags
+        // are therefore mutually exclusive by routing:
+        // each opener runs only from the else branch
+        // where neither flag is set, so no frame can set
+        // both, and Return confirms exactly one action.
+        if (Input.GetKeyDown(KeyCode.O) && !_pendingReRally && !_pendingDismiss)
         {
             if (Simulation.OrbitalCommand.IsPicking) Simulation.CancelOrbitalPick();
             else Simulation.BeginOrbitalPick();
         }
-        if (_pendingReRally)
+        if (_pendingDismiss)
+        {
+            HandlePendingDismiss();
+        }
+        else if (_pendingReRally)
         {
             HandlePendingReRally();
         }
@@ -453,7 +524,18 @@ public class FpsInputAdapter : MonoBehaviour
             // the pick and does not fire: the pick-like
             // state suppresses the mouse from its first
             // frame, as the picker does.
+            // Slice 24 Step 2: X opens a dismiss pick only
+            // here, on the same terms — not picking, not
+            // re-rally pending, not dismiss pending — and
+            // a same-frame click does not fire, for the
+            // same reason. K is checked first, so a
+            // same-frame K+X press opens the re-rally
+            // pick only; that frame order is routing
+            // determinism, not a designed key priority,
+            // and the player re-presses X after closing
+            // the re-rally pick to dismiss instead.
             if (Input.GetKeyDown(KeyCode.K)) TryOpenReRallyPick();
+            else if (Input.GetKeyDown(KeyCode.X)) TryOpenDismissPick();
             else if (Input.GetMouseButtonDown(0)) Simulation.FireAimed();
         }
     }
@@ -521,6 +603,146 @@ public class FpsInputAdapter : MonoBehaviour
         _pendingReRallyY = target.RallyY;
         _pendingReRallyZ = target.RallyZ;
         ShowReRallyMarker();
+    }
+
+    // Slice 24 Step 2 helpers. No core rule lives here: these
+    // methods only select a target, hold pending state, and
+    // call the Simulation passthrough, whose gate decides.
+    // Targeting mirrors TryOpenReRallyPick's proximity loop
+    // with the dismiss scope's one difference: NO doctrine
+    // filter, because TryDismissSquad consults no doctrine.
+    // A rally marker never selects: only squad centres are
+    // tested, so a crosshair on a rally cell whose squad
+    // stands elsewhere opens nothing.
+    private void TryOpenDismissPick()
+    {
+        if (Simulation == null) return;
+        var snapshot = OrbitalView.Snapshot(Simulation.World);
+        Vector3 origin = transform.position;
+        Vector3 forward = transform.forward;
+        int bestPos = -1;
+        float bestAngle = float.PositiveInfinity;
+        for (int i = 0; i < snapshot.Count; i++)
+        {
+            var s = snapshot[i];
+            Vector3 centre = new Vector3(s.X + 0.5f, s.Y + 0.5f, s.Z + 0.5f);
+            Vector3 toSquad = centre - origin;
+            float dist = toSquad.magnitude;
+            if (dist > 30f) continue;
+            // Occlusion, as in the re-rally pick: a voxel hit
+            // before the centre means an honestly occluded
+            // marker is not selectable. Markers carry no
+            // colliders, so they never appear as a hit here.
+            if (Physics.Raycast(origin, toSquad.normalized, out RaycastHit blockHit, dist)
+                && blockHit.distance < dist) continue;
+            float angle = Vector3.Angle(forward, toSquad);
+            float tolerance = Mathf.Max(2f, Mathf.Atan(0.6f / dist) * Mathf.Rad2Deg);
+            if (angle > tolerance) continue;
+            if (angle < bestAngle)
+            {
+                bestAngle = angle;
+                bestPos = i;
+            }
+        }
+        if (bestPos < 0) return;
+        var target = snapshot[bestPos];
+        _pendingDismiss = true;
+        _pendingDismissSnapshotPos = bestPos;
+        _pendingDismissDoctrine = target.Doctrine;
+        _pendingDismissKind = target.Kind;
+        _pendingDismissRallyX = target.RallyX;
+        _pendingDismissRallyY = target.RallyY;
+        _pendingDismissRallyZ = target.RallyZ;
+        // No pending marker is created: a dismiss has no
+        // candidate cell to mark (see the fields above).
+    }
+
+    private void HandlePendingDismiss()
+    {
+        // Deliberately unread here: K (refuse-while-pending —
+        // opening a re-rally pick on top of a dismiss would
+        // stack two pending states and leave Return
+        // ambiguous), O (refuse-while-pending, as in Step 1),
+        // the builder keys (suppressed by the guard above),
+        // the picker keys (the picker branch never runs
+        // while pending), and the mouse (the else branch
+        // that fires never runs while pending). Return,
+        // Escape, and X again are the whole dismiss
+        // routing: confirm, cancel, and toggle-off cancel,
+        // symmetric with K again cancelling a re-rally.
+        if (Input.GetKeyDown(KeyCode.Return)) ConfirmPendingDismiss();
+        else if (Input.GetKeyDown(KeyCode.Escape)) CancelPendingDismiss();
+        else if (Input.GetKeyDown(KeyCode.X)) CancelPendingDismiss();
+    }
+
+    private void ConfirmPendingDismiss()
+    {
+        if (Simulation != null)
+        {
+            // Re-validation before any gate call, on the
+            // same movement-invariant triple Step 1 uses:
+            // the stored snapshot position must still hold
+            // a squad with the same doctrine, kind, and
+            // rally. Position is NOT part of the check —
+            // a walking squad changes cell every tick —
+            // and health is not either, because an enemy
+            // hit mid-decision must not void a confirm.
+            // A target that died and was swept shifts
+            // every later live position by one, so the
+            // stored position then names a different squad
+            // or no squad at all, and this check catches
+            // that shift unless the shifted-in squad is an
+            // identical twin (same doctrine, kind, and
+            // rally), which no adapter-visible field can
+            // distinguish without inventing a core identity
+            // the save does not carry. That twin case is
+            // the known limit, recorded in DECISIONS.md:
+            // it needs a twin death plus a sweep between
+            // press and confirm, and its consequence is
+            // bounded to dismissing the wrong twin — one
+            // slot freed and no refund either way, never a
+            // charge or a second deletion. A dismiss can
+            // never be the shift source itself while one
+            // is pending, because X is refused while
+            // pending and no other adapter path dismisses.
+            // Pending state does NOT auto-clear when the
+            // target dies mid-decision: the adapter does
+            // not poll deaths, and the stale pending is
+            // caught at confirm instead, and cleared there
+            // with nothing changed.
+            var snapshot = OrbitalView.Snapshot(Simulation.World);
+            if (_pendingDismissSnapshotPos < snapshot.Count)
+            {
+                var s = snapshot[_pendingDismissSnapshotPos];
+                if (s.Doctrine == _pendingDismissDoctrine
+                    && s.Kind == _pendingDismissKind
+                    && s.RallyX == _pendingDismissRallyX
+                    && s.RallyY == _pendingDismissRallyY
+                    && s.RallyZ == _pendingDismissRallyZ)
+                {
+                    int gateIndex = SnapshotPosToGateIndex(_pendingDismissSnapshotPos);
+                    if (gateIndex >= 0)
+                    {
+                        // Dismiss gate only. Its result is
+                        // not branched on: success and refusal
+                        // alike clear the pending state, so a
+                        // confirm is one attempt and a second
+                        // Return cannot re-apply a stale pick.
+                        // On success the squad's text line
+                        // and both markers vanish with its
+                        // snapshot entry under the existing
+                        // marker rule; no HUD word is added.
+                        Simulation.TryDismissSquad(gateIndex);
+                    }
+                }
+            }
+        }
+        CancelPendingDismiss();
+    }
+
+    private void CancelPendingDismiss()
+    {
+        _pendingDismiss = false;
     }
 
     private void HandlePendingReRally()
@@ -596,8 +818,9 @@ public class FpsInputAdapter : MonoBehaviour
         CancelPendingReRally();
     }
 
-    // The marker-to-index translation, in one place so Step 2
-    // reuses it: walk Squads in order skipping dead squads,
+    // The marker-to-index translation, in one place, reused
+    // by Step 2's dismiss binding as decided there: walk
+    // Squads in order skipping dead squads,
     // exactly as OrbitalView.Snapshot does, and count live
     // positions until the stored snapshot position. -1 means
     // the position no longer exists (a sweep shrank the

@@ -403,22 +403,37 @@ it honestly. A dismissed squad is gone, not stored.
   the removed squad, and a pre-dismiss save still
   loads with the squad present; no save field is
   added.
-- **Adapter binding, PROPOSED ONLY:** X while not
-  picking, crosshair on any live squad's marker (all
-  doctrines are eligible, unlike K's re-rally), Return
-  to confirm, Escape to cancel, doing nothing while
-  picking, nothing when the raycast hits no live
-  marker, nothing when the target squad refuses, and
-  nothing on Return with no pending dismiss. X is
-  free against the taken keys and the K proposal.
-  This binding is NOT implemented in this step and is
-  NOT claimed as working in a scene; it is observed
-  only under playtest-gate item 41, once implemented
-  on Windows. Item 41 leaves items 40, 39, 37, 29, and
-  orbital-command item 13 standing; it supersedes
-  none of them and extends none of them, because
-  dismiss readings are new and separate, not wider
-  re-rally readings.
+- **Adapter binding, IMPLEMENTED 0.98.0, NOT
+  Unity-verified:** X while not picking, crosshair
+  on any live squad's marker (all doctrines are
+  eligible, unlike K's re-rally), Return to confirm,
+  Escape to cancel, X again to cancel, doing
+  nothing while picking, nothing when the
+  crosshair selects no live marker, nothing when
+  the target squad refuses, and nothing on Return
+  with no pending dismiss. Targeting reuses Slice
+  24 Step 1's marker-centre proximity rule with no
+  doctrine filter, and the marker-to-index
+  translation is Step 1's SnapshotPosToGateIndex,
+  reused. The pending dismiss is an own adapter
+  flag, separate from the re-rally flag and the
+  picker flag; cross-pending is refuse-while-pending
+  both ways (X while a re-rally pick is pending
+  does nothing, K while a dismiss is pending does
+  nothing, O does nothing while either is pending),
+  so Return confirms exactly one pending action.
+  Confirm re-validates the target by doctrine, kind,
+  and rally and clears the pending state whether
+  the gate succeeds or refuses; no pending marker
+  or HUD word is added, because a dismiss has no
+  candidate cell to mark. This binding is observed
+  only under playtest-gate item 41, plus the
+  pending-routing readings in item 43, once
+  observed on Windows. Item 41 leaves items 40,
+  39, 37, 29, and orbital-command item 13
+  standing; it supersedes none of them and extends
+  none of them, because dismiss readings are new
+  and separate, not wider re-rally readings.
 
 ## Second squad type — Recon (Slice 7 Step 1, 0.33.0)
 
