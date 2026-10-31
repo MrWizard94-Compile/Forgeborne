@@ -1,5 +1,15 @@
 # Forgeborne — Changelog
 
+## 0.110.0 — 2026-10-31 — Integration fix: GameManager fills Simulation for all linked adapters
+
+- Bug found from Rob's clean-compile screenshot 2026-10-31 15:29 EDT (Console: 0 errors, 1 warning — Input Manager deprecation only): that screenshot proves 0.109.0 compiles clean in Unity on Windows, but it also exposed the next blocker before any Main scene is built. Only MeshRenderer.Simulation was ever assigned in code (grep: a single `.Simulation =` site, in GameManager.Start). FpsInputAdapter, HudDisplay, OrbitalSquadDisplay, and SquadMarkerDisplay all return early from Update when their Simulation is null, so a scene built exactly as playtest-gate step 2 describes would render a mesh but never move the FPS camera and never update the HUD, with no error to explain why. This is a code wiring gap, not a scene wiring mistake, and it is fixed here, before Rob builds the Main scene.
+- Change: GameManager gains Inspector-wired, optional fields HudDisplay, OrbitalDisplay, and MarkerDisplay (FpsAdapter already existed). In Start, after creating the one Simulation(Seed), GameManager now assigns that same object to FpsAdapter.Simulation, HudDisplay.Simulation, OrbitalDisplay.Simulation, and MarkerDisplay.Simulation, in addition to the existing MeshRenderer fill. No second Simulation is created, no adapter is conjured by search, and no non-null field is overwritten — the fill only sets fields on linked adapters.
+- Warnings, following the MeshRenderer-fill precedent: a missing FpsAdapter link logs a warning that FPS input will not move; a missing HudDisplay link logs a warning that HUD text will not update. Orbital and Marker displays are later-slice displays and may legitimately be absent from a Slice 1 scene, so a missing link for them logs nothing.
+- Comment correction: SquadMarkerDisplay's comment said to "drag the GameManager Simulation" into its Simulation field. That cannot work: Simulation is a pure C# class, not a Unity Object, so it cannot be Inspector-wired. The comment now says GameManager.Start fills it when MarkerDisplay is linked.
+- No behaviour change in core, no core file touched, no value changes. WeaponViewModel needs no Simulation and is untouched.
+- Claim split, kept explicit: this fix is headless-verified only (tests below, adapter code review). Whether Play now moves the camera and updates the HUD is a Windows observation, owed by the Main scene playtest, not claimed here.
+- Next step: push this step as its own commit, with Rob's push approval; then build the Main scene on Windows (playtest-gate step 2) with GameManager links: MeshRenderer, FpsAdapter, HudDisplay, plus Orbital/Marker if those displays are in the scene.
+
 ## 0.109.0 — 2026-10-31 — Integration Step 3:
 nullable fix and DuskLighting AmbientMode fix,
 documentation of a local-only step, NOT yet

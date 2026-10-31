@@ -82,10 +82,13 @@
 // Voxel cells are 1 Unity unit, so a cell (x, y, z) centres at
 // (x + 0.5, y + 0.5, z + 0.5).
 // Wire MarkerRoot in the Inspector (any empty GameObject in the
-// scene; markers are parented under it so the scene stays tidy)
-// and drag the scene's GameManager Simulation into Simulation —
-// the same Simulation FpsInputAdapter and OrbitalSquadDisplay
-// already use. Do not create a second Simulation for markers.
+// scene; markers are parented under it so the scene stays tidy).
+// Simulation is filled by GameManager.Start when this display is
+// linked as GameManager.MarkerDisplay — the same Simulation
+// FpsInputAdapter and OrbitalSquadDisplay already use. Do not
+// create a second Simulation for markers, and do not try to drag
+// a Simulation in the Inspector: it is a pure C# class, not a
+// Unity Object, so Inspector wiring cannot set it.
 // See docs/orbital-view.md for the Windows checklist.
 using System.Collections.Generic;
 using UnityEngine;

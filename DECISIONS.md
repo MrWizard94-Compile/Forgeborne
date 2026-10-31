@@ -11692,3 +11692,9 @@ marker proximity targeting, item 42
   push that preceded it; then Integration
   Step 4, the no-drift guard and build script,
   not promised here.
+
+## 0.110.0 — GameManager fills Simulation for all linked adapters — decided 2026-10-31, evidence: Rob's 15:29 EDT Console screenshot (0 errors, 1 Input Manager deprecation warning) plus code grep showing a single `.Simulation =` assignment in the whole adapter set, in GameManager.Start for MeshRenderer only.
+
+- Rationale: a Main scene built to the gate would have looked broken (static camera, blank HUD) for a code reason, not a scene reason, and the failure would have been silent — every affected Update returns early on null Simulation with no log. Fixing the code before the scene is built is cheaper and more honest than letting Rob debug a scene that cannot work. The fill follows the existing Slice 16 MeshRenderer-fill precedent exactly: one Simulation, created once by GameManager, handed to linked adapters, never searched for, never duplicated.
+- Alternatives rejected: (a) Inspector wiring of Simulation — impossible, Simulation is not a Unity Object; (b) each adapter finding GameManager in Awake/Start — execution-order fragile, and GameManager.Start is the single place that creates the Simulation, so it is the single place that should hand it out; (c) leaving the gap for the scene author to work around — there is no workable workaround in the Inspector, so that would have left the gate unpassable.
+- Next step: push 0.110.0 as its own commit, with Rob's push approval; then Main scene on Windows, with the new GameManager links wired.

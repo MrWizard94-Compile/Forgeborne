@@ -35,6 +35,34 @@ public class GameManager : MonoBehaviour
     // naming the stale-mesh consequence, rather than a
     // silent first mesh that never refreshes.
     public FpsInputAdapter? FpsAdapter;
+    // Integration fix, 0.110.0: GameManager now fills the
+    // Simulation field of every adapter it links, not just
+    // the mesh renderer. Before this fix, only
+    // MeshRenderer.Simulation was ever assigned in code:
+    // FpsInputAdapter, HudDisplay, OrbitalSquadDisplay,
+    // and SquadMarkerDisplay all return early from Update
+    // when their Simulation is null, so a scene built
+    // exactly as the playtest gate describes would render
+    // a mesh but never move the FPS camera and never
+    // update the HUD, with no error to explain why.
+    // Simulation is a pure C# class, not a Unity Object,
+    // so it cannot be Inspector-wired — a comment in
+    // SquadMarkerDisplay saying to "drag the GameManager
+    // Simulation" into it cannot work in the Inspector.
+    // The fill here is the only wiring that can work:
+    // GameManager creates the one Simulation in Start,
+    // then hands the same object to every linked adapter.
+    // Fields are Inspector-wired and optional, like
+    // FpsAdapter: unwired, nothing is conjured by search,
+    // and no adapter is created. FpsAdapter and HudDisplay
+    // are required for the Slice 1 loop, so a missing link
+    // for either logs a warning naming the consequence;
+    // Orbital and Marker displays are later-slice displays
+    // and may legitimately be absent from a Slice 1 scene,
+    // so a missing link for them logs nothing.
+    public HudDisplay? HudDisplay;
+    public OrbitalSquadDisplay? OrbitalDisplay;
+    public SquadMarkerDisplay? MarkerDisplay;
 
     void Start()
     {
@@ -43,6 +71,30 @@ public class GameManager : MonoBehaviour
         {
             MeshRenderer.Simulation = Simulation;
             MeshRenderer.RefreshMesh();
+        }
+        if (FpsAdapter != null)
+        {
+            FpsAdapter.Simulation = Simulation;
+        }
+        else
+        {
+            Debug.LogWarning("Forgeborne simulation wiring: no FpsInputAdapter linked to GameManager — FPS input will not move, because FpsInputAdapter.Update returns early when its Simulation is null. Link FpsAdapter to the camera's FpsInputAdapter.");
+        }
+        if (HudDisplay != null)
+        {
+            HudDisplay.Simulation = Simulation;
+        }
+        else
+        {
+            Debug.LogWarning("Forgeborne simulation wiring: no HudDisplay linked to GameManager — HUD text will not update, because HudDisplay.Update returns early when its Simulation is null. Link HudDisplay to the Canvas HudDisplay.");
+        }
+        if (OrbitalDisplay != null)
+        {
+            OrbitalDisplay.Simulation = Simulation;
+        }
+        if (MarkerDisplay != null)
+        {
+            MarkerDisplay.Simulation = Simulation;
         }
         if (FpsAdapter != null && FpsAdapter.MeshRenderer == null && MeshRenderer != null)
         {
