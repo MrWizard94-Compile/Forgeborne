@@ -1,5 +1,96 @@
 # Forgeborne — Changelog
 
+## 0.96.0 — 2026-10-31 — Slice 24 scope:
+adapter bindings — K for re-rally, X for dismiss,
+as their own adapter slice, documentation only
+
+- Step taken: Slice 24 scope, documentation-only,
+  0.96.0. No system built, no answer decided, by
+  design; Slice 25 is NOT scoped here.
+- Scope decided: Slice 24 is the bindings slice,
+  in order — Step 1, the K re-rally binding
+  (which core gate K calls, its pending-state
+  shape, its rally selection, its marker-to-index
+  translation including the dead-in-list case,
+  and its fail-closed cases, all stated as
+  questions, not answers); Step 2, the X dismiss
+  binding (its pending-state shape, its
+  cross-pending answers against Step 1's pending
+  state, its marker-to-index translation, and
+  its fail-closed cases, all stated as questions,
+  not answers); Step 3, a documentation-only
+  review closing Slice 24, following the Slice 16
+  precedent for claims no headless run can prove.
+  No demo scenario belongs to this slice, because
+  no demo can stage a key press and the core
+  calls are already proved by Slices 20–22.
+- Why this slice, from the Slice 23 review's
+  ranked candidates: candidate 5 (bindings) is
+  the only candidate that is a buildable step
+  rather than a Windows observation (candidate 1,
+  Slice 13 remainders) or a Windows-evidence-
+  gated economy decision (candidate 2, graphics
+  retune; candidate 3, re-rally price; candidate
+  4, dismiss refund). The other candidates are
+  not demoted; they wait on evidence this slice
+  cannot manufacture headlessly. Implementing
+  the bindings makes playtest-gate items 39, 40,
+  and 41 attemptable on Windows; it does not
+  pass them.
+- Ground facts verified against code this run,
+  not copied from review prose: no `KeyCode.K`
+  and no `KeyCode.X` handling exists in
+  `FpsInputAdapter.cs` — both bindings are
+  comments only. The general re-rally gate
+  (live HoldGround or Patrol) already includes a
+  stuck Patrol, and both re-rally gates call the
+  same free `ReRally`, so one K binding can
+  serve items 39 and 40. `OrbitalView.Snapshot`
+  skips dead squads while the gates index
+  `WorldZone.Squads` directly, so a dead squad
+  awaiting its sweep shifts gate indices relative
+  to snapshot positions, and `SquadMarkerDisplay`
+  slots iterate snapshot order — a marker slot
+  is a snapshot position, not a gate index. The
+  scope names that translation as a question
+  Step 1 must answer. K and X are free against
+  the taken keys (WASD / Space / E / Q / R / O /
+  Return / Esc / Alpha1-7 / T / Y / U / I / B /
+  N / P / M / mouse click); K is taken by the
+  re-rally proposal, so X collides with neither.
+  Next free gate number is 42; no new item is
+  expected, because items 39, 40, and 41 already
+  contain the binding observations including
+  fail-closed cases — item 42 only if a step
+  finds a reading with no home.
+- Changes: new docs/slice-24-scope.md, CHANGELOG
+  0.96.0, DECISIONS.md (theme, order with
+  reversal honesty, questions-not-answers,
+  grounding, boundary — adapter-only expected,
+  any core touch a deviation to be owned —
+  deliberately-not list, next step: Slice 24
+  Step 1, the K re-rally binding, decided in
+  that step).
+- Tests: 4577 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged:
+  Slice 23 save 44,041 chars, Slice 22 save
+  43,990 chars, Slice 21 save 44,040 chars,
+  Slice 20 save 44,041 chars, Slice 19 save
+  43,965 chars, Slice 18 save 44,015 chars,
+  Slice 15 save 44,016 chars, Slice 17 save
+  43,974 chars.
+- Checklist relation: no new item. Items 39,
+  40, and 41 stay unchecked — implementation
+  alone does not pass them — and the next free
+  gate number remains 42.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.95.0 — 2026-10-31 — Slice 23 Step 2:
 composed demo plus review, closing Slice 23
 

@@ -10022,6 +10022,111 @@ closing Slice 23
   chosen from the ranked candidates the Slice 23
   review carries, not promised here.
 
+## Slice 24 scope (0.96.0) — adapter bindings: K for
+re-rally, X for dismiss, as their own adapter slice
+
+- Decision, in one sentence: Slice 24 is the
+  bindings slice — implement the K re-rally binding
+  first, then the X dismiss binding, then a
+  documentation-only review, following the Slice 16
+  pattern — because K and X are the only ranked
+  Slice 24 candidates that are buildable steps
+  rather than Windows observations or
+  Windows-evidence-gated economy decisions, and
+  because three decided actions with no key behind
+  them are not playable actions.
+- Why candidate 5, stated against the ranking:
+  candidate 1 (Slice 13 remainder observations)
+  remains observations to be made on Windows, not
+  steps to re-scope blindly, with one specific
+  change Slice 24 makes: items 39, 40, and 41
+  become attemptable once their bindings exist,
+  while the other observations in that candidate
+  stay unmade. Candidates 2 (graphics retune),
+  3 (re-rally price), and 4 (dismiss refund) are
+  all gated on Windows evidence that does not
+  exist yet, and a bindings step must not move a
+  light, fog, or model value, or reprice either
+  action, to pay for implementing its key. The
+  other candidates are not demoted; they are
+  waiting on evidence this slice cannot
+  manufacture headlessly.
+- Theme, stated: bindings make observations
+  attemptable; they do not pass them. Steps 1 and
+  2 implement adapter code that the headless
+  runner never compiles, so no test count proves
+  a binding, and items 39, 40, and 41 stay
+  unchecked until Windows observations are made
+  and recorded here. The suite standing at
+  4577/4577 through Steps 1 and 2 is the honest
+  outcome for this slice, not a failure to prove,
+  and a step that moves the suite must name the
+  headless claim it added.
+- Order, with reversal honesty: K before X,
+  because the re-rally pending-state shape (own
+  flag versus picker-flag reuse, with its Return
+  collision hazard) is the harder routing
+  decision, and X's cross-pending answers are
+  only statable once K's pending state exists.
+  A scope that put X first would decide
+  cross-pending against a pending state that
+  does not exist yet.
+- Ground facts this scope decides from, verified
+  against code this run, not copied from review
+  prose: no `KeyCode.K` and no `KeyCode.X`
+  handling exists in `FpsInputAdapter.cs` — both
+  bindings are comments only. The general
+  re-rally gate's eligibility (live HoldGround or
+  Patrol) already includes a stuck Patrol, and
+  both re-rally gates call the same `ReRally`
+  free, so one K binding can serve items 39 and
+  40. `OrbitalView.Snapshot` skips dead squads
+  while the gates index `WorldZone.Squads`
+  directly, so a dead squad awaiting its sweep
+  shifts gate indices relative to snapshot
+  positions — and `SquadMarkerDisplay` slots
+  iterate snapshot order, so a marker slot is a
+  snapshot position, not a gate index. That
+  divergence is why the scope names the
+  marker-to-index translation as a question Step
+  1 must answer, not an assumption the bindings
+  may make.
+- Questions, not answers, kept deliberately:
+  which gate K calls; the pending-state shape
+  for each binding; whether the re-rally pick
+  reuses the picker flag (with its Return-into-
+  deploy hazard confronted, not assumed away);
+  the rally-selection reading (pending marker
+  versus rally marker, no new HUD word
+  expected); the cross-pending answers
+  (cancel-first, refuse-while-pending, or
+  replace, with replace's confirm-the-wrong-
+  action hazard named); mouse fire while a pick
+  or dismiss is pending; and whether any new
+  checklist item is needed at all (expected
+  none, because items 39, 40, and 41 already
+  contain the binding observations including
+  fail-closed cases — item 42 only if a step
+  finds a reading with no home).
+- Boundary: adapter-only expected; any core
+  touch is a scope deviation to be owned, not
+  smuggled. No economy, movement, targeting,
+  fire, marker, material, light, fog, model, or
+  HUD rule moves. No demo scenario: a demo
+  staging K or X would be a core-call demo in
+  disguise, and Slices 20–22 already proved the
+  core calls. Step 3 is documentation-only,
+  following Slice 16's review precedent for
+  claims no headless run can prove.
+- Deliberately NOT in this slice: a general
+  squad-command system; a new binding beyond K
+  and X; a rebinding or modifier scheme unless
+  justified against a named routing collision;
+  Windows Unity verification itself; a Slice 25
+  scope.
+- Next step: Slice 24 Step 1, the K re-rally
+  binding, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
