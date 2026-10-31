@@ -301,15 +301,22 @@ public sealed class TacticalSquad
     /// voxels, from the rally: waypoints sit 3 east, south,
     /// west, and north of the rally, on the rally's own Y
     /// plane, so a patrol is a flat loop at rally height, not
-    /// a climb. 3 is a first-pass value, not a balance claim:
-    /// it is larger than every kind's engagement range
-    /// except Recon's 5 (so a patrolling Recon can shoot
-    /// across its own loop, while a Vanguard or Heavy
-    /// shoots what the loop brings close), and small
-    /// enough that a full circuit is 24 steps or fewer, so
-    /// a test can watch it repeat. The radius is measured
-    /// from the rally, never from the spawn, so the loop is
-    /// re-derived from the rally on every tick.</summary>
+    /// a climb. 3 is a first-pass value, not a balance claim,
+    /// and Slice 23 Step 1 kept it on audit evidence (see
+    /// DECISIONS.md): it equals Vanguard's engagement range
+    /// 3, sits below Recon's 5, and above Heavy's 2 — so a
+    /// squad on its rally engages a waypoint enemy at
+    /// exactly Vanguard range, within Recon range, and
+    /// beyond Heavy range, while no kind engages the
+    /// opposite waypoint (distance 6) from a waypoint.
+    /// The earlier wording ("larger than every range
+    /// except Recon's") was wrong for Vanguard and is
+    /// corrected here, not carried. A full circuit is
+    /// exactly 24 steps at radius 3 (8 steps per radius
+    /// unit on this cross shape), so a test can watch it
+    /// repeat. The radius is measured from the rally,
+    /// never from the spawn, so the loop is re-derived
+    /// from the rally on every tick.</summary>
     public const int PatrolLoopRadius = 3;
     /// <summary>Slice 15 Step 1: waypoints in the loop, in
     /// walking order: the rally itself, then east, south,

@@ -458,6 +458,38 @@ words (Marching / Holding / Hunting / Idle).
   are all complete, but Slice 3 is scoped by a later step, not
   by this one.
 
+## Patrol loop audit — Slice 23 Step 1 (0.94.0)
+
+The loop's first-pass values are decided, not
+carried, in this step (rationale in DECISIONS.md):
+radius 3 and five waypoints stay as one pair. The
+audit finds no radius-caused or loop-shape-caused
+refusal: every proved stuck geometry traces to
+blocked step cells — the route-blocked shape, the
+fully enclosed shape, the blocked new loop, and a
+four-enemy ring — and clearing those blocks lets
+the same squad walk the same loop at the same
+values. A solid waypoint alone, and an
+out-of-bounds waypoint alone, each cost one skip
+and the loop still completes, so a bad waypoint is
+a skip, never a stick. The range relation is
+corrected from the table: radius 3 equals
+Vanguard's range 3, sits below Recon's 5, and above
+Heavy's 2 — the old "larger than every range except
+Recon's" wording was wrong for Vanguard. A full
+circuit is 24 steps at radius 3, plus 8 per added
+radius unit. The stuck threshold stays coupled to
+the count (5 refusals = a full circuit = Stuck).
+No new playtest-gate item: items 37, 39, and 40
+already observe the loop as kept, and the next free
+gate number remains 42. KEEP reopens only on a
+Windows observation on a real map — loops
+routinely failing to fit ordinary ground,
+waypoints routinely landing inside unplaced
+structures, or a circuit that stops feeling like a
+patrol — not on a staged enclosure or a
+player-built wall.
+
 ## Unity verification checklist — to be done on Windows, Unity 6000
 
 1. [ ] Project opens with no compile errors in the edited

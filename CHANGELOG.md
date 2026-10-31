@@ -1,5 +1,117 @@
 # Forgeborne — Changelog
 
+## 0.94.0 — 2026-10-31 — Slice 23 Step 1:
+radius and waypoint decision — KEEP radius 3
+and count 5, on audit evidence, with the range
+comment corrected
+
+- Step taken: Slice 23 Step 1, the radius and
+  waypoint decision, decided in that step, per
+  docs/slice-23-scope.md. No system built, no
+  value changed, no demo scenario added by this
+  step alone, by design; the composed demo
+  belongs to Step 2.
+- Decision decided: KEEP radius 3 and waypoint
+  count 5 as one pair — no change, no split, no
+  per-kind radius. The audit (tests, not prose)
+  finds no radius-caused or loop-shape-caused
+  refusal: every proved stuck geometry traces
+  to blocked step cells, and clearing those
+  cells lets the same squad walk the same loop
+  at the same values. Range relation corrected
+  from the table, not the old comment: radius 3
+  equals Vanguard's range 3, sits below Recon's
+  5, and above Heavy's 2, so a squad on its rally
+  engages a waypoint enemy at exactly Vanguard
+  range, within Recon range, and beyond Heavy
+  range, while no kind engages the opposite
+  waypoint (distance 6) from a waypoint. The
+  old comment's "larger than every range except
+  Recon's" was wrong for Vanguard and is
+  corrected in Orbital.cs in this step. Circuit
+  cost stated, not hidden: 24 steps at radius 3,
+  8 steps per added radius unit on the cross
+  shape (8r), so a larger radius is never free.
+  Stuck threshold stays coupled to the count by
+  construction (5 refusals = a full circuit =
+  Stuck), because the count is kept; a count
+  change would have had to answer the coupling
+  explicitly, and no evidence justified one.
+  Windows reopen condition stated in DECISIONS:
+  loops routinely failing to fit ordinary ground,
+  waypoints routinely landing inside unplaced
+  structures, or a circuit that stops feeling
+  like a patrol — not a single staged enclosure,
+  a player-built wall, or a blocked re-rally.
+- Audit proof set, in brief: route-blocked shape
+  classified tick by tick (every attempted step
+  cell stone, including the one cell that is both
+  a step cell and the east waypoint, counted once
+  as a blocked cell, not as a shape); fully
+  enclosed shape (direct step cells stone while
+  every target waypoint cell is air; four
+  refusals Patrolling, five Stuck); blocked new
+  loop (Slice 21 restick shape, all four new
+  waypoint cells air, re-sticks on the new loop);
+  enemy ring (four living enemies refuse every
+  step exactly as stone does, so stuck is a
+  blocked-cell reading, not a stone-specific one);
+  removal proofs for all four (clearing only the
+  staged blocks lets the same squad walk on to
+  its rally and loop, at radius 3 and count 5);
+  waypoint-caused controls (a solid waypoint alone
+  and an out-of-bounds waypoint alone each cost
+  one skip and the loop still completes, so a bad
+  waypoint is a skip, never a stick); radius-only
+  attempts that fail to stick (a ground-edge loop
+  with its east waypoint outside the chunk, and a
+  stone wall spanning the east leg, both walk at
+  radius 3 — and at a smaller radius the same
+  cells would still be skips, so no staged case
+  makes radius the difference between walking and
+  sticking); shared-loop walks (Recon and Heavy
+  walk the identical 24-step circuit, so no
+  per-kind derivation exists in code or in
+  movement). No loop-shape-caused refusal was
+  found, and the mechanism explains why one
+  cannot occur as defined: MoveForPatrol refuses
+  only on a specific step or sidestep cell (solid,
+  enemy-occupied, or out of bounds), so a refusal
+  with every attempted cell open does not exist
+  in this code.
+- Checklist relation: no new playtest-gate item,
+  per the scope — no player-visible behaviour
+  changes, so items 37 (patrol route), 39 (stuck
+  re-rally), and 40 (general re-rally) already
+  observe the loop as kept, superseding none of
+  them, and the next free gate number remains 42.
+- Changes: src/Forgeborne.Core/Orbital.cs
+  (radius comment corrected only, no behaviour),
+  tests/Forgeborne.Core.Tests/Program.cs (+178
+  assertions), docs/orbital-command.md (patrol
+  loop audit note), CHANGELOG 0.94.0,
+  DECISIONS.md (decision, rejected hypotheses,
+  coupling answers, Windows reopen condition,
+  deliberately-not list, next step: Slice 23
+  Step 2, composed demo plus review closing
+  Slice 23).
+- Tests: 4287 passed, 0 failed (was 4109; +178,
+  no failures on the final runs, FAIL count 0).
+  Demo unchanged: Slice 22 scenario save 43,990
+  chars, Slice 21 save 44,040 chars, Slice 20
+  save 44,041 chars, Slice 19 save 43,965 chars,
+  Slice 18 save 44,015 chars, Slice 15 save
+  44,016 chars, Slice 17 save 43,974 chars. No
+  demo scenario added for this step alone, per
+  the scope; the composed demo belongs to Step 2.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.93.0 — 2026-10-31 — Slice 23 scope:
 patrol-route first-pass values — radius and
 waypoint count revisited on evidence,

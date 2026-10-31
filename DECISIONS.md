@@ -9712,6 +9712,209 @@ evidence, documentation only (under delegation)
 - Next step: Slice 23 Step 1, the radius and
   waypoint decision, decided in that step.
 
+## Slice 23 Step 1 (0.94.0) — radius and waypoint decision: KEEP
+
+- Decision, in one sentence: radius 3 and
+  waypoint count 5 stay as one pair, unchanged,
+  because the audit finds no radius-caused or
+  loop-shape-caused refusal and every proved
+  stuck geometry is a blocked-cell geometry that
+  clears into the same loop at the same values.
+  This is a decision with tests, not a sixth
+  carrying sentence: the suite rises by 178
+  assertions (4109 to 4287, 0 failed), and a
+  keep with no new tests would have been prose,
+  as the scope warned.
+- The audit, classification by classification.
+  Route-blocked (Slice 20 shape): all five
+  refusals trace to the three staged stones; the
+  cell (23,20) is both a step cell and the east
+  waypoint, and it is counted once, as a blocked
+  cell, not as a shape — at tick 1 it blocks the
+  step toward the rally, at tick 2 it is the
+  target waypoint itself, still the same stone.
+  Enclosed (Slice 18 shape): every direct step
+  cell is stone while every target waypoint cell
+  is air, so these are step-cell refusals, not
+  waypoint refusals and not shape refusals — the
+  waypoints are all walkable, the squad cannot
+  take a first step toward any of them. Blocked
+  new loop (Slice 21 restick shape): all four
+  new waypoint cells are air, yet the squad
+  re-sticks, so moving the loop's centre changed
+  which loop fails, not the cause of failure.
+  Enemy ring (new as a stuck proof; earlier
+  slices used enemies only for single skips and
+  fire): four living enemies refuse every step
+  exactly as stone does, so stuck is a
+  blocked-cell reading, not a stone-specific one.
+  Removal, the other half of every audit case:
+  clearing only the staged blocks — stones, or
+  the enemy list — lets the same squad walk on
+  to its rally and loop (route-blocked: 4 steps
+  to the rally plus the 24-step circuit; enclosed
+  and enemy ring: 18 steps via the remaining
+  legs; blocked new loop: 6 steps to the new
+  rally plus the 24-step circuit), at radius 3
+  and count 5, with no re-rally and no teleport.
+  A block that clears into the same loop was the
+  placement, not the numbers.
+- Waypoint-caused, distinguished honestly from
+  stuck: a solid waypoint alone (stone only on
+  the east waypoint) costs one skip and the loop
+  completes with the stone still in place; an
+  out-of-bounds waypoint alone (rally at x=29,
+  east waypoint at x=32, outside the chunk)
+  costs one skip and the loop completes. A bad
+  waypoint is a skip, never a stick — the skip
+  rule, not the radius, is what saves both.
+- The missing case, attempted and not found.
+  Two radius-only attempts were staged, and both
+  walk at radius 3: the ground-edge loop above,
+  and a stone wall at x=22 spanning the east leg
+  (the leg is skipped, the remaining legs walk).
+  At a smaller radius the edge waypoint would sit
+  inside the chunk and the wall cell would sit on
+  the east waypoint itself — both still skips, not
+  sticks — so no staged case makes radius the
+  difference between walking and sticking, in
+  either direction. The mechanism explains why:
+  MoveForPatrol refuses only on a specific
+  attempted cell (direct step or sidestep: solid,
+  enemy-occupied, or out of bounds), so a refusal
+  with every attempted cell open — the only
+  thing "loop-shape-caused" could mean in this
+  code — does not exist as a category. The
+  failure to stage such a case is recorded as a
+  finding for KEEP, not hidden by re-staging an
+  enclosure and calling it a radius case.
+- Rejected hypotheses, with reasons. Change the
+  radius (rejected — no radius-caused refusal
+  exists to fix, and a larger radius costs 8
+  steps per unit on the cross shape, 24 steps at
+  3 to 32 at 4, with no proved benefit; a smaller
+  radius shortens a circuit nothing has shown to
+  be too long). Change the count (rejected — the
+  five-waypoint loop exists because the rally is
+  itself a waypoint, and no proof shows a
+  four- or six-waypoint loop walking a case the
+  five-waypoint loop sticks on). Split radius
+  from count (rejected — they are one loop
+  definition, and moving one without the other
+  answers no audit finding). Per-kind radius,
+  tracking engagement ranges (rejected — the
+  ranges differ but movement does not: Recon and
+  Heavy walk the identical 24-step circuit, and
+  PatrolTarget does not branch on kind, so a
+  per-kind radius would need a new derivation, a
+  new stuck-threshold rule, and new snapshot
+  words, all for a distinction no stuck case
+  draws; the range relation is a fire fact, not
+  a movement fact, and it is corrected below,
+  not built into the loop). A shape change
+  smuggled inside a radius change (rejected as a
+  category — a circular or climbing loop is a
+  shape decision with its own tests, recorded as
+  a gap if ever wanted, not a radius answer).
+- Coupling answers, stated so a later count or
+  radius change cannot silently redefine them.
+  Count and stuck threshold stay coupled, by
+  construction: IsPatrolStuck is true at
+  PatrolConsecutiveRefusals >= PatrolWaypointCount,
+  so keeping the count at 5 keeps the threshold
+  at 5, proved in the enclosed audit (four
+  refusals Patrolling, five Stuck). A future
+  count change must answer, explicitly, whether
+  the threshold moves with it or is decoupled
+  into its own number with its own rationale —
+  this step decides neither, because it changes
+  neither. Radius and circuit length: 24 steps
+  at 3, plus 8 per added unit (8r on the cross
+  shape: r, 2r, 2r, 2r, r), walked and asserted,
+  not just arithmetised. Radius and the flat
+  loop: unchanged — a radius change must never
+  quietly become a climbing or reshaped loop.
+  Radius and range, corrected: 3 equals
+  Vanguard's 3, sits below Recon's 5, above
+  Heavy's 2. The old comment ("larger than every
+  range except Recon's") was wrong for Vanguard
+  and is corrected in Orbital.cs in this step;
+  the correction changes no behaviour, because
+  FindTarget already uses <= range — a Vanguard
+  on its rally engages a waypoint enemy at
+  exactly range 3, proved here, and the equality
+  therefore changes nothing in fire or movement.
+  What it does change is the wording a future
+  reader would reason from, which is why it is
+  fixed in the deciding step rather than left as
+  a known-wrong rationale. "Shoot across the
+  loop" is likewise narrowed: it holds from the
+  rally to a waypoint (distance 3, within Recon
+  range), not across the diameter (distance 6,
+  beyond even Recon's 5, proved from the east
+  waypoint to the west waypoint).
+- Checklist relation: no new playtest-gate item.
+  No player-visible behaviour changes, so items
+  37 (patrol route), 39 (stuck re-rally), and 40
+  (general re-rally) already observe the loop as
+  kept, superseding none of them, and the next
+  free gate number remains 42. A keep-decision
+  must not invent an item to look like a change.
+- Windows reopen condition, stated so a later
+  reader can tell whether it has been met. KEEP
+  reopens if, on a real map rather than a staged
+  enclosure, loops routinely fail to fit their
+  ground, waypoints routinely land inside
+  structures a player did not place, or a circuit
+  takes so long it stops feeling like a patrol.
+  It does NOT reopen on a single staged
+  enclosure, a player-built wall across a loop,
+  or a re-rally to a blocked rally — all already
+  answered by the skip and stuck rules, and all
+  re-proved in this audit. Until a reopening
+  observation exists, the values are decided,
+  not carried.
+- Deliberately NOT in this step: a movement,
+  targeting, or fire rule change (MoveForPatrol's
+  sidestep, skip, and threshold stand, except
+  that the threshold's coupling to the kept count
+  is now stated, not moved); a loop-shape change;
+  a re-rally repricing, a dismiss refund, a deploy
+  price or cap change, or any other economy change
+  (price 10, cap 3, free re-rally, dismiss refund
+  none all stand); a reserve, bench, or general
+  command system; a material, marker, light, fog,
+  model, or HUD change; an adapter edit or binding
+  implementation (K and X stay comments); a scene
+  file or imported asset; Windows Unity
+  verification itself (still open for Slices 1–23,
+  blocked on Unity 6000 on Windows); a Slice 24
+  scope.
+- Gaps carried, in priority order: Windows Unity
+  verification (Slices 1–23, items 25–27 and 30–41
+  still open, items 39, 40, and 41 pending their
+  bindings); the Slice 1 director playtest gate
+  still pending; first-pass graphics values
+  unproven; Slice 13 scene-proof observations
+  still unmade; a re-rally price and a dismiss
+  refund, both on Windows playtest evidence only;
+  the K/X bindings implementation as a later
+  adapter step; a loop-shape decision, if ever
+  wanted, as its own decision with its own tests.
+  Closed by this step, not carried as a question:
+  whether radius 3 and count 5 are right — they
+  are kept, on the audit above, subject to the
+  Windows reopen condition.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 23 Step 2, composed demo plus
+  documentation-only review closing Slice 23.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

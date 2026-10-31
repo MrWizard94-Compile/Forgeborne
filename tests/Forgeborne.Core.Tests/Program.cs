@@ -8801,5 +8801,335 @@ Eq(SquadActivity.Holding, OrbitalView.Snapshot(s22cFinalLoaded.World)[0].Activit
 Eq(3, TacticalSquad.PatrolLoopRadius, "slice22 composed loop radius is still 3, not retuned");
 Eq(5, TacticalSquad.PatrolWaypointCount, "slice22 composed loop waypoint count is still 5, not retuned");
 
+// ---- Slice 23 Step 1: the radius and waypoint decision, decided here (0.94.0) ----
+// Decision, in one sentence: KEEP radius 3 and waypoint count 5 as one
+// pair — no change, no split, no per-kind radius — because the audit
+// below finds no radius-caused or loop-shape-caused refusal anywhere,
+// and every proved stuck geometry traces to blocked step cells that,
+// once cleared, let the same squad walk the same loop at the same
+// values. The full rationale, rejected hypotheses, coupling answers,
+// Windows reopen condition, and deliberately-not list are in
+// DECISIONS.md; this section is the audit's proof set, not a re-telling
+// of earlier slices: earlier stuck proofs are re-staged only where the
+// audit needs their classification or their removal proof, and the
+// range, circuit, and attempted radius-only cases are new here.
+// Constants and the corrected range relation: the old radius comment
+// said 3 is larger than every kind's range except Recon's 5. The table
+// says otherwise for Vanguard, whose range is exactly 3 — so the
+// comment is corrected in Orbital.cs in this step, and the relation is
+// proved from the table here, not from the comment.
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice23 audit loop radius is 3");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice23 audit loop waypoint count is 5");
+Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice23 audit vanguard range is 3, equal to the radius, not below it");
+Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice23 audit recon range is 5, above the radius");
+Eq(2, SquadShapes.For(SquadKind.Heavy).EngagementRange, "slice23 audit heavy range is 2, below the radius");
+// Fire relation from the rally, enemy on the east waypoint at distance 3:
+// Vanguard engages at exactly its range, Recon within its range, Heavy
+// does not — and no kind engages the opposite waypoint at distance 6
+// from a waypoint, so "shoot across the loop" holds only in the
+// rally-to-waypoint sense, not across the diameter.
+var s23RangeWorld = new WorldZone(42);
+s23RangeWorld.Player.X = 20; s23RangeWorld.Player.Z = 20;
+var s23RangeVan = s23RangeWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+var s23RangeRec = s23RangeWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s23RangeHea = s23RangeWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(s23RangeVan.FindTarget(new[] { new Enemy(23, 5, 20) }) != null, "slice23 audit vanguard on its rally engages the east waypoint enemy at exactly range 3");
+Check(s23RangeRec.FindTarget(new[] { new Enemy(23, 5, 20) }) != null, "slice23 audit recon on its rally engages the east waypoint enemy within range 5");
+Check(s23RangeHea.FindTarget(new[] { new Enemy(23, 5, 20) }) == null, "slice23 audit heavy on its rally does not engage the east waypoint enemy beyond range 2");
+var s23AcrossWorld = new WorldZone(42);
+s23AcrossWorld.Player.X = 23; s23AcrossWorld.Player.Z = 20;
+var s23Across = s23AcrossWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+Check(s23Across.FindTarget(new[] { new Enemy(17, 5, 20) }) == null, "slice23 audit even recon on the east waypoint does not engage the opposite waypoint at distance 6");
+// Circuit length, walked in open ground: rally to east 3, east to
+// south 6, south to west 6, west to north 6, north to rally 3 — 24
+// steps at radius 3, and 8 steps per added radius unit on this cross
+// shape (8r), so a larger radius is never free.
+var s23CircuitWorld = new WorldZone(42);
+s23CircuitWorld.Player.X = 20; s23CircuitWorld.Player.Z = 20;
+var s23Circuit = s23CircuitWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+for (int s23Tick = 0; s23Tick < 3; s23Tick++) s23Circuit.MoveForPatrol(s23CircuitWorld.Chunk, Array.Empty<Enemy>());
+Eq(23, s23Circuit.X, "slice23 audit open circuit reaches the east waypoint in 3 steps");
+Eq(20, s23Circuit.Z, "slice23 audit open circuit east waypoint Z");
+for (int s23Tick = 0; s23Tick < 6; s23Tick++) s23Circuit.MoveForPatrol(s23CircuitWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s23Circuit.X, "slice23 audit open circuit reaches the south waypoint 6 steps later");
+Eq(23, s23Circuit.Z, "slice23 audit open circuit south waypoint Z");
+for (int s23Tick = 0; s23Tick < 6; s23Tick++) s23Circuit.MoveForPatrol(s23CircuitWorld.Chunk, Array.Empty<Enemy>());
+Eq(17, s23Circuit.X, "slice23 audit open circuit reaches the west waypoint 6 steps later");
+Eq(20, s23Circuit.Z, "slice23 audit open circuit west waypoint Z");
+for (int s23Tick = 0; s23Tick < 6; s23Tick++) s23Circuit.MoveForPatrol(s23CircuitWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s23Circuit.X, "slice23 audit open circuit reaches the north waypoint 6 steps later");
+Eq(17, s23Circuit.Z, "slice23 audit open circuit north waypoint Z");
+for (int s23Tick = 0; s23Tick < 3; s23Tick++) s23Circuit.MoveForPatrol(s23CircuitWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s23Circuit.X, "slice23 audit open circuit returns to the rally in 24 steps total");
+Eq(20, s23Circuit.Z, "slice23 audit open circuit returns to the rally Z");
+Eq(0, s23Circuit.PatrolWaypointIndex, "slice23 audit open circuit index is back to the rally waypoint");
+Eq(0, s23Circuit.PatrolConsecutiveRefusals, "slice23 audit open circuit counts no refusals");
+Check(!s23Circuit.IsPatrolStuck, "slice23 audit open circuit squad is not stuck");
+// The loop is shared, not per-kind: Recon and Heavy walk the identical
+// 24-step circuit from the same rally, so a per-kind radius would be a
+// new derivation, not a reading of the code — PatrolTarget does not
+// branch on kind, and these walks prove the movement does not either.
+foreach (var s23Kind in new[] { SquadKind.Recon, SquadKind.Heavy })
+{
+    var s23KindWorld = new WorldZone(42);
+    s23KindWorld.Player.X = 20; s23KindWorld.Player.Z = 20;
+    var s23KindSquad = s23KindWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, s23Kind)!;
+    for (int s23Tick = 0; s23Tick < 3; s23Tick++) s23KindSquad.MoveForPatrol(s23KindWorld.Chunk, Array.Empty<Enemy>());
+    Eq(23, s23KindSquad.X, $"slice23 audit shared loop {s23Kind} reaches the east waypoint in 3 steps");
+    for (int s23Tick = 0; s23Tick < 21; s23Tick++) s23KindSquad.MoveForPatrol(s23KindWorld.Chunk, Array.Empty<Enemy>());
+    Eq(20, s23KindSquad.X, $"slice23 audit shared loop {s23Kind} returns to the rally in 24 steps");
+    Eq(20, s23KindSquad.Z, $"slice23 audit shared loop {s23Kind} returns to the rally Z");
+    Check(!s23KindSquad.IsPatrolStuck, $"slice23 audit shared loop {s23Kind} is not stuck");
+}
+// Audit A — route-blocked shape (Slice 20 shape, classified tick by
+// tick): the squad starts at the player cell (24,20), east of its rally
+// (20,20), with stone west, south, and north of it and the east step
+// cell open. Every refusal's attempted step cell is stone; no refusal
+// occurs with an open step cell, so none is loop-shape-caused. The one
+// cell that is both a step cell and a waypoint — (23,20), the east
+// waypoint — is counted once, as a blocked cell, not as a shape: at
+// tick 1 it blocks the step toward the rally, and at tick 2 it is the
+// target waypoint itself, still blocked by the same stone.
+var s23RouteWorld = new WorldZone(42);
+s23RouteWorld.Player.X = 24; s23RouteWorld.Player.Z = 20;
+var s23Route = s23RouteWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s23RouteWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice23 audit route-blocked stages a west wall");
+Check(s23RouteWorld.Chunk.TrySet(24, 5, 21, BlockType.Stone), "slice23 audit route-blocked stages a south wall");
+Check(s23RouteWorld.Chunk.TrySet(24, 5, 19, BlockType.Stone), "slice23 audit route-blocked stages a north wall");
+Eq((20, 5, 20), s23Route.PatrolTarget, "slice23 audit route-blocked tick 1 target is the rally");
+Eq(BlockType.Stone, s23RouteWorld.Chunk.Get(23, 5, 20), "slice23 audit route-blocked tick 1 direct step cell is stone");
+Check(!s23Route.MoveForPatrol(s23RouteWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit route-blocked tick 1 does not move");
+Eq(1, s23Route.PatrolConsecutiveRefusals, "slice23 audit route-blocked tick 1 counts one refusal");
+Eq(1, s23Route.PatrolWaypointIndex, "slice23 audit route-blocked tick 1 skips to the east waypoint");
+Eq((23, 5, 20), s23Route.PatrolTarget, "slice23 audit route-blocked tick 2 target is the east waypoint");
+Eq(BlockType.Stone, s23RouteWorld.Chunk.Get(23, 5, 20), "slice23 audit route-blocked tick 2 waypoint cell itself is stone");
+Check(!s23Route.MoveForPatrol(s23RouteWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit route-blocked tick 2 does not move");
+Eq(2, s23Route.PatrolConsecutiveRefusals, "slice23 audit route-blocked tick 2 counts two refusals");
+Eq(2, s23Route.PatrolWaypointIndex, "slice23 audit route-blocked tick 2 skips to the south waypoint");
+Eq((20, 5, 23), s23Route.PatrolTarget, "slice23 audit route-blocked tick 3 target is the south waypoint");
+Eq(BlockType.Stone, s23RouteWorld.Chunk.Get(23, 5, 20), "slice23 audit route-blocked tick 3 direct step cell is stone");
+Eq(BlockType.Stone, s23RouteWorld.Chunk.Get(24, 5, 21), "slice23 audit route-blocked tick 3 sidestep cell is stone");
+Check(!s23Route.MoveForPatrol(s23RouteWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit route-blocked tick 3 does not move");
+Eq(3, s23Route.PatrolConsecutiveRefusals, "slice23 audit route-blocked tick 3 counts three refusals");
+Eq(3, s23Route.PatrolWaypointIndex, "slice23 audit route-blocked tick 3 skips to the west waypoint");
+Eq((17, 5, 20), s23Route.PatrolTarget, "slice23 audit route-blocked tick 4 target is the west waypoint");
+Eq(BlockType.Stone, s23RouteWorld.Chunk.Get(23, 5, 20), "slice23 audit route-blocked tick 4 direct step cell is stone");
+Check(!s23Route.MoveForPatrol(s23RouteWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit route-blocked tick 4 does not move");
+Eq(4, s23Route.PatrolConsecutiveRefusals, "slice23 audit route-blocked tick 4 counts four refusals");
+Check(!s23Route.IsPatrolStuck, "slice23 audit route-blocked four refusals is not yet stuck, so the threshold is the count itself");
+Eq(4, s23Route.PatrolWaypointIndex, "slice23 audit route-blocked tick 4 skips to the north waypoint");
+Eq((20, 5, 17), s23Route.PatrolTarget, "slice23 audit route-blocked tick 5 target is the north waypoint");
+Eq(BlockType.Stone, s23RouteWorld.Chunk.Get(23, 5, 20), "slice23 audit route-blocked tick 5 direct step cell is stone");
+Eq(BlockType.Stone, s23RouteWorld.Chunk.Get(24, 5, 19), "slice23 audit route-blocked tick 5 sidestep cell is stone");
+Check(!s23Route.MoveForPatrol(s23RouteWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit route-blocked tick 5 does not move");
+Eq(5, s23Route.PatrolConsecutiveRefusals, "slice23 audit route-blocked tick 5 counts five refusals");
+Eq(0, s23Route.PatrolWaypointIndex, "slice23 audit route-blocked tick 5 index cycles back to the rally waypoint");
+Check(s23Route.IsPatrolStuck, "slice23 audit route-blocked five refusals is stuck");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s23RouteWorld)[0].Activity, "slice23 audit route-blocked reads stuck");
+Eq(24, s23Route.X, "slice23 audit route-blocked squad holds its X");
+Eq(20, s23Route.Z, "slice23 audit route-blocked squad holds its Z");
+// Removal proof, same squad, same loop, same values: clearing only the
+// three staged stones lets this squad march west to its rally and then
+// walk the full loop back to it — 4 steps to the rally plus the 24-step
+// circuit — with no re-rally, no new value, and no teleport.
+Check(s23RouteWorld.Chunk.TrySet(23, 5, 20, BlockType.Air), "slice23 audit route-blocked removal clears the west wall");
+Check(s23RouteWorld.Chunk.TrySet(24, 5, 21, BlockType.Air), "slice23 audit route-blocked removal clears the south wall");
+Check(s23RouteWorld.Chunk.TrySet(24, 5, 19, BlockType.Air), "slice23 audit route-blocked removal clears the north wall");
+Check(s23Route.MoveForPatrol(s23RouteWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit route-blocked cleared first step moves west");
+Eq(23, s23Route.X, "slice23 audit route-blocked cleared first step reaches the cleared cell");
+Eq(0, s23Route.PatrolConsecutiveRefusals, "slice23 audit route-blocked cleared step resets refusals");
+Check(!s23Route.IsPatrolStuck, "slice23 audit route-blocked cleared squad is not stuck");
+for (int s23Tick = 0; s23Tick < 27; s23Tick++) s23Route.MoveForPatrol(s23RouteWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s23Route.X, "slice23 audit route-blocked cleared squad returns to its rally after the march plus the loop");
+Eq(20, s23Route.Z, "slice23 audit route-blocked cleared squad returns to its rally Z");
+Eq(0, s23Route.PatrolWaypointIndex, "slice23 audit route-blocked cleared loop index is back to the rally waypoint");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice23 audit route-blocked cleared loop radius is still 3");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice23 audit route-blocked cleared loop waypoint count is still 5");
+// Audit B — fully enclosed shape (Slice 18 shape, classified): every
+// refusal's direct step cell is stone while the target waypoint cell
+// itself is air, so these are step-cell refusals, not waypoint
+// refusals and not shape refusals — the loop's waypoints are all
+// walkable, the squad simply cannot take a first step toward any of
+// them. The threshold coupling is proved in the same run: four
+// refusals read Patrolling, the fifth reads Stuck, because the
+// threshold is PatrolWaypointCount itself.
+var s23EnclosedWorld = new WorldZone(42);
+s23EnclosedWorld.Player.X = 20; s23EnclosedWorld.Player.Z = 20;
+var s23Enclosed = s23EnclosedWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s23EnclosedWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice23 audit enclosed stages an east wall");
+Check(s23EnclosedWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice23 audit enclosed stages a west wall");
+Check(s23EnclosedWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice23 audit enclosed stages a south wall");
+Check(s23EnclosedWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice23 audit enclosed stages a north wall");
+Eq((20, 5, 20), s23Enclosed.PatrolTarget, "slice23 audit enclosed target before the first tick is the rally itself, turning to east in that tick");
+Eq(BlockType.Air, s23EnclosedWorld.Chunk.Get(23, 5, 20), "slice23 audit enclosed east waypoint cell itself is air");
+Eq(BlockType.Stone, s23EnclosedWorld.Chunk.Get(21, 5, 20), "slice23 audit enclosed tick 1 direct step cell is stone");
+Check(!s23Enclosed.MoveForPatrol(s23EnclosedWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit enclosed tick 1 does not move");
+Eq(BlockType.Stone, s23EnclosedWorld.Chunk.Get(20, 5, 21), "slice23 audit enclosed tick 2 direct step cell is stone");
+Eq(BlockType.Air, s23EnclosedWorld.Chunk.Get(20, 5, 23), "slice23 audit enclosed south waypoint cell itself is air");
+Check(!s23Enclosed.MoveForPatrol(s23EnclosedWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit enclosed tick 2 does not move");
+Eq(BlockType.Stone, s23EnclosedWorld.Chunk.Get(19, 5, 20), "slice23 audit enclosed tick 3 direct step cell is stone");
+Eq(BlockType.Air, s23EnclosedWorld.Chunk.Get(17, 5, 20), "slice23 audit enclosed west waypoint cell itself is air");
+Check(!s23Enclosed.MoveForPatrol(s23EnclosedWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit enclosed tick 3 does not move");
+Eq(BlockType.Stone, s23EnclosedWorld.Chunk.Get(20, 5, 19), "slice23 audit enclosed tick 4 direct step cell is stone");
+Eq(BlockType.Air, s23EnclosedWorld.Chunk.Get(20, 5, 17), "slice23 audit enclosed north waypoint cell itself is air");
+Check(!s23Enclosed.MoveForPatrol(s23EnclosedWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit enclosed tick 4 does not move");
+Eq(4, s23Enclosed.PatrolConsecutiveRefusals, "slice23 audit enclosed four refusals counted");
+Check(!s23Enclosed.IsPatrolStuck, "slice23 audit enclosed four refusals is not stuck");
+Eq(SquadActivity.Patrolling, OrbitalView.Snapshot(s23EnclosedWorld)[0].Activity, "slice23 audit enclosed four refusals still reads patrolling");
+Check(!s23Enclosed.MoveForPatrol(s23EnclosedWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit enclosed tick 5 does not move");
+Eq(5, s23Enclosed.PatrolConsecutiveRefusals, "slice23 audit enclosed five refusals counted");
+Check(s23Enclosed.IsPatrolStuck, "slice23 audit enclosed five refusals is stuck, so keeping the count keeps the threshold");
+Eq(SquadActivity.Stuck, OrbitalView.Snapshot(s23EnclosedWorld)[0].Activity, "slice23 audit enclosed five refusals reads stuck");
+// Removal proof, same squad, same loop: clearing the four walls lets
+// this squad walk on from its stuck index (south) and reach its rally
+// in 18 steps via the remaining legs — south 3, west 6, north 6,
+// rally 3 — with the counter reset on the first cleared step.
+Check(s23EnclosedWorld.Chunk.TrySet(21, 5, 20, BlockType.Air), "slice23 audit enclosed removal clears the east wall");
+Check(s23EnclosedWorld.Chunk.TrySet(19, 5, 20, BlockType.Air), "slice23 audit enclosed removal clears the west wall");
+Check(s23EnclosedWorld.Chunk.TrySet(20, 5, 21, BlockType.Air), "slice23 audit enclosed removal clears the south wall");
+Check(s23EnclosedWorld.Chunk.TrySet(20, 5, 19, BlockType.Air), "slice23 audit enclosed removal clears the north wall");
+Check(s23Enclosed.MoveForPatrol(s23EnclosedWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit enclosed cleared first step moves south");
+Eq(0, s23Enclosed.PatrolConsecutiveRefusals, "slice23 audit enclosed cleared step resets refusals");
+for (int s23Tick = 0; s23Tick < 17; s23Tick++) s23Enclosed.MoveForPatrol(s23EnclosedWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s23Enclosed.X, "slice23 audit enclosed cleared squad reaches its rally via the remaining loop legs");
+Eq(20, s23Enclosed.Z, "slice23 audit enclosed cleared squad reaches its rally Z");
+Check(!s23Enclosed.IsPatrolStuck, "slice23 audit enclosed cleared squad is not stuck");
+// Audit C — blocked new loop (Slice 21 restick shape): a non-stuck
+// patrol re-rallied to (26,20) and then enclosed at its old cell
+// re-sticks on the new loop, and the new loop's waypoint cells are
+// all air — so the second stuck reading is again step-cell-caused,
+// and moving the loop's centre did not change the cause, only the
+// loop that fails.
+var s23RestickWorld = new WorldZone(42);
+s23RestickWorld.Player.X = 20; s23RestickWorld.Player.Z = 20;
+var s23Restick = s23RestickWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s23RestickWorld.TryReRallySquad(0, 26, 5, 20), "slice23 audit blocked-loop patrol accepts a re-rally to the new loop");
+Check(s23RestickWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice23 audit blocked-loop stages an east wall");
+Check(s23RestickWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice23 audit blocked-loop stages a west wall");
+Check(s23RestickWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice23 audit blocked-loop stages a south wall");
+Check(s23RestickWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice23 audit blocked-loop stages a north wall");
+Eq(BlockType.Air, s23RestickWorld.Chunk.Get(29, 5, 20), "slice23 audit blocked-loop new east waypoint cell is air");
+Eq(BlockType.Air, s23RestickWorld.Chunk.Get(26, 5, 23), "slice23 audit blocked-loop new south waypoint cell is air");
+Eq(BlockType.Air, s23RestickWorld.Chunk.Get(23, 5, 20), "slice23 audit blocked-loop new west waypoint cell is air");
+Eq(BlockType.Air, s23RestickWorld.Chunk.Get(26, 5, 17), "slice23 audit blocked-loop new north waypoint cell is air");
+for (int s23Tick = 0; s23Tick < 5; s23Tick++) s23Restick.MoveForPatrol(s23RestickWorld.Chunk, Array.Empty<Enemy>());
+Check(s23Restick.IsPatrolStuck, "slice23 audit blocked-loop patrol reads stuck again after a full circuit on the new loop");
+Eq(20, s23Restick.X, "slice23 audit blocked-loop patrol never moved through a wall");
+Eq(26, s23Restick.RallyX, "slice23 audit blocked-loop patrol keeps its new rally while stuck again");
+// Removal proof, same squad, new loop: clearing the walls lets it
+// march 6 steps to the new rally and then walk the new loop back to
+// it in 24 more steps, at the unchanged radius and count.
+Check(s23RestickWorld.Chunk.TrySet(21, 5, 20, BlockType.Air), "slice23 audit blocked-loop removal clears the east wall");
+Check(s23RestickWorld.Chunk.TrySet(19, 5, 20, BlockType.Air), "slice23 audit blocked-loop removal clears the west wall");
+Check(s23RestickWorld.Chunk.TrySet(20, 5, 21, BlockType.Air), "slice23 audit blocked-loop removal clears the south wall");
+Check(s23RestickWorld.Chunk.TrySet(20, 5, 19, BlockType.Air), "slice23 audit blocked-loop removal clears the north wall");
+for (int s23Tick = 0; s23Tick < 30; s23Tick++) s23Restick.MoveForPatrol(s23RestickWorld.Chunk, Array.Empty<Enemy>());
+Eq(26, s23Restick.X, "slice23 audit blocked-loop cleared squad returns to its new rally after the march plus the loop");
+Eq(20, s23Restick.Z, "slice23 audit blocked-loop cleared squad returns to its new rally Z");
+Check(!s23Restick.IsPatrolStuck, "slice23 audit blocked-loop cleared squad is not stuck");
+// Audit D — enemy ring, a case earlier slices staged only as single
+// skips and fire proofs, now proved as a stuck cause: four living
+// enemies on the four adjacent cells refuse every step exactly as
+// stone does, so stuck is a blocked-cell reading, not a
+// stone-specific one — and removing the enemies (an empty list, the
+// same enemies having left) lets the same squad walk on.
+var s23EnemyWorld = new WorldZone(42);
+s23EnemyWorld.Player.X = 20; s23EnemyWorld.Player.Z = 20;
+var s23EnemySquad = s23EnemyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+var s23Ring = new[] { new Enemy(21, 5, 20), new Enemy(19, 5, 20), new Enemy(20, 5, 21), new Enemy(20, 5, 19) };
+for (int s23Tick = 0; s23Tick < 5; s23Tick++) s23EnemySquad.MoveForPatrol(s23EnemyWorld.Chunk, s23Ring);
+Check(s23EnemySquad.IsPatrolStuck, "slice23 audit enemy ring patrol is stuck after a full circuit of enemy-blocked steps");
+Eq(20, s23EnemySquad.X, "slice23 audit enemy ring squad holds its X");
+Eq(20, s23EnemySquad.Z, "slice23 audit enemy ring squad holds its Z");
+Check(s23EnemySquad.MoveForPatrol(s23EnemyWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit enemy ring cleared first step moves south once the enemies leave");
+Eq(0, s23EnemySquad.PatrolConsecutiveRefusals, "slice23 audit enemy ring cleared step resets refusals");
+for (int s23Tick = 0; s23Tick < 17; s23Tick++) s23EnemySquad.MoveForPatrol(s23EnemyWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s23EnemySquad.X, "slice23 audit enemy ring cleared squad reaches its rally via the remaining loop legs");
+Eq(20, s23EnemySquad.Z, "slice23 audit enemy ring cleared squad reaches its rally Z");
+Check(!s23EnemySquad.IsPatrolStuck, "slice23 audit enemy ring cleared squad is not stuck");
+// Waypoint-caused is not stuck: a solid waypoint alone, and an
+// out-of-bounds waypoint alone, each cost one skip and the loop still
+// completes — the skip rule, not the radius, is what saves them.
+// Solid waypoint: only the east waypoint (23,20) is stone.
+var s23SolidWorld = new WorldZone(42);
+s23SolidWorld.Player.X = 20; s23SolidWorld.Player.Z = 20;
+var s23Solid = s23SolidWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s23SolidWorld.Chunk.TrySet(23, 5, 20, BlockType.Stone), "slice23 audit solid waypoint stages stone on the east waypoint only");
+Check(s23Solid.MoveForPatrol(s23SolidWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit solid waypoint first step east moves");
+Check(s23Solid.MoveForPatrol(s23SolidWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit solid waypoint second step east moves");
+Check(!s23Solid.MoveForPatrol(s23SolidWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit solid waypoint step into the waypoint is refused");
+Eq(1, s23Solid.PatrolConsecutiveRefusals, "slice23 audit solid waypoint refusal counts once");
+Eq(2, s23Solid.PatrolWaypointIndex, "slice23 audit solid waypoint refusal skips to the south waypoint");
+Check(!s23Solid.IsPatrolStuck, "slice23 audit solid waypoint single refusal is not stuck");
+int s23SolidCalls = 0;
+while (s23SolidCalls < 40 && !(s23Solid.X == 20 && s23Solid.Z == 20 && s23Solid.PatrolWaypointIndex == 0))
+{
+    s23Solid.MoveForPatrol(s23SolidWorld.Chunk, Array.Empty<Enemy>());
+    s23SolidCalls++;
+}
+Eq(20, s23Solid.X, "slice23 audit solid waypoint loop returns to the rally X despite the solid waypoint");
+Eq(20, s23Solid.Z, "slice23 audit solid waypoint loop returns to the rally Z");
+Eq(0, s23Solid.PatrolWaypointIndex, "slice23 audit solid waypoint loop returns to the rally at index 0");
+Eq(0, s23Solid.PatrolConsecutiveRefusals, "slice23 audit solid waypoint loop resets refusals on its first successful step after the skip");
+Check(!s23Solid.IsPatrolStuck, "slice23 audit solid waypoint loop is not stuck");
+Eq(BlockType.Stone, s23SolidWorld.Chunk.Get(23, 5, 20), "slice23 audit solid waypoint cell is still stone after the loop completes");
+// Out-of-bounds waypoint, the radius-only attempt: rally (29,20) puts
+// the east waypoint at (32,20), outside the 32-wide chunk, yet the
+// loop still walks — shrinking the radius would move that waypoint
+// inside, but it would not change stuck to walking, because the skip
+// already handles the bad waypoint at radius 3. No radius-only case
+// could be staged: a bad waypoint, at any radius, is a skip, and a
+// stuck reading needs every waypoint refused, which needs blocked
+// cells, not a radius.
+var s23EdgeWorld = new WorldZone(42);
+s23EdgeWorld.Player.X = 29; s23EdgeWorld.Player.Z = 20;
+var s23Edge = s23EdgeWorld.SpawnSquad(29, 5, 20, TacticalDoctrine.Patrol)!;
+Check(s23Edge.MoveForPatrol(s23EdgeWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit edge loop first step east moves");
+Check(s23Edge.MoveForPatrol(s23EdgeWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit edge loop second step east moves");
+Eq(31, s23Edge.X, "slice23 audit edge loop stands one cell inside the chunk edge");
+Check(!s23Edge.MoveForPatrol(s23EdgeWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit edge loop step outside the chunk is refused");
+Eq(1, s23Edge.PatrolConsecutiveRefusals, "slice23 audit edge loop out-of-bounds refusal counts once");
+Eq(2, s23Edge.PatrolWaypointIndex, "slice23 audit edge loop out-of-bounds refusal skips to the south waypoint");
+Check(!s23Edge.IsPatrolStuck, "slice23 audit edge loop single out-of-bounds refusal is not stuck");
+int s23EdgeCalls = 0;
+while (s23EdgeCalls < 40 && !(s23Edge.X == 29 && s23Edge.Z == 20 && s23Edge.PatrolWaypointIndex == 0))
+{
+    s23Edge.MoveForPatrol(s23EdgeWorld.Chunk, Array.Empty<Enemy>());
+    s23EdgeCalls++;
+}
+Eq(29, s23Edge.X, "slice23 audit edge loop returns to its rally X despite the out-of-bounds waypoint");
+Eq(20, s23Edge.Z, "slice23 audit edge loop returns to its rally Z");
+Eq(0, s23Edge.PatrolWaypointIndex, "slice23 audit edge loop returns to its rally at index 0");
+Check(!s23Edge.IsPatrolStuck, "slice23 audit edge loop is not stuck");
+// Wall across the loop, the shape attempt: a stone wall at x=22
+// spanning the loop's east leg does not stick the patrol either — the
+// east leg is skipped and the remaining legs walk, at radius 3. At a
+// smaller radius the east waypoint would sit on the wall cell itself,
+// which is again a skip, not a stick, so the wall's position relative
+// to the radius is not a walking-versus-sticking difference in either
+// direction; the only difference a radius change would make here is
+// which leg is skipped.
+var s23WallWorld = new WorldZone(42);
+s23WallWorld.Player.X = 20; s23WallWorld.Player.Z = 20;
+var s23Wall = s23WallWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
+for (int s23WallZ = 17; s23WallZ <= 23; s23WallZ++)
+    Check(s23WallWorld.Chunk.TrySet(22, 5, s23WallZ, BlockType.Stone), $"slice23 audit wall across loop stages stone at x=22 z={s23WallZ}");
+Check(s23Wall.MoveForPatrol(s23WallWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit wall across loop first step east moves");
+Check(!s23Wall.MoveForPatrol(s23WallWorld.Chunk, Array.Empty<Enemy>()), "slice23 audit wall across loop step into the wall is refused");
+Eq(1, s23Wall.PatrolConsecutiveRefusals, "slice23 audit wall across loop refusal counts once");
+Eq(2, s23Wall.PatrolWaypointIndex, "slice23 audit wall across loop refusal skips to the south waypoint");
+Check(!s23Wall.IsPatrolStuck, "slice23 audit wall across loop single refusal is not stuck");
+int s23WallCalls = 0;
+while (s23WallCalls < 40 && !(s23Wall.X == 20 && s23Wall.Z == 20 && s23Wall.PatrolWaypointIndex == 0))
+{
+    s23Wall.MoveForPatrol(s23WallWorld.Chunk, Array.Empty<Enemy>());
+    s23WallCalls++;
+}
+Eq(20, s23Wall.X, "slice23 audit wall across loop returns to the rally X");
+Eq(20, s23Wall.Z, "slice23 audit wall across loop returns to the rally Z");
+Check(!s23Wall.IsPatrolStuck, "slice23 audit wall across loop is not stuck");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice23 audit wall across loop radius is still 3, not retuned");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice23 audit wall across loop waypoint count is still 5, not retuned");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;
