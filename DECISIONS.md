@@ -11599,3 +11599,51 @@ marker proximity targeting, item 42
   with Rob's push approval, after the 0.106.0
   push that preceded it; then Integration
   Step 3, the nullable fix, not promised here.
+
+## 2026-10-31 — Integration package fix: Entities 1.3.0 to 1.5.0 (0.108.0, at Rob's direction, schedule paused)
+
+- Step taken: one manifest line, answering a
+  real Unity error, not a gameplay step.
+  Rob's Hub screenshot 2026-10-31, from the
+  fresh Add-from-repository clone at
+  C:\WPAI\Gaming\Forgeborne\ForgeborneUnity,
+  showed editor 6000.3.27f2 correctly (the
+  0.106.0 ProjectVersion fix worked) and
+  Package Manager reporting
+  "Package [com.unity.entities@1.3.0] cannot
+  be found", with the Input System error
+  already gone.
+- Version decision, with evidence: 1.5.0, not
+  a guessed newer version and not the latest
+  version on any list. Unity's 6000.3.27f1
+  release notes record com.unity.entities
+  moving from 1.4.8 to 1.5.0 for that editor
+  line, so 1.5.0 is the version that editor
+  line ships. 1.3.0 is a 6000.0-era pin that
+  no longer resolves on 6000.3.27f2. This
+  decision is still provisional until Package
+  Manager on Windows resolves it: if it
+  reports a different verified version for
+  6000.3.27f2, that version replaces 1.5.0
+  in its own recorded step, not by editing
+  this entry silently.
+- Alternative considered and not chosen:
+  removing Entities entirely. It would have
+  unblocked resolution fastest, because no
+  adapter uses Unity.Entities at all
+  (adapters are MonoBehaviour/GameObject plus
+  Forgeborne.Core), but Rob chose to keep
+  the ECS direction at the correct version
+  instead, and that choice is preserved here.
+- Deliberately NOT changed: URP 17.0.0,
+  Input System 1.11.0, TextMeshPro 3.0.6, UI
+  1.0.0. URP 17.0.0 is also a 6000.0-era pin
+  and may fail next; if it does, it gets its
+  own step with its Package-Manager-verified
+  version, not a bundle with this one.
+- Next step: Rob reopens the project on
+  Windows with this manifest; if Package
+  Manager resolves cleanly, the next owed
+  work is the Unity compile with the core
+  DLLs, then Integration Step 3, the nullable
+  fix, not promised here.

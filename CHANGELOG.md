@@ -1,5 +1,62 @@
 # Forgeborne — Changelog
 
+## 0.108.0 — 2026-10-31 — Integration package fix:
+Entities 1.3.0 to 1.5.0, documentation of a
+local-only step, pushed at Rob's direction
+
+- Step taken: a package-version fix, not a
+  gameplay step and not Slice 27. It follows
+  0.107.0 (core DLLs) and answers a real
+  Unity error on Rob's Windows PC, not a
+  guessed improvement.
+- Change, one line only: ForgeborneUnity/
+  Packages/manifest.json, com.unity.entities
+  1.3.0 becomes 1.5.0. No other package
+  version is changed in this step, no code
+  file moves, no adapter changes, no DLL
+  changes, and no checklist item is added
+  or marked passed.
+- Evidence, not a guess: Rob's Hub screenshot
+  2026-10-31 showed Package Manager reporting
+  "Package [com.unity.entities@1.3.0] cannot
+  be found" on Unity 6000.3.27f2, after the
+  Input System error was already fixed.
+  Unity's own 6000.3.27f1 release notes show
+  com.unity.entities going from 1.4.8 to
+  1.5.0 for that editor line, so 1.5.0 is the
+  version that editor line ships, and 1.3.0
+  is a 6000.0-era pin that no longer resolves
+  there. This step does not claim 1.5.0
+  resolves on Rob's PC until Package Manager
+  on Windows says so — that verification is
+  still owed, and is not claimed here.
+- Deliberately NOT changed here: URP
+  17.0.0, Input System 1.11.0, TextMeshPro
+  3.0.6, UI 1.0.0. URP 17.0.0 is also a
+  6000.0-era pin and may fail next in the
+  same way; if it does, it gets its own
+  recorded step with the version Package
+  Manager verifies for 6000.3.27f2, not a
+  silent bundle with this one. Removing
+  Entities entirely was offered and was NOT
+  chosen: Rob chose to keep the ECS direction
+  at the correct version, and no adapter
+  currently uses Entities, so this change
+  unblocks package resolution without
+  changing any gameplay code.
+- Changes: ForgeborneUnity/Packages/
+  manifest.json, CHANGELOG 0.108.0,
+  DECISIONS.md.
+- Tests: 5053 passed, 0 failed (unchanged,
+  manifest-only step). Demo unchanged:
+  Slice 25 save 44,041 chars.
+- Next step: Rob reopens the project on
+  Windows with this manifest; if Package
+  Manager resolves cleanly, the next owed
+  work is the Unity compile with the core
+  DLLs, then Integration Step 3, the nullable
+  fix, not promised here.
+
 ## 0.107.0 — 2026-10-31 — Integration Step 2:
 core multi-target build and Unity DLL, documentation of a
 local-only step, NOT yet pushed
