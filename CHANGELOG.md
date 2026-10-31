@@ -1,5 +1,87 @@
 # Forgeborne — Changelog
 
+## 0.93.0 — 2026-10-31 — Slice 23 scope:
+patrol-route first-pass values — radius and
+waypoint count revisited on evidence,
+documentation only
+
+- Step taken: Slice 23 scope, documentation-only,
+  per docs/slice-23-scope.md. No system built, no
+  answer decided, by design; Slice 24 is NOT
+  scoped here.
+- Scope decided: Slice 23 is the patrol-route
+  first-pass-values slice, in order — Step 1,
+  the radius and waypoint decision (keep,
+  change, or split, with the headless audit
+  of every proved stuck geometry, the
+  step-cell vs waypoint vs loop-shape
+  classification, the stuck-threshold
+  coupling answer, the range-relation
+  correction, and the Windows reopen
+  condition, all decided in that step, not
+  here); Step 2, composed demo scenario plus
+  documentation-only review closing Slice 23.
+  If the audit finds no radius-caused block,
+  Step 1's decision is KEEP with the audit as
+  its proof — a keep with new audit tests,
+  not a silent carry — and no new checklist
+  item; if Step 1 changes a value, it adds
+  its own item from the next free number,
+  42, stating its relation to items 37, 39,
+  and 40.
+- Ground facts verified against code this run,
+  not copied from review prose: loop derived,
+  never stored — radius const 3, count const
+  5, waypoints rally, rally plus 3 east,
+  rally plus 3 south, rally minus 3 west,
+  rally minus 3 north, all on the rally's Y
+  plane; circuit 24 steps at radius 3 (3 + 6
+  + 6 + 6 + 3), plus 8 per added radius unit
+  on this cross shape; engagement ranges
+  Vanguard 3, Recon 5, Heavy 2, so the radius
+  comment's "larger than every range except
+  Recon's" overstates the Vanguard case,
+  where radius equals range — Step 1 must
+  correct or explain that comment from the
+  table, not copy it; stuck threshold is
+  PatrolWaypointCount itself, so a count
+  change moves the stuck meaning unless Step
+  1 decouples it explicitly; an out-of-bounds
+  or solid waypoint is still a waypoint,
+  sidestepped then skipped, so a skipped
+  waypoint is handled, not stuck; all proved
+  stuck geometries are placed-stone or
+  enemy-cell cases, with re-rally at radius 3
+  changing the outcome — evidence for KEEP
+  unless Step 1 stages a case earlier slices
+  did not.
+- Changes: new docs/slice-23-scope.md (scope
+  question, ranked-candidate dispositions,
+  ground facts, keep/change/split questions,
+  audit and coupling requirements, Windows
+  reopen condition, comment correction,
+  deliberately-not list, Slice 24 ranked
+  candidates, gate), CHANGELOG 0.93.0,
+  DECISIONS.md entries (theme, order with
+  reversal honesty, questions-not-answers,
+  boundary, deliberately-not list, next step:
+  Slice 23 Step 1, the radius and waypoint
+  decision, decided in that step).
+- Tests: 4109 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged:
+  Slice 22 scenario save 43,990 chars, Slice
+  21 save 44,040 chars, Slice 20 save 44,041
+  chars, Slice 19 save 43,965 chars, Slice 18
+  save 44,015 chars, Slice 15 save 44,016
+  chars, Slice 17 save 43,974 chars.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+
 ## 0.92.0 — 2026-10-31 — Slice 22 Step 2:
 composed demo + review, closing Slice 22
 

@@ -9581,6 +9581,137 @@ closing Slice 22 (under delegation)
   step, chosen from the ranked candidates the Slice 22
   review carries, not promised here.
 
+## 0.93.0 — Slice 23 scope: patrol-route first-pass
+values — radius and waypoint count revisited on
+evidence, documentation only (under delegation)
+
+- Decision, in one sentence: Slice 23 is the
+  radius and waypoint decision slice — Step 1
+  decides keep, change, or split for radius 3
+  and count 5 on a headless audit of every
+  proved stuck geometry, and Step 2 proves
+  the decided values together in one demo and
+  closes the slice with a review — with no
+  answer decided here, by design.
+- Theme, and why now: five slices carried 3
+  and 5 forward on the same honest sentence
+  ("no proof in that step showed the radius
+  caused a block"), and that sentence has now
+  run out of steps to hide behind. A sixth
+  carrying step would be a deferral, not a
+  decision. So Slice 23 turns the carrying
+  sentence into a question Step 1 must answer
+  with tests: either the audit proves the
+  values right, or it finds a radius-caused
+  case and changes one of them — and a KEEP
+  is a decision only if the audit's tests
+  rise with it, because a keep with no new
+  tests is prose.
+- Order, with reversal honesty: the Slice 22
+  review ranked the radius question first, and
+  this scope follows that order — no reversal
+  is needed, and none is claimed. The other
+  ranked candidates keep their places behind
+  it: Slice 13 observations stay observations
+  for Windows verification, graphics retune
+  stays justified only by a Windows
+  observation, re-rally price and dismiss
+  refund stay economy decisions waiting on
+  playtest evidence that does not exist yet.
+  One candidate is placed explicitly rather
+  than left implicit: the K/X adapter
+  bindings, named in every review since Slice
+  20 as the precondition for observing items
+  39, 40, and 41, are recorded as the fifth
+  Slice 24 candidate (an adapter step on the
+  Slice 16 pattern), not smuggled into Slice
+  23 — a radius decision must not depend on
+  bindings that are not implemented.
+- Questions, not answers: keep, change, or
+  split (including per-kind radius, with its
+  consequences for the shared derivation and
+  the shared stuck threshold stated, not
+  assumed); the audit classification
+  (step-cell vs waypoint vs loop-shape cause)
+  for each proved stuck geometry; the missing
+  case, if one can be staged without a new
+  movement rule, and the plain statement if
+  it cannot; the coupling answers (count
+  moves the stuck threshold unless decoupled
+  explicitly; radius moves circuit length by
+  8 steps per unit and the per-kind range
+  relation); the flat cross shape, which a
+  radius change must not quietly reshape;
+  and the Windows reopen condition, defined
+  on a real map rather than a staged
+  enclosure, so a later reader can tell
+  whether a KEEP has been reopened.
+- Grounding, verified against code this run:
+  loop derived from rally plus radius on the
+  rally's Y plane (rally, +3 east, +3 south,
+  -3 west, -3 north); circuit 24 steps at
+  radius 3; ranges Vanguard 3, Recon 5, Heavy
+  2; stuck threshold equal to the waypoint
+  count; out-of-bounds or solid waypoint
+  sidestepped then skipped, never pretended
+  away; proved stuck geometries all
+  placed-stone or enemy-cell cases, with
+  re-rally at radius 3 changing the outcome.
+  One correction carried into Step 1's work:
+  the radius comment's range claim is wrong
+  for Vanguard as written (range exactly 3,
+  not less than the radius), so Step 1 must
+  correct it from the range table or explain
+  the wording — leaving a known-wrong
+  rationale in place while deciding on the
+  radius would not be verification-first.
+- Checklist relation: no new item is promised
+  here. A keep-decision needs none, because
+  items 37, 39, and 40 already observe the
+  loop as kept; a change-decision must add
+  its own item from 42, stating its relation
+  to those items and leaving the next free
+  number at 43. A keep must not invent an
+  item to look like a change, and a change
+  must not hide behind the old items.
+- Deliberately not in this step: a new core
+  system; a movement, targeting, or fire rule
+  change; a pathfinder; a loop-shape change
+  smuggled inside a radius change; a
+  re-rally repricing; a dismiss refund; a
+  deploy price or cap change; a reserve,
+  bench, or redeploy-from-reserve system; a
+  general squad-command system; a material,
+  marker, light, fog, model, or HUD change;
+  an adapter edit or a binding
+  implementation; a scene file, imported
+  asset, texture, or shader file; a Slice 24
+  scope.
+- Gaps carried, in priority order: Windows
+  Unity verification (Slices 1–23, items
+  25–27 and 30–41 still open, items 39, 40,
+  and 41 pending their bindings); the Slice 1
+  director playtest gate still pending;
+  first-pass graphics values unproven;
+  Slice 13 scene-proof observations still
+  unmade; a re-rally price and a dismiss
+  refund, both on Windows playtest evidence
+  only; the K/X bindings implementation as a
+  later adapter step. Closed by this scope,
+  not carried as a question: whether Slice 23
+  has a theme — it does, the radius and
+  waypoint decision — while the answer to
+  that decision remains open for Step 1.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 23 Step 1, the radius and
+  waypoint decision, decided in that step.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
