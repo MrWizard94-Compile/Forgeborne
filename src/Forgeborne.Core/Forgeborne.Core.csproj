@@ -1,8 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net8.0;netstandard2.1</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+  <!-- System.Text.Json is in-box for net8.0, but not for
+       netstandard2.1: reference the package for that target only,
+       so the netstandard2.1 DLL and its System.Text.Json DLLs ship
+       together to Unity (see ForgeborneUnity/Assets/Plugins/).
+       This preserves the save format exactly; the alternative
+       (abstracting serialisation) would change core API for a
+       packaging problem, and is kept as the fallback if Unity
+       on Windows rejects the shipped package DLLs. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+  </ItemGroup>
 </Project>

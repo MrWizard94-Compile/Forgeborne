@@ -756,7 +756,7 @@ public static class SquadEconomy
     /// <summary>Live squads in the world (dead squads, not yet removed by Advance, excluded).</summary>
     public static int LiveSquadCount(WorldZone world)
     {
-        ArgumentNullException.ThrowIfNull(world);
+        if (world is null) throw new ArgumentNullException(nameof(world));
         int n = 0;
         foreach (var s in world.Squads) if (!s.IsDead) n++;
         return n;
@@ -764,7 +764,7 @@ public static class SquadEconomy
 
     public static bool CanAfford(WorldZone world)
     {
-        ArgumentNullException.ThrowIfNull(world);
+        if (world is null) throw new ArgumentNullException(nameof(world));
         return world.Player.Inventory.Has(BlockType.EmberOre, EmberOreCost);
     }
 
@@ -804,7 +804,7 @@ public sealed class OrbitalCommand
     /// <summary>Select a doctrine. Unknown values are rejected and leave the selection unchanged.</summary>
     public bool SelectDoctrine(TacticalDoctrine doctrine)
     {
-        if (!Enum.IsDefined(doctrine)) return false;
+        if (!Enum.IsDefined(typeof(TacticalDoctrine), doctrine)) return false;
         Doctrine = doctrine;
         return true;
     }
@@ -812,7 +812,7 @@ public sealed class OrbitalCommand
     /// <summary>Select a squad kind. Unknown values are rejected and leave the selection unchanged.</summary>
     public bool SelectKind(SquadKind kind)
     {
-        if (!Enum.IsDefined(kind)) return false;
+        if (!Enum.IsDefined(typeof(SquadKind), kind)) return false;
         Kind = kind;
         return true;
     }
@@ -977,7 +977,7 @@ public static class OrbitalView
 {
     public static IReadOnlyList<SquadSnapshot> Snapshot(WorldZone world)
     {
-        ArgumentNullException.ThrowIfNull(world);
+        if (world is null) throw new ArgumentNullException(nameof(world));
         var list = new List<SquadSnapshot>(world.Squads.Count);
         foreach (var s in world.Squads)
         {

@@ -1054,7 +1054,7 @@ public sealed class WorldZone
         TacticalDoctrine doctrine = TacticalDoctrine.HoldGround, SquadKind kind = SquadKind.Vanguard)
     {
         if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return null;
-        if (!Enum.IsDefined(doctrine) || !Enum.IsDefined(kind)) return null;
+        if (!Enum.IsDefined(typeof(TacticalDoctrine), doctrine) || !Enum.IsDefined(typeof(SquadKind), kind)) return null;
         var squad = new TacticalSquad(Player.X, Player.Y, Player.Z, rallyX, rallyY, rallyZ, doctrine, kind);
         Squads.Add(squad);
         return squad;
@@ -1076,7 +1076,7 @@ public sealed class WorldZone
         TacticalDoctrine doctrine = TacticalDoctrine.HoldGround, SquadKind kind = SquadKind.Vanguard)
     {
         if (!VoxelChunk.InBounds(rallyX, rallyY, rallyZ)) return null;
-        if (!Enum.IsDefined(doctrine) || !Enum.IsDefined(kind)) return null;
+        if (!Enum.IsDefined(typeof(TacticalDoctrine), doctrine) || !Enum.IsDefined(typeof(SquadKind), kind)) return null;
         if (SquadEconomy.LiveSquadCount(this) >= SquadEconomy.MaxConcurrentSquads) return null;
         int price = SquadEconomy.CostForKind(kind);
         if (!Player.Inventory.Has(BlockType.EmberOre, price)) return null;

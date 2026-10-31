@@ -1,5 +1,114 @@
 # Forgeborne — Changelog
 
+## 0.107.0 — 2026-10-31 — Integration Step 2:
+core multi-target build and Unity DLL, documentation of a
+local-only step, NOT yet pushed
+
+- Step taken: Integration Step 2, the real
+  CS0234/CS0246 fix, after Step 1 (manifest name
+  and editor version, 0.106.0). The core is now
+  one source of truth, built twice, and Unity
+  references the compiled DLL, never a copy of
+  core source. No gameplay rule changes, no
+  demo scenario, no checklist item is added
+  or marked passed, and Slice 27 is NOT scoped
+  here.
+- Change 1, multi-target: src/Forgeborne.Core/
+  Forgeborne.Core.csproj moves from net8.0
+  only to net8.0 + netstandard2.1. The net8.0
+  build is what the headless test suite runs;
+  the netstandard2.1 build is what Unity
+  references. Unity's API Compatibility Level
+  must be set to .NET Standard 2.1 on Windows
+  for these DLLs to be usable.
+- Change 2, netstandard2.1 compatibility, all
+  behaviour-preserving, all verified by the
+  same 5053-test suite on net8.0:
+  (a) new src/Forgeborne.Core/Polyfills.cs,
+  netstandard2.1 only, defining the compiler
+  types netstandard2.1 lacks — IsExternalInit
+  (for `init` and `record struct`), and
+  RequiredMemberAttribute /
+  CompilerFeatureRequiredAttribute (for
+  `required`) — so `init`, `record struct`,
+  and `required` compile to the same IL on
+  both targets, with no game code touching
+  them directly;
+  (b) ArgumentNullException.ThrowIfNull
+  (a .NET 6+ API, absent from netstandard2.1)
+  replaced at all 4 sites — WeaponHud.cs
+  (FromGenerated) and Orbital.cs (3 sites) —
+  with the identical explicit check, `if (x
+  is null) throw new
+  ArgumentNullException(nameof(x))`;
+  (c) the generic Enum.IsDefined(value)
+  overload (absent from netstandard2.1)
+  replaced at 6 sites — Orbital.cs
+  (SelectDoctrine, SelectKind) and World.cs
+  (SpawnSquad, TryDeployPaidSquad, 2 calls
+  each) — with Enum.IsDefined(typeof(T),
+  value), the same definedness test.
+  No other core file's logic was touched.
+- Change 3, System.Text.Json route, decided
+  provisionally, not finally: System.Text.Json
+  is in-box for net8.0 but not for
+  netstandard2.1, so the csproj references
+  the System.Text.Json 8.0.5 package for
+  netstandard2.1 only. The save format is
+  unchanged — this is packaging, not a save
+  rewrite, and abstracting serialisation
+  behind an interface would have changed
+  core API to solve a packaging problem.
+  System.Text.Json is not an official Unity
+  package; in Unity it is a manual Plugins
+  DLL, which is what is shipped here. This
+  decision is provisional pending the Windows
+  open: if Unity 6000.3.27f2 rejects these
+  DLLs, or reports a conflict with a DLL it
+  already ships, the recorded fallback is to
+  remove only the conflicting copy, or to
+  abstract serialisation — never to copy
+  core source.
+- Change 4, DLLs shipped: ForgeborneUnity/
+  Assets/Plugins/ now holds Forgeborne.Core.dll
+  (netstandard2.1, Release) plus System.Text.Json
+  8.0.5 and its 7 transitive dependencies, and
+  a README.md documenting the build command,
+  the dependency list, and what is still owed
+  on Windows. No `.cs` file was copied into
+  Assets: the 9 adapter scripts in Assets/
+  Scripts/ are still the only C# source under
+  Assets. A runnable build script and a
+  no-drift guard are Integration Step 4, not
+  claimed here.
+- Verification, headless, kept explicit:
+  both targets build with 0 warnings, 0
+  errors; the full suite passes 5053/5053
+  on net8.0; and a throwaway .NET 8 harness
+  in /tmp (not in the repo) referencing the
+  shipped netstandard2.1 DLL from Plugins
+  loaded it, saved a seed-42 world
+  (43,965 chars), and loaded it back with
+  seed 42 restored. That proves the DLL is
+  loadable and round-trips saves; it is NOT
+  a Unity compile, which is still owed on
+  Windows and is not claimed here.
+- Changes: src/Forgeborne.Core/
+  Forgeborne.Core.csproj, src/Forgeborne.Core/
+  Polyfills.cs (new), src/Forgeborne.Core/
+  WeaponHud.cs, src/Forgeborne.Core/Orbital.cs,
+  src/Forgeborne.Core/World.cs, ForgeborneUnity/
+  Assets/Plugins/ (9 DLLs + README.md),
+  CHANGELOG 0.107.0, DECISIONS.md.
+- Tests: 5053 passed, 0 failed (unchanged
+  count; the compatibility fixes are
+  behaviour-preserving). Demo unchanged:
+  Slice 25 save 44,041 chars.
+- Next step: push this step as its own commit,
+  with Rob's push approval, after the 0.106.0
+  push that preceded it; then Integration
+  Step 3, the nullable fix, not promised here.
+
 ## 0.106.0 — 2026-10-31 — Integration Step 1:
 manifest package name and editor version, documentation of a
 local-only fix, NOT yet pushed

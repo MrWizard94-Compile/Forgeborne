@@ -11520,3 +11520,82 @@ marker proximity targeting, item 42
   push that preceded it; then Integration
   Step 2, the core multi-target DLL, not
   promised here.
+
+## 2026-10-31 — Integration Step 2: core multi-target build and Unity DLL (0.107.0, under delegation, schedule paused)
+
+- Step taken: Integration Step 2, the real
+  CS0234/CS0246 fix. The adapters' `using
+  Forgeborne.Core;` now resolves to a compiled
+  DLL in ForgeborneUnity/Assets/Plugins/, not
+  to copied source. No gameplay, save-format,
+  economy, movement, targeting, fire, marker,
+  material, light, fog, model, or HUD rule
+  changes, and Slice 27 is NOT scoped here.
+- Multi-target decision: net8.0 + netstandard2.1,
+  not netstandard2.1 alone, not a Unity-only
+  fork. net8.0 keeps the headless suite and
+  demo on the exact runtime they were built
+  for; netstandard2.1 is the highest standard
+  Unity 6000.3.27f2's .NET Standard 2.1 API
+  Compatibility Level accepts. One source,
+  two builds, no fork.
+- Compatibility fixes, all behaviour-preserving,
+  all proven by the unchanged 5053-test suite:
+  polyfills for IsExternalInit,
+  RequiredMemberAttribute, and
+  CompilerFeatureRequiredAttribute, defined
+  only under NETSTANDARD2_1 in a new
+  Polyfills.cs (net8.0 already ships them, so
+  an unconditional definition would clash);
+  ThrowIfNull replaced at 4 sites with the
+  identical explicit null check; generic
+  Enum.IsDefined replaced at 6 sites with
+  Enum.IsDefined(typeof(T), value). The first
+  build failed with 32 IsExternalInit /
+  RequiredMember errors, the second with 6
+  Enum.IsDefined errors, the third succeeded
+  with 0 warnings, 0 errors — the audit in
+  the integration scope predicted the first
+  three families, and Enum.IsDefined was the
+  one family it missed, found by building
+  rather than by guessing.
+- System.Text.Json decision, provisional, with
+  its fallback recorded: package 8.0.5 for
+  netstandard2.1 only, save format unchanged.
+  Rationale: serialisation is a packaging
+  problem, and rewriting core API around it
+  would be scope drift; shipping the package
+  DLLs is the manual-Plugins route Unity
+  projects use for System.Text.Json, which is
+  not an official Unity package. Provisional
+  because the scope required a Windows
+  decision, and no Windows open has happened
+  yet: if Unity rejects these DLLs or reports
+  a conflict with a DLL it already ships,
+  remove only the conflicting copy and record
+  it, or abstract serialisation — never copy
+  core source, and never silently edit this
+  step to hide the conflict.
+- DLLs shipped: Forgeborne.Core.dll
+  (netstandard2.1, Release) plus System.Text.Json
+  and 7 transitive dependencies, 9 DLLs total,
+  about 1.2 MB, plus a Plugins README.md with
+  the build command and the Windows work still
+  owed. No `.cs` file under Assets was added
+  or duplicated: Assets/Scripts/ still holds
+  only the 9 adapters. A runnable build script
+  and a no-drift guard are Step 4, not this
+  step, and are not claimed here.
+- Verification split, kept explicit: both
+  targets build clean; 5053/5053 tests on
+  net8.0; a throwaway /tmp harness referencing
+  the shipped netstandard2.1 DLL loaded it and
+  round-tripped a seed-42 save. None of that
+  is a Unity compile. The Unity compile, with
+  API Compatibility Level set to .NET Standard
+  2.1, is owed on Windows in 6000.3.27f2 and
+  is not claimed here.
+- Next step: push this step as its own commit,
+  with Rob's push approval, after the 0.106.0
+  push that preceded it; then Integration
+  Step 3, the nullable fix, not promised here.

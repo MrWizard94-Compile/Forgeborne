@@ -23,7 +23,7 @@ public sealed class Weapon
     /// <summary>Build a live weapon from a procedurally generated one. No duplicate damage/mag logic: Simulation fires this Weapon, so a generated weapon's stats are the stats that actually hit.</summary>
     public static Weapon FromGenerated(GeneratedWeapon generated)
     {
-        ArgumentNullException.ThrowIfNull(generated);
+        if (generated is null) throw new ArgumentNullException(nameof(generated));
         return new Weapon(generated.Name, generated.Damage, generated.MagSize);
     }
 
