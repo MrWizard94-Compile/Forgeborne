@@ -1,5 +1,72 @@
 # Forgeborne — Changelog
 
+## 0.100.0 — 2026-10-31 — Slice 25 scope:
+loop-shape decision, then demo + review;
+documentation only; Slice 26 NOT scoped here
+
+- Step taken: Slice 25 scope, documentation-only,
+  0.100.0. No system built, no answer decided, by
+  design; Slice 26 is NOT scoped here. Version note,
+  stated so the number is not misread: the minor
+  component is an integer, so 0.99.0 increments to
+  0.100.0, not to 1.0.0 — 1.0.0 is reserved for a
+  release candidate, which this is not (no playable
+  Unity scene, Slice 1 director playtest gate still
+  pending), and a scope document must not imply one.
+- Scope decided: Slice 25 is the loop-shape slice,
+  in order — Step 1, the loop-shape decision
+  (keep the flat cardinal cross loop, or change it
+  to a named shape, on a shape-caused stuck audit,
+  a Manhattan fire-asymmetry computation, a
+  coverage account naming the unwalked corner
+  cells, coupling answers for count, stuck
+  threshold, circuit steps, fire, save format, and
+  re-rally, rejected alternatives with mechanisms,
+  and a checklist relation, all stated as questions,
+  not answers); Step 2, composed demo scenario plus
+  documentation-only review closing Slice 25.
+  Radius 3 and waypoint count 5 are carried from
+  Slice 23, not re-decided.
+- Why candidate 5: of the Slice 24 review's ranked
+  candidates, the loop-shape decision is the only
+  one that is headlessly decidable rather than a
+  Windows observation (candidate 1, Slice 13
+  remainders) or a Windows-evidence-gated economy
+  decision (candidate 2, graphics retune; candidate
+  3, re-rally price; candidate 4, dismiss refund).
+  The others are not demoted; they wait on evidence
+  this slice cannot manufacture headlessly. The
+  "if ever wanted" in candidate 5 is answered here:
+  the want is Slice 23's own open question, left by
+  keeping radius and count while explicitly refusing
+  to decide shape at the same time.
+- Ground facts verified against code this run, not
+  copied from review prose: PatrolTarget derives
+  rally, east, south, west, north at radius 3 on the
+  rally's Y plane, never stored; the circuit is 24
+  steps (cardinal legs 3 each, diagonal legs 6
+  Manhattan steps each, stair-stepped by the
+  largest-gap axis rule, ties X then Y then Z);
+  fire is Manhattan, so rally-to-waypoint is 3 and
+  waypoint-to-waypoint is 6 in every direction, giving
+  the Slice 23 kind split (Vanguard exactly, Recon
+  within, Heavy beyond, no kind across waypoints);
+  stuck threshold is coupled to waypoint count 5;
+  a re-rally re-derives the loop from the new rally
+  and a load resets the index to 0, with no shape
+  field in the save. Next free gate number is 44.
+- Changes: new docs/slice-25-scope.md (24,409 bytes),
+  CHANGELOG 0.100.0, DECISIONS.md.
+- Tests: 4577 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice 23
+  save 44,041 chars, Slice 22 save 43,990 chars,
+  Slice 21 save 44,040 chars, Slice 20 save 44,041
+  chars, Slice 19 save 43,965 chars, Slice 18 save
+  44,015 chars, Slice 15 save 44,016 chars, Slice 17
+  save 43,974 chars.
+- Next step: Slice 25 Step 1, the loop-shape decision,
+  decided in that step, not promised here.
+
 ## 0.99.0 — 2026-10-31 — Slice 24 Step 3:
 review closing Slice 24, documentation only —
 two bindings implemented and read, not

@@ -10604,6 +10604,125 @@ marker proximity targeting, item 42
 - Next step: scoping Slice 25 as its own decision step, chosen from
   the ranked candidates the review carries, not promised here.
 
+## 2026-10-31 — Slice 25 scope: loop-shape decision, then demo + review (0.100.0, under delegation)
+
+- Step taken: Slice 25 scope, documentation-only,
+  0.100.0. No system built, no answer decided, by
+  design; Slice 26 is NOT scoped here. The scope is
+  docs/slice-25-scope.md, with the same decision
+  summarised in CHANGELOG 0.100.0.
+- Version numbering, decided here so the number is
+  not misread later: the minor component is an
+  integer, so 0.99.0 increments to 0.100.0. Going to
+  1.0.0 for a scope document would imply a major
+  release, which this is not — no playable Unity
+  scene is claimed, and the Slice 1 director playtest
+  gate is still pending — so 1.0.0 stays reserved
+  for a release candidate. A future run that reads
+  0.100.0 as a typo and "corrects" it to 1.0.0
+  would be introducing that false implication, not
+  fixing a version.
+- Why candidate 5, stated as the scope states it:
+  of the Slice 24 review's ranked candidates, the
+  loop-shape decision is the only headlessly
+  decidable step. Candidate 1 (Slice 13 remainders)
+  remains observations to be made when Windows
+  verification runs, and scoping an observation as
+  a headless step would manufacture a step that
+  cannot move while Unity 6000 on Windows is still
+  not ready (Rob confirmed 2026-10-31 that he hit
+  a snag and then got busy with work). Candidates
+  2, 3, and 4 (graphics retune, re-rally price,
+  dismiss refund) are all gated on Windows evidence
+  that does not exist yet, and a shape step must
+  not retune or reprice anything to pay for
+  deciding a route. Candidate 5's "if ever wanted"
+  is answered, not deferred again: the want is the
+  question Slice 23 left open by keeping radius 3
+  and count 5 while explicitly refusing to decide
+  shape at the same time. A route whose shape was
+  never separately audited is a first-pass value
+  carried by inertia, and this slice is where that
+  audit happens. The other candidates are not
+  demoted; they wait on evidence this slice cannot
+  manufacture headlessly, and they are carried as
+  the ranked Slice 26 candidates in the scope.
+- Grounding, verified against code this run, not
+  copied from review prose: PatrolTarget in
+  Orbital.cs derives rally, east, south, west,
+  north at radius 3 on the rally's Y plane, never
+  stored; the circuit is 24 steps (cardinal legs 3
+  each, diagonal legs 6 Manhattan steps each,
+  stair-stepped by MoveTowardPosition's
+  largest-gap axis rule, ties X then Y then Z, so
+  east to south walks (2,0), (2,1), (1,1), (1,2),
+  (0,2), (0,3) relative to the rally); fire is
+  Manhattan in FindTarget, so rally-to-waypoint is
+  3 and waypoint-to-waypoint is 6 in every
+  direction, giving the Slice 23 kind split
+  (Vanguard exactly at range 3, Recon within at
+  5, Heavy beyond at 2, no kind across waypoints);
+  MoveForPatrol's sidestep, skip, and stuck
+  threshold (count 5, coupled to the waypoint
+  count) stand; a re-rally re-derives the loop
+  from the new rally (centre moves, radius and
+  count do not) and a load resets the index to 0,
+  with no shape field in the save — so a shape
+  change needing a saved shape would be a
+  save-format change and must say so in Step 1.
+- Questions, not answers, kept deliberately: the
+  shape-caused stuck audit (diagonal-leg
+  stair-step cells that are not waypoints, staged
+  against cardinal legs, separated from
+  step-cell-caused stuck); the fire-asymmetry
+  computation (whether the kind split follows
+  from radius alone, and what waypoint move in
+  Manhattan distance a proposed shape would
+  cause); the coverage account (the walked
+  diamond perimeter versus the unwalked square
+  corners at rally ± 3 in both X and Z, and what
+  a square perimeter, a circular approximation,
+  or a climbing loop would each cost — longer
+  circuit, count change with its stuck coupling,
+  or a Y rule the movement code does not have);
+  the coupling answers (count, stuck threshold,
+  circuit steps, fire, save format, re-rally);
+  and the checklist relation (no new item for a
+  keep, as Slice 23's keep needed none, or item
+  44 only if Step 1 finds a shape reading with no
+  home in items 37, 39, or 40, superseding none).
+- Verification: adapter code is not compiled
+  headlessly, so this step's proof is a code
+  reading and a suite run, recorded here: every
+  ground fact above was read in Orbital.cs this
+  run, every candidate disposition was checked
+  against the Slice 24 review's ranked list, and
+  the standing suite and demo were re-run before
+  any edit. Standing suite and demo re-run
+  unchanged: 4577/4577 tests, Slice 23 demo save
+  44,041 chars, every earlier save unchanged, no
+  new scenario. This re-check does not compile an
+  adapter, run a scene, press a key, or observe a
+  marker — those remain Windows work.
+- Deliberately NOT in this step: a radius or
+  count re-decision; a movement, targeting, or
+  fire rule change except what a named shape
+  change itself requires and proves in Step 1; an
+  economy change of any kind; a reserve system;
+  an adapter, marker, material, light, fog, model,
+  or HUD change; a scene file or imported asset;
+  a copied asset or trademarked look; Windows
+  Unity verification itself; the director playtest;
+  a Slice 26 scope. The Slice 24 adapter gaps
+  (identical-twin limit, invisible pending
+  dismiss, unparented pending marker, same-frame
+  K+X order, pending not auto-clearing on death)
+  are carried after Slice 25, not patched here,
+  because a shape step moves no adapter branch.
+- Next step: Slice 25 Step 1, the loop-shape
+  decision, decided in that step, not promised
+  here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
