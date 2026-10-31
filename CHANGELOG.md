@@ -1,5 +1,62 @@
 # Forgeborne — Changelog
 
+## 0.81.0 — 2026-10-31 — Slice 19 scope: transformer-adjacency
+count remainder, documentation-only
+
+- Scope, decided in this step (rationale in
+  DECISIONS.md): new docs/slice-19-scope.md scopes
+  Slice 19 as the one carried Slice 17 display-query
+  remainder from the Slice 18 review, in order —
+  Step 1, the transformer-adjacency count query
+  (what the HUD counts show for a source beside
+  wiring that delivers nothing, with the dead-cable
+  consistency case stated as a condition, not an
+  analogy); Step 2, a composed demo scenario plus
+  a documentation-only review, which unlike the
+  Slice 16 review is accompanied by a demo because
+  the count decision is headless-testable. The
+  scope decides theme, order, and the questions
+  the step must answer — it decides neither
+  answer: Step 1 must choose among keeping the
+  definition unchanged, counting a non-delivering
+  transformer-adjacent source as lone, adding a
+  distinct readout, or redefining live to include
+  dead wiring, each with a stated proof set.
+- Order rationale, decided in this step (rationale
+  in DECISIONS.md): transformer-first because it
+  is the Slice 18 review's ranked candidate 1 and
+  because it closes the last Slice 17 display-query
+  remainder, not because a stuck patrol depends on
+  a count; reversing the order with the patrol
+  recall question would not break either decision,
+  and the scope says so. The Slice 18 gap 6 patrol
+  questions (recall, re-rally, player action for a
+  stuck patrol; radius and waypoint first-pass
+  values) are named as carried, not promised, so
+  the next scoping step ranks them in the open
+  rather than finding them smuggled into a count
+  step.
+- Boundary, decided in this step (rationale in
+  DECISIONS.md): Slice 19 is one display query and
+  its review only. No delivery, precedence,
+  conflict, rating, cost, or phase rule moves; no
+  material, marker, light, fog, model, or tint
+  value moves; the count step decides one POWER
+  line question (fold-in, new line, or new word,
+  with justification under HUD discipline). The
+  step must prove its rule does not double-count
+  a live transformer case, must state per-source,
+  per-transformer, or per-pair counting, must say
+  whether conflicted transformers and dead cables
+  follow the same rule or differ with a stated
+  distinction, and must take a Windows checklist
+  item from 38. No Slice 20 scope is included.
+- Tests: 2690 passed, 0 failed (unchanged,
+  documentation-only step). Demo unchanged: Slice
+  18 scenario save 44,015 chars, Slice 15 scenario
+  save 44,016 chars, Slice 17 scenario save 43,974
+  chars, and all others as in the 0.80.0 entry.
+
 ## 0.80.0 — 2026-10-31 — Slice 18 Step 3: composed demo
 plus review, closing Slice 18, decided
 

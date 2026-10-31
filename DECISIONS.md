@@ -7559,6 +7559,137 @@ documentation-only review, closing Slice 18
   first-pass graphics retuning on Windows evidence),
   not promised here.
 
+## 0.81.0 — Slice 19 scope: transformer-adjacency
+count remainder, documentation-only, decided
+
+- Quotable scope sentence: Slice 19 decides what
+  the HUD counts show for a source beside wiring
+  that delivers nothing, and then proves the
+  decided reading together with its controls in
+  one demo — nothing else.
+- Theme, decided in this step: Slice 19 is the
+  one carried Slice 17 display-query remainder,
+  not a second orbital slice and not a graphics
+  retuning. The motivating invisibility is
+  precise, verified against code this run rather
+  than copied from review prose: a Conduit beside
+  a transformer alone reads 0 LIVE, 0 LONE,
+  because the lone loop disqualifies any source
+  with a transformer neighbour, whatever the
+  transformer delivers, and the transformer group
+  loop counts a group only when some cell's output
+  is non-None — and TransformerOutput has
+  deliberately no Conduit branch, so that group
+  outputs None. The same verification shows why
+  the invisibility is narrow, not general to
+  transformer adjacency: a Dynamo beside a
+  transformer alone reads 1 LIVE (flipped LV to
+  HV, feeding no consumer), and an Alternator
+  beside a transformer alone reads 1 LIVE
+  (flipped HV to LV). A scope that had described
+  every transformer-adjacent source as invisible
+  would have been wrong on both controls, and
+  Step 1's proof set therefore carries them as
+  controls that must not move.
+- Order, decided in this step: transformer before
+  patrol recall, because the Slice 18 review
+  ranked it candidate 1 and because it closes
+  the last Slice 17 display-query remainder. The
+  scope states the reversal honestly: ordering
+  patrol recall first would not break either
+  decision, since no stuck patrol depends on a
+  count and no count depends on a recall action.
+  The Slice 18 gap 6 patrol questions are carried
+  explicitly as the first Slice 20 candidate, not
+  left to be rediscovered and not smuggled into
+  a count step — a scope that silently dropped
+  them would have broken the review's chain, and
+  a scope that answered them here would have
+  made Slice 19 two slices.
+- Questions, not answers, decided in this step:
+  Step 1 must choose among four hypotheses, none
+  adopted here — keep the definition unchanged;
+  count a non-delivering transformer-adjacent
+  source as lone, extending Slice 17 Step 2's
+  consumer logic to wiring neighbours; add a
+  distinct readout; or redefine live to include
+  dead wiring. The fourth hypothesis is included
+  deliberately, not as a straw man: a step that
+  never weighs redefining live could smuggle it
+  in as a fold-in, and the scope's stated reason
+  to doubt it (live has meant carrying a
+  non-None voltage since Slice 12) is a reason
+  for Step 1 to answer, not a decision made here.
+  Likewise the dead-cable consistency condition
+  is stated as a condition Step 1 must meet in
+  the open: a mixed-voltage cable component reads
+  0 / 0 today for the same structural reason (its
+  sources are disqualified by cable adjacency
+  while the component carries None), so a rule
+  that counts transformer-adjacent dead sources
+  and leaves cable-adjacent dead sources at 0 / 0
+  must state what distinguishes a cable component
+  from a lone transformer, or extend to both.
+- Proof-set design, decided in this step: the
+  scope's proof set is built around the cases
+  where a careless rule would double-count or
+  contradict itself — a Conduit beside a live
+  transformer (already 1 LIVE, must not gain a
+  lone count as well), a Conduit beside both a
+  mill and a dead transformer (Slice 17 Step 2
+  would count it lone for the mill alone, while
+  transformer adjacency disqualifies it today, so
+  Step 1 must say which neighbour wins), a
+  conflicted transformer (Dynamo plus Alternator,
+  output None, two placed sources at 0 / 0), a
+  Conduit beside a transformer beside a cable
+  (cable-story, not standalone-group), and
+  per-source versus per-transformer versus
+  per-pair counting for two Conduits on one dead
+  transformer and one Conduit on two. The
+  transformer chain/ring case is included so a
+  per-source rule is not accidentally proved only
+  on single transformers. The save/load case is a
+  re-derivation proof, not a save-format claim:
+  counts are derived, never saved, so a changed
+  save length in Step 2 would mean a save rule
+  moved.
+- Boundary, decided in this step: no delivery,
+  precedence, conflict, rating, cost, or phase
+  rule moves in Slice 19; no material, marker,
+  light, fog, model, or tint value moves (a
+  Conduit beside a transformer reads None in
+  PowerState, as sources and transformers do by
+  decision); the count step decides one POWER
+  line question under HUD discipline, with
+  folding into the existing line as the starting
+  hypothesis, not a decision; Step 1 takes a
+  Windows checklist item from 38, extending (not
+  superseding) item 36 and leaving item 22
+  standing, with the relation stated in that
+  step. The Slice 1 director playtest gate stays
+  pending throughout, and Windows Unity
+  verification stays open for Slices 1–19 alike.
+- Deliberately not in this step: a delivery move
+  disguised as a count fix (notably making a
+  Conduit feed a transformer directly — if Step
+  1 finds that is the honest answer, it defers
+  it); a patrol recall, re-rally, radius, or
+  waypoint decision; a HUD redesign; a graphics
+  retuning on no Windows evidence; a Slice 20
+  scope.
+- Constitution note, stated honestly:
+  PROJECT-POINTER.md still records Constitution SHA
+  6dcb4bc03a356eb226156ee19c2b3cc1b32e12d7 with a
+  note to re-validate before claiming adoption
+  complete — that full adoption audit was NOT run in
+  this step, so adoption completeness is not claimed
+  here.
+- Next step: Slice 19 Step 1, the
+  transformer-adjacency count query, decided in
+  that step, with the proof set and consistency
+  condition in docs/slice-19-scope.md.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in
