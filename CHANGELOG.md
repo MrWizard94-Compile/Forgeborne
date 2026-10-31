@@ -1,5 +1,74 @@
 # Forgeborne — Changelog
 
+## 0.109.0 — 2026-10-31 — Integration Step 3:
+nullable fix and DuskLighting AmbientMode fix,
+documentation of a local-only step, NOT yet
+pushed
+
+- Step taken: Integration Step 3, answering
+  Rob's Unity Console output 2026-10-31 on
+  Windows in 6000.3.27f2, after package
+  resolution succeeded for Entities 1.5.0.
+  That output is itself progress: no
+  CS0234/CS0246 Forgeborne.Core errors were
+  in it, so the core DLL is now resolving in
+  Unity, and the remaining items were warnings
+  plus one error, both fixed here.
+- Change 1, nullable, properly: `#nullable
+  enable` added as the first line of each of
+  the 8 adapter files that use nullable
+  annotations — DuskLighting, FpsInputAdapter,
+  GameManager, HudDisplay, OrbitalSquadDisplay,
+  SquadMarkerDisplay, VoxelMeshRenderer,
+  WeaponViewModel. UnityIntegrationNote has
+  no nullable annotations and is unchanged.
+  This is the scoped fix, not a suppression:
+  CS8632 is the compiler saying annotations
+  were used outside a nullable context, and
+  enabling that context is the correction.
+  Count: the Console list Rob pasted
+  contains CS8632 warnings in exactly those
+  8 files, and no other file.
+- Change 2, AmbientMode error, in the same
+  step because it is the one remaining error
+  in that same Console output and blocks the
+  same clean compile: DuskLighting.cs
+  (103,38) "The name 'AmbientMode' does not
+  exist in the current context". Cause:
+  AmbientMode lives in UnityEngine.Rendering,
+  not in UnityEngine, and DuskLighting only
+  imported UnityEngine. Fix: add `using
+  UnityEngine.Rendering;` to DuskLighting.cs.
+  No value, light, fog, or sky change: the
+  line still sets RenderSettings.ambientMode
+  to AmbientMode.Flat, as before.
+- Claim split, kept explicit: these changes
+  address every item in the Console output
+  Rob pasted. They are NOT claimed as a
+  clean Unity compile yet, because Unity is
+  not available headlessly and full
+  `#nullable enable` can surface new nullable
+  warnings (for example, a nullable value
+  used without a check) that only a Windows
+  compile can show. If the next Windows
+  compile shows new warnings, they get their
+  own recorded fix, not a silent edit here.
+  No core, save, gameplay, or DLL change is
+  in this step.
+- Changes: ForgeborneUnity/Assets/Scripts/
+  (8 adapter files, DuskLighting with the
+  extra using), CHANGELOG 0.109.0,
+  DECISIONS.md.
+- Tests: 5053 passed, 0 failed (unchanged,
+  adapter-only step; headless suite does not
+  compile Unity scripts). Demo unchanged:
+  Slice 25 save 44,041 chars.
+- Next step: push this step as its own commit,
+  with Rob's push approval, after the 0.108.0
+  push that preceded it; then Integration
+  Step 4, the no-drift guard and build script,
+  not promised here.
+
 ## 0.108.0 — 2026-10-31 — Integration package fix:
 Entities 1.3.0 to 1.5.0, documentation of a
 local-only step, pushed at Rob's direction

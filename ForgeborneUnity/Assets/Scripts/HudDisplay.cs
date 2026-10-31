@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // Displays HudState from Forgeborne.Core. No HUD logic lives here; HudState is canonical.
 // Wire the Text fields in the Unity Inspector to the reference HUD layout:

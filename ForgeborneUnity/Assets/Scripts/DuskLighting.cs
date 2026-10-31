@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // Slice 16 Step 3: the scene's dusk light, sky, and fog, decided 0.70.0
 // (rationale in DECISIONS.md), to docs/art-direction.md rules 1 and 6:
@@ -73,6 +74,7 @@
 // and see the warning above. Add this script to any
 // GameObject in the scene; no GameManager field is needed.
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class DuskLighting : MonoBehaviour
 {

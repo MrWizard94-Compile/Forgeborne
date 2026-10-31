@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // This script ONLY assigns MeshBuilder buffers to a Unity Mesh. It contains
 // no voxel logic, no gather/build rules, and no second chunk representation.

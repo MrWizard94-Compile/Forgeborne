@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // GameManager owns one Simulation for the whole scene. It creates the
 // world, spawns the first wave, and exposes save / load to UI buttons.

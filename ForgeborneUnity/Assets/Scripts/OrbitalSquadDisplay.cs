@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // Displays the Orbital Tactical view from Forgeborne.Core. No squad
 // logic lives here: it renders OrbitalView.Snapshot, a copied

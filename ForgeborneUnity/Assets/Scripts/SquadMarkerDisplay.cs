@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // Renders 3D scene markers from Forgeborne.Core, Slice 6 Step 2.
 // No squad logic lives here: it renders OrbitalView.Snapshot only —

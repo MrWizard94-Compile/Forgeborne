@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // Feeds Unity Input System input into Forgeborne.Core.FpsController and
 // Simulation. No movement logic lives here; FpsController is canonical.

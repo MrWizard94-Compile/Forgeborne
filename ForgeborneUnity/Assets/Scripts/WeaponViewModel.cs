@@ -1,3 +1,4 @@
+#nullable enable
 // Unity adapter — NOT compiled headlessly. Open ForgeborneUnity/ in Unity 6000 on Windows.
 // Slice 16 Step 4: the first FPS weapon view model, decided 0.71.0
 // (rationale in DECISIONS.md), to docs/art-direction.md rule 3:

@@ -11647,3 +11647,48 @@ marker proximity targeting, item 42
   work is the Unity compile with the core
   DLLs, then Integration Step 3, the nullable
   fix, not promised here.
+
+## 2026-10-31 — Integration Step 3: nullable fix and DuskLighting AmbientMode fix (0.109.0, under delegation, schedule paused)
+
+- Step taken: Integration Step 3, answering
+  Rob's Unity Console output 2026-10-31 on
+  Windows in 6000.3.27f2. That output is
+  progress in itself: package resolution for
+  Entities 1.5.0 had succeeded, and no
+  CS0234/CS0246 Forgeborne.Core errors were
+  in it, so the core DLL resolves in Unity.
+  The remaining items were CS8632 warnings
+  plus one CS0103 error.
+- Nullable decision, as scoped: `#nullable
+  enable` at the top of each of the 8 adapter
+  files using nullable annotations, not a
+  suppression and not a project-wide setting
+  change. CS8632 means the annotation was
+  used outside a nullable context; enabling
+  the context is the correction, and it is
+  version-controlled in each file so a future
+  adapter cannot silently reintroduce the
+  warning. UnityIntegrationNote has no
+  nullable annotations and is unchanged.
+- AmbientMode decision, bundled here because
+  it is the one error in the same Console
+  output and blocks the same clean compile:
+  add `using UnityEngine.Rendering;` to
+  DuskLighting.cs. AmbientMode lives in that
+  namespace, not in UnityEngine, which is all
+  DuskLighting imported. No light, fog, sky,
+  or ambient value changes; the line still
+  sets AmbientMode.Flat.
+- Claim split, kept explicit: every item in
+  the pasted Console output is addressed
+  here. A clean Unity compile is NOT claimed,
+  because Unity is not available headlessly
+  and full `#nullable enable` can surface new
+  nullable warnings only a Windows compile
+  can show. If it does, those warnings get
+  their own recorded fix.
+- Next step: push this step as its own commit,
+  with Rob's push approval, after the 0.108.0
+  push that preceded it; then Integration
+  Step 4, the no-drift guard and build script,
+  not promised here.
