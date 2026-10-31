@@ -10723,6 +10723,254 @@ marker proximity targeting, item 42
   decision, decided in that step, not promised
   here.
 
+## 2026-10-31 — Slice 25 Step 1: loop-shape decision (0.101.0, under delegation)
+
+- Decision: KEEP the flat cardinal cross loop
+  — rally, then east, south, west, and north
+  at radius 3, then back to the rally, all on
+  the rally's Y plane, derived from the rally
+  and PatrolWaypointIndex on every call,
+  never stored. No shape change, no radius
+  change, no count change. This answers the
+  question Slice 23 left open by keeping
+  radius 3 and count 5 while explicitly
+  refusing to decide shape at the same time:
+  the keep is now a decided answer with its
+  own audit, not a first-pass value carried
+  by inertia.
+- Shape-caused stuck audit, staged in tests,
+  not assumed. The diagonal legs stair-step
+  through six cells (east to south, for
+  example, walks (22,20), (22,21), (21,21),
+  (21,22), (20,22), (20,23) from a (20,20)
+  rally), and the scope named them the
+  suspect — but the audit finds the opposite
+  of a shape-caused stuck mechanism:
+  (a) one stone on a diagonal stair-step
+  cell that is not a waypoint, (22,21), is
+  sidestepped: the squad moves to (21,20)
+  on the remaining gap axis, counts no
+  refusal, keeps waypoint index 2, reaches
+  the south waypoint, and completes the
+  loop at the same radius and count;
+  (b) the same single stone on a cardinal
+  step cell, (22,20) on the rally-to-east
+  leg, skips the east waypoint (one
+  refusal, index to 2) and the next leg
+  moves at once, refusals reset, loop
+  completes — so the shape difference is
+  real (sidestep versus skip) but it is a
+  one-waypoint difference, never a stuck
+  squad; (c) both a stair-step cell and
+  its sidestep cell stone, (21,21) and
+  (22,22), cost exactly one skip of the
+  south waypoint, after which the next
+  leg sidesteps around the staged stone,
+  refusals reset, and the loop completes;
+  (d) the enclosed control — every first
+  step cell stone — reads Stuck after five
+  refusals with no leg shape ever
+  exercised. No staged case makes shape
+  the walking-versus-sticking difference,
+  and every refusal traces to a blocked
+  cell, exactly as Slice 23 proved for
+  radius. A sidestep that lands on a cell
+  the next leg's stair-step would not have
+  visited is observed in (a) and (c) and
+  causes no failure: the sidestepped cell
+  is distance-reducing toward the same
+  waypoint, and the route resumes from it.
+- Fire asymmetry, computed in Manhattan
+  distance, not asserted from the loop's
+  looks. Rally to any waypoint is 3;
+  waypoint to every other waypoint is 6,
+  including opposite pairs (east to west,
+  south to north). From the rally,
+  Vanguard engages a waypoint at exactly
+  its range 3, Recon within 5, Heavy not
+  beyond 2; from a waypoint, no kind
+  engages another waypoint, and the same
+  split holds waypoint-to-rally, because
+  Manhattan distance is symmetric. The
+  split is therefore a radius property
+  (3 against ranges 3, 5, 2) plus the
+  waypoint separation (6), not a shape
+  virtue: any shape at the same radius
+  that kept every waypoint at distance 3
+  from the rally and 6 from every other
+  waypoint would keep exactly this split,
+  and no such shape is needed, because
+  the current shape already has those
+  distances. The current split is not
+  claimed as a shape virtue — only as a
+  split the kept shape preserves.
+- Coverage account, cell by cell. The
+  walked circuit is a diamond perimeter,
+  not the full square of side 6 and not
+  the disc of radius 3: 24 steps visit 22
+  distinct cells, every step on Y 5, and
+  the four corner cells of the square —
+  (17,17), (23,17), (17,23), (23,23) for
+  a (20,20) rally — are never visited,
+  nor are the non-cardinal square-edge
+  cells beside them. Judgement, stated
+  rather than hidden by omitting the
+  corners: a patrol route's job is a
+  repeatable circuit through its rally
+  and the four cardinal points, with
+  fire in passing, not area coverage, and
+  no slice ever promised the corners;
+  a patrol that never visits a corner
+  cannot be said to patrol the square,
+  and this decision does not claim it
+  does. The unwalked corners matter
+  only if a later Windows observation on
+  a real map shows patrols missing
+  ground players expect them to cover —
+  that is the reopen condition below,
+  not a headless taste preference.
+- Coupling answers, stated before any
+  change, and since the answer is keep,
+  all stand as they are: waypoint count
+  5, stuck threshold 5 (threshold equals
+  count, proved again in the enclosed
+  control at five refusals), circuit 24
+  steps, fire relation as above, no save
+  field (the save array carries position,
+  rally, health, doctrine, and kind, and
+  no shape field exists to carry — read
+  in SaveSystem.cs this run), and the
+  re-rally rule (centre moves, shape
+  does not) proved by walking a
+  re-rallied patrol onto its new loop:
+  re-rally to (26,5,20) from the east
+  waypoint, then the new loop's east
+  waypoint reads (29,5,20), new rally
+  plus radius 3, with radius, count, and
+  position otherwise unchanged.
+- Rejected alternatives, each with a
+  mechanism, not a taste. Square
+  perimeter through the corner cells:
+  rejected on the computed fire
+  inversion — a corner waypoint sits at
+  Manhattan distance 6 from the rally
+  (engaged by no kind: tested for
+  Vanguard and Recon, and Heavy's range
+  2 is below 6 by the table) and at
+  distance 3 from another waypoint
+  (engaged by Vanguard and Recon from
+  the east waypoint, tested), so it
+  inverts both halves of the current
+  split at once, and it costs a longer
+  circuit at the same radius for ground
+  the audit judges not to matter.
+  Circular approximation through more
+  waypoints: rejected on the count
+  coupling — more waypoints change the
+  count, and the stuck threshold is the
+  count, so a circular loop reprices
+  stuck as well as reshaping the route,
+  and no shape-caused failure justifies
+  paying that coupling. Climbing loop:
+  rejected on two mechanisms — the
+  movement code has no Y rule for a
+  waypoint off the rally's plane (the
+  one-voxel-per-tick rule and the
+  largest-gap tie-break are stated for
+  the flat loop, and a step up or down
+  would need a movement rule change,
+  not a shape edit), and a raised east
+  waypoint at (23,6,20) sits at distance
+  4 from the rally, so Vanguard, which
+  engages a flat waypoint at exactly
+  range 3, would stop engaging it —
+  the flat-Y invariant is load bearing
+  for the fire split, not decorative.
+  If a later step finds a shape-caused
+  failure none of these fixes, it defers
+  to a later slice rather than inventing
+  a fifth shape on the spot.
+- Checklist relation: no new item. Items
+  37 (patrol route), 39 (stuck re-rally),
+  and 40 (general re-rally) already
+  observe the loop as kept, and the shape
+  decision is a decided answer under
+  item 37, not a new player-visible
+  reading with no home — the same logic
+  as Slice 23's keep, which needed none.
+  Superseding none. Next free gate
+  number remains 44. No item is marked
+  passed from this headless work: the
+  shape is decided, not playtested, and
+  items 37, 39, and 40 remain honestly
+  pending their Windows observations.
+- Windows reopen condition, carried with
+  a shape-specific addition: the keep
+  reopens on a Windows observation on a
+  real map that traces to leg shape
+  rather than to blocked cells — loops
+  routinely failing to fit ordinary
+  ground because of a leg's shape, or a
+  circuit that stops feeling like a
+  patrol — not on a staged enclosure, a
+  player-built wall, or a blocked
+  re-rally, each of which the audit
+  already explains as blocked cells.
+  The Slice 23 reopen condition (loops
+  failing to fit ordinary ground,
+  waypoints landing inside unplaced
+  structures) stands alongside it.
+- No core file moves in this step, and no
+  comment correction was justified: the
+  existing Patrol comment already
+  describes the derived cross loop
+  accurately (waypoint 0 the rally,
+  then east, south, west, north at
+  radius, then back), and PatrolTarget
+  is the flat-Y source in code. A
+  comment edit with nothing to correct
+  would be churn, not evidence. No
+  radius, count, movement, targeting,
+  fire, economy, marker, material,
+  light, fog, model, or HUD rule moves;
+  no adapter file moves; no demo
+  scenario belongs to this step alone,
+  per the Slice 23 precedent — the
+  composed demo belongs to Step 2.
+- Changes: tests/Forgeborne.Core.Tests/
+  Program.cs (+145 assertions, the audit
+  above), docs/orbital-command.md (loop
+  shape decision section), CHANGELOG
+  0.101.0, DECISIONS.md (this entry).
+- Tests: 4722 passed, 0 failed (was
+  4577; +145, no failures on the first
+  full run after the edits, so no test
+  fix was needed). Demo unchanged:
+  Slice 23 save 44,041 chars, Slice 22
+  save 43,990 chars, Slice 21 save 44,040
+  chars, Slice 20 save 44,041 chars,
+  Slice 19 save 43,965 chars, Slice 18
+  save 44,015 chars, Slice 15 save 44,016
+  chars, Slice 17 save 43,974 chars.
+  No new scenario length to quote.
+- Deliberately NOT in this step: a radius
+  or count re-decision; a movement,
+  targeting, or fire rule change; an
+  economy change of any kind; a reserve
+  system; an adapter, marker, material,
+  light, fog, model, or HUD change; a
+  scene file or imported asset; a copied
+  asset or trademarked look; Windows
+  Unity verification itself; the director
+  playtest; a Slice 26 scope. The Slice
+  24 adapter gaps are carried after
+  Slice 25, not patched here, because a
+  shape step moves no adapter branch.
+- Next step: Slice 25 Step 2, the composed
+  demo plus documentation-only review
+  closing Slice 25, per docs/
+  slice-25-scope.md, not promised here.
+
 ## Open decisions
 
 - Scope slicing order beyond Slice 1 (Slice 1 is locked in

@@ -9306,5 +9306,284 @@ Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice23 composed van
 Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice23 composed recon range is 5, above the radius");
 Eq(2, SquadShapes.For(SquadKind.Heavy).EngagementRange, "slice23 composed heavy range is 2, below the radius");
 
+// ---- Slice 25 Step 1: the loop-shape decision, decided here (0.101.0) ----
+// Decision, in one sentence: KEEP the flat cardinal cross loop —
+// rally, then east, south, west, and north at radius 3, then back
+// to the rally, all on the rally's Y plane — because the audit
+// below finds no shape-caused failure anywhere: a diagonal-leg
+// block sidesteps where a cardinal-leg block skips, but neither
+// sticks a squad, stuck stays a blocked-cell reading, the fire
+// split follows from radius and Manhattan distance rather than
+// from shape alone, and the unwalked corners are named and
+// judged not to matter for a patrol route. The full rationale,
+// coupling answers, rejected alternatives with mechanisms,
+// Windows reopen condition, and checklist relation are in
+// DECISIONS.md; this section is the audit's proof set.
+// Audit A — coverage, walked cell by cell: the loop the code
+// actually walks is a diamond perimeter, not the full square
+// of side 6 around the rally and not the disc of radius 3.
+// 24 steps visit 22 distinct cells (the start rally, the
+// (22,20) stair-step cell, and the (20,18) rally-leg cell
+// are each visited twice), every step stays on Y 5, and
+// the four corner cells of the square — rally plus or
+// minus 3 in both X and Z — are never visited, nor are
+// the non-cardinal square-edge cells beside them. A
+// patrol that never visits a corner cannot be said to
+// patrol the square, and this audit says so plainly;
+// the judgement that it does not matter is in
+// DECISIONS.md, not hidden by omitting the corners.
+var s25WalkWorld = new WorldZone(42);
+s25WalkWorld.Player.X = 20; s25WalkWorld.Player.Z = 20;
+var s25Walk = s25WalkWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+var s25Visited = new HashSet<(int X, int Z)> { (20, 20) };
+for (int s25Tick = 0; s25Tick < 24; s25Tick++)
+{
+    s25Walk.MoveForPatrol(s25WalkWorld.Chunk, Array.Empty<Enemy>());
+    s25Visited.Add((s25Walk.X, s25Walk.Z));
+    Eq(5, s25Walk.Y, $"slice25 audit coverage tick {s25Tick + 1} stays on the rally Y plane");
+}
+Eq(20, s25Walk.X, "slice25 audit coverage circuit returns to the rally X in 24 steps");
+Eq(20, s25Walk.Z, "slice25 audit coverage circuit returns to the rally Z in 24 steps");
+Eq(0, s25Walk.PatrolWaypointIndex, "slice25 audit coverage circuit index is back to the rally waypoint");
+Eq(0, s25Walk.PatrolConsecutiveRefusals, "slice25 audit coverage circuit counts no refusals");
+Check(!s25Walk.IsPatrolStuck, "slice25 audit coverage circuit squad is not stuck");
+Eq(22, s25Visited.Count, "slice25 audit coverage circuit visits 22 distinct cells in 24 steps");
+Check(s25Visited.Contains((23, 20)), "slice25 audit coverage visits the east cardinal point");
+Check(s25Visited.Contains((20, 23)), "slice25 audit coverage visits the south cardinal point");
+Check(s25Visited.Contains((17, 20)), "slice25 audit coverage visits the west cardinal point");
+Check(s25Visited.Contains((20, 17)), "slice25 audit coverage visits the north cardinal point");
+Check(!s25Visited.Contains((23, 23)), "slice25 audit coverage never visits the south-east corner cell");
+Check(!s25Visited.Contains((17, 23)), "slice25 audit coverage never visits the south-west corner cell");
+Check(!s25Visited.Contains((23, 17)), "slice25 audit coverage never visits the north-east corner cell");
+Check(!s25Visited.Contains((17, 17)), "slice25 audit coverage never visits the north-west corner cell");
+Check(!s25Visited.Contains((23, 18)), "slice25 audit coverage never visits a non-cardinal east-edge cell");
+Check(!s25Visited.Contains((23, 22)), "slice25 audit coverage never visits a non-cardinal east-edge cell, south side");
+Check(!s25Visited.Contains((18, 23)), "slice25 audit coverage never visits a non-cardinal south-edge cell");
+Check(!s25Visited.Contains((22, 23)), "slice25 audit coverage never visits a non-cardinal south-edge cell, east side");
+// The same circuit, leg by leg, with the waypoint target
+// at each arrival: the target is the waypoint just
+// reached until the next tick turns onto the next leg.
+var s25LegWorld = new WorldZone(42);
+s25LegWorld.Player.X = 20; s25LegWorld.Player.Z = 20;
+var s25Leg = s25LegWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Eq((20, 5, 20), s25Leg.PatrolTarget, "slice25 audit legs start target is the rally");
+for (int s25Tick = 0; s25Tick < 3; s25Tick++) s25Leg.MoveForPatrol(s25LegWorld.Chunk, Array.Empty<Enemy>());
+Eq(23, s25Leg.X, "slice25 audit legs reach the east waypoint in 3 steps");
+Eq((23, 5, 20), s25Leg.PatrolTarget, "slice25 audit legs east arrival target is still the east waypoint");
+for (int s25Tick = 0; s25Tick < 6; s25Tick++) s25Leg.MoveForPatrol(s25LegWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s25Leg.X, "slice25 audit legs reach the south waypoint 6 steps later");
+Eq(23, s25Leg.Z, "slice25 audit legs reach the south waypoint Z");
+Eq((20, 5, 23), s25Leg.PatrolTarget, "slice25 audit legs south arrival target is still the south waypoint");
+for (int s25Tick = 0; s25Tick < 6; s25Tick++) s25Leg.MoveForPatrol(s25LegWorld.Chunk, Array.Empty<Enemy>());
+Eq(17, s25Leg.X, "slice25 audit legs reach the west waypoint 6 steps later");
+Eq((17, 5, 20), s25Leg.PatrolTarget, "slice25 audit legs west arrival target is still the west waypoint");
+for (int s25Tick = 0; s25Tick < 6; s25Tick++) s25Leg.MoveForPatrol(s25LegWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s25Leg.X, "slice25 audit legs reach the north waypoint 6 steps later");
+Eq(17, s25Leg.Z, "slice25 audit legs reach the north waypoint Z");
+Eq((20, 5, 17), s25Leg.PatrolTarget, "slice25 audit legs north arrival target is still the north waypoint");
+for (int s25Tick = 0; s25Tick < 3; s25Tick++) s25Leg.MoveForPatrol(s25LegWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s25Leg.X, "slice25 audit legs return to the rally in 24 steps total");
+Eq((20, 5, 20), s25Leg.PatrolTarget, "slice25 audit legs rally arrival target is the rally");
+// Audit B1 — one block on a diagonal stair-step cell
+// that is not itself a waypoint: the east-to-south leg
+// stair-steps (22,20), (22,21), (21,21), (21,22),
+// (20,22), (20,23). Blocking (22,21) does not skip
+// the south waypoint and does not stick the squad:
+// the direct step is refused, the sidestep onto the
+// remaining gap axis (21,20) moves, refusals stay 0,
+// the waypoint index stays 2, and the loop completes
+// at the same radius and count. The shape's diagonal
+// leg is, on this cell, more forgiving than a
+// cardinal leg, not less — the opposite of a
+// shape-caused stuck mechanism.
+var s25DiagWorld = new WorldZone(42);
+s25DiagWorld.Player.X = 20; s25DiagWorld.Player.Z = 20;
+var s25Diag = s25DiagWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s25DiagWorld.Chunk.TrySet(22, 5, 21, BlockType.Stone), "slice25 audit diagonal stages a stone on a stair-step cell, not a waypoint");
+for (int s25Tick = 0; s25Tick < 3; s25Tick++) s25Diag.MoveForPatrol(s25DiagWorld.Chunk, Array.Empty<Enemy>());
+Eq(23, s25Diag.X, "slice25 audit diagonal reaches the east waypoint before the blocked leg");
+Check(s25Diag.MoveForPatrol(s25DiagWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit diagonal first stair-step moves");
+Eq(22, s25Diag.X, "slice25 audit diagonal first stair-step X");
+Eq(BlockType.Stone, s25DiagWorld.Chunk.Get(22, 5, 21), "slice25 audit diagonal blocked cell is the next direct step cell");
+Check(s25Diag.MoveForPatrol(s25DiagWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit diagonal blocked stair-step still moves, by sidestep");
+Eq(21, s25Diag.X, "slice25 audit diagonal sidestep lands on the remaining gap axis");
+Eq(20, s25Diag.Z, "slice25 audit diagonal sidestep Z is unchanged");
+Eq(0, s25Diag.PatrolConsecutiveRefusals, "slice25 audit diagonal sidestep counts no refusal");
+Eq(2, s25Diag.PatrolWaypointIndex, "slice25 audit diagonal sidestep keeps the south waypoint");
+Eq((20, 5, 23), s25Diag.PatrolTarget, "slice25 audit diagonal sidestep target is still the south waypoint");
+for (int s25Tick = 0; s25Tick < 4; s25Tick++) s25Diag.MoveForPatrol(s25DiagWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s25Diag.X, "slice25 audit diagonal sidestepped squad reaches the south waypoint");
+Eq(23, s25Diag.Z, "slice25 audit diagonal sidestepped squad reaches the south waypoint Z");
+for (int s25Tick = 0; s25Tick < 15; s25Tick++) s25Diag.MoveForPatrol(s25DiagWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s25Diag.X, "slice25 audit diagonal sidestepped squad returns to the rally");
+Eq(0, s25Diag.PatrolConsecutiveRefusals, "slice25 audit diagonal sidestepped squad counts no refusals on the full circuit");
+Check(!s25Diag.IsPatrolStuck, "slice25 audit diagonal single stair-step block does not stick the squad");
+// Audit B2 — the same single block on a cardinal leg,
+// for contrast: blocking the middle rally-to-east
+// step cell (22,20) skips the east waypoint, because
+// a cardinal leg has no remaining gap axis to
+// sidestep onto. The shape difference is real —
+// skip versus sidestep — but it is a one-waypoint
+// skip, not a stuck squad: the next leg moves at
+// once, refusals reset, and the loop completes.
+var s25CardWorld = new WorldZone(42);
+s25CardWorld.Player.X = 20; s25CardWorld.Player.Z = 20;
+var s25Card = s25CardWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s25CardWorld.Chunk.TrySet(22, 5, 20, BlockType.Stone), "slice25 audit cardinal stages a stone on a cardinal step cell, not a waypoint");
+Check(s25Card.MoveForPatrol(s25CardWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit cardinal first step moves");
+Eq(21, s25Card.X, "slice25 audit cardinal first step X");
+Check(!s25Card.MoveForPatrol(s25CardWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit cardinal blocked step does not move");
+Eq(1, s25Card.PatrolConsecutiveRefusals, "slice25 audit cardinal blocked step counts one refusal");
+Eq(2, s25Card.PatrolWaypointIndex, "slice25 audit cardinal blocked step skips to the south waypoint");
+Eq(21, s25Card.X, "slice25 audit cardinal skipped squad holds its X");
+Check(s25Card.MoveForPatrol(s25CardWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit cardinal next leg moves at once");
+Eq(21, s25Card.Z, "slice25 audit cardinal next leg steps south");
+Eq(0, s25Card.PatrolConsecutiveRefusals, "slice25 audit cardinal next leg resets refusals");
+for (int s25Tick = 0; s25Tick < 18; s25Tick++) s25Card.MoveForPatrol(s25CardWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s25Card.X, "slice25 audit cardinal skipped squad returns to the rally");
+Eq(20, s25Card.Z, "slice25 audit cardinal skipped squad returns to the rally Z");
+Check(!s25Card.IsPatrolStuck, "slice25 audit cardinal single step-cell block does not stick the squad");
+// Audit B3 — both a diagonal stair-step cell and
+// its sidestep cell blocked: from (22,21) toward
+// the south waypoint, the direct cell (21,21) and
+// the sidestep cell (22,22) are both stone, so the
+// south waypoint is skipped — exactly one refusal,
+// exactly as a cardinal block skips one waypoint.
+// The next leg then sidesteps around the staged
+// stone (21,21) itself, refusals reset, and the
+// loop completes: two blocked cells cost one skip,
+// not a stuck squad, and no shape property beyond
+// the blocked cells explains any refusal here.
+var s25BothWorld = new WorldZone(42);
+s25BothWorld.Player.X = 20; s25BothWorld.Player.Z = 20;
+var s25Both = s25BothWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s25BothWorld.Chunk.TrySet(21, 5, 21, BlockType.Stone), "slice25 audit both-blocked stages the direct stair-step cell");
+Check(s25BothWorld.Chunk.TrySet(22, 5, 22, BlockType.Stone), "slice25 audit both-blocked stages the sidestep cell");
+for (int s25Tick = 0; s25Tick < 5; s25Tick++) s25Both.MoveForPatrol(s25BothWorld.Chunk, Array.Empty<Enemy>());
+Eq(22, s25Both.X, "slice25 audit both-blocked reaches the second stair-step cell");
+Eq(21, s25Both.Z, "slice25 audit both-blocked reaches the second stair-step cell Z");
+Check(!s25Both.MoveForPatrol(s25BothWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit both-blocked step does not move");
+Eq(1, s25Both.PatrolConsecutiveRefusals, "slice25 audit both-blocked step counts one refusal");
+Eq(3, s25Both.PatrolWaypointIndex, "slice25 audit both-blocked step skips to the west waypoint");
+Eq(22, s25Both.X, "slice25 audit both-blocked skipped squad holds its X");
+Check(s25Both.MoveForPatrol(s25BothWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit both-blocked next leg sidesteps around the staged stone");
+Eq(22, s25Both.X, "slice25 audit both-blocked sidestep X");
+Eq(20, s25Both.Z, "slice25 audit both-blocked sidestep Z");
+Eq(0, s25Both.PatrolConsecutiveRefusals, "slice25 audit both-blocked sidestep resets refusals");
+for (int s25Tick = 0; s25Tick < 14; s25Tick++) s25Both.MoveForPatrol(s25BothWorld.Chunk, Array.Empty<Enemy>());
+Eq(20, s25Both.X, "slice25 audit both-blocked squad returns to the rally");
+Eq(20, s25Both.Z, "slice25 audit both-blocked squad returns to the rally Z");
+Check(!s25Both.IsPatrolStuck, "slice25 audit both-blocked pair costs one skip, not a stuck squad");
+// Audit B4 — enclosed control: with every first
+// step cell stone, no leg shape is ever exercised,
+// yet the squad still reads Stuck after five
+// refusals. Stuck is therefore a blocked-cell
+// reading that holds with no shape in play at all,
+// which is the shape-independence control for B1
+// through B3, not a new stuck geometry.
+var s25EncWorld = new WorldZone(42);
+s25EncWorld.Player.X = 20; s25EncWorld.Player.Z = 20;
+var s25Enc = s25EncWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s25EncWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice25 audit enclosed stages an east wall");
+Check(s25EncWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice25 audit enclosed stages a west wall");
+Check(s25EncWorld.Chunk.TrySet(20, 5, 21, BlockType.Stone), "slice25 audit enclosed stages a south wall");
+Check(s25EncWorld.Chunk.TrySet(20, 5, 19, BlockType.Stone), "slice25 audit enclosed stages a north wall");
+for (int s25Tick = 0; s25Tick < 5; s25Tick++) Check(!s25Enc.MoveForPatrol(s25EncWorld.Chunk, Array.Empty<Enemy>()), $"slice25 audit enclosed tick {s25Tick + 1} does not move");
+Eq(5, s25Enc.PatrolConsecutiveRefusals, "slice25 audit enclosed counts five refusals");
+Check(s25Enc.IsPatrolStuck, "slice25 audit enclosed five refusals is stuck with no leg shape exercised");
+Eq(20, s25Enc.X, "slice25 audit enclosed squad holds its X");
+Eq(20, s25Enc.Z, "slice25 audit enclosed squad holds its Z");
+// Audit C — fire asymmetry, computed in Manhattan
+// distance, not asserted from the loop's looks.
+// Current shape: rally to any waypoint is 3, every
+// waypoint to every other waypoint is 6. So from
+// the rally Vanguard engages a waypoint at exactly
+// 3, Recon within 5, Heavy not beyond 2; from a
+// waypoint no kind engages another waypoint, and
+// the same split holds waypoint-to-rally, because
+// Manhattan distance is symmetric. The split is
+// therefore a radius property (3 against ranges
+// 3, 5, 2) plus the waypoint separation (6), not
+// a shape virtue: a different shape at the same
+// radius that kept every waypoint at distance 3
+// from the rally and 6 from every other waypoint
+// would keep exactly this split.
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice25 audit fire loop radius is still 3");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice25 audit fire loop waypoint count is still 5");
+Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice25 audit fire vanguard range is 3");
+Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice25 audit fire recon range is 5");
+Eq(2, SquadShapes.For(SquadKind.Heavy).EngagementRange, "slice25 audit fire heavy range is 2");
+var s25FireWorld = new WorldZone(42);
+s25FireWorld.Player.X = 20; s25FireWorld.Player.Z = 20;
+var s25FireVan = s25FireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+var s25FireRec = s25FireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s25FireHea = s25FireWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Heavy)!;
+Check(s25FireVan.FindTarget(new[] { new Enemy(23, 5, 20) }) != null, "slice25 audit fire vanguard on its rally engages the east waypoint at exactly range 3");
+Check(s25FireRec.FindTarget(new[] { new Enemy(23, 5, 20) }) != null, "slice25 audit fire recon on its rally engages the east waypoint within range 5");
+Check(s25FireHea.FindTarget(new[] { new Enemy(23, 5, 20) }) == null, "slice25 audit fire heavy on its rally does not engage the east waypoint beyond range 2");
+var s25EastWorld = new WorldZone(42);
+s25EastWorld.Player.X = 23; s25EastWorld.Player.Z = 20;
+var s25EastRec = s25EastWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Recon)!;
+var s25EastVan = s25EastWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+Check(s25EastRec.FindTarget(new[] { new Enemy(20, 5, 23) }) == null, "slice25 audit fire recon on the east waypoint does not engage the south waypoint at distance 6");
+Check(s25EastRec.FindTarget(new[] { new Enemy(17, 5, 20) }) == null, "slice25 audit fire recon on the east waypoint does not engage the west waypoint at distance 6");
+Check(s25EastVan.FindTarget(new[] { new Enemy(20, 5, 23) }) == null, "slice25 audit fire vanguard on the east waypoint does not engage the south waypoint at distance 6");
+Check(s25EastRec.FindTarget(new[] { new Enemy(20, 5, 20) }) != null, "slice25 audit fire recon on the east waypoint engages its rally at distance 3");
+Check(s25EastVan.FindTarget(new[] { new Enemy(20, 5, 20) }) != null, "slice25 audit fire vanguard on the east waypoint engages its rally at exactly range 3");
+// What a square perimeter would change, computed
+// for a hypothetical corner waypoint (23,23) —
+// this cell is not a waypoint in the code, and no
+// shape is changed here; the distances are the
+// mechanism for rejecting the square on fire
+// grounds. From the east waypoint the corner is
+// distance 3, so Vanguard and Recon would engage
+// a corner waypoint from another waypoint, which
+// the current shape never allows; from the rally
+// the corner is distance 6, so no kind would
+// engage it from the rally, which the current
+// cardinal waypoints all allow for Vanguard and
+// Recon. A square therefore inverts both halves
+// of the current split at once.
+Check(s25EastVan.FindTarget(new[] { new Enemy(23, 5, 23) }) != null, "slice25 audit fire hypothetical corner at distance 3 from the east waypoint is engaged by vanguard");
+Check(s25EastRec.FindTarget(new[] { new Enemy(23, 5, 23) }) != null, "slice25 audit fire hypothetical corner at distance 3 from the east waypoint is engaged by recon");
+Check(s25FireVan.FindTarget(new[] { new Enemy(23, 5, 23) }) == null, "slice25 audit fire hypothetical corner at distance 6 from the rally is engaged by no kind, vanguard");
+Check(s25FireRec.FindTarget(new[] { new Enemy(23, 5, 23) }) == null, "slice25 audit fire hypothetical corner at distance 6 from the rally is engaged by no kind, recon");
+// What a climbing loop would change, computed for
+// a hypothetical raised east waypoint (23,6,20):
+// one Y of climb turns Vanguard's exact-range 3
+// into distance 4, so the kind that engages a
+// flat waypoint at exactly its range would stop
+// engaging it — the flat-Y invariant is load
+// bearing for the fire split, not decorative.
+Check(s25FireVan.FindTarget(new[] { new Enemy(23, 6, 20) }) == null, "slice25 audit fire hypothetical raised waypoint at distance 4 is beyond vanguard range 3");
+Check(s25FireRec.FindTarget(new[] { new Enemy(23, 6, 20) }) != null, "slice25 audit fire hypothetical raised waypoint at distance 4 is still within recon range 5");
+// Audit D — coupling: a general re-rally moves
+// the loop's centre and re-derives the same
+// shape from the new rally, changing nothing
+// else. Radius, count, position, and the stuck
+// threshold's coupling (threshold equals count,
+// proved in B4 at five) all stand, and the new
+// loop's east waypoint is the new rally plus
+// radius 3, proved by walking onto it.
+var s25RallyWorld = new WorldZone(42);
+s25RallyWorld.Player.X = 20; s25RallyWorld.Player.Z = 20;
+var s25Rally = s25RallyWorld.SpawnSquad(20, 5, 20, TacticalDoctrine.Patrol, SquadKind.Vanguard)!;
+for (int s25Tick = 0; s25Tick < 3; s25Tick++) s25Rally.MoveForPatrol(s25RallyWorld.Chunk, Array.Empty<Enemy>());
+Eq(23, s25Rally.X, "slice25 audit rerally squad reaches the east waypoint before the re-rally");
+Check(s25RallyWorld.TryReRallySquad(0, 26, 5, 20), "slice25 audit rerally general re-rally is accepted");
+Eq(26, s25Rally.RallyX, "slice25 audit rerally rally moves to the new rally X");
+Eq(20, s25Rally.RallyZ, "slice25 audit rerally rally Z is unchanged");
+Eq(23, s25Rally.X, "slice25 audit rerally squad does not teleport");
+Eq(0, s25Rally.PatrolWaypointIndex, "slice25 audit rerally waypoint index resets to 0");
+Eq((26, 5, 20), s25Rally.PatrolTarget, "slice25 audit rerally target is the new rally");
+Eq(3, TacticalSquad.PatrolLoopRadius, "slice25 audit rerally radius is still 3 after the re-rally");
+Eq(5, TacticalSquad.PatrolWaypointCount, "slice25 audit rerally waypoint count is still 5 after the re-rally");
+for (int s25Tick = 0; s25Tick < 3; s25Tick++) s25Rally.MoveForPatrol(s25RallyWorld.Chunk, Array.Empty<Enemy>());
+Eq(26, s25Rally.X, "slice25 audit rerally squad marches to its new rally");
+Check(s25Rally.MoveForPatrol(s25RallyWorld.Chunk, Array.Empty<Enemy>()), "slice25 audit rerally loop tick moves onto the new loop");
+Eq(27, s25Rally.X, "slice25 audit rerally new loop east step is the new rally plus one");
+Eq((29, 5, 20), s25Rally.PatrolTarget, "slice25 audit rerally new loop east waypoint is the new rally plus radius 3");
+Check(!s25Rally.IsPatrolStuck, "slice25 audit rerally squad on the new loop is not stuck");
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

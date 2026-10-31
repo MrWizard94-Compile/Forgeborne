@@ -1,5 +1,86 @@
 # Forgeborne — Changelog
 
+## 0.101.0 — 2026-10-31 — Slice 25 Step 1:
+loop-shape decision — KEEP the flat cardinal
+cross loop, on audit evidence; no core change,
+no new gate item; Slice 25 NOT closed here
+
+- Step taken: Slice 25 Step 1, the loop-shape
+  decision, decided in that step, per
+  docs/slice-25-scope.md. No demo scenario
+  belongs to this step alone, per the Slice 23
+  precedent; the composed demo belongs to
+  Step 2. Slice 25 is NOT closed here, and
+  Slice 26 is NOT scoped here.
+- Decision in brief: KEEP the flat cardinal
+  cross loop — rally, then east, south, west,
+  and north at radius 3, then back to the
+  rally, all on the rally's Y plane. The
+  shape-caused stuck audit finds no
+  shape-caused failure: one stone on a
+  diagonal stair-step cell is sidestepped
+  (no refusal, loop completes); the same
+  single stone on a cardinal step cell skips
+  one waypoint and the loop still completes;
+  both a stair-step cell and its sidestep
+  cell stone cost exactly one skip; and an
+  enclosed squad sticks with no leg shape
+  ever exercised — so shape changes the
+  local outcome (sidestep versus skip),
+  never walking versus sticking, and stuck
+  stays a blocked-cell reading. Coverage is
+  named, not hidden: 24 steps visit 22
+  distinct cells, a diamond perimeter, with
+  the four square corners never visited, and
+  that unwalked ground is judged not to
+  matter for a patrol route. Fire follows
+  from radius and Manhattan distance, not
+  from shape alone: rally to waypoint 3,
+  waypoint to waypoint 6, so Vanguard
+  engages at exactly 3, Recon within 5,
+  Heavy not beyond 2, and no kind shoots
+  across the loop. Rejected with mechanisms:
+  a square perimeter inverts both halves of
+  that split (corner at distance 6 from the
+  rally, 3 from another waypoint); a circular
+  approximation changes the count and
+  therefore the stuck threshold, which is
+  the count; a climbing loop has no Y rule
+  in the movement code and would cost
+  Vanguard its exact-range engagement
+  (raised waypoint at distance 4). Coupling
+  answers stand: count 5, threshold 5,
+  circuit 24 steps, no save field, re-rally
+  re-derives the same shape from the new
+  rally (new east waypoint is the new rally
+  plus radius 3, proved by walking onto it).
+  No new playtest-gate item: items 37, 39,
+  and 40 already observe the loop as kept,
+  superseding none, and the next free gate
+  number remains 44. No core file moves, and
+  no comment correction was justified — the
+  existing Patrol comment already describes
+  the derived cross loop accurately.
+  Full rationale, reopen condition, and
+  deliberately-not list are in DECISIONS.md.
+- Changes: tests/Forgeborne.Core.Tests/
+  Program.cs (+145 assertions), docs/
+  orbital-command.md (loop shape decision
+  section), CHANGELOG 0.101.0, DECISIONS.md.
+- Tests: 4722 passed, 0 failed (was 4577;
+  +145, no failures on the first full run
+  after the edits). Demo unchanged: Slice 23
+  save 44,041 chars, Slice 22 save 43,990
+  chars, Slice 21 save 44,040 chars, Slice 20
+  save 44,041 chars, Slice 19 save 43,965
+  chars, Slice 18 save 44,015 chars, Slice 15
+  save 44,016 chars, Slice 17 save 43,974
+  chars.
+- Next step: Slice 25 Step 2, the composed
+  demo plus documentation-only review
+  closing Slice 25, per docs/slice-25-scope.md,
+  not promised here.
+
 ## 0.100.0 — 2026-10-31 — Slice 25 scope:
 loop-shape decision, then demo + review;
 documentation only; Slice 26 NOT scoped here

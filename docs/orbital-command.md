@@ -531,6 +531,48 @@ structures, or a circuit that stops feeling like a
 patrol — not on a staged enclosure or a
 player-built wall.
 
+## Loop shape decision — Slice 25 Step 1 (0.101.0)
+
+The loop's shape is decided, not carried, in this
+step (rationale in DECISIONS.md): KEEP the flat
+cardinal cross loop — rally, then east, south,
+west, and north at radius 3, then back to the
+rally, all on the rally's Y plane. The audit
+finds no shape-caused failure. A single stone
+on a diagonal stair-step cell is sidestepped,
+not skipped and not stuck; the same single
+stone on a cardinal step cell skips one
+waypoint and the loop still completes; both a
+stair-step cell and its sidestep cell stone
+cost exactly one skip. Stuck stays a
+blocked-cell reading: an enclosed squad sticks
+with no leg shape ever exercised. The walked
+circuit is a diamond perimeter — 24 steps,
+22 distinct cells, four square corners never
+visited — and that unwalked ground is judged
+not to matter for a patrol route, whose job is
+a repeatable circuit through the rally and the
+four cardinal points, not area coverage. Fire
+follows from radius and Manhattan distance,
+not from shape alone: rally to any waypoint
+is 3, waypoint to waypoint is 6, so Vanguard
+engages a waypoint at exactly 3, Recon within
+5, Heavy not beyond 2, and no kind shoots
+across the loop. A square corner waypoint
+would invert both halves of that split
+(distance 6 from the rally, 3 from another
+waypoint), and a raised waypoint would cost
+Vanguard its exact-range engagement. No
+radius, count, movement, fire, economy,
+marker, or HUD rule moves; no core file
+moves; no new playtest-gate item — items 37,
+39, and 40 already observe the loop as kept,
+and the next free gate number remains 44.
+KEEP reopens only on a Windows observation
+on a real map that traces to leg shape rather
+than to blocked cells — not on a staged
+enclosure or a player-built wall.
+
 ## Unity verification checklist — to be done on Windows, Unity 6000
 
 1. [ ] Project opens with no compile errors in the edited
