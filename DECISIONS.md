@@ -11716,3 +11716,19 @@ marker proximity targeting, item 42
 - Deliberately NOT in this step: any code change, any test, any demo scenario, any gate item passed, any graphics retune, any economy change, any claim of Play, any scene/asset/shader/URP file, and any Slice 27 scope.
 - Next step: Integration Step 5 itself, on Windows only, by this sheet, with the result recorded in DECISIONS.md with the Unity version and GPU.
 - Push-time correction: the draft sheet's legacy-input count said 35 call sites; recount during push verification found 37 call sites on 35 lines, so the sheet and CHANGELOG now say 37. No other sheet claim changed.
+
+## 2026-10-31 — Windows Main integration checkpoint (agent observation)
+
+Unity 6000.3.27f2 (22188f149405), DX12, NVIDIA GeForce GTX 1660 Ti.
+Main was assembled and saved through the actual Unity Editor using Unity MCP
+on branch codex/unity-main-scene, based on 0.112.0. All five adapters shared
+GameManager's one Seed 42 Simulation in live reference checks; input, mesh,
+HUD and in-memory save/load were exercised. Initial magenta rendering failed
+because no URP pipeline was assigned; Unity-created pipeline assets fixed it.
+The complete results, commands, inherited failures and Section 0 scores are in
+docs/unity-main-integration.md. This records an agent's observed checkpoint,
+not director approval. Studio-quality gameplay, full player persistence,
+real-time pacing and representative performance remain unpassed. The
+studio-production reference supplied by Rob was read in full; the ongoing
+vertical-slice gates and ownership are in docs/production-status.md. No push,
+licence change, visibility change, release or fun/quality acceptance occurred.

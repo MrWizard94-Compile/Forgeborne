@@ -19,15 +19,16 @@ Requires .NET 8 SDK. From this repository root:
 dotnet run --project tests/Forgeborne.Core.Tests
 ```
 
-Expected, verified 2026-10-29: **70 passed, 0 failed** (42 in Step 1, +28 in Steps 2-3: mesher, FPS, weapon, HUD).
+Current integration baseline: **5061 passed, 0 failed**. The Windows run on
+2026-10-31 used the net8.0 test assembly with explicit major runtime
+roll-forward to installed .NET 9 because .NET 8 was absent. This does not
+establish an exact .NET 8 runtime pass. See `docs/unity-main-integration.md`.
 
-## What is NOT here yet (Slice 1 Steps 2-4)
+## Unity integration
 
-- Unity scene, FPS input / movement, voxel meshing / rendering.
-- HUD (health, shields, objective, ammo, mini-map).
-- Orbital Tactical mode, squads, loot, passive graph, automation tiers.
-- Networking (deferred).
-
-Unity integration notes are in `ForgeborneUnity/Assets/Scripts/UnityIntegrationNote.cs`.
-That Unity skeleton is NOT compiled in the Linux headless environment;
-open `ForgeborneUnity/` in Unity 6000 on Windows to verify it.
+Core ships as DLLs under `ForgeborneUnity/Assets/Plugins`; never copy core
+source into Assets. The saved Main scene uses one GameManager-owned
+Simulation. Open it with Unity 6000.3.27f2 and Active Input Handling = Both.
+The core suite remains separate from rendered gameplay and director
+acceptance; the current Windows evidence and remaining gaps are in
+`docs/unity-main-integration.md`. Networking remains deferred.

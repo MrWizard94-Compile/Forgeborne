@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.113.0 — 2026-10-31 — Windows Main integration checkpoint
+
+- Saved Main in Unity 6000.3.27f2; all five adapters share GameManager's
+  Seed 42 Simulation. Added real-Editor scene assembly/overwrite protection,
+  pinned local Unity MCP tooling, saved Unity metadata/settings and package lock.
+- Observed initial magenta rendering; created and assigned URP assets in Unity.
+  Verified rendered chunk/model/HUD, legacy input, shared mesh/collider and
+  production in-place save/load. Core build: 0 warnings/errors; tests: 5061/5061
+  using explicit .NET 9 runtime roll-forward because .NET 8 was absent locally.
+- Evidence and failed/open gameplay gates: docs/unity-main-integration.md.
+  Studio production remains in pre-production: docs/production-status.md.
+  This is an integration checkpoint, not a final-quality or fun acceptance.
+- No push, release, repository visibility or licence change.
 ## 0.112.0 — 2026-10-31 — Integration Step 5 preparation: Main scene Windows checklist, documentation only
 
 - Step taken: Integration Step 5 preparation, the headless sub-step of the Windows-only Main scene step. No scene file built, no Play pressed, no gate item passed, by design — a headless run cannot build a Unity scene or observe Play, and a `.unity` file written headlessly and claimed as a built scene would be a fake, not a step, per the Slice 26 review.

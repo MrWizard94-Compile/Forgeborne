@@ -1,5 +1,10 @@
 # Forgeborne — Integration Step 5 Preparation: Main Scene Windows Checklist
 
+**Current Windows checkpoint:** [Main scene integration evidence](unity-main-integration.md).
+The preparation record below describes the pre-scene state at 0.112.0;
+its statements that no Main scene/settings ship are historical. The current
+record distinguishes observed integration from the remaining gameplay gate.
+
 **Status: PREPARATION ONLY, written 2026-10-31, tests 5061/5061
 unchanged. This document is a sheet for Rob to follow on
 Windows. It is NOT a scene, it does NOT claim a scene was

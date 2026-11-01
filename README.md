@@ -16,12 +16,17 @@ names, story, art, code, and audio in this repository are original.
 
 ## Status
 
-**Foundation only. No playable game yet.**
+**Unity integration checkpoint; director gameplay acceptance pending.**
 
-This commit establishes the repository structure, the WPAI Constitution
-pointer, the locked director decisions, the architecture summary, and the
-Slice 1 plan. It does not claim a working game, a chosen engine, or any
-performance result. A passing check does not prove usefulness or fun.
+`ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
+It wires the existing FPS, chunk, HUD and squad adapters to GameManager's
+single Seed 42 Simulation, with a URP renderer, dusk sky and original
+primitive weapon model. Unity MCP was used to create and inspect the scene
+on Windows. This is not a studio-quality playable milestone: invisible
+enemies/objective, frame-driven world pacing, mouse capture, save/load UI
+and a true overhead camera remain gaps. See
+[the integration evidence and setup](docs/unity-main-integration.md).
+A passing check does not prove usefulness or fun.
 
 ## Locked decisions (director: Rob, 2026-10-29)
 
