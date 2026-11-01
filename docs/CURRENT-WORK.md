@@ -8,8 +8,8 @@ the current objective text says to read its file.
 
 Working branch: `codex/unity-main-scene`; never push to main or alter visibility/
 licence without Rob. Base remote main was 0.112.0 (`3e28b575...`). Integration
-commit `b65233e`, runtime/cadence commit `292c82b`. The next checkpoint contains
-courtyard/materials and player flow; inspect current Git status before editing.
+commit `b65233e`, runtime/cadence commit `292c82b`, courtyard/player flow `91e056e`.
+The next checkpoint contains exact runtime persistence; inspect Git status first.
 
 Canonical law for this continuing invocation is frozen and verified at
 `63d99cdc72a1c18b5aa91b9336d02fd30126407b`, Constitution 6.18.0. Byte-exact source
@@ -37,7 +37,7 @@ runtime acceptance. Foreground the real Game view for time/input observations.
 
 Core tests: build with installed SDK, then run the net8.0 assembly with the
 isolated `~/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe`. That runtime was
-downloaded from Microsoft and SHA-512 verified. Latest **5118 pass, 0 fail;
+downloaded from Microsoft and SHA-512 verified. Latest **5145 pass, 0 fail;
 build 0 warnings/errors**. `tools/build-unity-core.ps1` publishes netstandard2.1
 and installs all nine DLLs. Never copy core source into Assets. Rebuild after
 core changes, import, then observe the actual installed API in Unity.
@@ -58,9 +58,11 @@ Actual UI save/load/death/restart and fresh-scene load passed. Negative load and
 backup/confirmation methods also passed in live Unity. See the current evidence
 report; do not promote it to full studio/fun acceptance.
 
-Next work: close precise persistence (float FPS pose/velocity/look and fractional
-movement/world clock; current legacy saves retain grid positions/ticks only),
-then export/import, real overhead command, meaningful gather/build/combat feedback,
+Precise runtime persistence is now verified: exact pose/velocity/look, fractional
+movement/world clock, queued jump and counters survive local saves and fresh-scene
+UI load. Legacy/world-only saves keep their previous contract. See
+runtime-persistence-checkpoint.md. Next work: export/import, real overhead command,
+meaningful gather/build/combat feedback,
 original audio and final art/animation, a native Windows build and 1440p profiling.
 Windows standalone build support is installed. Full scope stays tracked in
 production-status.md; Rob must judge the quality/fun gate.

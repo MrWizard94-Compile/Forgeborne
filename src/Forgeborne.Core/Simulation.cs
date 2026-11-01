@@ -40,10 +40,11 @@ public sealed class Simulation
     public const double FrameStepSeconds = 1.0 / 120.0;
     public const int WorldTicksPerSecond = 2;
     public const float MaximumFrameSeconds = 0.25f;
-    private const int MovementStepsPerWorldTick = 120 / WorldTicksPerSecond;
+    internal const int MovementStepsPerWorldTick = 120 / WorldTicksPerSecond;
     private double _frameCarry;
     private int _movementStepsSinceWorldTick;
     private bool _queuedJump;
+    private bool _interactiveClockUsed;
 
     public Simulation(int seed, GeneratedWeapon? equipped = null, SkillBuild? skills = null)
     {
@@ -98,6 +99,7 @@ public sealed class Simulation
         _frameCarry = 0;
         _movementStepsSinceWorldTick = 0;
         _queuedJump = false;
+        _interactiveClockUsed = false;
         Fps.Teleport(loaded.Player.X, loaded.Player.Y, loaded.Player.Z);
         EnemiesKilled = 0;
         BlocksGathered = 0;
@@ -108,7 +110,16 @@ public sealed class Simulation
     }
 
     /// <summary>Full save: world, applied skill build, and equipped weapon, via SaveSystem.SaveZone. World-only callers should keep using SaveSystem.SaveZone directly.</summary>
-    public string SaveToJson() => SaveSystem.SaveZone(World, AppliedSkills, Weapon);
+    public string SaveToJson() => SaveSystem.SaveZone(World, AppliedSkills, Weapon,
+        _interactiveClockUsed ? new RuntimeSaveState
+        {
+            Version = 1, X = Fps.X, Y = Fps.Y, Z = Fps.Z,
+            VelocityY = Fps.VelocityY, Grounded = Fps.IsGrounded,
+            Yaw = Look.Yaw, Pitch = Look.Pitch,
+            FrameRemainder = _frameCarry, MovementPhase = _movementStepsSinceWorldTick,
+            QueuedJump = _queuedJump, GatherBonusCarry = _gatherBonusCarry,
+            BlocksGathered = BlocksGathered, BlocksBuilt = BlocksBuilt, EnemiesKilled = EnemiesKilled,
+        } : null);
 
     /// <summary>
     /// Load a full save JSON into this Simulation via RestoreWorld.
@@ -132,12 +143,28 @@ public sealed class Simulation
             if (!RestoreWorld(loaded.World)) return false;
             if (loaded.Skills != null) ApplySkills(loaded.Skills);
             if (loaded.Weapon != null) Weapon = loaded.Weapon;
+            if (loaded.Runtime != null) RestoreRuntime(loaded.Runtime);
             return true;
         }
         catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException or ArgumentException)
         {
             return false;
         }
+    }
+
+    private void RestoreRuntime(RuntimeSaveState saved)
+    {
+        // LoadSave validated every required member before the world was swapped.
+        Fps.RestoreRuntime(saved.X!.Value, saved.Y!.Value, saved.Z!.Value, saved.VelocityY!.Value, saved.Grounded!.Value);
+        Look.RestoreRuntime(saved.Yaw!.Value, saved.Pitch!.Value);
+        _frameCarry = saved.FrameRemainder!.Value;
+        _movementStepsSinceWorldTick = saved.MovementPhase!.Value;
+        _queuedJump = saved.QueuedJump!.Value;
+        _gatherBonusCarry = saved.GatherBonusCarry!.Value;
+        BlocksGathered = saved.BlocksGathered!.Value;
+        BlocksBuilt = saved.BlocksBuilt!.Value;
+        EnemiesKilled = saved.EnemiesKilled!.Value;
+        _interactiveClockUsed = true;
     }
 
     /// <summary>Swap to a generated weapon (e.g. an enemy drop). Fresh weapon: full mag, 120 reserve. Returns false for null, leaving the current weapon untouched.</summary>
@@ -182,6 +209,8 @@ public sealed class Simulation
     {
         if (float.IsNaN(dt) || float.IsInfinity(dt) || dt < 0)
             throw new ArgumentOutOfRangeException(nameof(dt), "Frame time must be finite and nonnegative.");
+        _interactiveClockUsed = true;
+        SynchronizePlayerGrid();
         if (IsPlayerDead || IsObjectiveComplete || dt == 0) return 0;
         _queuedJump |= jump;
         _frameCarry += Math.Min(dt, MaximumFrameSeconds);
@@ -214,6 +243,11 @@ public sealed class Simulation
         float worldX = forward * sin + strafe * cos;
         float worldZ = forward * cos - strafe * sin;
         Fps.UpdateWorld(dt, worldX, worldZ, jump, World.Chunk);
+        SynchronizePlayerGrid();
+    }
+
+    private void SynchronizePlayerGrid()
+    {
         World.Player.X = (int)Math.Floor(Fps.X);
         World.Player.Y = (int)Math.Floor(Fps.Y);
         World.Player.Z = (int)Math.Floor(Fps.Z);

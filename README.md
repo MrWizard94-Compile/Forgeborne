@@ -23,10 +23,11 @@ It wires the FPS, chunk, HUD and squad adapters to GameManager's single
 Seed 42 Simulation, with a URP renderer, dusk sky, original weapon/drone/core
 views, an authored salvage courtyard, resource materials, pointer capture,
 entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
-to create and inspect the scene on Windows. Studio-quality encounter/art/audio,
-precise pose/time persistence, export/import and a true overhead command view remain
+to create and inspect the scene on Windows. Exact interactive pose/time saves are
+verified. Studio-quality encounter/art/audio, export/import and a true overhead command view remain
 active work. See [the production tracker](docs/production-status.md),
-[current player-flow evidence](docs/courtyard-player-flow-checkpoint.md), and
+[current persistence evidence](docs/runtime-persistence-checkpoint.md),
+[player-flow evidence](docs/courtyard-player-flow-checkpoint.md), and
 [integration setup](docs/unity-main-integration.md).
 A passing check does not prove usefulness or fun.
 

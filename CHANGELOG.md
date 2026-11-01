@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.116.0 — 2026-11-01 — Exact interactive runtime persistence
+
+- Added versioned runtime snapshots for precise FPS pose, motion, look,
+  fractional clocks, queued jump, gathering remainder and earned run counters.
+  Invalid/partial records fail before world replacement; legacy saves remain valid.
+- Retained controller, look and Simulation identity. Initialized interactive pose
+  without advancing time while preserving the legacy constructor/tick contract.
+- 5145 checks passed on .NET 8.0.33; build 0 warnings/errors. Actual Unity menu
+  save/load and fresh-Play disk load restored an exact mid-jump snapshot.
+  Final scoped console query: zero errors/warnings.
+- Evidence: docs/runtime-persistence-checkpoint.md. Export/import, overhead view,
+  full gameplay/art/audio/native-quality gates remain open. No push/publication.
+
 ## 0.115.0 — 2026-10-31 — Authored courtyard, material channels and player flow
 
 - Authored original salvage banks, cover/relay geometry and visible forward

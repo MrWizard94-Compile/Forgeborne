@@ -25,8 +25,10 @@ step occurs. It rejects negative/non-finite time and caps any hitch contribution
 at 250 ms, bounding catch-up work/damage. Legacy Tick remains the explicit
 one-world-step API for headless callers. Death/victory stops encounter progression.
 Loading a legacy save resets the fractional clock, retains saved world ticks and
-keeps all adapters on the same Simulation. Exact sub-tick/continuous-pose save
-restoration is still required in the persistence stage before final acceptance.
+keeps all adapters on the same Simulation. Version 1 interactive snapshots also
+restore exact floating-point pose, velocity, grounding, look, fractional movement/
+world clock, queued jump and run counters. Partial or inconsistent runtime records
+are rejected before changing the world. See runtime-persistence-checkpoint.md.
 
 Equal-time tests at 30/60/144/240 callbacks per second must produce the same
 world ticks, movement and damage. Additional checks cover hitches, invalid time,

@@ -26,13 +26,10 @@ namespace Forgeborne.Core;
 /// second yaw beside the adapter's) is what avoids duplication:
 /// the adapter no longer stores its own _yaw, it reads
 /// Simulation.Look.Yaw / Forward for the camera. Look is
-/// session input state, like the picker selection: it is not
-/// saved, and an in-place RestoreWorld does not reset it — a
-/// fresh Simulation starts at yaw 0, pitch 0, which is what a
-/// new Unity scene's adapter sees. A load into an existing
-/// Simulation therefore keeps the player's current view instead
-/// of snapping the camera to +Z, for the same identity reason
-/// RestoreWorld keeps the same Fps object.
+/// saved in versioned interactive snapshots. Legacy/world-only
+/// loads and RestoreWorld retain the current view; interactive
+/// loads restore exact saved angles into this same Look object.
+/// A fresh Simulation starts at yaw 0, pitch 0.
 /// </summary>
 public sealed class Look
 {
@@ -53,6 +50,12 @@ public sealed class Look
     /// <summary>Vertical view angle, degrees, clamped to
     /// [-89, 89]. Positive is looking up.</summary>
     public float Pitch { get; private set; }
+
+    internal void RestoreRuntime(float yaw, float pitch)
+    {
+        Yaw = yaw;
+        Pitch = pitch;
+    }
 
     /// <summary>
     /// Apply already-scaled mouse deltas. Positive yawDelta turns

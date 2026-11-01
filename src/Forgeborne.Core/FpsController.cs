@@ -38,6 +38,13 @@ public sealed class FpsController
         IsGrounded = false;
     }
 
+    internal void RestoreRuntime(float x, float y, float z, float velocity, bool grounded)
+    {
+        X = x; Y = y; Z = z;
+        VelocityY = velocity;
+        IsGrounded = grounded;
+    }
+
     private bool Collides(VoxelChunk chunk, float px, float py, float pz)
     {
         int x0 = (int)Math.Floor(px - HalfWidth), x1 = (int)Math.Floor(px + HalfWidth);

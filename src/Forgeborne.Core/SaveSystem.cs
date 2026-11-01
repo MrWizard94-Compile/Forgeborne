@@ -36,6 +36,8 @@ public sealed class SaveData
     public int? WeaponMagCapacity { get; set; }
     public int? WeaponMag { get; set; }
     public int? WeaponReserve { get; set; }
+    /// <summary>Optional v1 interactive pose, clocks and run counters. Missing in legacy/world-only saves.</summary>
+    public RuntimeSaveState? Runtime { get; set; }
 }
 
 /// <summary>A loaded save: the world, plus the Simulation-level state
@@ -49,6 +51,7 @@ public sealed class LoadedSave
     public required WorldZone World { get; set; }
     public SkillBuild? Skills { get; set; }
     public Weapon? Weapon { get; set; }
+    public RuntimeSaveState? Runtime { get; set; }
 }
 
 public static class SaveSystem
@@ -62,7 +65,12 @@ public static class SaveSystem
     public static string SaveZone(WorldZone world) => SaveZone(world, null, null);
 
     public static string SaveZone(WorldZone world, SkillBuild? skills, Weapon? weapon)
+        => SaveZone(world, skills, weapon, null);
+
+    public static string SaveZone(WorldZone world, SkillBuild? skills, Weapon? weapon, RuntimeSaveState? runtime)
     {
+        if (runtime != null && !runtime.Matches(world))
+            throw new ArgumentException("Interactive save state must be complete and consistent with the world.", nameof(runtime));
         var data = new SaveData
         {
             Seed = world.Seed,
@@ -83,6 +91,7 @@ public static class SaveSystem
             WeaponMagCapacity = weapon?.MagCapacity,
             WeaponMag = weapon?.Mag,
             WeaponReserve = weapon?.Reserve,
+            Runtime = runtime,
         };
         return JsonSerializer.Serialize(data, SaveOptions);
     }
@@ -162,6 +171,8 @@ public static class SaveSystem
             weapon = Weapon.FromSaved(data.WeaponName, data.WeaponDamage.Value, data.WeaponMagCapacity.Value,
                 data.WeaponMag.Value, data.WeaponReserve.Value);
         }
-        return new LoadedSave { World = world, Skills = skills, Weapon = weapon };
+        if (data.Runtime != null && !data.Runtime.Matches(world))
+            throw new InvalidOperationException("Interactive save pose/clock state is incomplete, unsupported or inconsistent with the world.");
+        return new LoadedSave { World = world, Skills = skills, Weapon = weapon, Runtime = data.Runtime };
     }
 }

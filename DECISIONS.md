@@ -11768,3 +11768,13 @@ docs/courtyard-player-flow-checkpoint.md. Studio quality and fun are NOT
 accepted; exact pose/time persistence, export/import, overhead view,
 complete combat/gather feedback, final art/audio, native build and sustained
 hardware profiling remain active. No external publication occurred.
+
+## 2026-11-01 — Runtime persistence (agent observation, approval pending)
+
+Versioned interactive saves now retain exact controller/look, fractional clocks,
+queued input and run counters while preserving legacy save/constructor behavior.
+Partial/invalid runtime records are rejected before world replacement. 5145 core
+checks pass with zero build warnings/errors. Actual Unity UI save/load and a
+fresh-Play disk load restored an exact mid-jump snapshot. Evidence and remaining
+gates: docs/runtime-persistence-checkpoint.md. No native performance, fun or
+studio-quality acceptance is claimed; nothing was pushed.

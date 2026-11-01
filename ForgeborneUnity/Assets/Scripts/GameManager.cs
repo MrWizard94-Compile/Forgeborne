@@ -69,6 +69,9 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         Simulation = new Simulation(Seed);
+        // Initialize the interactive pose/clock without advancing time. The
+        // legacy constructor/world-step API keeps its existing headless contract.
+        Simulation.AdvanceFrame(0, 0, 0, false);
         if (UseCourtyardEncounter) CourtyardEncounter.Populate(Simulation.World);
         if (MeshRenderer != null)
         {
