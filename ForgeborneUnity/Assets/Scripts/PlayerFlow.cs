@@ -64,7 +64,7 @@ public sealed class PlayerFlow : MonoBehaviour
             var inventory = simulation.World.Player.Inventory;
             string controls = InputAdapter != null && InputAdapter.IsOrbitalView
                 ? "WASD PAN · Q/E ROTATE · WHEEL ZOOM · F SUIT · TAB FIRST PERSON"
-                : "Q  WALL · 2 STONE     B  WORKSTATION · 10 STONE + 5 EMBER";
+                : "Q  WALL · 2 STONE     B  WORKSTATION · 10 STONE + 5 EMBER     V  BUILD GUIDE";
             _resources.text = $"STONE {inventory.Get(BlockType.Stone)}   EMBER {inventory.Get(BlockType.EmberOre)}   WOOD {inventory.Get(BlockType.Wood)}\n{controls}";
         }
         if (_viewHints != null) _viewHints.text = InputAdapter != null && InputAdapter.IsOrbitalView
@@ -84,6 +84,7 @@ public sealed class PlayerFlow : MonoBehaviour
         Time.timeScale = 0;
         if (InputAdapter != null)
         {
+            InputAdapter.CancelConstruction();
             InputAdapter.InputSuppressed = true;
             InputAdapter.ReleasePointer();
         }

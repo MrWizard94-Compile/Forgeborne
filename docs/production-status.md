@@ -4,6 +4,10 @@ The full director brief is mapped in [design-pillars.md](design-pillars.md),
 including the explicit Path of Exile 2 reference in the latest objective.
 
 Director: Rob. Integrator: Codex. Current phase: **pre-production / vertical slice**.
+Director gate 2026-11-01: current presentation **REJECTED**; finished-game target
+**AAA+**. Feature expansion is paused in favor of cohesive original art,
+atmosphere, animation/audio and the actual playable encounter. See DECISIONS.md
+and the current art-direction gate. No visual, experience or fun approval.
 PC-native 3D FPS + orbital command, single-player first, original game code/art,
 Unity 6000.3.27f2 + URP. One GameManager-owned Simulation. Legacy input requires
 Both. Core is distributed only as DLLs in Assets/Plugins. No remote publication,

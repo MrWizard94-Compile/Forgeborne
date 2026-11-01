@@ -1,0 +1,15 @@
+{
+  "unityVersion": "6000.3.27f2",
+  "productVersion": "0.121.0",
+  "output": "C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261101T153052Z\\Forgeborne.exe",
+  "backend": "Mono2x",
+  "options": "None",
+  "result": "Succeeded",
+  "errors": 0,
+  "warnings": 0,
+  "bytes": 101875659,
+  "seconds": 56.331418899999996,
+  "exception": "",
+  "acceptance": "Mechanical prototype only. Director rejected the 0.120 presentation and specified AAA+; no visual/fun acceptance. This 0.121 executable was not launched.",
+  "coreSha256": "3004e6def79fac0e3bdefb63f762119e23113aafe12408c63428dc7a155056c1"
+}

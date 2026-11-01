@@ -849,9 +849,9 @@ public sealed class WorldZone
         return 0;
     }
 
-    public BuildResult Build(int x, int y, int z, BlockType type)
+    public BuildResult InspectBuild(int x, int y, int z, BlockType type)
     {
-        if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable or BlockType.Alternator or BlockType.ShockPylon or BlockType.Conduit)) return BuildResult.InvalidType;
+        if (!BuildCost.TryGet(type, out var cost)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
         // Actor cells are air for the voxel renderer/aim trace, but must not
@@ -870,143 +870,15 @@ public sealed class WorldZone
             if (VoxelChunk.InBounds(nx, ny, nz) && BlockInfo.IsSolid(Chunk.Get(nx, ny, nz))) { supported = true; break; }
         }
         if (!supported) return BuildResult.Floating;
-        if (type == BlockType.Wall)
-        {
-            if (!Player.Inventory.Remove(BlockType.Stone, 2)) return BuildResult.InsufficientResources;
-        }
-        else if (type == BlockType.KineticMill)
-        {
-            // Kinetic Mill: 10 Stone (frame) + 5 Wood (crank / gears).
-            // Distinct from the workstation's 10 Stone + 5 EmberOre, so
-            // the two machines compete for stone but not for each other.
-            if (!Player.Inventory.Has(BlockType.Stone, 10) || !Player.Inventory.Has(BlockType.Wood, 5))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.Stone, 10);
-            Player.Inventory.Remove(BlockType.Wood, 5);
-        }
-        else if (type == BlockType.Dynamo)
-        {
-            // Slice 5 Step 1 Dynamo: 5 EmberOre only, no Stone or Wood,
-            // so it never competes with walls or mills for their frame
-            // materials. It does compete, deliberately, with workstations
-            // (also 5 EmberOre) and squads (10 EmberOre = two Dynamos):
-            // power is a deliberate ore investment, not a free upgrade
-            // to a mill the player already owns. The failed-build rule
-            // matches the other machines: check before spending, so a
-            // refused build spends nothing.
-            if (!Player.Inventory.Has(BlockType.EmberOre, 5))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.EmberOre, 5);
-        }
-        else if (type == BlockType.Transformer)
-        {
-            // Slice 9 Step 1 Transformer: 5 EmberOre, the same order
-            // as a Dynamo, so electrical builds keep competing with
-            // workstations and squads for ore, not with walls and
-            // mills for Stone and Wood. The double cost is honest:
-            // a transformer on its own powers nothing — it only
-            // converts a voltage that already exists — so what the
-            // second 5 ore buys is the second voltage itself: the
-            // only way to produce HV in this step, which a second
-            // Dynamo cannot give, and which Step 2 cables will
-            // carry and Step 3 will punish when mismatched. In
-            // this step alone a transformer also buys indirect LV:
-            // Dynamo -> transformer -> transformer -> mill runs
-            // the mill at LV one cell further from its Dynamo.
-            // Same check-before-spend rule as the other machines.
-            if (!Player.Inventory.Has(BlockType.EmberOre, 5))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.EmberOre, 5);
-        }
-        else if (type == BlockType.Cable)
-        {
-            // Slice 9 Step 2 Cable: 1 EmberOre per cell, so a run
-            // is priced by its length and competes with Dynamos,
-            // transformers, workstations, and squads for ore, not
-            // with walls and mills for Stone and Wood — the same
-            // electrical pricing rationale as Step 1, scaled to
-            // a per-cell block rather than a single machine. A
-            // cable that cost nothing and occupied nothing would
-            // not be distribution, it would be a longer
-            // face-adjacency rule wearing a name; a cable priced
-            // at a full Dynamo's 5 ore per cell would make even
-            // a short run cost more than its source, so 1 ore is
-            // the first-pass per-cell value, labelled as such,
-            // not a balance claim. Same check-before-spend rule
-            // as the other machines.
-            if (!Player.Inventory.Has(BlockType.EmberOre, 1))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.EmberOre, 1);
-        }
-        else if (type == BlockType.Alternator)
-        {
-            // Slice 10 Step 2 Alternator: 10 Stone, no EmberOre.
-            // This is the cost side of the source's distinctness,
-            // and it is deliberately the mirror image of the
-            // Dynamo's 5 ore: an Alternator competes with walls
-            // and mills for stone, not with workstations and
-            // squads for ore, so it can be staged before the
-            // player has ore at all — but safe use still costs
-            // a transformer's 5 ore for the step-down, so the
-            // safe-use ore total ties a Dynamo's 5 ore and the
-            // Alternator is not a cheaper Dynamo wearing a new
-            // name: what the stone buys is native HV and early
-            // staging, and what it costs is the transformer
-            // step and the direct-HV danger itself. A stone
-            // price also keeps the source buildable in
-            // existing gathered resources only, with no new
-            // currency. Same check-before-spend rule as the
-            // other machines, and the same support rule above.
-            if (!Player.Inventory.Has(BlockType.Stone, 10))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.Stone, 10);
-        }
-        else if (type == BlockType.Conduit)
-        {
-            // Slice 14 Step 1 Conduit: 5 Stone + 5 EmberOre.
-            // A combination no existing source charges: not
-            // the Dynamo's ore-only price, not the
-            // Alternator's stone-only price. The combination
-            // is pricing, not the distinctness — the
-            // distinctness is cable-only HV delivery — but
-            // the price keeps the source from being free in
-            // either resource: it competes with walls and
-            // mills for stone and with workstations and
-            // squads for ore, at half each machine's price,
-            // because a source that does nothing until cabled
-            // must not also be the cheapest source to stage.
-            // Same check-before-spend rule as the other
-            // machines, and the same support rule above.
-            if (!Player.Inventory.Has(BlockType.Stone, 5) || !Player.Inventory.Has(BlockType.EmberOre, 5))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.Stone, 5);
-            Player.Inventory.Remove(BlockType.EmberOre, 5);
-        }
-        else if (type == BlockType.ShockPylon)
-        {
-            // Slice 12 Step 2 Shock Pylon: 5 Stone + 10 EmberOre.
-            // A new combination on purpose: the stone is half a
-            // workstation's frame, and the 10 ore is exactly a
-            // squad's deploy price, so a pylon competes with a
-            // squad for ore — a static defence bought instead
-            // of a mobile one, not alongside it for free — while
-            // staying cheaper in stone than a workstation, because
-            // a pylon is a single emitter, not a bench. It does
-            // not compete with mills for Wood, and it does not
-            // compete with Alternators for stone at their scale.
-            // Same check-before-spend rule as the other machines.
-            if (!Player.Inventory.Has(BlockType.Stone, 5) || !Player.Inventory.Has(BlockType.EmberOre, 10))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.Stone, 5);
-            Player.Inventory.Remove(BlockType.EmberOre, 10);
-        }
-        else // Workstation: 10 Stone + 5 EmberOre
-        {
-            if (!Player.Inventory.Has(BlockType.Stone, 10) || !Player.Inventory.Has(BlockType.EmberOre, 5))
-                return BuildResult.InsufficientResources;
-            Player.Inventory.Remove(BlockType.Stone, 10);
-            Player.Inventory.Remove(BlockType.EmberOre, 5);
-        }
+        return cost.CanAfford(Player.Inventory) ? BuildResult.Success : BuildResult.InsufficientResources;
+    }
+
+    public BuildResult Build(int x, int y, int z, BlockType type)
+    {
+        var result = InspectBuild(x, y, z, type);
+        if (result != BuildResult.Success) return result;
+        if (!BuildCost.TryGet(type, out var cost)) return BuildResult.InvalidType;
+        if (!cost.TrySpend(Player.Inventory)) return BuildResult.InsufficientResources;
         Chunk.TrySet(x, y, z, type);
         return BuildResult.Success;
     }

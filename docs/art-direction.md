@@ -1,5 +1,21 @@
 # Forgeborne — Art Direction
 
+## Current director gate — 2026-11-01
+
+**AAA+ is the finished-game target. Current presentation is rejected.** Rob
+compared the actual 0.120 player unfavorably to vanilla Minecraft and reiterated
+BioShock's atmosphere. The old minimal-art scope below is historical; it does
+not authorize primitive placeholder presentation as an accepted milestone.
+
+The next review must use the actual Unity game: cohesive original architecture,
+environmental storytelling, authored materials with wear and surface response,
+layered practical lighting/depth, properly modeled weapon/actors, animation,
+effects and audio. Preserve gameplay readability, canonical collision/aim and
+measured PC performance. A dark filter, bloom, decorative clutter or a concept
+image alone cannot pass this gate. The entire playable encounter needs cohesion.
+Use the established industrial sci-fi palette/setting; do not copy BioShock art,
+Rapture/Columbia, names, architecture, trademarks or assets.
+
 ## Reference
 
 Director-provided reference image, 2026-10-29 (Gemini-generated,

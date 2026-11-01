@@ -334,18 +334,31 @@ public sealed class Simulation
     /// a powered pair is still a mill face-adjacent to a
     /// Dynamo, however the two blocks were placed.
     /// </summary>
-    private BuildResult BuildAimed(BlockType type)
+    public BuildPreview InspectBuildAhead(BlockType type)
     {
+        if (!BuildCost.TryGet(type, out var cost))
+            return new(type, false, 0, 0, 0, BuildResult.InvalidType, default);
         var hit = TraceAim(includeActors: false);
         if (hit.Kind != AimTargetKind.Solid)
-            return hit.LeftBounds ? BuildResult.OutOfBounds : BuildResult.Floating;
+            return new(type, false, hit.PrevX, hit.PrevY, hit.PrevZ,
+                hit.LeftBounds ? BuildResult.OutOfBounds : BuildResult.Floating, cost);
         // Grid occupancy alone misses the suit's head and fractional-width
         // overlap into adjacent cells. Use the movement body's exact footprint.
-        if (Fps.OverlapsCell(hit.PrevX, hit.PrevY, hit.PrevZ)) return BuildResult.Occupied;
-        var r = World.Build(hit.PrevX, hit.PrevY, hit.PrevZ, type);
+        var result = Fps.OverlapsCell(hit.PrevX, hit.PrevY, hit.PrevZ) ? BuildResult.Occupied
+            : World.InspectBuild(hit.PrevX, hit.PrevY, hit.PrevZ, type);
+        return new(type, true, hit.PrevX, hit.PrevY, hit.PrevZ, result, cost);
+    }
+
+    public BuildResult BuildAhead(BlockType type)
+    {
+        var preview = InspectBuildAhead(type);
+        if (preview.Result != BuildResult.Success) return preview.Result;
+        var r = World.Build(preview.X, preview.Y, preview.Z, type);
         if (r == BuildResult.Success) BlocksBuilt++;
         return r;
     }
+
+    private BuildResult BuildAimed(BlockType type) => BuildAhead(type);
 
     public BuildResult BuildWallAhead() => BuildAimed(BlockType.Wall);
 

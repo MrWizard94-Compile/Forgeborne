@@ -16,7 +16,12 @@ names, story, art, code, and audio in this repository are original.
 
 ## Status
 
-**Unity integration checkpoint; director gameplay acceptance pending.**
+**Pre-production. Director rejected current presentation; AAA+ target unmet.**
+
+Rob's 2026-11-01 review rejected the sparse primitive presentation. Original
+environment/weapon/actor art, atmospheric lighting, animation and a cohesive
+playable encounter now take priority over feature expansion. Technical checks
+are scoped evidence; visual, gameplay and fun acceptance remain closed.
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single

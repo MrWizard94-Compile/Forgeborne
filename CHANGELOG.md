@@ -1,5 +1,17 @@
 # Forgeborne — Changelog
 
+## 0.121.0 — 2026-11-01 — Mechanical guide; presentation rejected
+
+- Preserved shared construction pricing/validation and read-only placement guide:
+  V toggle, wheel selection, primary click build, resource/reason feedback and
+  pause/view/load cancellation. Existing prices/types and direct keys retained.
+- 5198 core checks pass; Release build and Windows packaging 0 warnings/errors.
+  Scripted Main consumer checks pass. Native guide input remains unverified.
+- Director rejected the actual 0.120 presentation and specified AAA+ for the
+  finished game. No visual/fun approval. Pause feature expansion; prioritize
+  original 3D art, atmosphere, animation and a cohesive playable vertical slice.
+- Evidence: docs/construction-guide-checkpoint.md; feedback: DECISIONS.md.
+
 ## 0.120.0 — 2026-11-01 — Construction occupancy safety
 
 - Fixed resource-spending placement through the suit, live units and relay.

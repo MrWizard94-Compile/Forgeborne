@@ -1,5 +1,17 @@
 # Forgeborne continuation checkpoint
 
+## Director priority — latest steering
+
+Rob returned home and saw the actual native 0.120 prototype. He rejected it as
+amateur/like a teenager's 2000s game, said vanilla Minecraft looks much better,
+and reiterated BioShock atmosphere. He explicitly specified **AAA+** as the
+finished-game target. This is failed visual/experience acceptance, not a debug
+view misunderstanding. He later apologized for harshness; the target stands.
+Stop feature expansion. Prioritize a cohesive original 3D environment, real
+weapon/actor assets, materials, lighting, animation, audio/feel and performance.
+Do not show another primitive build as a quality milestone or replace actual
+Unity evidence with a concept/mockup. Preserve full scope; no goal completion.
+
 Full objective: original studio-quality 3D PC-native FPS + orbital voxel ARPG,
 with the strengths of modded Minecraft, StarCraft, Diablo, Path of Exile 2,
 Borderlands and BioShock. Rob directs; Codex implements and verifies. First
@@ -102,18 +114,28 @@ Cold native save/load/save SHA is 70313c49d9d8e160bb055374c83c813c3789ac8ddb295e
 Windows UI uses computer-use skill, node_repl + @oai/sky, fresh returned windows;
 read runtime docs after compaction. Do not manipulate unrelated user apps.
 
-In progress, uncommitted: Core Construction.cs centralizes the nine unchanged
-prices; World.InspectBuild/Build share validation/payment; Simulation has read-only
-InspectBuildAhead plus revalidating generic BuildAhead. Added ConstructionPreviewTests;
-all 5198 checks pass, build 0 warnings/errors. Published Unity DLL remains 0.120;
-new Core has NOT been published/imported yet. The UI guide has NOT been implemented.
-Plan: V toggle construction guide, wheel cycle all existing structures, LMB place
-selected type through canonical rules; existing direct build keys remain. Movement
-and pressure continue. Add owned collision-free wire preview/cost/reason UI, cancel
-on pause/load/view/terminal, real adapter checks/render/native QA, then commit 0.121.
-Rollback is current committed 0.120; do not discard uncommitted preview work.
+0.121 mechanical checkpoint is implemented and ready to preserve in a local
+commit. Construction.cs centralizes unchanged prices; World.InspectBuild and
+Simulation.InspectBuildAhead share validation/payment with actual BuildAhead.
+ConstructionGuide now has V/wheel/LMB, same-cell outline, resources/reason,
+pause/load/view/terminal cancellation and no firing in tool mode. Saved Main
+wiring and tools/unity-construction-guide-smoke.cs pass; scoped console zero.
+All 5198 checks pass, Release build 0 warnings/errors, nine DLLs published.
+Core SHA 3004e6def79fac0e3bdefb63f762119e23113aafe12408c63428dc7a155056c1.
+Windows 0.121 package 20261101T153052Z succeeded: None/Mono2x, 0 errors/warnings,
+101875659 reported bytes, 56.33 s. Not launched because director rejected current
+visuals; no native guide input claim. See construction-guide-checkpoint.md.
 
-Next: finish placement readability and the real-time encounter,
+Original 3D art pipeline preparation: no Blender found in known install paths.
+Official portable Blender **4.5.15 LTS** downloaded outside repo, SHA-256 verified
+52dd02fd74877fa08e74b67d7854cf32468a232c02aaa19b6844c91285574f8d.
+Executable C:/Users/Bulkl/.codex/tools/blender-4.5.15/blender-4.5.15-windows-x64/blender.exe
+reports 4.5.15 LTS/build 2026-10-22. Provenance JSON alongside extraction. This is
+a developer tool, not shipped art/code. No third-party models/textures downloaded.
+Use original Blender authoring scripts under art/tools, source .blend outside
+Unity Assets and exported FBX in Assets/Resources/Art, then real Unity renders.
+
+Next: preserve the mechanical checkpoint, then correct the rejected presentation:
 complete original environment/actor/weapon art/animation and convincing encounter,
 then native/input/heard mix/save recovery/1440p performance and Rob's quality/fun
 review when available. Construction safety is fixed and documented in

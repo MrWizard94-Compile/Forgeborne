@@ -4,6 +4,23 @@ Dated, director-made decisions. Superseded proposals are kept here so
 the history is honest; they are not deleted to make the current plan
 look inevitable.
 
+## 2026-11-01 — Director rejection and AAA+ target
+
+Rob saw the actual 0.120 player and rejected its presentation as amateur,
+comparing it unfavorably with vanilla Minecraft and reiterating BioShock's
+atmosphere as an influence. This was the actual prototype, not a debug-only
+view. The director explicitly raised/reaffirmed the finished-game target as
+**AAA+**. No visual, gameplay, or milestone acceptance was granted.
+
+The sparse platform, primitive models, weak architecture/materials/lighting,
+limited animation and lack of atmosphere fail that target. Pause feature
+expansion and prioritize a cohesive original playable vertical slice with
+architectural identity, environmental storytelling, detailed original 3D assets,
+layered lighting, animation, audio, responsive combat and measured performance.
+Judge rendered/player evidence against the director's bar. Technical tests do
+not grant aesthetic, experience or fun acceptance. Preserve the full original
+FPS/orbital voxel ARPG scope and existing platform/ownership/IP boundaries.
+
 ## 2026-10-29 — New foundation, not a reforge
 
 - Do NOT reforge Ember Forge. Classify Ember Forge as a learning

@@ -28,6 +28,7 @@ public class FpsInputAdapter : MonoBehaviour
     public bool CapturePointerOnStart = true;
     public bool InputSuppressed;
     public PlayerFeedback? Feedback;
+    public ConstructionGuide? Construction;
     private Camera? _commandCamera;
     public bool IsOrbitalView => _commandCamera != null;
     public Ray CommandRay => _commandCamera != null
@@ -88,6 +89,7 @@ public class FpsInputAdapter : MonoBehaviour
 
     public void ResetInteraction(bool resetLook = true)
     {
+        CancelConstruction();
         if (Feedback != null) Feedback.ResetSignals();
         _pendingReRally = false;
         _pendingDismiss = false;
@@ -230,7 +232,14 @@ public class FpsInputAdapter : MonoBehaviour
         if (Simulation.World.DestroyedMills != destroyedBefore && MeshRenderer != null) MeshRenderer.RefreshMesh();
         // Camera follows the FPS controller's feet position + eye height.
         transform.position = new Vector3(Simulation.Fps.X, Simulation.Fps.Y + 1.6f, Simulation.Fps.Z);
-        if (!acceptsInput || capturedThisFrame) return;
+        if (!acceptsInput || capturedThisFrame || Simulation.IsPlayerDead || Simulation.IsObjectiveComplete) return;
+
+        if (acceptsFps && !HasPendingCommand && Construction != null)
+        {
+            if (Input.GetKeyDown(KeyCode.V)) Construction.Toggle();
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (scroll != 0) Construction.Cycle(scroll > 0 ? 1 : -1);
+        }
 
         // Slice 13 Step 3 refresh event set, continued: a
         // successful gather or build refreshes the mesh at once,
@@ -637,13 +646,26 @@ public class FpsInputAdapter : MonoBehaviour
             // the re-rally pick to dismiss instead.
             if (Input.GetKeyDown(KeyCode.K)) TryOpenReRallyPick();
             else if (Input.GetKeyDown(KeyCode.X)) TryOpenDismissPick();
-            else if (acceptsFps && Input.GetMouseButtonDown(0)) FireWithFeedback();
+            else if (acceptsFps && Input.GetMouseButtonDown(0)) PrimaryAction();
         }
     }
 
     // Slice 24 Step 1 helpers. No core rule lives here: these
     // methods only select a target, hold pending state, and
     // call the Simulation passthrough, whose gate decides.
+    public void CancelConstruction() { if (Construction != null) Construction.Cancel(); }
+
+    private void PrimaryAction()
+    {
+        if (Simulation == null) return;
+        if (Construction != null && Construction.IsActive)
+        {
+            var type = Construction.SelectedType;
+            BuildWithFeedback(type, () => Simulation.BuildAhead(type));
+        }
+        else FireWithFeedback();
+    }
+
     private void FireWithFeedback()
     {
         if (Simulation == null) return;
@@ -666,6 +688,7 @@ public class FpsInputAdapter : MonoBehaviour
     private void BuildWithFeedback(BlockType type, System.Func<BuildResult> action)
     {
         if (Simulation == null) return;
+        if (Construction != null && Construction.IsActive) Construction.Select(type);
         var hit = Simulation.InspectAim(false);
         var result = action();
         if (result == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();

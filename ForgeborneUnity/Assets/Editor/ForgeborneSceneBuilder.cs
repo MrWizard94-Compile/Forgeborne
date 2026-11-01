@@ -151,6 +151,10 @@ public static class ForgeborneSceneBuilder
         feedback.ViewModel = manager.FpsAdapter.GetComponent<WeaponViewModel>();
         feedback.Reticle = manager.HudDisplay.GetComponentsInChildren<Text>(true).FirstOrDefault(label => label.name == "Crosshair");
         manager.FpsAdapter.Feedback = feedback;
+        var construction = manager.FpsAdapter.GetComponent<ConstructionGuide>();
+        if (construction == null) construction = manager.FpsAdapter.gameObject.AddComponent<ConstructionGuide>();
+        construction.Adapter = manager.FpsAdapter;
+        manager.FpsAdapter.Construction = construction;
         return feedback;
     }
 
