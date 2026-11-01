@@ -25,20 +25,22 @@ Rob's 2026-11-01 review rejected the sparse primitive presentation. Original
 environment/weapon/actor art, atmospheric lighting, animation and a cohesive
 playable encounter now take priority over feature expansion. Technical checks
 are scoped evidence; visual, gameplay and fun acceptance remain closed.
-The binary-cell world renderer is now a rejected prototype foundation. Its
-replacement must share geometry with collision and aim, as tracked in
-[the world migration](docs/world-presentation-migration.md). Original authored
-weapon/actor/suit models and render-pipeline repairs are reusable technical work,
-not visual acceptance of the current courtyard.
+Main now enters the original Cinder Exchange through saved surface profile 2.
+Authored architecture, deposits and constructed machines share their exact
+triangles with collision and aiming. Model-shaped construction ghosts replace
+the cube outline for new games. Old saves retain their previous rules. See
+[the actual Main evidence and remaining quality gaps](docs/authored-foundry-checkpoint.md)
+and [the world migration](docs/world-presentation-migration.md).
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single
 Seed 42 Simulation, with a URP renderer, dusk sky, original weapon/drone/core
-views, an authored salvage courtyard, resource materials, pointer capture,
+views, the authored exchange hall, resource materials, pointer capture,
 entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
 to create and inspect the scene on Windows. Exact interactive pose/time saves are
-verified. Windows export/import passes actual Editor UI checks; native packaging
-passes, with the full native play test still open. Studio-quality encounter/art/
+verified. Windows export/import passes earlier actual Editor UI checks. Earlier
+native packages passed; 0.124's authored world has no current native package or
+native play acceptance. Studio-quality encounter/art/
 audio remain active work. A perspective overhead command view now has live
 component/render evidence; its full keyboard/native play gate remains open.
 Resolved combat/gather/build feedback and eleven original synthesized audio

@@ -8,6 +8,7 @@ from pathlib import Path
 import bpy
 import json
 import math
+import sys
 from mathutils import Vector, Matrix, Euler
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -103,6 +104,16 @@ def box(name, center, size, role="Graphite", parent="Frame", bevel=0.004, rotati
     return finish_part(obj, name, role, parent, bevel, rotation)
 
 
+def rounded_volume(name,center,size,role="Rubber",parent="Frame",rotation=(0,0,0)):
+    """Continuous curved pressure fabric/gauntlet volume, not a beveled box."""
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=1, location=point(center))
+    obj=bpy.context.object
+    obj.scale=(size[0]/2,size[2]/2,size[1]/2)
+    for face in obj.data.polygons:
+        face.use_smooth=True
+    return finish_part(obj,name,role,parent,0,rotation)
+
+
 def cylinder(name, center, radius, depth, role="Steel", parent="Frame", axis=(0, 0, 1), sides=32, bevel=0.0015):
     bpy.ops.mesh.primitive_cylinder_add(vertices=sides, radius=radius, depth=depth, location=point(center))
     obj = bpy.context.object
@@ -149,18 +160,18 @@ def bolt(center, axis=(1, 0, 0), parent="Frame", radius=0.0045):
 
 def glove(name, center, rotation):
     x, y, z = center
-    box(name+" palm", center, (0.072,0.052,0.09), "Rubber", name, 0.011, rotation)
-    box(name+" knuckle plate", (x,y+0.026,z), (0.064,0.018,0.072), "Graphite", name, 0.008, rotation)
+    rounded_volume(name+" palm", center, (0.080,0.060,0.10), "Rubber", name, rotation)
+    rounded_volume(name+" knuckle shell", (x,y+0.026,z), (0.073,0.023,0.080), "Graphite", name, rotation)
     for i in range(4):
         dx = (i-1.5)*0.017
-        box(name+" finger", (x+dx,y-0.02,z+0.047), (0.014,0.032,0.031), "Rubber", name, 0.006, rotation)
-        box(name+" fingertip", (x+dx,y-0.044,z+0.032), (0.014,0.025,0.033), "Rubber", name, 0.006, rotation)
-    box(name+" thumb", (x+0.043,y-0.015,z-0.006), (0.023,0.034,0.045), "Rubber", name, 0.009, rotation)
+        rounded_volume(name+" finger", (x+dx,y-0.02,z+0.047), (0.017,0.040,0.037), "Rubber", name, rotation)
+        rounded_volume(name+" fingertip", (x+dx,y-0.044,z+0.032), (0.016,0.032,0.038), "Rubber", name, rotation)
+    rounded_volume(name+" thumb", (x+0.043,y-0.015,z-0.006), (0.028,0.043,0.055), "Rubber", name, rotation)
 
 
 def rifle():
     begin("PulseCarbine")
-    outline = [(-0.5,-0.25),(-0.32,-0.5),(0.34,-0.5),(0.5,-0.22),(0.5,0.30),(0.30,0.5),(-0.33,0.5),(-0.5,0.27)]
+    outline = [(math.cos(i*math.pi/12)*.5,math.sin(i*math.pi/12)*.5) for i in range(24)]
     profile("Forged pressure receiver", [(-0.24,0.115,0.135),(-0.17,0.15,0.15),(0.16,0.15,0.15),(0.27,0.10,0.105)], outline)
     profile("Shoulder stock", [(-0.47,0.09,0.11),(-0.40,0.105,0.13),(-0.24,0.07,0.085)], outline, "Rubber")
     box("Stock spine", (0,0.047,-0.30), (0.045,0.035,0.22), "Steel", bevel=0.006)
@@ -192,7 +203,7 @@ def rifle():
     box("Sight rail",(0,0.084,-0.002),(0.054,0.025,0.28),"Steel",bevel=0.004)
     for z in (-0.12,-0.08,-0.04,0,0.04,0.08):
         box("Machined rail notch",(0,0.101,z),(0.059,0.009,0.014),"Graphite",bevel=0.0015)
-    box("Readout housing",(0,0.117,0.003),(0.068,0.048,0.115),"Graphite",bevel=0.007)
+    cylinder("Readout pressure housing",(0,0.117,0.003),0.034,0.115,"Graphite",sides=32)
     box("Readout glass",(0,0.139,-0.025),(0.050,0.003,0.057),"Cyan",bevel=0.002)
     ring("Reflex sight rim",(0,0.137,0.13),0.028,0.005,"Steel")
     box("Sight support",(0,0.108,0.13),(0.022,0.045,0.018),"Graphite",bevel=0.004)
@@ -200,10 +211,10 @@ def rifle():
     box("Charging handle",(-0.09,0.047,-0.08),(0.037,0.023,0.055),"Steel","ChargingHandle",0.005)
     glove("RightHand",(0.012,-0.108,-0.117),(10,0,0))
     glove("LeftHand",(-0.025,-0.069,0.285),(0,0,-12))
-    box("Right arm under-suit",(0.115,-0.235,-0.30),(0.085,0.10,0.32),"Rubber","RightHand",0.026,(-22,-24,0))
-    box("Right forearm plate",(0.12,-0.20,-0.30),(0.080,0.051,0.23),"Graphite","RightHand",0.016,(-22,-24,0))
-    box("Left arm under-suit",(-0.17,-0.18,0.09),(0.082,0.10,0.31),"Rubber","LeftHand",0.025,(-24,29,0))
-    box("Left forearm plate",(-0.17,-0.147,0.09),(0.078,0.05,0.22),"Graphite","LeftHand",0.014,(-24,29,0))
+    rounded_volume("Right arm under-suit",(0.115,-0.235,-0.30),(0.095,0.11,0.35),"Rubber","RightHand",(-22,-24,0))
+    rounded_volume("Right curved forearm shell",(0.12,-0.20,-0.30),(0.084,0.055,0.25),"Graphite","RightHand",(-22,-24,0))
+    rounded_volume("Left arm under-suit",(-0.17,-0.18,0.09),(0.095,0.11,0.34),"Rubber","LeftHand",(-24,29,0))
+    rounded_volume("Left curved forearm shell",(-0.17,-0.147,0.09),(0.084,0.055,0.24),"Graphite","LeftHand",(-24,29,0))
     socket=bpy.data.objects.new("MuzzleSocket",None)
     bpy.context.collection.objects.link(socket)
     socket.parent=GROUPS["Root"]
@@ -412,8 +423,8 @@ def export(name,radius_limit=None):
 
 
 assert bpy.app.version[:3]==(4,5,15),bpy.app.version
-rifle()
-warden()
-relay()
-suit()
-foundry()
+builders={"PulseCarbine":rifle,"EmberWarden":warden,"AetherRelay":relay,"ForgeSuit":suit,"RelayFoundry":foundry}
+selected=sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else list(builders)
+for asset in selected:
+    if asset not in builders:raise ValueError("Unknown original asset "+asset)
+    builders[asset]()

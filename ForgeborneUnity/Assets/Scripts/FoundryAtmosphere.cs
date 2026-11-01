@@ -18,9 +18,11 @@ public sealed class FoundryAtmosphere : MonoBehaviour
     private DefaultReflectionMode _previousReflectionMode;
     private float _previousReflectionIntensity;
     private bool _ownsEnvironment;
+    private GameManager? _manager;
 
     void Start()
     {
+        _manager=UnityEngine.Object.FindFirstObjectByType<GameManager>();
         if(Lighting==null || Lighting.DuskLight==null || Lighting.SkyboxMaterial==null)
             throw new InvalidOperationException("Wire authored foundry lighting before Play.");
         var prefab=Resources.Load<GameObject>("Art/Prefabs/RelayFoundry");
@@ -63,6 +65,11 @@ public sealed class FoundryAtmosphere : MonoBehaviour
         probe.cullingMask=~(1<<30);
         probe.clearFlags=ReflectionProbeClearFlags.Skybox;
         StartCoroutine(CaptureReflection(probe));
+    }
+    void LateUpdate()
+    {
+        if(_architecture!=null && _manager!=null && _manager.Simulation!=null)
+            _architecture.SetActive(_manager.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV1);
     }
     IEnumerator CaptureReflection(ReflectionProbe probe)
     {

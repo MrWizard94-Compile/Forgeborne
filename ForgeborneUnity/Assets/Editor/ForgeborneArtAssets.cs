@@ -126,6 +126,7 @@ public static class ForgeborneArtAssets
         materials.Add("Paint",Surface(shader,"Paint",new Color(0.10f,0.22f,0.24f),0.55f,0.42f,0.42f));
         materials.Add("Warm",Surface(shader,"Warm",new Color(1,0.43f,0.15f),0.1f,0.5f,0,1.8f));
         materials.Add("Glass",Surface(shader,"Glass",new Color(0.12f,0.20f,0.24f),0.55f,0.82f,0.12f,0.08f));
+        materials.Add("Timber",Surface(shader,"Timber",new Color(0.32f,0.16f,0.065f),0,0.14f,0.45f));
         foreach(var name in new[]{"PulseCarbine","EmberWarden","AetherRelay","ForgeSuit","RelayFoundry"})
         {
             string path=Root+"/Models/"+name+".fbx";

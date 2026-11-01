@@ -55,6 +55,12 @@ public sealed class Enemy
         else nz += Math.Sign(dz);
         if (!VoxelChunk.InBounds(nx, ny, nz)) return;
         if (BlockInfo.IsSolid(chunk.Get(nx, ny, nz))) return;
+        if(chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1)
+        {
+            var start=new System.Numerics.Vector3(X+.5f,Y,Z+.5f);
+            var step=new System.Numerics.Vector3(nx-X,ny-Y,nz-Z);
+            if(chunk.Geometry.SweepBody(start,step,.30f,1f).Hit)return;
+        }
         if (occupied != null)
             foreach (var (ox, oy, oz) in occupied)
                 if (ox == nx && oy == ny && oz == nz) return;
@@ -854,6 +860,13 @@ public sealed class WorldZone
         if (!BuildCost.TryGet(type, out var cost)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
+        // Authored architecture is not represented by filled material cells.
+        // Reserve the machine's documented one-metre service envelope against
+        // the actual closed surfaces, so a clear ledger cell inside a pipe or
+        // arch can never accept construction through visible architecture.
+        if(Chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1
+            && Chunk.Geometry.OverlapsBody(new System.Numerics.Vector3(x+.5f,y+.001f,z+.5f),.499f,.998f))
+            return BuildResult.Occupied;
         // Actor cells are air for the voxel renderer/aim trace, but must not
         // become solid around a live unit or conceal the objective. Check
         // before support/cost, so a refusal is completely non-destructive.

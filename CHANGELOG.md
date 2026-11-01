@@ -1,5 +1,22 @@
 # Forgeborne — Changelog
 
+## 0.124.0 — 2026-11-01 — Main enters the original authored foundry
+
+- Replaced Main's default block courtyard with original Cinder Exchange closed
+  architecture, mineral/salvage and constructed-machine meshes. Rendering, contact
+  and aim use the same immutable triangles; gathering removes the bound pieces.
+- Added saved profile 2 with exact embedded content identity, strict ledger/load
+  validation and retained profiles 0/1. Added model-shaped transparent build ghosts,
+  architecture-aware placement/planned actor steps and live power material refresh.
+- Reworked curved carbine/gauntlet forms and original architectural detail after
+  the director's further block-visual rejection. Actual Main entry is now checked,
+  rather than leaving the replacement optional. No user slots were converted.
+- 5535 source checks pass, Release 0 warnings/errors; actual Main buffers, rays,
+  gather/build/power/ghost/save/ownership checks pass. Geometry reproduces byte-exact.
+- AAA+ art/animation/experience, native input/audio and representative performance
+  remain unaccepted. See docs/authored-foundry-checkpoint.md. Rob authorized main
+  updates after merging PR #1; no release/visibility/licence change is implied.
+
 ## 0.123.0 — 2026-11-01 — Shared continuous surface infrastructure
 
 - Added an explicit saved surface profile, immutable regional contour/field/BVH

@@ -568,6 +568,7 @@ public sealed class TacticalSquad
         else nz += sign;
         if (!VoxelChunk.InBounds(nx, ny, nz)) return false;
         if (BlockInfo.IsSolid(chunk.Get(nx, ny, nz))) return false;
+        if(!AuthoredStepClear(chunk,nx,ny,nz))return false;
         foreach (var e in enemies)
             if (!e.IsDead && e.X == nx && e.Y == ny && e.Z == nz) return false;
         X = nx; Y = ny; Z = nz;
@@ -624,10 +625,19 @@ public sealed class TacticalSquad
         else nz += Math.Sign(dz);
         if (!VoxelChunk.InBounds(nx, ny, nz)) return false;
         if (BlockInfo.IsSolid(chunk.Get(nx, ny, nz))) return false;
+        if(!AuthoredStepClear(chunk,nx,ny,nz))return false;
         foreach (var e in enemies)
             if (!e.IsDead && e.X == nx && e.Y == ny && e.Z == nz) return false;
         X = nx; Y = ny; Z = nz;
         return true;
+    }
+
+    private bool AuthoredStepClear(VoxelChunk chunk,int nx,int ny,int nz)
+    {
+        if(chunk.SurfaceProfile!=SurfaceProfile.AuthoredFoundryV1)return true;
+        var start=new System.Numerics.Vector3(X+.5f,Y,Z+.5f);
+        var step=new System.Numerics.Vector3(nx-X,ny-Y,nz-Z);
+        return !chunk.Geometry.SweepBody(start,step,.30f,1.8f).Hit;
     }
 
     /// <summary>

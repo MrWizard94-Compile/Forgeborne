@@ -2,6 +2,29 @@
 
 ## Director priority — latest steering
 
+**Latest authority and correction:** Rob merged PR #1; verified origin/main is
+9e6ef62a671ac1b0d585a60bf5db81de101e964c. He then directed **"just update main"**.
+Verified checkpoints may now be committed/pushed to main without another PR
+approval. Visibility, licence, releases and the separate Constitution repository
+are not included. The older feature-branch-only restriction below is superseded.
+
+Rob subsequently said **"Still seeing blocks bro"**. The optional-only world
+integration was insufficient: actual Main still entered the old courtyard.
+0.124 now switches actual Main to the original Cinder Exchange, with
+closed shared architecture/deposit/construction meshes and model-shaped build
+ghosts. Release 0/0, **5535 source checks pass**. Actual Main starts profile 2;
+272 render/collider pieces, 66,512 triangles, 300 rays agree within 7.63e-6 m.
+Gathers, machine meshes, 42-piece nine-choice ghosts, power tint invalidation and
+exact recovery pass in the existing Simulation. Final shader/console messages 0.
+Two final geometry generations match SHA
+3aaa044009b8db239b903b52bd3d928a59efd678e813a1b2eb36b25333863272.
+**Freeze this published v1 geometry**; future geometry changes need retained
+versioned content/profile resolution or an explicit tested migration. Main is
+paused in Play with the new entry for review; no native player/slot write occurred.
+Actual FPS/orbital captures inspected: full AAA+ art still FAIL, native/performance/
+continuous actors/fun still open. See authored-foundry-checkpoint.md and its full
+15-point audit/commands/limits. All six influences/full goal stay active.
+
 **Git synchronization correction:** Rob explicitly directed that the work be
 pushed to GitHub. The previous local-only interpretation was too restrictive.
 Push verified checkpoints to origin/codex/unity-main-scene and verify the remote
@@ -41,7 +64,7 @@ weapon/actor assets, materials, lighting, animation, audio/feel and performance.
 Do not show another primitive build as a quality milestone or replace actual
 Unity evidence with a concept/mockup. Preserve full scope; no goal completion.
 
-## Current art work — 0.122 technical checkpoint, quality rejected
+## Historical art work — 0.122/0.123, superseded by 0.124 above
 
 Art checkpoint is committed as b9ad5dd; director clarification as ee108e8.
 0.123 follow-up implements optional shared continuous surfaces. Current new files:
@@ -190,14 +213,14 @@ Do not create another Simulation to repair stale Play links.
 
 Core verification: dotnet build tests/Forgeborne.Core.Tests/Forgeborne.Core.Tests.csproj
 -c Release --no-restore --nologo, then run Release test DLL with genuine isolated
-C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5486 pass,
+C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5535 pass,
 0 fail, build 0 warnings/errors. tools/build-unity-core.ps1 publishes nine DLLs.
-0.123 installed Core SHA-256:
-ac9c2c6dee9282f5902a0ff065c1b432d181f852613ca357a5a211865d647bb0.
+0.124 installed Core SHA-256:
+713df788ff14b370e985c84f38d2885eb2adb2426640b77761ff8070fca5d5b6.
 
 ## Evidence and open work
 
-Main includes player flow, exact saves, native transfer, authored courtyard,
+Main includes player flow, exact saves, native transfer, authored Cinder Exchange,
 canonical actors, perspective command view and action feedback. Eleven original
 oscillator/noise synthesis clips have a generator and source signal manifest.
 Heard mix is unverified. Actual Core gather already preserves a surface at full

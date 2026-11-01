@@ -1,0 +1,246 @@
+{
+  "version": "0.124.0",
+  "scope": "Actual Main entry and shared original authored geometry; full game incomplete",
+  "frozenLaw": "63d99cdc72a1c18b5aa91b9336d02fd30126407b",
+  "sourceQA": {
+    "configuration": "Release",
+    "warnings": 0,
+    "errors": 0,
+    "passed": 5535,
+    "failed": 0
+  },
+  "geometry": {
+    "path": "src/Forgeborne.Core/Content/CinderExchangeV1.json",
+    "bytes": 8050157,
+    "sha256": "3aaa044009b8db239b903b52bd3d928a59efd678e813a1b2eb36b25333863272"
+  },
+  "installedCore": {
+    "path": "ForgeborneUnity/Assets/Plugins/Forgeborne.Core.dll",
+    "bytes": 8188928,
+    "sha256": "713df788ff14b370e985c84f38d2885eb2adb2426640b77761ff8070fca5d5b6"
+  },
+  "buildMatchesInstalled": true,
+  "sourceParts": 314,
+  "openingTriangles": 66512,
+  "openingRegions": 272,
+  "runtimeEvidence": "Actual paused Unity Main, scripted production consumers, exact recovery, 300 collider rays; no native input claim",
+  "artOrigin": "Original Blender meshes and existing original shaders/materials; no imported art",
+  "reproduction": "Two final geometry generations match exact UTF-8/LF bytes. Blender/FBX container reproducibility not claimed. Other text hashes use raw workspace line endings.",
+  "fullAAAPlusAcceptance": "FAIL",
+  "nativeArtPackage": "NOT BUILT",
+  "representativePerformance": "OPEN",
+  "heardAudioAndFun": "OPEN",
+  "userSaveSlots": "NOT WRITTEN OR CONVERTED",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 478,
+      "sha256": "2a6dac19bae2ff159666fe308c08471ccd6bca341faded415252a5d4a002bff4"
+    },
+    {
+      "path": "art/source/CinderExchange.blend",
+      "bytes": 5953531,
+      "sha256": "af46e8d9a19d3d9c1b619ce6bcd75f7b3e445515c5461ba960bb12f796ec9a77"
+    },
+    {
+      "path": "art/source/PulseCarbine.blend",
+      "bytes": 2352742,
+      "sha256": "679685788a07f49397bb0c1aa2c5432c9602d6cee37aee133ce16810c6883ece"
+    },
+    {
+      "path": "art/source/PulseCarbine.json",
+      "bytes": 739,
+      "sha256": "ee49cf3b6f96acea79bdd5b51bf4b3ac6ae8f4220459dc793b0958dc53d39ad7"
+    },
+    {
+      "path": "art/tools/build_foundry_environment.py",
+      "bytes": 19520,
+      "sha256": "5be4577fec3f01813ff8928615a47c51588036de45bfc3b1204a2d2de0de523c"
+    },
+    {
+      "path": "art/tools/build_visual_assets.py",
+      "bytes": 23922,
+      "sha256": "73c08443390319e7a2500eff6cfcd5cd90ea3cffe4a77aaabcf5a29d20034d4e"
+    },
+    {
+      "path": "art/tools/record_foundry_checkpoint.py",
+      "bytes": 4486,
+      "sha256": "052f08b792b6d4012ab94f4c209141795c5b67b900a16a4e3f0f1808d0ad035d"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/authored-foundry-fps-diagnostic.png",
+      "bytes": 1492829,
+      "sha256": "02d7b0eec54e8035efa97ddd52382831a204a600f1ee5182d61cbf7bb98363ea"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/authored-foundry-orbital-diagnostic.png",
+      "bytes": 710954,
+      "sha256": "40abe0f05a58092866de2f3a55ca307848ef6e70a2b018a45c9dac27c7c66916"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/unity-authored-construction-smoke.json",
+      "bytes": 665,
+      "sha256": "f5ec798fef61466211eba64a2dc5b8de30227d593b659a5a402c13ab5fcec969"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/unity-authored-foundry-main-smoke.json",
+      "bytes": 1468,
+      "sha256": "efe86e259b75bcc8e97a2e73005af392fddfd0552855d5f9e788d7ce4958bc06"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/unity-authored-foundry-preparation.json",
+      "bytes": 412,
+      "sha256": "1cdc5ef6335599ceef5ad6086677b8f40e7705e1c300299d6646701021d7e039"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/unity-authored-foundry-smoke.json",
+      "bytes": 1444,
+      "sha256": "164a2961778e718908f296488bbad10f4e0f20f283be3b1bb471cdf7e37a695f"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/unity-authored-main-console.json",
+      "bytes": 82,
+      "sha256": "4f76eee2bcd96f17c39fd81cb85dbcc7f821f14374bdcd7c278e5795d7396024"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/unity-authored-main-status.json",
+      "bytes": 821,
+      "sha256": "c1db6790c6ba3cbde2d0a556f885617bde07410fdb50d02143e6db49ea5af0ac"
+    },
+    {
+      "path": "docs/evidence/2026-11-01/unity-authored-power-smoke.json",
+      "bytes": 299,
+      "sha256": "ef8383d17a447b7346ed93ca72f508efd4cf07a94eb45f6da279011b8e77b79a"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Editor/ForgeborneArtAssets.cs",
+      "bytes": 13414,
+      "sha256": "c991d5043c2562d1d3666b765fcc804cf0dd2cbc8e9cb2be93f749a9fa6bdbad"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Timber.mat",
+      "bytes": 984,
+      "sha256": "32b9ba3aaa7e3a0cde1eb25970f91c22e3a1d2a9f704e8b3de65ea71c7c199a1"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/PulseCarbine.fbx",
+      "bytes": 671980,
+      "sha256": "7f71ec7cd5255dbc9f8e92c69d2b694897b5e0bf1cee51003452c54555810ea3"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/PulseCarbine.prefab",
+      "bytes": 6802,
+      "sha256": "76ee3bc3dbaa3eac23ac0d0c2d6841ab8c29a96a57259f976ce0ec07080c97dd"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Materials/ConstructionGhost.mat",
+      "bytes": 1968,
+      "sha256": "07c78e3b6158e0801d9de6229f92f627b3d152d8355854744a67147fb835bf48"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scenes/Main.unity",
+      "bytes": 47344,
+      "sha256": "629caaed6ab127c8754a504224cc6f6997020668b0fcd342dfd07684a6f18728"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/ConstructionGuide.cs",
+      "bytes": 10263,
+      "sha256": "6423ee04d1c9bc8da1152aee84b87fb66ec3601d444c133fe45c96f5aa4a6956"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/FoundryAtmosphere.cs",
+      "bytes": 5259,
+      "sha256": "df753383232947c178899a4f5610691a2484d6bf9ecacf559918199c33d8d51a"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/GameManager.cs",
+      "bytes": 8344,
+      "sha256": "32c605ba8b1b7a22760bfec83306af5fc6a08bfd6d985b99a0156d76c5cde2bd"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/PlayerFlow.cs",
+      "bytes": 16812,
+      "sha256": "402f3b482335c065cfeb364624d71a195f5e2d713054b97535f7e1cc16794ecc"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/VoxelMeshRenderer.cs",
+      "bytes": 14862,
+      "sha256": "0519f7fb427cedb7348886213f59d0e26860c5bb3292da95b0b9f51316bd2fd0"
+    },
+    {
+      "path": "ForgeborneUnity/ProjectSettings/ProjectSettings.asset",
+      "bytes": 22390,
+      "sha256": "ed49ff3155c7e1b913dbce905ef4a1b92a28b60ea17d93518336bd696d8f87c2"
+    },
+    {
+      "path": "src/Forgeborne.Core/Aim.cs",
+      "bytes": 7767,
+      "sha256": "07010c5e9369f90974375b2a8bd48987952b780ea56cae77bb1b217b8c8c0d93"
+    },
+    {
+      "path": "src/Forgeborne.Core/AuthoredFoundry.cs",
+      "bytes": 13358,
+      "sha256": "13bd0f696118a2615bd56151769a003e7d471bbaa89c9be1cc92475b892623a9"
+    },
+    {
+      "path": "src/Forgeborne.Core/Orbital.cs",
+      "bytes": 52632,
+      "sha256": "5073ba5dad872c5a9c21aa67a6def9b5b17b7e55fe428068d4bb18c09602fbbb"
+    },
+    {
+      "path": "src/Forgeborne.Core/SaveSystem.cs",
+      "bytes": 12063,
+      "sha256": "fe20f01d5f4377cdb9f7acc0e9fa2ee2d96e0c0a04bc320c33985012ca113d19"
+    },
+    {
+      "path": "src/Forgeborne.Core/SurfaceProfile.cs",
+      "bytes": 226,
+      "sha256": "770fa8f60d3032b4e3caf71ce69e7f6b4a9e3109c64cea7a3dd2ab8154639306"
+    },
+    {
+      "path": "src/Forgeborne.Core/TerrainGeometry.cs",
+      "bytes": 18374,
+      "sha256": "ebef9c3d6b749aa1e00599718e158a75b456901fc01370a1b0c1aa8c413e0e4b"
+    },
+    {
+      "path": "src/Forgeborne.Core/VoxelChunk.cs",
+      "bytes": 4268,
+      "sha256": "6babb1b5d47e33c6b01262f5174eefdc5b5d654f96e05e299a05f8131695a3a6"
+    },
+    {
+      "path": "src/Forgeborne.Core/World.cs",
+      "bytes": 78532,
+      "sha256": "51bd0e4d12da199b173619df5314cb702e321de83f90026d9406cfef21f856d7"
+    },
+    {
+      "path": "tests/Forgeborne.Core.Tests/AuthoredSurfaceTests.cs",
+      "bytes": 10303,
+      "sha256": "d3beaa81c3fee70b0d1360cec9d8452a3b75d0379b0bb493388b54e575981415"
+    },
+    {
+      "path": "tools/unity-authored-construction-smoke.cs",
+      "bytes": 5535,
+      "sha256": "8df67ffaf57b913f0b4ac9ccb9fd59fdd3f51d392dfb3d210aea80995cf357a7"
+    },
+    {
+      "path": "tools/unity-authored-foundry-prepare.cs",
+      "bytes": 3132,
+      "sha256": "c046959909762ab839fd4b476ec5ac76146c243e1403e644a4c1e1bc76382ac2"
+    },
+    {
+      "path": "tools/unity-authored-foundry-smoke.cs",
+      "bytes": 10075,
+      "sha256": "31008e68d02d73be9f12e40117aafcf78859ef8e41ee3c70af108fe9a4ac3b53"
+    },
+    {
+      "path": "tools/unity-authored-main-status.cs",
+      "bytes": 2691,
+      "sha256": "83c1ba243709aae83d59f8015410405544d45ef8722d70c04cb2e031c8eecb5f"
+    },
+    {
+      "path": "tools/unity-authored-power-smoke.cs",
+      "bytes": 2853,
+      "sha256": "ca6f71436ada63950384c700e592f5b8ac91dd0fa61fbda57e6e9efc0320f8f6"
+    }
+  ]
+}

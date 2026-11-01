@@ -91,7 +91,7 @@ public sealed class FpsController
     /// </summary>
     public void UpdateWorld(float dt, float dx, float dz, bool jump, VoxelChunk chunk)
     {
-        if(chunk.SurfaceProfile==SurfaceProfile.ContinuousTerrainV1)
+        if(chunk.SurfaceProfile!=SurfaceProfile.LegacyBlocks)
         {UpdateContinuous(dt,dx,dz,jump,chunk.Geometry);return;}
         // Horizontal X, then Z, separately, so sliding along a wall
         // still works: a blocked X component does not cancel Z.

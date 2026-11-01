@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
 {
     public int Seed = 42;
     public bool UseCourtyardEncounter = true;
+    public bool UseAuthoredFoundry = true;
     private string _initialEncounter = "";
     public Simulation? Simulation;
     public VoxelMeshRenderer? MeshRenderer;
@@ -72,7 +73,12 @@ public class GameManager : MonoBehaviour
         // Initialize the interactive pose/clock without advancing time. The
         // legacy constructor/world-step API keeps its existing headless contract.
         Simulation.AdvanceFrame(0, 0, 0, false);
-        if (UseCourtyardEncounter) CourtyardEncounter.Populate(Simulation.World);
+        if(UseAuthoredFoundry)
+        {
+            AuthoredFoundry.Populate(Simulation.World);
+            Simulation.Fps.Teleport(16.5f,4,7.5f);Simulation.AdvanceFrame(0,0,0,false);
+        }
+        else if (UseCourtyardEncounter) CourtyardEncounter.Populate(Simulation.World);
         if (MeshRenderer != null)
         {
             MeshRenderer.Simulation = Simulation;
@@ -111,7 +117,13 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("Forgeborne mesh wiring: FpsInputAdapter.MeshRenderer is still null after GameManager.Start — refresh calls will no-op and the chunk mesh will stay stale after builds, gathers, and destructions. Wire FpsAdapter to the same VoxelMeshRenderer GameManager links, or wire the adapter field directly — see playtest-gate items 27 and 31.");
         }
         Simulation.World.SpawnWave(3);
-        if (UseCourtyardEncounter) CourtyardEncounter.PlaceInitialWave(Simulation.World);
+        if(UseAuthoredFoundry)
+        {
+            int i=0;
+            foreach(var enemy in Simulation.World.Enemies)
+            {enemy.X=12+i*6;enemy.Y=4;enemy.Z=25;i++;}
+        }
+        else if (UseCourtyardEncounter) CourtyardEncounter.PlaceInitialWave(Simulation.World);
         _initialEncounter = Simulation.SaveToJson();
     }
 

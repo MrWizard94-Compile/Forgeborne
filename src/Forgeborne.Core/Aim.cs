@@ -53,7 +53,7 @@ public static class AimRay
         float reach,
         bool includeActors)
     {
-        if(chunk.SurfaceProfile==SurfaceProfile.ContinuousTerrainV1)
+        if(chunk.SurfaceProfile!=SurfaceProfile.LegacyBlocks)
             return TraceContinuous(chunk,enemies,coreX,coreY,coreZ,originX,originY,originZ,forward,reach,includeActors);
         int prevX = (int)Math.Floor(originX);
         int prevY = (int)Math.Floor(originY);
@@ -123,6 +123,11 @@ public static class AimRay
             if(normal.X>=normal.Y && normal.X>=normal.Z)px+=Math.Sign(surface.Normal.X);
             else if(normal.Y>=normal.Z)py+=Math.Sign(surface.Normal.Y);
             else pz+=Math.Sign(surface.Normal.Z);
+            if(chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1)
+            {
+                var outside=surface.Position+surface.Normal*0.02f;
+                px=(int)Math.Floor(outside.X);py=(int)Math.Floor(outside.Y);pz=(int)Math.Floor(outside.Z);
+            }
             return new AimHit(AimTargetKind.Solid,surface.X,surface.Y,surface.Z,px,py,pz,null,false,surface.Distance);
         }
         var end=origin+direction*reach;

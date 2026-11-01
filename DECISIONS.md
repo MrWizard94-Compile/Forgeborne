@@ -6,12 +6,29 @@ look inevitable.
 
 ## 2026-11-01 — Push the feature branch for review
 
+Superseded by the later same-day instruction below.
+
 Rob explicitly directed that the work be pushed to GitHub. The assistant had
 over-applied the restriction on pushing main and kept the working branch local.
 Synchronize verified checkpoints on `codex/unity-main-scene` to `origin` and verify
 the remote SHA. Main, merges, visibility, licensing and releases remain subject
 to Rob's review. This does not authorize changes to the separate Constitution
 repository or turn an unaccepted technical checkpoint into a quality milestone.
+
+## 2026-11-01 — Merge verified; update main directly
+
+Rob said "Merged." Git verified PR #1's merge on origin/main at
+9e6ef62a671ac1b0d585a60bf5db81de101e964c. After the assistant proposed another
+feature branch, Rob directed "just update main". Commit and push verified
+checkpoints to main; no repeated PR approval request is needed. This does not
+authorize visibility/licence changes, releases or a push to the separate
+Constitution evolution repository.
+
+Rob then said "Still seeing blocks bro". Leaving authored geometry optional
+while actual Main still started the old courtyard failed the requested visual
+correction. Main must enter the authored world; repeat evidence against that
+entry. Old saves retain their original exact geometry contract rather than
+being silently converted. The full AAA+ visual/experience gate remains open.
 
 ## 2026-11-01 — Minecraft informs the loop, not block visuals
 

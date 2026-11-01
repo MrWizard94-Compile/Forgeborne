@@ -53,9 +53,14 @@ public class VoxelMeshRenderer : MonoBehaviour
         public Mesh Mesh=null!;
         public MeshCollider Collider=null!;
         public TerrainRegion? Region;
+        public MeshRenderer Renderer=null!;
+        public MaterialPropertyBlock Properties=new MaterialPropertyBlock();
+        public Light? Practical;
         public BlockType[] Types=System.Array.Empty<BlockType>();
     }
     private readonly Dictionary<int,RegionView> _regions=new Dictionary<int,RegionView>();
+    private readonly Dictionary<string,Material> _authoredMaterials=new Dictionary<string,Material>();
+    private readonly HashSet<int> _seenRegions=new HashSet<int>();
     private bool _continuousVisible;
     public int LastRegionsRebuilt { get; private set; }
 
@@ -122,7 +127,7 @@ public class VoxelMeshRenderer : MonoBehaviour
     public void RefreshMesh()
     {
         if (Simulation == null || _mesh == null) return;
-        bool continuous=Simulation.World.Chunk.SurfaceProfile==SurfaceProfile.ContinuousTerrainV1;
+        bool continuous=Simulation.World.Chunk.SurfaceProfile!=SurfaceProfile.LegacyBlocks;
         if(continuous){RefreshRegions();return;}
         LastRegionsRebuilt=0;
         if(_continuousVisible)
@@ -153,8 +158,10 @@ public class VoxelMeshRenderer : MonoBehaviour
         }
         LastRegionsRebuilt=0;
         var geometry=Simulation.World.Chunk.Geometry;
+        _seenRegions.Clear();
         foreach(var region in geometry.Regions)
         {
+            _seenRegions.Add(region.Id);
             _regions.TryGetValue(region.Id,out var view);
             if(region.TriangleCount==0)
             {
@@ -168,14 +175,42 @@ public class VoxelMeshRenderer : MonoBehaviour
                 root.transform.SetParent(transform,false);
                 var surface=root.GetComponent<MeshRenderer>();surface.sharedMaterial=_renderer.sharedMaterial;
                 var properties=new MaterialPropertyBlock();properties.SetFloat("_GridStrength",0);surface.SetPropertyBlock(properties);
-                view=new RegionView{Root=root,Mesh=new Mesh{name="Forgeborne surface "+region.Id},Collider=root.GetComponent<MeshCollider>()};
+                view=new RegionView{Root=root,Mesh=new Mesh{name="Forgeborne surface "+region.Id},Collider=root.GetComponent<MeshCollider>(),Renderer=surface};
                 root.GetComponent<MeshFilter>().sharedMesh=view.Mesh;_regions.Add(region.Id,view);
             }
             view.Root.SetActive(true);
             if(!object.ReferenceEquals(view.Region,region))
             {
+                view.Root.name=region.Label==null ? "Surface region "+region.Id : "Authored "+region.Label+" ["+region.Id+"]";
+                Material? material=_renderer.sharedMaterial;
+                if(region.MaterialRole!=null)
+                {
+                    if(!_authoredMaterials.TryGetValue(region.MaterialRole,out var authored))
+                    {
+                        authored=Resources.Load<Material>("Art/Materials/"+region.MaterialRole);
+                        if(authored==null)throw new System.InvalidOperationException("Prepare original authored material "+region.MaterialRole+" before Play.");
+                        _authoredMaterials.Add(region.MaterialRole,authored);
+                    }
+                    material=authored;
+                }
+                view.Renderer.sharedMaterial=material;
+                view.Properties.Clear();view.Properties.SetFloat("_GridStrength",0);
+                view.Properties.SetFloat("_WorldWeather",1);view.Renderer.SetPropertyBlock(view.Properties);
                 var data=region.HasPowerSensitiveMaterials ? region.BuildMesh(Simulation.World.PowerState) : region.BuildMesh();
                 Upload(view.Mesh,view.Collider,data);view.Types=data.BlockTypes.ToArray();view.Region=region;LastRegionsRebuilt++;
+                if(region.MaterialRole=="Warm")
+                {
+                    if(view.Practical==null)
+                    {
+                        var lightRoot=new GameObject("Authored practical light");lightRoot.transform.SetParent(view.Root.transform,false);
+                        view.Practical=lightRoot.AddComponent<Light>();view.Practical.type=LightType.Point;
+                        view.Practical.color=new Color(1,0.56f,0.28f);view.Practical.intensity=12;view.Practical.range=10;
+                        view.Practical.shadows=LightShadows.None;
+                    }
+                    view.Practical.transform.localPosition=view.Mesh.bounds.center+Vector3.down*0.10f;
+                    view.Practical.enabled=true;
+                }
+                else if(view.Practical!=null)view.Practical.enabled=false;
             }
             else if(region.HasPowerSensitiveMaterials)
             {
@@ -184,7 +219,22 @@ public class VoxelMeshRenderer : MonoBehaviour
                 {var c=colours[i];result[i]=SurfaceColor(view.Types[i])*new Color(c.Item1,c.Item2,c.Item3,c.Item4);}
                 view.Mesh.colors=result;
             }
+            if(region.MaterialRole!=null && region.HasPowerSensitiveMaterials)
+            {
+                var colours=region.BuildColors(Simulation.World.PowerState);
+                var tint=colours[0];var material=view.Renderer.sharedMaterial;
+                view.Properties.SetColor("_BaseColor",material.GetColor("_BaseColor")*new Color(tint.Item1,tint.Item2,tint.Item3,tint.Item4));
+                view.Renderer.SetPropertyBlock(view.Properties);
+            }
         }
+        // Authored deposits and constructed components disappear as a unit.
+        // They do not occupy the field mesher's fixed 729 region slots.
+        foreach(var pair in _regions)
+            if(!_seenRegions.Contains(pair.Key))
+            {
+                var view=pair.Value;view.Root.SetActive(false);view.Collider.sharedMesh=null;view.Mesh.Clear();
+                view.Region=null;view.Types=System.Array.Empty<BlockType>();
+            }
     }
 
     private static void Upload(Mesh mesh,MeshCollider? collider,MeshData data)

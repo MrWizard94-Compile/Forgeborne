@@ -40,6 +40,8 @@ public sealed class SaveData
     public RuntimeSaveState? Runtime { get; set; }
     /// <summary>Absent in legacy saves. Unknown profiles fail before the live world is replaced.</summary>
     public int? SurfaceProfile { get; set; }
+    public string? SurfaceContentId { get; set; }
+    public string? SurfaceContentSha256 { get; set; }
 }
 
 /// <summary>A loaded save: the world, plus the Simulation-level state
@@ -95,6 +97,8 @@ public static class SaveSystem
             WeaponReserve = weapon?.Reserve,
             Runtime = runtime,
             SurfaceProfile = world.Chunk.SurfaceProfile==SurfaceProfile.LegacyBlocks ? null : (int)world.Chunk.SurfaceProfile,
+            SurfaceContentId = world.Chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1 ? AuthoredFoundry.ContentId : null,
+            SurfaceContentSha256 = world.Chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1 ? AuthoredFoundry.ContentSha256 : null,
         };
         return JsonSerializer.Serialize(data, SaveOptions);
     }
@@ -114,11 +118,20 @@ public static class SaveSystem
         if (!SupportedPosition(data.PlayerX, data.PlayerY, data.PlayerZ))
             throw new InvalidOperationException("Saved player position is outside the supported range.");
         if(data.SurfaceProfile.HasValue && data.SurfaceProfile.Value!=(int)SurfaceProfile.LegacyBlocks
-            && data.SurfaceProfile.Value!=(int)SurfaceProfile.ContinuousTerrainV1)
+            && data.SurfaceProfile.Value!=(int)SurfaceProfile.ContinuousTerrainV1
+            && data.SurfaceProfile.Value!=(int)SurfaceProfile.AuthoredFoundryV1)
             throw new InvalidOperationException("Saved surface profile is unsupported.");
+        if(data.SurfaceProfile==(int)SurfaceProfile.AuthoredFoundryV1)
+        {
+            if(data.SurfaceContentId!=AuthoredFoundry.ContentId || data.SurfaceContentSha256!=AuthoredFoundry.ContentSha256)
+                throw new InvalidOperationException("Saved authored surface content is missing or has a different geometry digest.");
+        }
+        else if(data.SurfaceContentId!=null || data.SurfaceContentSha256!=null)
+            throw new InvalidOperationException("Authored content does not match the saved surface profile.");
         var world = new WorldZone(data.Seed);
         world.Chunk.FromBytes(Convert.FromBase64String(data.ChunkBase64));
         world.Chunk.SurfaceProfile=(SurfaceProfile)(data.SurfaceProfile ?? 0);
+        if(world.Chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1)AuthoredFoundry.ValidateLedger(world.Chunk);
         // Parse the skill build BEFORE restoring the player, so the
         // raised shield cap is in place before shields are restored:
         // without this, a skilled save with 100 shields would clamp

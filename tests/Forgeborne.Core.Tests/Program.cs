@@ -9865,6 +9865,7 @@ ActionFeedbackTests.Run(Check);
 ConstructionSafetyTests.Run(Check);
 ConstructionPreviewTests.Run(Check);
 ContinuousSurfaceTests.Run(Check);
+AuthoredSurfaceTests.Run(Check);
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

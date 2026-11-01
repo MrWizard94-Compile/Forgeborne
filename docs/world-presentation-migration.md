@@ -66,7 +66,8 @@ Independent geometric fixtures must measure visible/contact/trace agreement,
 including corners where the old occupied cube would have produced a false hit.
 Native observations and performance remain required after source checks pass.
 
-Work stays on `codex/unity-main-scene`; no push/main change is authorized. Keep
+Rob merged PR #1, then explicitly directed "just update main". Verified main
+checkpoints are authorized; visibility, licence and release changes are not. Keep
 the old renderer/legacy save path available in Git and record the precise commit
 before changing the geometry contract. Revert a failed candidate by a targeted
 forward change on the branch; never reset unrelated work or rewrite local saves.

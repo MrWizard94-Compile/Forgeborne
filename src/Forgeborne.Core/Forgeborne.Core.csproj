@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Content/CinderExchangeV1.json" />
+  </ItemGroup>
   <!-- System.Text.Json is in-box for net8.0, but not for
        netstandard2.1: reference the package for that target only,
        so the netstandard2.1 DLL and its System.Text.Json DLLs ship

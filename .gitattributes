@@ -4,3 +4,7 @@
 *.asset whitespace=-blank-at-eol
 *.meta whitespace=-blank-at-eol
 *.mat whitespace=-blank-at-eol
+
+# Embedded authored geometry is an exact save identity. Keep the generator's
+# UTF-8/LF bytes stable across Windows and clean-checkout builds.
+src/Forgeborne.Core/Content/*.json text eol=lf

@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "productionFire": true,
+      "traceAndMessage": true,
+      "audioSourcePlaying": true,
+      "productionGatherBuild": true,
+      "fullPackPreserved": true,
+      "reloadFeedback": true,
+      "immediateReset": true,
+      "presentationReadOnly": true,
+      "sameSimulation": true
+    },
+    "compiler": "codedom"
+  }
+}

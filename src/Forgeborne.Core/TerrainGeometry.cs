@@ -9,8 +9,11 @@ public readonly record struct SurfaceSweep(bool Hit, float Fraction, Vector3 Nor
 public sealed class TerrainRegion
 {
     public int Id { get; }
+    public string? Label { get; }
+    public string? MaterialRole { get; }
     internal TerrainGeometry Geometry { get; }
-    internal TerrainRegion(int id,TerrainGeometry geometry){Id=id;Geometry=geometry;}
+    internal TerrainRegion(int id,TerrainGeometry geometry,string? label=null,string? materialRole=null)
+    {Id=id;Geometry=geometry;Label=label;MaterialRole=materialRole;}
     public int TriangleCount=>Geometry.TriangleCount;
     public bool HasPowerSensitiveMaterials=>Geometry.HasPowerSensitiveMaterials;
     public MeshData BuildMesh(Func<int,int,int,CellPowerState>? powerState=null)=>Geometry.BuildMesh(powerState);
@@ -18,7 +21,7 @@ public sealed class TerrainRegion
 }
 
 internal readonly record struct TerrainFace(Vector3 A, Vector3 B, Vector3 C,
-    Vector3 NA, Vector3 NB, Vector3 NC, int X, int Y, int Z, BlockType Type)
+    Vector3 NA, Vector3 NB, Vector3 NC, int X, int Y, int Z, BlockType Type, bool SpatialCell=false)
 {
     public Vector3 Min => Vector3.Min(A,Vector3.Min(B,C));
     public Vector3 Max => Vector3.Max(A,Vector3.Max(B,C));
@@ -41,6 +44,7 @@ public sealed class TerrainGeometry
     private readonly int _triangleCount;
     private readonly Vector3 _min,_max;
     private readonly TerrainFieldSamples? _field;
+    private readonly bool _uniformField;
     public IReadOnlyList<TerrainRegion> Regions { get; }
     public bool HasPowerSensitiveMaterials { get; }
     private const float Epsilon=0.000001f;
@@ -87,8 +91,9 @@ public sealed class TerrainGeometry
         }
         Build(0,_faces.Length);_nodes=nodes.ToArray();_min=_nodes[0].Min;_max=_nodes[0].Max;
     }
-    internal TerrainGeometry(TerrainRegion[] parts)
+    internal TerrainGeometry(TerrainRegion[] parts,bool uniformField=true)
     {
+        _uniformField=uniformField;
         _parts=(TerrainRegion[])parts.Clone();Regions=Array.AsReadOnly(_parts);
         _activeParts=_parts.Where(p=>p.Geometry.TriangleCount>0).Select(p=>p.Geometry).ToArray();
         _faces=Array.Empty<TerrainFace>();_order=Array.Empty<int>();_nodes=Array.Empty<Node>();
@@ -176,7 +181,12 @@ public sealed class TerrainGeometry
         }
         if(nearest<0)return false;
         var found=_faces[nearest];
-        hit=new SurfaceRayHit(distance,origin+direction*distance,found.Normal,found.X,found.Y,found.Z,found.Type);
+        var position=origin+direction*distance;
+        var interior=position-found.Normal*0.001f;
+        hit=new SurfaceRayHit(distance,position,found.Normal,
+            found.SpatialCell ? (int)Math.Floor(interior.X) : found.X,
+            found.SpatialCell ? (int)Math.Floor(interior.Y) : found.Y,
+            found.SpatialCell ? (int)Math.Floor(interior.Z) : found.Z,found.Type);
         return true;
     }
     public bool Contains(Vector3 point)
@@ -184,8 +194,19 @@ public sealed class TerrainGeometry
         Validate(point);
         if(_parts!=null)
         {
-            int region=TerrainMesher.RegionAt(point);
-            return region>=0 && _parts[region].Geometry.Contains(point);
+            if(_uniformField)
+            {
+                int region=TerrainMesher.RegionAt(point);
+                return region>=0 && _parts[region].Geometry.Contains(point);
+            }
+            // Authored pieces are independently closed solids, including
+            // overlapping shells. A hollow room is never one filled AABB and
+            // the field lattice's fixed region indexing does not apply here.
+            foreach(var part in _activeParts!)
+                if(point.X>=part._min.X && point.X<=part._max.X
+                    && point.Y>=part._min.Y && point.Y<=part._max.Y
+                    && point.Z>=part._min.Z && point.Z<=part._max.Z && part.Contains(point))return true;
+            return false;
         }
         if(_field!=null)return _field.Contains(point);
         // For a closed outward-oriented surface, the first crossing from an
