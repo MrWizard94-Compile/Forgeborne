@@ -83,7 +83,8 @@ Ordinary Windows x64/Mono 0.120 package passed: None, 0 errors/warnings,
 101865611 reported bytes, 41.10 s. Output:
 ForgeborneUnity/Builds/Windows-QA/20261101T113541Z/Forgeborne.exe. Packaged Core and
 Windows bridge match installed DLL hashes. Executable/DLL identities and report:
-docs/evidence/2026-11-01/windows-0120-build.json. This player has not been launched.
+docs/evidence/2026-11-01/windows-0120-build.json. This player has now passed native
+entry/Tab/Escape/restart/save/cold-load checks; see native-player-checkpoint.md.
 Use Forgeborne > Build Windows QA Player; verify completed build-report.json.
 No parallel/overwritten builds. After packaging Editor can have an unloaded scene;
 check for dirty authored scenes before reopening saved Main. Play is stopped.
@@ -92,16 +93,27 @@ Pre-build runtime console was zero. Post-build MCP classified URP inventory text
 as Warning; installed URPPreprocessBuild.cs:73 emits it with Debug.Log, while
 actual BuildReport warnings are zero. Record this classification difference.
 
-Windows helper twice failed to activate fresh returned Unity window 40632432;
-no further input was sent. Rob replied he is not home and cannot bring Unity
-forward/check prompts. Continue independent MCP/source/build work. Do not keep
-requesting manual action now. Previous development player triggered firewall
-prompt and was closed at entry; no security permission/setting was changed.
-Current prompt state is not freshly established. Do not operate security UI.
+Windows helper's earlier activation failure is no longer current. Rob is home;
+fresh Unity activation worked and actual native 0.120 flow passed. No security
+prompt was present in the observed native flow; no permission/setting changed.
+Native player has exited. Both original slot/backup files were restored byte-exact
+from C:/Users/Bulkl/.codex/artifacts/forgeborne-2026-11-01/native-0120-saves-before.
+Cold native save/load/save SHA is 70313c49d9d8e160bb055374c83c813c3789ac8ddb295e39af9009d3c8929ad0.
 Windows UI uses computer-use skill, node_repl + @oai/sky, fresh returned windows;
 read runtime docs after compaction. Do not manipulate unrelated user apps.
 
-Next: improve placement readability and the real-time encounter,
+In progress, uncommitted: Core Construction.cs centralizes the nine unchanged
+prices; World.InspectBuild/Build share validation/payment; Simulation has read-only
+InspectBuildAhead plus revalidating generic BuildAhead. Added ConstructionPreviewTests;
+all 5198 checks pass, build 0 warnings/errors. Published Unity DLL remains 0.120;
+new Core has NOT been published/imported yet. The UI guide has NOT been implemented.
+Plan: V toggle construction guide, wheel cycle all existing structures, LMB place
+selected type through canonical rules; existing direct build keys remain. Movement
+and pressure continue. Add owned collision-free wire preview/cost/reason UI, cancel
+on pause/load/view/terminal, real adapter checks/render/native QA, then commit 0.121.
+Rollback is current committed 0.120; do not discard uncommitted preview work.
+
+Next: finish placement readability and the real-time encounter,
 complete original environment/actor/weapon art/animation and convincing encounter,
 then native/input/heard mix/save recovery/1440p performance and Rob's quality/fun
 review when available. Construction safety is fixed and documented in
