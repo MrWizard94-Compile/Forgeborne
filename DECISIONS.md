@@ -4,6 +4,15 @@ Dated, director-made decisions. Superseded proposals are kept here so
 the history is honest; they are not deleted to make the current plan
 look inevitable.
 
+## 2026-11-01 — Push the feature branch for review
+
+Rob explicitly directed that the work be pushed to GitHub. The assistant had
+over-applied the restriction on pushing main and kept the working branch local.
+Synchronize verified checkpoints on `codex/unity-main-scene` to `origin` and verify
+the remote SHA. Main, merges, visibility, licensing and releases remain subject
+to Rob's review. This does not authorize changes to the separate Constitution
+repository or turn an unaccepted technical checkpoint into a quality milestone.
+
 ## 2026-11-01 — Minecraft informs the loop, not block visuals
 
 Rob rejected the blocky world and clarified: "We use modded Minecrafts

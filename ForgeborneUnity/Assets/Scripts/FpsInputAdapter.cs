@@ -681,8 +681,10 @@ public class FpsInputAdapter : MonoBehaviour
         int before = Simulation.World.Player.Inventory.Get(type);
         var result = Simulation.GatherAhead();
         if (result == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-        if (Feedback != null) Feedback.Gathered(result,type,Simulation.World.Player.Inventory.Get(type)-before,
-            new Vector3(hit.X+0.5f,hit.Y+0.5f,hit.Z+0.5f));
+        var point=new Vector3(hit.X+0.5f,hit.Y+0.5f,hit.Z+0.5f);
+        if(hit.Distance.HasValue) point=new Vector3(Simulation.Fps.X,Simulation.Fps.Y+Forgeborne.Core.Simulation.EyeHeight,Simulation.Fps.Z)
+            +new Vector3(Simulation.Look.ForwardX,Simulation.Look.ForwardY,Simulation.Look.ForwardZ)*hit.Distance.Value;
+        if (Feedback != null) Feedback.Gathered(result,type,Simulation.World.Player.Inventory.Get(type)-before,point);
     }
 
     private void BuildWithFeedback(BlockType type, System.Func<BuildResult> action)

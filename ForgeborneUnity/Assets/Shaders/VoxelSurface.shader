@@ -114,7 +114,7 @@ Shader "Forgeborne/VoxelSurface"
                 half metal=input.blockType>3.5 ? 0.5 : 0.04;
                 half smoothness=input.blockType>3.5 ? 0.48 : 0.22;
                 half3 emission=0;
-                float height=(grain-0.5)*0.001-edge*0.006;
+                float height=(grain-0.5)*0.001-edge*0.006*(_GridStrength/0.16);
                 if (input.blockType > 1.5 && input.blockType < 2.5)
                 {
                     float fracture=MineralEdge(plane*5.5);

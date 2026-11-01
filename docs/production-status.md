@@ -14,8 +14,9 @@ atmosphere, animation/audio and the actual playable encounter. See DECISIONS.md
 and the current art-direction gate. No visual, experience or fun approval.
 PC-native 3D FPS + orbital command, single-player first, original game code/art,
 Unity 6000.3.27f2 + URP. One GameManager-owned Simulation. Legacy input requires
-Both. Core is distributed only as DLLs in Assets/Plugins. No remote publication,
-licence or visibility change is authorized by this tracker.
+Both. Core is distributed only as DLLs in Assets/Plugins. Rob explicitly directed
+feature-branch pushes to origin/codex/unity-main-scene. Main, merges, release,
+licence and visibility changes remain subject to his review.
 
 The director's studio-production reference was read in full on 2026-10-31.
 Adopt its discipline ownership, design contracts, dependency gates, short evidence

@@ -2,6 +2,14 @@
 
 ## Director priority — latest steering
 
+**Git synchronization correction:** Rob explicitly directed that the work be
+pushed to GitHub. The previous local-only interpretation was too restrictive.
+Push verified checkpoints to origin/codex/unity-main-scene and verify the remote
+SHA. Main, repository visibility and licence remain under Rob's review. This
+authorization persists; do not keep future work only locally or ask again to
+push this feature branch. No authorization to merge/push main or the separate
+Constitution evolution branch is implied.
+
 Updated objective fully read from
 C:/Users/Bulkl/.codex/attachments/7a12724c-8fa0-4efa-91ba-5f1eaee54421/goal-objective.md.
 Its one referenced production essay was fully read from the actual
@@ -35,6 +43,48 @@ Unity evidence with a concept/mockup. Preserve full scope; no goal completion.
 
 ## Current art work — 0.122 technical checkpoint, quality rejected
 
+Art checkpoint is committed as b9ad5dd; director clarification as ee108e8.
+0.123 follow-up implements optional shared continuous surfaces. Current new files:
+Core SurfaceProfile.cs/TerrainMesher.cs/TerrainGeometry.cs/TerrainFieldSamples.cs,
+plus profile persistence, VoxelChunk revision/cache, swept FPS and aim/feedback.
+Main default remains legacy, without implicit save conversion. Release 0/0,
+**5486 checks pass**. This includes all 255 nonempty local occupancy patterns with
+closed edges/connected vertex fans, 300 independent ray cases and 500 interior
+points. Initial contour cracks and ambiguous zero-node topology were reproduced
+and repaired. Regular axis planes keep unit heights; other zero nodes bias toward
+air by 1/256. Interior queries use immutable samples with the exact tetrahedral
+split, not a parity ray. Rendering/physical queries share immutable triangles.
+
+Regional cache/update implemented: 4 m regions/729 fixed slots, only affected
+regions rebuilt; unchanged power-sensitive regions still update colors. Actual
+paused Main proof: 24,604 triangles/73,812 vertices/162 visible regions, exact
+render/collider buffers, 200 MeshCollider rays with max difference 7.15e-7 m,
+production gather removal/shot distance, exact save and owner recovery, identity
+transform refusal. Last initial fixture build 217.790 ms; isolated gather 1.112 ms.
+Final cadence probe ran 16 edits + rollbacks across separate player frames at
+0.1 s spacing: 3.6109 wall seconds/811 player frames, edit 1.345–17.219 ms, up to
+8 rebuilt regions, zero GC collections in timed edits, max unscaled frame 40.388 ms.
+Background and exact state restored; callback explicitly absent afterward.
+These are NOT native/FPS/representative-load/quality acceptance. Earlier tight
+stress loops still reached 28.50 ms. Full performance remains open.
+
+Fresh legacy feedback/orbital/construction safety/guide checks pass. Scoped console
+zero. Nine DLLs published, installed Core SHA
+ac9c2c6dee9282f5902a0ff065c1b432d181f852613ca357a5a211865d647bb0.
+Play stopped, Main saved, source version 0.123.0. Source/evidence details and full
+failed-quality audit: continuous-surface-checkpoint.md. No current native package.
+
+IMPORTANT: continuous-*-diagnostic.png are actual camera diagnostics of the OLD
+rejected layout. They still look like softened placeholder banks/walls. They are
+NOT final art/milestones. Next: authored gameplay mesh/content binding, believable
+architecture and real deposits; preserve shared geometry and strict content/save
+identity. A static closed-shell mesh compound needs different containment from
+the uniform-field-region lookup; do not reuse that assumption blindly. Then
+geometry-aware prospective construction and precise continuous actor shape/motion.
+The current profile's material field is for editable natural surfaces, not an art
+constraint on architecture. These integration gaps block Main promotion/acceptance.
+No second Simulation, new frame driver, slot write, native launch or push occurred.
+
 Mechanical 0.121 was preserved as **5e34d63**, including the director rejection
 and AAA+ gate. No further feature expansion. Original assets now authored with
 art/tools/build_visual_assets.py: PulseCarbine (with gauntlets, moving assembly
@@ -67,7 +117,7 @@ after save). Initial saved profile/camera flags did NOT enable processing becaus
 the renderer's postProcessData was null. That consumer bug is fixed with official
 URP resources. Actual exposure A/B now changes mean luminance 0.1394023 → 0.2479594.
 Reflection/soft-shadow shader variants match installed URP; three shaders report
-zero messages and scoped console is zero. Current source version is 0.122.0.
+zero messages and scoped console is zero. Art checkpoint version was 0.122.0.
 
 First room render is docs/evidence/2026-11-01/foundry-fps-candidate.png; it still
 has rejected prototype ground/resources, weak lighting/detail, and is NOT approved.
@@ -87,7 +137,7 @@ component again. Existing feedback/orbital/build-guide checks passed with new ar
 Evidence JSONs *-authored.json; asset/source hashes authored-0122-assets.json;
 generator art/tools/record_manifest.py. Source checks 5198/0, Release 0/0.
 
-Next priority: shared continuous surface/geometry for rendering, movement and aim,
+Next priority: integrate authored geometry/content with the shared surface kernel,
 then a fully re-authored non-block playable environment and constructed objects.
 The blueprint already described SDF/smooth terrain; current implementation is
 binary occupancy. Do not smooth the render alone over cube collision. Read
@@ -111,7 +161,8 @@ Worktree C:/WPAI/Gaming/Forgeborne, branch codex/unity-main-scene, remote base m
 91e056e flow, 51282d3 persistence, fc35868 Windows transfer, bdca2e5 orbital.
 0.119 action feedback is committed as 7a3fdca; 0.120 construction safety as
 9dcf10f. Subsequent orbital cadence tooling/evidence is separate; inspect Git.
-No push/main/visibility/licence change or publication is authorized.
+Feature-branch synchronization to origin/codex/unity-main-scene is authorized.
+No push to main, visibility/licence change, merge or public release is authorized.
 
 Frozen law: Constitution 6.18.0 accepted SHA
 63d99cdc72a1c18b5aa91b9336d02fd30126407b. Verified byte-exact source worktree:
@@ -139,10 +190,10 @@ Do not create another Simulation to repair stale Play links.
 
 Core verification: dotnet build tests/Forgeborne.Core.Tests/Forgeborne.Core.Tests.csproj
 -c Release --no-restore --nologo, then run Release test DLL with genuine isolated
-C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5198 pass,
+C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5486 pass,
 0 fail, build 0 warnings/errors. tools/build-unity-core.ps1 publishes nine DLLs.
-0.121/0.122 installed Core SHA-256 (no Core changes for art):
-3004e6def79fac0e3bdefb63f762119e23113aafe12408c63428dc7a155056c1.
+0.123 installed Core SHA-256:
+ac9c2c6dee9282f5902a0ff065c1b432d181f852613ca357a5a211865d647bb0.
 
 ## Evidence and open work
 
@@ -220,7 +271,7 @@ a developer tool, not shipped art/code. No third-party models/textures downloade
 Use original Blender authoring scripts under art/tools, source .blend outside
 Unity Assets and exported FBX in Assets/Resources/Art, then real Unity renders.
 
-Next: replace the rejected cubic world with a shared continuous surface contract,
+Next: replace the rejected cubic world using authored gameplay geometry/content,
 complete original environment/actor/weapon art/animation and convincing encounter,
 then native/input/heard mix/save recovery/1440p performance and Rob's quality/fun
 review when available. Construction safety is fixed and documented in

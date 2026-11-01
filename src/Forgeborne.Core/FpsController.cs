@@ -91,6 +91,8 @@ public sealed class FpsController
     /// </summary>
     public void UpdateWorld(float dt, float dx, float dz, bool jump, VoxelChunk chunk)
     {
+        if(chunk.SurfaceProfile==SurfaceProfile.ContinuousTerrainV1)
+        {UpdateContinuous(dt,dx,dz,jump,chunk.Geometry);return;}
         // Horizontal X, then Z, separately, so sliding along a wall
         // still works: a blocked X component does not cancel Z.
         float nx = X + dx * EffectiveSpeed * dt;
@@ -142,5 +144,43 @@ public sealed class FpsController
                 Math.Abs(Y - (below + 1)) < 0.01f)
                 IsGrounded = true;
         }
+    }
+
+    private void UpdateContinuous(float dt,float dx,float dz,bool jump,TerrainGeometry geometry)
+    {
+        var position=new System.Numerics.Vector3(X,Y,Z);
+        const float stepHeight=0.35f;
+        const float walkableNormalY=0.642788f;
+        void Horizontal(System.Numerics.Vector3 movement)
+        {
+            if(movement.LengthSquared()<1e-16f)return;
+            var sweep=geometry.SweepBody(position,movement);
+            if(sweep.Hit && IsGrounded)
+            {
+                var up=new System.Numerics.Vector3(0,stepHeight,0);
+                var lift=geometry.SweepBody(position,up);
+                var across=geometry.SweepBody(position+up,movement);
+                var down=new System.Numerics.Vector3(0,-stepHeight-0.02f,0);
+                var landing=geometry.SweepBody(position+up+movement,down);
+                if(!lift.Hit && !across.Hit && landing.Hit && landing.Normal.Y>=walkableNormalY)
+                {position+=up+movement+down*landing.Fraction;return;}
+            }
+            position+=movement*sweep.Fraction;
+        }
+        Horizontal(new System.Numerics.Vector3(dx*EffectiveSpeed*dt,0,0));
+        Horizontal(new System.Numerics.Vector3(0,0,dz*EffectiveSpeed*dt));
+        if(jump && IsGrounded){VelocityY=JumpVelocity;IsGrounded=false;}
+        VelocityY+=Gravity*dt;
+        var vertical=new System.Numerics.Vector3(0,VelocityY*dt,0);
+        var contact=geometry.SweepBody(position,vertical);
+        position+=vertical*contact.Fraction;
+        IsGrounded=contact.Hit && VelocityY<=0 && contact.Normal.Y>=walkableNormalY;
+        if(contact.Hit)VelocityY=0;
+        if(!IsGrounded && VelocityY<=0)
+        {
+            var probe=geometry.SweepBody(position,new System.Numerics.Vector3(0,-0.002f,0));
+            IsGrounded=probe.Hit && probe.Normal.Y>=walkableNormalY;
+        }
+        X=position.X;Y=position.Y;Z=position.Z;
     }
 }

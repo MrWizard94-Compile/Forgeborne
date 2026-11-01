@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "suitRefused": true,
+      "wardenRefused": true,
+      "exactRefusalStatePreserved": true,
+      "validPlacementAndCost": true,
+      "productionFeedback": true,
+      "sameSimulation": true
+    },
+    "compiler": "codedom"
+  }
+}

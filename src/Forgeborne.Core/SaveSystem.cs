@@ -38,6 +38,8 @@ public sealed class SaveData
     public int? WeaponReserve { get; set; }
     /// <summary>Optional v1 interactive pose, clocks and run counters. Missing in legacy/world-only saves.</summary>
     public RuntimeSaveState? Runtime { get; set; }
+    /// <summary>Absent in legacy saves. Unknown profiles fail before the live world is replaced.</summary>
+    public int? SurfaceProfile { get; set; }
 }
 
 /// <summary>A loaded save: the world, plus the Simulation-level state
@@ -92,6 +94,7 @@ public static class SaveSystem
             WeaponMag = weapon?.Mag,
             WeaponReserve = weapon?.Reserve,
             Runtime = runtime,
+            SurfaceProfile = world.Chunk.SurfaceProfile==SurfaceProfile.LegacyBlocks ? null : (int)world.Chunk.SurfaceProfile,
         };
         return JsonSerializer.Serialize(data, SaveOptions);
     }
@@ -110,8 +113,12 @@ public static class SaveSystem
             && Math.Abs((long)y) <= 1_000_000 && Math.Abs((long)z) <= 1_000_000;
         if (!SupportedPosition(data.PlayerX, data.PlayerY, data.PlayerZ))
             throw new InvalidOperationException("Saved player position is outside the supported range.");
+        if(data.SurfaceProfile.HasValue && data.SurfaceProfile.Value!=(int)SurfaceProfile.LegacyBlocks
+            && data.SurfaceProfile.Value!=(int)SurfaceProfile.ContinuousTerrainV1)
+            throw new InvalidOperationException("Saved surface profile is unsupported.");
         var world = new WorldZone(data.Seed);
         world.Chunk.FromBytes(Convert.FromBase64String(data.ChunkBase64));
+        world.Chunk.SurfaceProfile=(SurfaceProfile)(data.SurfaceProfile ?? 0);
         // Parse the skill build BEFORE restoring the player, so the
         // raised shield cap is in place before shields are restored:
         // without this, a skilled save with 100 shields would clamp

@@ -559,7 +559,7 @@ public sealed class Simulation
             applied = before - World.CoreHealth;
             destroyed = before > 0 && World.CoreHealth <= 0;
         }
-        outcome = new ShotOutcome(true, hit.Kind, hit.X, hit.Y, hit.Z, applied, destroyed);
+        outcome = new ShotOutcome(true, hit.Kind, hit.X, hit.Y, hit.Z, applied, destroyed, hit.Distance);
         return true; // shot fired; a solid, a miss, or no target still costs the round
     }
 

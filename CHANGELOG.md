@@ -1,5 +1,22 @@
 # Forgeborne — Changelog
 
+## 0.123.0 — 2026-11-01 — Shared continuous surface infrastructure
+
+- Added an explicit saved surface profile, immutable regional contour/field/BVH
+  snapshots, swept FPS contacts and shared terrain aiming. Legacy save/schema/
+  behavior is retained; unknown profiles fail before world replacement.
+- Unity region meshes and colliders consume the exact Core triangles. Edits reuse
+  unchanged regions; remote power changes still refresh their visible tints.
+  Shot/gather feedback consumes resolved surface distances.
+- Fixed edge interpolation cracks and ambiguous contour topology. 5486 core
+  checks pass, Release 0 warnings/errors, including all 255 local occupancy
+  arrangements, independent geometry oracles, movement and exact saves.
+- Actual Unity rays/buffers, production actions and recovery pass. Cadenced edit
+  samples reach 17.219 ms and a 40.388 ms observed frame: full performance remains
+  unmet. Main's default and final art/actor/construction/native gates remain open.
+- This preserves infrastructure, not a visual milestone. The camera diagnostic
+  still rejects the old softened layout. See docs/continuous-surface-checkpoint.md.
+
 ## 0.122.0 — 2026-11-01 — Original art foundation; block aesthetic rejected
 
 - Authored original carbine/gauntlets, warden, relay, pressure suit and foundry

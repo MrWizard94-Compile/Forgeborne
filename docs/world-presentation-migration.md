@@ -22,6 +22,16 @@ another world, independently mutate resources or advance time.
 
 ## Implementation order
 
+Infrastructure follow-up 0.123: the optional continuous material-field profile,
+immutable regional triangles/field samples, shared swept movement/aim, saved
+profile validation and actual Unity buffer/collider checks are implemented.
+See continuous-surface-checkpoint.md for exact evidence and failures. Main still
+defaults to legacy. The camera diagnostic confirms that smoothing the old layout
+does not produce the required world. Authored gameplay geometry/content binding,
+the actual re-authored environment, prospective construction/actor contracts and
+native/performance acceptance are the next work; they are not replaced by this
+infrastructure checkpoint.
+
 1. Preserve the existing mechanical checkpoint and usable original art separately
    on the local working branch. Do not package the rejected courtyard as a visual
    milestone. Keep existing source tests and old save fixtures unchanged.

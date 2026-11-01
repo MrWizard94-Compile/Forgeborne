@@ -163,8 +163,12 @@ public sealed class PlayerFeedback : MonoBehaviour
         var end = origin + direction * Simulation.AimReach;
         if (result.Target != AimTargetKind.None)
         {
-            var bounds = new Bounds(new Vector3(result.X+0.5f,result.Y+0.5f,result.Z+0.5f),Vector3.one);
-            if (bounds.IntersectRay(new Ray(origin,direction),out float distance)) end = origin + direction * Mathf.Max(0,distance-0.02f);
+            if(result.HitDistance.HasValue) end=origin+direction*result.HitDistance.Value;
+            else
+            {
+                var bounds = new Bounds(new Vector3(result.X+0.5f,result.Y+0.5f,result.Z+0.5f),Vector3.one);
+                if (bounds.IntersectRay(new Ray(origin,direction),out float distance)) end = origin + direction * Mathf.Max(0,distance-0.02f);
+            }
             Signal(end);
         }
         if (_trace != null)
