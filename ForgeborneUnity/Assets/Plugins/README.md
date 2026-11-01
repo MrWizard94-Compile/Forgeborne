@@ -21,18 +21,32 @@ source of truth in `src/Forgeborne.Core/`.
   Unity package; in Unity it is a manual Plugins DLL, which is
   exactly what this is.
 
-## How these DLLs were built (repo root)
+## How these DLLs are built (repo root, Integration Step 4, 0.111.0)
+
+Do not rebuild by hand from the NuGet cache. Run one documented script,
+which publishes the core for netstandard2.1 and copies only the 9 DLLs
+below into this folder (never `.cs` files, never the publish deps.json
+or pdb):
 
 ```
-dotnet build src/Forgeborne.Core/Forgeborne.Core.csproj -c Release
-# then copy src/Forgeborne.Core/bin/Release/netstandard2.1/Forgeborne.Core.dll
-# plus the System.Text.Json transitive DLLs from the NuGet cache
-# (see the core csproj for the package version) into this folder.
+# Linux / macOS / WSL:
+bash tools/build-unity-core.sh
+# Windows PowerShell:
+.\tools\build-unity-core.ps1
 ```
 
-A documented, runnable build script and a no-drift guard that
-fails if any core `.cs` file appears under `ForgeborneUnity/Assets/`
-are Integration Step 4, not this step — they are not claimed here.
+A plain `dotnet build` is not enough: it leaves System.Text.Json and
+its transitive DLLs in the NuGet cache, while `dotnet publish` collects
+exactly the 9 DLLs Unity needs in one staging folder. After a core
+change, run the script, then upload the changed DLLs to GitHub — the
+snapshot push is UTF-8 text only and cannot carry DLLs, so a DLL
+change needs the website-upload route used for 0.107.0, not a text push.
+
+A no-drift guard runs with the headless test suite
+(`tests/Forgeborne.Core.Tests/Program.cs`, Integration Step 4): it
+fails if any core `.cs` filename, or any core file's exact content,
+appears under `ForgeborneUnity/Assets/`, and it proves itself by
+catching a deliberately planted copy in a temp tree.
 
 ## What is still owed on Windows
 

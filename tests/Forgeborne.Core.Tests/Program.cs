@@ -9807,5 +9807,53 @@ Eq(3, SquadShapes.For(SquadKind.Vanguard).EngagementRange, "slice25 composed van
 Eq(5, SquadShapes.For(SquadKind.Recon).EngagementRange, "slice25 composed recon range is 5, above the radius");
 Eq(2, SquadShapes.For(SquadKind.Heavy).EngagementRange, "slice25 composed heavy range is 2, below the radius");
 
+// ---- Integration Step 4: no-drift guard (0.111.0) ----
+// A core .cs file must never be duplicated under ForgeborneUnity/Assets/:
+// Unity compiles Assets source, so a copy would drift from the one source
+// of truth in src/Forgeborne.Core/ and is the rejected quick fix from
+// 2026-10-31. The guard checks both the filename and the exact file
+// content, so a renamed copy is still caught, and it proves itself with
+// a deliberately planted copy in a temp tree, not only by passing clean.
+string? driftRoot = null;
+foreach (var driftStart in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
+{
+    var driftDir = new DirectoryInfo(driftStart);
+    for (int driftUp = 0; driftUp < 10 && driftDir != null; driftUp++)
+    {
+        if (File.Exists(Path.Combine(driftDir.FullName, "src", "Forgeborne.Core", "Forgeborne.Core.csproj")) && Directory.Exists(Path.Combine(driftDir.FullName, "ForgeborneUnity", "Assets")))
+        { driftRoot = driftDir.FullName; break; }
+        driftDir = driftDir.Parent;
+    }
+    if (driftRoot != null) break;
+}
+Check(driftRoot != null, "integration no-drift repo root found");
+if (driftRoot != null)
+{
+    var driftCoreDir = Path.Combine(driftRoot, "src", "Forgeborne.Core");
+    var driftAssetsDir = Path.Combine(driftRoot, "ForgeborneUnity", "Assets");
+    var driftCoreFiles = Directory.GetFiles(driftCoreDir, "*.cs");
+    Check(driftCoreFiles.Length >= 19, $"integration no-drift core file count is at least 19 (got {driftCoreFiles.Length})");
+    var driftCoreNames = new HashSet<string>(driftCoreFiles.Select(f => Path.GetFileName(f)), StringComparer.OrdinalIgnoreCase);
+    var driftAssetFiles = Directory.GetFiles(driftAssetsDir, "*.cs", SearchOption.AllDirectories);
+    Check(driftAssetFiles.Length >= 9, $"integration no-drift adapter file count is at least 9 (got {driftAssetFiles.Length})");
+    var driftCollisions = driftAssetFiles.Where(f => driftCoreNames.Contains(Path.GetFileName(f))).ToList();
+    Check(driftCollisions.Count == 0, $"integration no-drift no core filename under Assets (collisions {driftCollisions.Count})");
+    var driftCoreBytes = driftCoreFiles.Select(f => File.ReadAllBytes(f)).ToList();
+    var driftContentDupes = driftAssetFiles.Where(f => driftCoreBytes.Any(b => b.SequenceEqual(File.ReadAllBytes(f)))).ToList();
+    Check(driftContentDupes.Count == 0, $"integration no-drift no core content duplicated under Assets (dupes {driftContentDupes.Count})");
+    var driftTemp = Path.Combine(Path.GetTempPath(), "forgeborne-drift-" + Guid.NewGuid().ToString("N"));
+    Directory.CreateDirectory(driftTemp);
+    try
+    {
+        File.Copy(Path.Combine(driftCoreDir, "Voxel.cs"), Path.Combine(driftTemp, "Voxel.cs"));
+        var driftTempHits = Directory.GetFiles(driftTemp, "*.cs").Where(f => driftCoreNames.Contains(Path.GetFileName(f))).ToList();
+        Check(driftTempHits.Count == 1, "integration no-drift guard catches a deliberately duplicated core file");
+        var driftTempBytes = File.ReadAllBytes(Path.Combine(driftTemp, "Voxel.cs"));
+        Check(driftCoreBytes.Any(b => b.SequenceEqual(driftTempBytes)), "integration no-drift guard catches duplicated core content");
+    }
+    finally { try { Directory.Delete(driftTemp, true); } catch { } }
+    Check(!Directory.Exists(driftTemp), "integration no-drift temp proof cleaned up");
+}
+
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;
