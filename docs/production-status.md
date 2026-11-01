@@ -1,5 +1,8 @@
 # Forgeborne production status
 
+The full director brief is mapped in [design-pillars.md](design-pillars.md),
+including the explicit Path of Exile 2 reference in the latest objective.
+
 Director: Rob. Integrator: Codex. Current phase: **pre-production / vertical slice**.
 PC-native 3D FPS + orbital command, single-player first, original game code/art,
 Unity 6000.3.27f2 + URP. One GameManager-owned Simulation. Legacy input requires
@@ -26,9 +29,10 @@ Do not equate an agent count, a schema or a green test suite with studio quality
 1. **Integrated foundation — partial checkpoint.** Saved Main, shared ownership,
    rendered URP, input/HUD and MCP connection observed; see
    [the exact evidence](unity-main-integration.md). This is not a gameplay milestone.
-2. **Real-time gameplay contract — next.** Separate frame movement from a fixed,
-   explicitly chosen authoritative world cadence; verify equal-time outcomes
-   across frame rates. Preserve existing call-based core contracts and old saves.
+2. **Real-time gameplay contract — verified checkpoint, feel review open.**
+   Fixed movement/world clocks passed equal-time core tests and live Main
+   observation; see [runtime-pacing-checkpoint.md](runtime-pacing-checkpoint.md).
+   The candidate two-tick/second pace is still subject to encounter playtesting.
 3. **Readable encounter.** Visible enemies and objective from the same canonical
    world, pointer capture/release, legible gathering/building targets and feedback,
    clear player death/restart, continuous real-time pressure and an attainable win.

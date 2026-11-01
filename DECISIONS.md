@@ -11732,3 +11732,22 @@ real-time pacing and representative performance remain unpassed. The
 studio-production reference supplied by Rob was read in full; the ongoing
 vertical-slice gates and ownership are in docs/production-status.md. No push,
 licence change, visibility change, release or fun/quality acceptance occurred.
+
+## 2026-10-31 — Real-time vertical-slice contract (implementation candidate)
+
+Following Rob's studio-quality direction and the fully read production brief,
+advance the interactive world by elapsed time rather than rendered frames.
+The review candidate is 120 Hz movement/collision and two authoritative world
+steps per second, preserving existing per-tick rules and the explicit Tick API.
+This changes real-time encounter pacing intentionally and remains subject to
+Rob's playtest veto. The same Simulation owns all clocks and views. 5094 core
+checks passed on .NET 8.0.33 with zero build warnings/errors. Live foreground
+Main observed 6 world ticks in 3.051 seconds across 888 render frames, 100 HP,
+and the same Simulation identity. The first unfocused probe exercised zero
+render frames and was rejected. Runtime/legacy-save/input limits are recorded
+in docs/runtime-pacing-checkpoint.md and docs/vertical-slice-runtime-contract.md.
+Original drone/core views and production in-place restart are integrated; final
+world/art/audio, player-facing persistence/recovery, overhead command and full
+native-player acceptance remain owed. The full six-game inspiration brief,
+including Path of Exile 2, is retained in docs/design-pillars.md. No studio/fun
+acceptance or external publication is claimed.

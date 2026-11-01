@@ -10,6 +10,7 @@ using Forgeborne.Core;
 public class GameManager : MonoBehaviour
 {
     public int Seed = 42;
+    private string _initialEncounter = "";
     public Simulation? Simulation;
     public VoxelMeshRenderer? MeshRenderer;
     // Slice 16 Step 1: the FPS adapter whose refresh
@@ -105,6 +106,16 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("Forgeborne mesh wiring: FpsInputAdapter.MeshRenderer is still null after GameManager.Start — refresh calls will no-op and the chunk mesh will stay stale after builds, gathers, and destructions. Wire FpsAdapter to the same VoxelMeshRenderer GameManager links, or wire the adapter field directly — see playtest-gate items 27 and 31.");
         }
         Simulation.World.SpawnWave(3);
+        _initialEncounter = Simulation.SaveToJson();
+    }
+
+    public bool RestartEncounter()
+    {
+        if (Simulation == null || string.IsNullOrEmpty(_initialEncounter)) return false;
+        if (!Simulation.LoadFromJson(_initialEncounter)) return false;
+        if (FpsAdapter != null) FpsAdapter.ResetInteraction();
+        if (MeshRenderer != null) MeshRenderer.RefreshMesh();
+        return true;
     }
 
     // Full save (0.17.0): Simulation.SaveToJson carries the world,

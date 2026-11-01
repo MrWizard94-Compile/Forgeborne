@@ -25,6 +25,56 @@ public class FpsInputAdapter : MonoBehaviour
     // scene actually runs on.
     public VoxelMeshRenderer? MeshRenderer;
     public float MouseSensitivity = 2f;
+    public bool CapturePointerOnStart = true;
+    private bool _capturedPointer;
+    private int _pointerCaptureFrame = -1;
+
+    void Start()
+    {
+        if (CapturePointerOnStart) CapturePointer();
+    }
+
+    public void CapturePointer()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        _capturedPointer = true;
+        _pointerCaptureFrame = Time.frameCount;
+    }
+
+    public void ReleasePointer()
+    {
+        if (!_capturedPointer) return;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        _capturedPointer = false;
+    }
+
+    void OnApplicationFocus(bool focused)
+    {
+        if (!focused) ReleasePointer();
+    }
+
+    void OnDisable() => ReleasePointer();
+
+    void OnDestroy()
+    {
+        ReleasePointer();
+        if (_pendingReRallyMarker != null) Destroy(_pendingReRallyMarker);
+        if (_pendingReRallyMaterial != null) Destroy(_pendingReRallyMaterial);
+    }
+
+    public void ResetInteraction()
+    {
+        _pendingReRally = false;
+        _pendingDismiss = false;
+        if (_pendingReRallyMarker != null) _pendingReRallyMarker.SetActive(false);
+        if (Simulation != null)
+        {
+            Simulation.CancelOrbitalPick();
+            Simulation.ApplyLook(-Simulation.Look.Yaw, -Simulation.Look.Pitch);
+        }
+    }
 
     // Slice 24 Step 1 (0.97.0): K re-rally pending state, decided
     // in that step (rationale in DECISIONS.md). This is an OWN
@@ -94,13 +144,26 @@ public class FpsInputAdapter : MonoBehaviour
     void Update()
     {
         if (Simulation == null) return;
+        bool terminal = Simulation.IsPlayerDead || Simulation.IsObjectiveComplete;
+        if (terminal) ReleasePointer();
+        if (Input.GetKeyDown(KeyCode.Escape) && !Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
+            ReleasePointer();
+        bool capturedThisFrame = _pointerCaptureFrame == Time.frameCount;
+        bool overUi = UnityEngine.EventSystems.EventSystem.current != null
+            && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+        if (!terminal && Cursor.lockState != CursorLockMode.Locked && Input.GetMouseButtonDown(0) && !overUi)
+        {
+            CapturePointer();
+            capturedThisFrame = true;
+        }
+        bool acceptsInput = !terminal && Cursor.lockState == CursorLockMode.Locked;
         // WASD / arrows, raw scalars: Slice 8 Step 1 rotates them by
         // the core Look yaw inside Simulation.Tick (W walks the yaw
         // direction, D the yaw right), so no rotation lives here and
         // this adapter needs no change for yaw-rotated movement.
-        float forward = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
-        float strafe = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
-        bool jump = Input.GetKeyDown(KeyCode.Space);
+        float forward = acceptsInput ? (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f) : 0f;
+        float strafe = acceptsInput ? (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f) : 0f;
+        bool jump = acceptsInput && Input.GetKeyDown(KeyCode.Space);
         // FPS pitch aiming (Slice 6 Step 1): the adapter holds NO yaw
         // or pitch of its own any more. It feeds already-scaled mouse
         // deltas into the core Look (positive Mouse Y = look up, per
@@ -118,8 +181,8 @@ public class FpsInputAdapter : MonoBehaviour
         // new binding for aim, only the renamed fire call below.
         // Movement is yaw-rotated in core (Step 1).
         Simulation.ApplyLook(
-            Input.GetAxis("Mouse X") * MouseSensitivity,
-            Input.GetAxis("Mouse Y") * MouseSensitivity);
+            acceptsInput && !capturedThisFrame ? Input.GetAxis("Mouse X") * MouseSensitivity : 0f,
+            acceptsInput && !capturedThisFrame ? Input.GetAxis("Mouse Y") * MouseSensitivity : 0f);
         Vector3 lookForward = new Vector3(
             Simulation.Look.ForwardX, Simulation.Look.ForwardY, Simulation.Look.ForwardZ);
         transform.rotation = Quaternion.LookRotation(lookForward);
@@ -137,10 +200,13 @@ public class FpsInputAdapter : MonoBehaviour
         // and item 27 is the observation that proves or refutes
         // that expectation.
         int destroyedBefore = Simulation.World.DestroyedMills;
-        Simulation.Tick(Time.deltaTime, forward, strafe, jump);
+        // Render frequency must not set combat/automation speed. The one
+        // Simulation owns the fixed movement and authoritative world clocks.
+        Simulation.AdvanceFrame(Time.deltaTime, forward, strafe, jump);
         if (Simulation.World.DestroyedMills != destroyedBefore && MeshRenderer != null) MeshRenderer.RefreshMesh();
         // Camera follows the FPS controller's feet position + eye height.
         transform.position = new Vector3(Simulation.Fps.X, Simulation.Fps.Y + 1.6f, Simulation.Fps.Z);
+        if (!acceptsInput || capturedThisFrame) return;
 
         // Slice 13 Step 3 refresh event set, continued: a
         // successful gather or build refreshes the mesh at once,

@@ -159,6 +159,13 @@ public class WeaponViewModel : MonoBehaviour
     private Material? _energyMaterial;
     private Material? _accentMaterial;
 
+    void OnDestroy()
+    {
+        if (_darkMetalMaterial != null) Destroy(_darkMetalMaterial);
+        if (_energyMaterial != null) Destroy(_energyMaterial);
+        if (_accentMaterial != null) Destroy(_accentMaterial);
+    }
+
     private Material LazyMaterial(ref Material? slot, Color color)
     {
         if (slot == null)

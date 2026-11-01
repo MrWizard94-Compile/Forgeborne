@@ -6,7 +6,7 @@ Studio-grade, PC-native, FPS-RTS voxel ARPG hybrid.
 
 Forgeborne merges, in original form only, the strengths of modded Minecraft
 (gather / craft / build / forge), StarCraft (real-time macro and escalating
-pressure), Diablo and Path of Exile (procedural loot, builds, and a deep
+pressure), Diablo and Path of Exile 2 (procedural loot, builds, and a deep
 passive graph), BioShock (immersive atmosphere and systemic powers), and
 Borderlands (procedural weapon variety and personality).
 
@@ -19,13 +19,14 @@ names, story, art, code, and audio in this repository are original.
 **Unity integration checkpoint; director gameplay acceptance pending.**
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
-It wires the existing FPS, chunk, HUD and squad adapters to GameManager's
-single Seed 42 Simulation, with a URP renderer, dusk sky and original
-primitive weapon model. Unity MCP was used to create and inspect the scene
-on Windows. This is not a studio-quality playable milestone: invisible
-enemies/objective, frame-driven world pacing, mouse capture, save/load UI
-and a true overhead camera remain gaps. See
-[the integration evidence and setup](docs/unity-main-integration.md).
+It wires the FPS, chunk, HUD and squad adapters to GameManager's single
+Seed 42 Simulation, with a URP renderer, dusk sky, original weapon/drone/core
+views, pointer capture and a fixed real-time world cadence. Unity MCP was used
+to create and inspect the scene on Windows. Studio-quality encounter/art/audio,
+player-facing recovery/persistence and a true overhead command view remain
+active work. See [the production tracker](docs/production-status.md),
+[current runtime evidence](docs/runtime-pacing-checkpoint.md), and
+[integration setup](docs/unity-main-integration.md).
 A passing check does not prove usefulness or fun.
 
 ## Locked decisions (director: Rob, 2026-10-29)

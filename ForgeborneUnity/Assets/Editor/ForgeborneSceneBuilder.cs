@@ -30,6 +30,7 @@ public static class ForgeborneSceneBuilder
         var manager = new GameObject("GameManager").AddComponent<GameManager>();
         manager.Seed = 42;
         manager.MeshRenderer = new GameObject("Chunk").AddComponent<VoxelMeshRenderer>();
+        new GameObject("World Actors").AddComponent<WorldActorDisplay>().Manager = manager;
 
         var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
         cameraObject.tag = "MainCamera";

@@ -19,10 +19,11 @@ Requires .NET 8 SDK. From this repository root:
 dotnet run --project tests/Forgeborne.Core.Tests
 ```
 
-Current integration baseline: **5061 passed, 0 failed**. The Windows run on
-2026-10-31 used the net8.0 test assembly with explicit major runtime
-roll-forward to installed .NET 9 because .NET 8 was absent. This does not
-establish an exact .NET 8 runtime pass. See `docs/unity-main-integration.md`.
+Current runtime checkpoint: **5094 passed, 0 failed**, with a full rebuild
+reporting 0 warnings/errors and execution on genuine .NET 8.0.33. The earlier
+integration baseline used explicit .NET 9 roll-forward; an isolated verified
+.NET 8 runtime has since closed that toolchain gap. See
+`docs/runtime-pacing-checkpoint.md` for commands and live Unity evidence.
 
 ## Unity integration
 

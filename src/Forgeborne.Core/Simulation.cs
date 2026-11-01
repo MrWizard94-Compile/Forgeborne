@@ -35,6 +35,15 @@ public sealed class Simulation
     // not advance it. Reset on ApplySkills so a respec cannot carry
     // a near-complete bonus from an old build.
     private double _gatherBonusCarry;
+    // The interactive runtime uses fixed movement steps and an elapsed-time
+    // world clock. Tick remains the explicit one-world-step API for tools/tests.
+    public const double FrameStepSeconds = 1.0 / 120.0;
+    public const int WorldTicksPerSecond = 2;
+    public const float MaximumFrameSeconds = 0.25f;
+    private const int MovementStepsPerWorldTick = 120 / WorldTicksPerSecond;
+    private double _frameCarry;
+    private int _movementStepsSinceWorldTick;
+    private bool _queuedJump;
 
     public Simulation(int seed, GeneratedWeapon? equipped = null, SkillBuild? skills = null)
     {
@@ -86,6 +95,9 @@ public sealed class Simulation
     {
         if (loaded == null) return false;
         World = loaded;
+        _frameCarry = 0;
+        _movementStepsSinceWorldTick = 0;
+        _queuedJump = false;
         Fps.Teleport(loaded.Player.X, loaded.Player.Y, loaded.Player.Z);
         EnemiesKilled = 0;
         BlocksGathered = 0;
@@ -154,6 +166,49 @@ public sealed class Simulation
     /// </summary>
     public void Tick(float dt, float forward, float strafe, bool jump)
     {
+        Move(dt, forward, strafe, jump);
+        World.Advance();
+    }
+
+    /// <summary>
+    /// Interactive time entry: 120 Hz collision/movement and two world ticks per
+    /// second, independent of render callback rate. A frame contributes at most
+    /// 250 ms, so returning from a hitch cannot apply an unbounded damage burst.
+    /// Jump edges survive frames shorter than a movement step. Death or victory
+    /// ends progression until the player restores/restarts the world.
+    /// Loading a legacy world restarts the sub-tick clock, retaining saved ticks.
+    /// </summary>
+    public int AdvanceFrame(float dt, float forward, float strafe, bool jump)
+    {
+        if (float.IsNaN(dt) || float.IsInfinity(dt) || dt < 0)
+            throw new ArgumentOutOfRangeException(nameof(dt), "Frame time must be finite and nonnegative.");
+        if (IsPlayerDead || IsObjectiveComplete || dt == 0) return 0;
+        _queuedJump |= jump;
+        _frameCarry += Math.Min(dt, MaximumFrameSeconds);
+        int advanced = 0;
+        // At most 31 iterations: one prior fractional step plus a capped frame.
+        for (int step = 0; step < 31 && _frameCarry + 1e-8 >= FrameStepSeconds; step++)
+        {
+            _frameCarry = Math.Max(0, _frameCarry - FrameStepSeconds);
+            Move((float)FrameStepSeconds, forward, strafe, _queuedJump);
+            _queuedJump = false;
+            if (++_movementStepsSinceWorldTick == MovementStepsPerWorldTick)
+            {
+                _movementStepsSinceWorldTick = 0;
+                World.Advance();
+                advanced++;
+                if (IsPlayerDead || IsObjectiveComplete)
+                {
+                    _frameCarry = 0;
+                    break;
+                }
+            }
+        }
+        return advanced;
+    }
+
+    private void Move(float dt, float forward, float strafe, bool jump)
+    {
         float yawRad = Look.Yaw * (float)Math.PI / 180f;
         float sin = (float)Math.Sin(yawRad), cos = (float)Math.Cos(yawRad);
         float worldX = forward * sin + strafe * cos;
@@ -162,15 +217,6 @@ public sealed class Simulation
         World.Player.X = (int)Math.Floor(Fps.X);
         World.Player.Y = (int)Math.Floor(Fps.Y);
         World.Player.Z = (int)Math.Floor(Fps.Z);
-        int before = World.Enemies.Count;
-        World.Advance();
-        // Note: World.Advance removes dead enemies; kills are counted
-        // by the caller via Attack, not here, to avoid double-counting
-        // enemies that die from other causes in future slices.
-        _ = before;
-        // Damage from adjacent enemies is applied in World.Advance via
-        // the grid player, which is synced from the FPS controller above.
-        // Sync FPS health display back through HudState in callers.
     }
 
     /// <summary>

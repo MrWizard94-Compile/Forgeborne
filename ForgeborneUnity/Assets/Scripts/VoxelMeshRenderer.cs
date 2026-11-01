@@ -44,6 +44,7 @@ public class VoxelMeshRenderer : MonoBehaviour
     public Material? ChunkMaterial;
     private Mesh? _mesh;
     private MeshCollider? _collider;
+    private Material? _runtimeMaterial;
 
     void Awake()
     {
@@ -58,9 +59,20 @@ public class VoxelMeshRenderer : MonoBehaviour
         else
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            if (shader != null) renderer.sharedMaterial = new Material(shader);
+            if (shader != null)
+            {
+                _runtimeMaterial = new Material(shader);
+                renderer.sharedMaterial = _runtimeMaterial;
+            }
             else Debug.LogWarning("Forgeborne chunk material: neither Universal Render Pipeline/Lit nor Standard shader found; chunk renders with its Inspector material, and vertex tints may not show — see playtest-gate items 26 and 30.");
         }
+    }
+
+    void OnDestroy()
+    {
+        if (_collider != null) _collider.sharedMesh = null;
+        if (_mesh != null) Destroy(_mesh);
+        if (_runtimeMaterial != null) Destroy(_runtimeMaterial);
     }
 
     // Call this when the chunk changes (gather / build / destruction).

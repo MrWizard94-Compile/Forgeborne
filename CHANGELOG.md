@@ -1,5 +1,17 @@
 # Forgeborne — Changelog
 
+## 0.114.0 — 2026-10-31 — Frame-independent runtime and canonical actor views
+
+- Added Simulation.AdvanceFrame: fixed 120 Hz movement, candidate 2 Hz world,
+  bounded hitch catch-up, buffered jump, terminal-state stop; explicit Tick
+  and old-save load contracts retained. Unity uses the new installed DLL.
+- Added original enemy/core views, pointer capture/release and an in-place
+  encounter restart API. Added owned mesh/material teardown and guarded
+  core-publish exit/cleanup behavior. Preserved all existing test assertions.
+- 5094/5094 checks passed on .NET 8.0.33; full build 0 warnings/errors.
+  Live Main: 6 world ticks / 3.051 seconds / 888 render frames, same Simulation.
+- Evidence and open studio-quality gates: docs/runtime-pacing-checkpoint.md.
+  Full vision: docs/design-pillars.md. Local checkpoint only; no publication.
 ## 0.113.0 — 2026-10-31 — Windows Main integration checkpoint
 
 - Saved Main in Unity 6000.3.27f2; all five adapters share GameManager's

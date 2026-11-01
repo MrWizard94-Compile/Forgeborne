@@ -20,7 +20,7 @@ async def run(args):
                 result = await session.list_tools()
                 matches = [tool.model_dump() for tool in result.tools if tool.name == args.describe]
                 print(json.dumps(matches, indent=2))
-                return
+                return 0
             if args.list_resources:
                 result = await session.list_resources()
             elif args.resource:
@@ -44,7 +44,8 @@ async def run(args):
             data = getattr(result, "structuredContent", None)
             print(json.dumps(data, indent=2) if data is not None else result.model_dump_json(indent=2))
             if getattr(result, "isError", False) or (isinstance(data, dict) and data.get("success") is False):
-                raise SystemExit(1)
+                return 1
+            return 0
 
 
 if __name__ == "__main__":
@@ -57,4 +58,4 @@ if __name__ == "__main__":
     parser.add_argument("--args", default="{}")
     parser.add_argument("--args-file")
     parser.add_argument("--code-file")
-    asyncio.run(run(parser.parse_args()))
+    raise SystemExit(asyncio.run(run(parser.parse_args())))

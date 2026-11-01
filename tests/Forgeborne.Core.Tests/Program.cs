@@ -6435,6 +6435,7 @@ s18PaidStuckWorld.Player.X = 20; s18PaidStuckWorld.Player.Z = 20;
 s18PaidStuckWorld.Player.Inventory.Add(BlockType.EmberOre, 10);
 var s18PaidStuck = s18PaidStuckWorld.TryDeployPaidSquad(20, 5, 20, TacticalDoctrine.Patrol)!;
 Check(s18PaidStuck != null, "slice18 deploy paid patrol enclosed deploys funded");
+if (s18PaidStuck is null) throw new InvalidOperationException("Funded patrol fixture failed to deploy.");
 Eq(0, s18PaidStuckWorld.Player.Inventory.Get(BlockType.EmberOre), "slice18 deploy paid patrol enclosed charges 10 ore");
 Check(s18PaidStuckWorld.Chunk.TrySet(21, 5, 20, BlockType.Stone), "slice18 deploy paid patrol enclosed test stages an east wall");
 Check(s18PaidStuckWorld.Chunk.TrySet(19, 5, 20, BlockType.Stone), "slice18 deploy paid patrol enclosed test stages a west wall");
@@ -9854,6 +9855,8 @@ if (driftRoot != null)
     finally { try { Directory.Delete(driftTemp, true); } catch { } }
     Check(!Directory.Exists(driftTemp), "integration no-drift temp proof cleaned up");
 }
+
+FrameCadenceTests.Run(Check);
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;
