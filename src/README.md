@@ -19,11 +19,11 @@ Requires .NET 8 SDK. From this repository root:
 dotnet run --project tests/Forgeborne.Core.Tests
 ```
 
-Current runtime checkpoint: **5094 passed, 0 failed**, with a full rebuild
+Current runtime checkpoint: **5118 passed, 0 failed**, with a full rebuild
 reporting 0 warnings/errors and execution on genuine .NET 8.0.33. The earlier
 integration baseline used explicit .NET 9 roll-forward; an isolated verified
 .NET 8 runtime has since closed that toolchain gap. See
-`docs/runtime-pacing-checkpoint.md` for commands and live Unity evidence.
+`docs/courtyard-player-flow-checkpoint.md` for current live Unity evidence.
 
 ## Unity integration
 

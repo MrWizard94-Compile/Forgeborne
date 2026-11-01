@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.115.0 — 2026-10-31 — Authored courtyard, material channels and player flow
+
+- Authored original salvage banks, cover/relay geometry and visible forward
+  warden approaches in the canonical chunk. Added block-ID mesh channels and
+  the original URP voxel surface shader/material; inspected the real result.
+- Added entry/pause/terminal UI, restart confirmation, resource hints and
+  player-facing local save/load with bounded UTF-8, atomic slot replacement and
+  a recoverable backup. Retained the single Simulation and legacy Both input.
+- Core build 0 warnings/errors; 5118/5118 checks passed on .NET 8.0.33. Actual
+  Unity UI save/load/death/restart/fresh-session restore passed; invalid load
+  kept the world. Shader messages and final scoped console findings: zero.
+- Evidence and remaining studio-quality gates:
+  docs/courtyard-player-flow-checkpoint.md. Exact pose/time persistence,
+  export/import, overhead command, final art/audio/native QA remain active.
 ## 0.114.0 — 2026-10-31 — Frame-independent runtime and canonical actor views
 
 - Added Simulation.AdvanceFrame: fixed 120 Hz movement, candidate 2 Hz world,

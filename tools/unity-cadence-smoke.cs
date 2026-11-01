@@ -1,6 +1,8 @@
 if (!Application.isPlaying) throw new System.InvalidOperationException("Enter Main Play mode first.");
 var manager = UnityEngine.Object.FindFirstObjectByType<GameManager>();
 if (!manager.RestartEncounter()) throw new System.InvalidOperationException("Production restart failed.");
+var flow = UnityEngine.Object.FindFirstObjectByType<PlayerFlow>();
+if (flow != null) flow.Resume();
 var simulation = manager.Simulation;
 double started = Time.realtimeSinceStartupAsDouble;
 int initialFrame = Time.frameCount;

@@ -58,7 +58,7 @@ public class VoxelMeshRenderer : MonoBehaviour
         }
         else
         {
-            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            var shader = Shader.Find("Forgeborne/VoxelSurface") ?? Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
             if (shader != null)
             {
                 _runtimeMaterial = new Material(shader);
@@ -105,12 +105,15 @@ public class VoxelMeshRenderer : MonoBehaviour
         var norms = new Vector3[data.Normals.Count];
         var uvs = new Vector2[data.Uvs.Count];
         var cols = new Color[data.Colors.Count];
+        var types = new Vector2[data.BlockTypes.Count];
         for (int i = 0; i < verts.Length; i++)
         {
             verts[i] = new Vector3(data.Vertices[i].Item1, data.Vertices[i].Item2, data.Vertices[i].Item3);
             norms[i] = new Vector3(data.Normals[i].Item1, data.Normals[i].Item2, data.Normals[i].Item3);
             uvs[i] = new Vector2(data.Uvs[i].Item1, data.Uvs[i].Item2);
-            cols[i] = new Color(data.Colors[i].Item1, data.Colors[i].Item2, data.Colors[i].Item3, data.Colors[i].Item4);
+            var tint = new Color(data.Colors[i].Item1, data.Colors[i].Item2, data.Colors[i].Item3, data.Colors[i].Item4);
+            cols[i] = SurfaceColor(data.BlockTypes[i]) * tint;
+            types[i] = new Vector2((int)data.BlockTypes[i], 0);
         }
         _mesh.Clear();
         if (_collider != null) _collider.sharedMesh = null;
@@ -118,10 +121,25 @@ public class VoxelMeshRenderer : MonoBehaviour
         _mesh.normals = norms;
         _mesh.uv = uvs;
         _mesh.colors = cols;
+        _mesh.uv2 = types;
         _mesh.triangles = data.Indices.ToArray();
         _mesh.RecalculateBounds();
         // Re-attach after the clear/rebuild, so the raycast collider
         // matches the freshly built mesh instead of the cleared one.
         if (_collider != null) _collider.sharedMesh = _mesh;
+    }
+
+    private static Color SurfaceColor(BlockType block)
+    {
+        switch (block)
+        {
+            case BlockType.Stone: return new Color(0.22f, 0.27f, 0.30f);
+            case BlockType.EmberOre: return new Color(0.86f, 0.29f, 0.07f);
+            case BlockType.Wood: return new Color(0.34f, 0.17f, 0.075f);
+            case BlockType.Wall: return new Color(0.10f, 0.16f, 0.20f);
+            case BlockType.Workstation: return new Color(0.09f, 0.40f, 0.46f);
+            case BlockType.Bedrock: return new Color(0.055f, 0.065f, 0.08f);
+            default: return new Color(0.22f, 0.32f, 0.38f);
+        }
     }
 }

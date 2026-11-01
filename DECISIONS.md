@@ -11751,3 +11751,20 @@ world/art/audio, player-facing persistence/recovery, overhead command and full
 native-player acceptance remain owed. The full six-game inspiration brief,
 including Path of Exile 2, is retained in docs/design-pillars.md. No studio/fun
 acceptance or external publication is claimed.
+
+## 2026-10-31 — Courtyard and player flow (agent observation, approval pending)
+
+The canonical voxel courtyard now contains purposeful resource banks/cover,
+forward warden approaches and a relay platform. Original resource colours and
+block IDs reach an original URP shader in the real renderer. A first shader
+compile error was corrected, then ShaderUtil reported zero messages. Actual
+Unity UI exercised entry, pause, slot save, natural death, load recovery,
+restart and disk restore after a fresh Play session. Scripted live checks also
+verified malformed-save state preservation, final restart confirmation and
+exact prior-slot backup bytes. The new application save path had no prior
+player slot before QA. 5118 checks passed on genuine .NET 8.0.33, with zero
+build warnings/errors. Details and open gates are recorded in
+docs/courtyard-player-flow-checkpoint.md. Studio quality and fun are NOT
+accepted; exact pose/time persistence, export/import, overhead view,
+complete combat/gather feedback, final art/audio, native build and sustained
+hardware profiling remain active. No external publication occurred.

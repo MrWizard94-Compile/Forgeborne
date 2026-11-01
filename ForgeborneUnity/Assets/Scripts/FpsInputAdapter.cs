@@ -26,12 +26,14 @@ public class FpsInputAdapter : MonoBehaviour
     public VoxelMeshRenderer? MeshRenderer;
     public float MouseSensitivity = 2f;
     public bool CapturePointerOnStart = true;
+    public bool InputSuppressed;
+    public bool HasPendingCommand => _pendingReRally || _pendingDismiss || (Simulation != null && Simulation.OrbitalCommand.IsPicking);
     private bool _capturedPointer;
     private int _pointerCaptureFrame = -1;
 
     void Start()
     {
-        if (CapturePointerOnStart) CapturePointer();
+        if (CapturePointerOnStart && !InputSuppressed) CapturePointer();
     }
 
     public void CapturePointer()
@@ -64,7 +66,7 @@ public class FpsInputAdapter : MonoBehaviour
         if (_pendingReRallyMaterial != null) Destroy(_pendingReRallyMaterial);
     }
 
-    public void ResetInteraction()
+    public void ResetInteraction(bool resetLook = true)
     {
         _pendingReRally = false;
         _pendingDismiss = false;
@@ -72,7 +74,7 @@ public class FpsInputAdapter : MonoBehaviour
         if (Simulation != null)
         {
             Simulation.CancelOrbitalPick();
-            Simulation.ApplyLook(-Simulation.Look.Yaw, -Simulation.Look.Pitch);
+            if (resetLook) Simulation.ApplyLook(-Simulation.Look.Yaw, -Simulation.Look.Pitch);
         }
     }
 
@@ -146,17 +148,17 @@ public class FpsInputAdapter : MonoBehaviour
         if (Simulation == null) return;
         bool terminal = Simulation.IsPlayerDead || Simulation.IsObjectiveComplete;
         if (terminal) ReleasePointer();
-        if (Input.GetKeyDown(KeyCode.Escape) && !Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
+        if (!InputSuppressed && _pointerCaptureFrame != Time.frameCount && Input.GetKeyDown(KeyCode.Escape) && !Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
             ReleasePointer();
         bool capturedThisFrame = _pointerCaptureFrame == Time.frameCount;
         bool overUi = UnityEngine.EventSystems.EventSystem.current != null
             && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
-        if (!terminal && Cursor.lockState != CursorLockMode.Locked && Input.GetMouseButtonDown(0) && !overUi)
+        if (!terminal && !InputSuppressed && Cursor.lockState != CursorLockMode.Locked && Input.GetMouseButtonDown(0) && !overUi)
         {
             CapturePointer();
             capturedThisFrame = true;
         }
-        bool acceptsInput = !terminal && Cursor.lockState == CursorLockMode.Locked;
+        bool acceptsInput = !terminal && !InputSuppressed && Cursor.lockState == CursorLockMode.Locked;
         // WASD / arrows, raw scalars: Slice 8 Step 1 rotates them by
         // the core Look yaw inside Simulation.Tick (W walks the yaw
         // direction, D the yaw right), so no rotation lives here and

@@ -9857,6 +9857,8 @@ if (driftRoot != null)
 }
 
 FrameCadenceTests.Run(Check);
+CourtyardEncounterTests.Run(Check);
+LocalSaveStoreTests.Run(Check);
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

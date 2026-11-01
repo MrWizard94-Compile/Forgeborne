@@ -20,8 +20,14 @@ if (mesh == null || mesh.vertexCount == 0 || !object.ReferenceEquals(mesh, g.Mes
 if (UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline == null)
     throw new System.InvalidOperationException("URP is not active.");
 var shader = g.MeshRenderer.GetComponent<MeshRenderer>().sharedMaterial.shader;
-if (shader.name != "Universal Render Pipeline/Lit" || !shader.isSupported)
+if (shader.name != "Forgeborne/VoxelSurface" || !shader.isSupported)
     throw new System.InvalidOperationException("Chunk shader is unsupported.");
+if (mesh.colors.Length != mesh.vertexCount || mesh.uv2.Length != mesh.vertexCount)
+    throw new System.InvalidOperationException("Material colour/type channels are missing in the real Unity mesh.");
+var types = new System.Collections.Generic.HashSet<int>();
+foreach (var type in mesh.uv2) types.Add(Mathf.RoundToInt(type.x));
+if (!types.Contains(1) || !types.Contains(2) || !types.Contains(3) || !types.Contains(4))
+    throw new System.InvalidOperationException("Courtyard resource/structure identities did not reach the renderer.");
 if (string.IsNullOrEmpty(g.HudDisplay.HealthText.text) || string.IsNullOrEmpty(g.HudDisplay.AmmoText.text)
     || string.IsNullOrEmpty(g.HudDisplay.ObjectiveText.text) || string.IsNullOrEmpty(g.HudDisplay.ShieldsText.text))
     throw new System.InvalidOperationException("The four HUD bindings did not update.");

@@ -21,11 +21,12 @@ names, story, art, code, and audio in this repository are original.
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single
 Seed 42 Simulation, with a URP renderer, dusk sky, original weapon/drone/core
-views, pointer capture and a fixed real-time world cadence. Unity MCP was used
+views, an authored salvage courtyard, resource materials, pointer capture,
+entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
 to create and inspect the scene on Windows. Studio-quality encounter/art/audio,
-player-facing recovery/persistence and a true overhead command view remain
+precise pose/time persistence, export/import and a true overhead command view remain
 active work. See [the production tracker](docs/production-status.md),
-[current runtime evidence](docs/runtime-pacing-checkpoint.md), and
+[current player-flow evidence](docs/courtyard-player-flow-checkpoint.md), and
 [integration setup](docs/unity-main-integration.md).
 A passing check does not prove usefulness or fun.
 

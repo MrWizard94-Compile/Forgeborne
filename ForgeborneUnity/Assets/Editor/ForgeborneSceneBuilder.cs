@@ -30,6 +30,7 @@ public static class ForgeborneSceneBuilder
         var manager = new GameObject("GameManager").AddComponent<GameManager>();
         manager.Seed = 42;
         manager.MeshRenderer = new GameObject("Chunk").AddComponent<VoxelMeshRenderer>();
+        AssignVoxelMaterial(manager.MeshRenderer);
         new GameObject("World Actors").AddComponent<WorldActorDisplay>().Manager = manager;
 
         var cameraObject = new GameObject("Main Camera", typeof(Camera), typeof(AudioListener));
@@ -40,6 +41,7 @@ public static class ForgeborneSceneBuilder
         camera.fieldOfView = 75f;
         cameraObject.transform.position = new Vector3(16f, 5.6f, 16f);
         manager.FpsAdapter = cameraObject.AddComponent<FpsInputAdapter>();
+        AddPlayerFlow(manager);
         // Leave MeshRenderer null here: GameManager's production null-fill is exercised on Play.
         cameraObject.AddComponent<WeaponViewModel>().CameraAnchor = cameraObject.transform;
 
@@ -58,7 +60,7 @@ public static class ForgeborneSceneBuilder
         hud.AmmoText = Line(canvasObject.transform, "Ammo", new Vector2(1, 0), new Vector2(-38, 38), new Vector2(500, 100), 30, cyan, TextAnchor.LowerRight);
         hud.WarningText = Line(canvasObject.transform, "Power warning", new Vector2(0.5f, 1), new Vector2(0, -160), new Vector2(1150, 90), 22, orange, TextAnchor.UpperCenter);
         manager.HudDisplay = hud;
-        Line(canvasObject.transform, "Crosshair", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(24, 24), 22, Color.white, TextAnchor.MiddleCenter).text = "+";
+        Line(canvasObject.transform, "Crosshair", new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(44, 44), 22, Color.white, TextAnchor.MiddleCenter).text = "+";
         Line(canvasObject.transform, "Controls", Vector2.zero, new Vector2(38, 38), new Vector2(1000, 70), 20, new Color(0.78f, 0.84f, 0.88f), TextAnchor.LowerLeft).text = "WASD  MOVE    MOUSE  LOOK    SPACE  JUMP\nE  GATHER    Q  WALL    LMB  FIRE    R  RELOAD    O  SQUADS";
         manager.OrbitalDisplay = canvasObject.AddComponent<OrbitalSquadDisplay>();
         manager.OrbitalDisplay.SquadText = Line(canvasObject.transform, "Squads", new Vector2(0, 1), new Vector2(38, -145), new Vector2(700, 270), 19, cyan);
@@ -122,6 +124,32 @@ public static class ForgeborneSceneBuilder
     private static void EnsureFolder(string parent, string name)
     {
         if (!AssetDatabase.IsValidFolder(parent + "/" + name)) AssetDatabase.CreateFolder(parent, name);
+    }
+
+    public static void AssignVoxelMaterial(VoxelMeshRenderer renderer)
+    {
+        EnsureFolder("Assets", "Materials");
+        const string path = "Assets/Materials/CourtyardSurface.mat";
+        var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (material == null)
+        {
+            var shader = Shader.Find("Forgeborne/VoxelSurface");
+            if (shader == null) throw new InvalidOperationException("Import the Forgeborne voxel shader before assigning its material.");
+            material = new Material(shader) { name = "Courtyard Surface" };
+            AssetDatabase.CreateAsset(material, path);
+        }
+        renderer.ChunkMaterial = material;
+        renderer.GetComponent<MeshRenderer>().sharedMaterial = material;
+        EditorUtility.SetDirty(renderer);
+    }
+
+    public static void AddPlayerFlow(GameManager manager)
+    {
+        var flow = UnityEngine.Object.FindFirstObjectByType<PlayerFlow>();
+        if (flow == null) flow = new GameObject("Player Flow").AddComponent<PlayerFlow>();
+        flow.Manager = manager;
+        flow.InputAdapter = manager.FpsAdapter;
+        EditorUtility.SetDirty(flow);
     }
 
     private static Text Line(Transform parent, string name, Vector2 anchor, Vector2 position, Vector2 size,
