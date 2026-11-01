@@ -1,6 +1,6 @@
 # Forgeborne
 
-Studio-grade, PC-native, FPS-RTS voxel ARPG hybrid.
+AAA+ target, PC-native, FPS-RTS ARPG hybrid.
 
 **Gather. Build. Survive.**
 
@@ -9,6 +9,9 @@ Forgeborne merges, in original form only, the strengths of modded Minecraft
 pressure), Diablo and Path of Exile 2 (procedural loot, builds, and a deep
 passive graph), BioShock (immersive atmosphere and systemic powers), and
 Borderlands (procedural weapon variety and personality).
+All six influences are equally important. Rob clarified that modded Minecraft
+supplies the gather/build/survive/combat concept. Forgeborne requires believable
+original 3D environments; the blocky world aesthetic is explicitly rejected.
 
 No assets, lore, characters, items, music, code, or trademarks from those
 games are copied. Inspiration is by mechanics and feel only. All world,
@@ -22,6 +25,11 @@ Rob's 2026-11-01 review rejected the sparse primitive presentation. Original
 environment/weapon/actor art, atmospheric lighting, animation and a cohesive
 playable encounter now take priority over feature expansion. Technical checks
 are scoped evidence; visual, gameplay and fun acceptance remain closed.
+The binary-cell world renderer is now a rejected prototype foundation. Its
+replacement must share geometry with collision and aim, as tracked in
+[the world migration](docs/world-presentation-migration.md). Original authored
+weapon/actor/suit models and render-pipeline repairs are reusable technical work,
+not visual acceptance of the current courtyard.
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single

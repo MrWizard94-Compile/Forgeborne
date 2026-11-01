@@ -4,6 +4,18 @@ Dated, director-made decisions. Superseded proposals are kept here so
 the history is honest; they are not deleted to make the current plan
 look inevitable.
 
+## 2026-11-01 — Minecraft informs the loop, not block visuals
+
+Rob rejected the blocky world and clarified: "We use modded Minecrafts
+'Gather, build, survive, combat, concept'." The assistant incorrectly turned
+that influence into a visual requirement. Forgeborne needs believable original
+architecture, sculpted environments and detailed models with BioShock-inspired
+atmosphere. The historical requirement that voxel blocks read as chunky cubes is
+superseded. Replace the block presentation before another visual acceptance
+request. Internal occupancy data must not dictate the art, and visible surfaces
+must agree with movement, aiming, gathering and construction. This clarification
+does not remove the full gameplay scope or the PC-native FPS/orbital boundaries.
+
 ## 2026-11-01 — Director rejection and AAA+ target
 
 Rob saw the actual 0.120 player and rejected its presentation as amateur,

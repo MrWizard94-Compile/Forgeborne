@@ -2,6 +2,10 @@
 
 The full director brief is mapped in [design-pillars.md](design-pillars.md),
 including the explicit Path of Exile 2 reference in the latest objective.
+The 2026-11-01 objective states that all six influences are equally important.
+Modded Minecraft supplies the gather/build/survive/combat concept; Rob has
+explicitly rejected the blocky aesthetic. Believable original 3D world art is
+required. This correction supersedes historical voxel-style art requirements.
 
 Director: Rob. Integrator: Codex. Current phase: **pre-production / vertical slice**.
 Director gate 2026-11-01: current presentation **REJECTED**; finished-game target
