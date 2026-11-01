@@ -45,14 +45,24 @@ public sealed class FpsController
         IsGrounded = grounded;
     }
 
+    private static (int X0, int X1, int Y0, int Y1, int Z0, int Z1) BodyCells(float px, float py, float pz) =>
+        ((int)Math.Floor(px - HalfWidth), (int)Math.Floor(px + HalfWidth),
+         (int)Math.Floor(py), (int)Math.Floor(py + Height - 0.001f),
+         (int)Math.Floor(pz - HalfWidth), (int)Math.Floor(pz + HalfWidth));
+
+    /// <summary>True for a voxel touched by the same body footprint used by movement collision.</summary>
+    public bool OverlapsCell(int x, int y, int z)
+    {
+        var cells = BodyCells(X, Y, Z);
+        return x >= cells.X0 && x <= cells.X1 && y >= cells.Y0 && y <= cells.Y1 && z >= cells.Z0 && z <= cells.Z1;
+    }
+
     private bool Collides(VoxelChunk chunk, float px, float py, float pz)
     {
-        int x0 = (int)Math.Floor(px - HalfWidth), x1 = (int)Math.Floor(px + HalfWidth);
-        int y0 = (int)Math.Floor(py), y1 = (int)Math.Floor(py + Height - 0.001f);
-        int z0 = (int)Math.Floor(pz - HalfWidth), z1 = (int)Math.Floor(pz + HalfWidth);
-        for (int x = x0; x <= x1; x++)
-        for (int y = y0; y <= y1; y++)
-        for (int z = z0; z <= z1; z++)
+        var cells = BodyCells(px, py, pz);
+        for (int x = cells.X0; x <= cells.X1; x++)
+        for (int y = cells.Y0; y <= cells.Y1; y++)
+        for (int z = cells.Z0; z <= cells.Z1; z++)
         {
             if (!VoxelChunk.InBounds(x, y, z)) continue;
             if (BlockInfo.IsSolid(chunk.Get(x, y, z))) return true;

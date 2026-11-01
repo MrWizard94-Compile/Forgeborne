@@ -339,6 +339,9 @@ public sealed class Simulation
         var hit = TraceAim(includeActors: false);
         if (hit.Kind != AimTargetKind.Solid)
             return hit.LeftBounds ? BuildResult.OutOfBounds : BuildResult.Floating;
+        // Grid occupancy alone misses the suit's head and fractional-width
+        // overlap into adjacent cells. Use the movement body's exact footprint.
+        if (Fps.OverlapsCell(hit.PrevX, hit.PrevY, hit.PrevZ)) return BuildResult.Occupied;
         var r = World.Build(hit.PrevX, hit.PrevY, hit.PrevZ, type);
         if (r == BuildResult.Success) BlocksBuilt++;
         return r;

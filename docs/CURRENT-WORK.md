@@ -12,7 +12,8 @@ file or passing source tests does not complete the game. Full acceptance is open
 Worktree C:/WPAI/Gaming/Forgeborne, branch codex/unity-main-scene, remote base main
 0.112.0 / 3e28b575. Prior coherent commits: b65233e integration, 292c82b pacing,
 91e056e flow, 51282d3 persistence, fc35868 Windows transfer, bdca2e5 orbital.
-Current 0.119 action feedback is ready for its local commit; inspect Git.
+0.119 action feedback is committed as 7a3fdca. Current 0.120 construction safety
+is ready for its local commit; inspect Git.
 No push/main/visibility/licence change or publication is authorized.
 
 Frozen law: Constitution 6.18.0 accepted SHA
@@ -41,10 +42,10 @@ Do not create another Simulation to repair stale Play links.
 
 Core verification: dotnet build tests/Forgeborne.Core.Tests/Forgeborne.Core.Tests.csproj
 -c Release --no-restore --nologo, then run Release test DLL with genuine isolated
-C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5165 pass,
+C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5181 pass,
 0 fail, build 0 warnings/errors. tools/build-unity-core.ps1 publishes nine DLLs.
-0.119 Core SHA-256:
-33dbb76b872e99b9995ab2ff9b6e6d8369179a1ca9d4ff9a2e1f3134596e23fa.
+0.120 Core SHA-256:
+03d9e46df492fd7276138a8baebc1e5738f3e29ab08d9b7316e2b19b79c0b262.
 
 ## Evidence and open work
 
@@ -60,11 +61,20 @@ reload, full-pack exact preservation and immediate reset. Fixture restores full
 JSON in the same Simulation. tools/unity-orbital-smoke.cs passed again. These are
 scripted live checks, not keyboard/elapsed-time/native/fun acceptance.
 
-Ordinary Windows x64/Mono 0.119 package passed: None, 0 errors/warnings,
-101864587 reported bytes, 53.23 s. Output:
-ForgeborneUnity/Builds/Windows-QA/20261101T112210Z/Forgeborne.exe. Packaged Core and
+Construction safety reproduced 10 baseline failures with prior tests green.
+It now rejects suit/grid actor/live relay overlap before spending, while using
+the same movement body bounds. All prior expectations are unchanged. Fresh Main
+passed tools/unity-construction-smoke.cs for production refusal/message/exact
+state, valid placement/cost and same Simulation. Action/orbital checks pass again.
+A real 1920x1080 camera render of a paused canonical shot fixture is in
+docs/evidence/2026-11-01/action-camera-prototype.png. It excludes overlay UI,
+restores the original state, and visibly remains prototype art.
+
+Ordinary Windows x64/Mono 0.120 package passed: None, 0 errors/warnings,
+101865611 reported bytes, 41.10 s. Output:
+ForgeborneUnity/Builds/Windows-QA/20261101T113541Z/Forgeborne.exe. Packaged Core and
 Windows bridge match installed DLL hashes. Executable/DLL identities and report:
-docs/evidence/2026-11-01/windows-0119-build.json. This player has not been launched.
+docs/evidence/2026-11-01/windows-0120-build.json. This player has not been launched.
 Use Forgeborne > Build Windows QA Player; verify completed build-report.json.
 No parallel/overwritten builds. After packaging Editor can have an unloaded scene;
 check for dirty authored scenes before reopening saved Main. Play is stopped.
@@ -82,11 +92,11 @@ Current prompt state is not freshly established. Do not operate security UI.
 Windows UI uses computer-use skill, node_repl + @oai/sky, fresh returned windows;
 read runtime docs after compaction. Do not manipulate unrelated user apps.
 
-Next: reproduce placement safety/readability issues before changing contracts,
+Next: improve placement readability and the real-time encounter,
 complete original environment/actor/weapon art/animation and convincing encounter,
 then native/input/heard mix/save recovery/1440p performance and Rob's quality/fun
-review when available. World.Build inspection found no actor/body occupancy check;
-not yet a reproduced fixture. Optional death/world-retention preference unanswered;
+review when available. Construction safety is fixed and documented in
+construction-safety-checkpoint.md. Optional death/world-retention preference unanswered;
 retain current load/restart policy. Full six-reference vision remains in scope.
 See action-feedback-checkpoint.md, production-status.md, design-pillars.md.
 

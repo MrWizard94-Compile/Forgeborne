@@ -36,6 +36,8 @@ Do not equate an agent count, a schema or a green test suite with studio quality
 3. **Readable encounter.** Visible enemies and objective from the same canonical
    world, pointer capture/release, legible gathering/building targets and feedback,
    clear player death/restart, continuous real-time pressure and an attainable win.
+   [Construction safety](construction-safety-checkpoint.md) now rejects occupied
+   placement before spending, with source and production adapter evidence.
 4. **A cohesive original place.** Resource/material distinction, purposeful cover
    and sightlines, industrial dusk palette, weapon/impact feedback, lighting and
    original audio. Check all assets at FPS and orbital distances; do not add

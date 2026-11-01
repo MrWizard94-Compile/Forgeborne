@@ -1,7 +1,7 @@
 namespace Forgeborne.Core;
 
 public enum GatherResult { Success, OutOfBounds, Air, NotGatherable }
-public enum BuildResult { Success, OutOfBounds, NotAir, InsufficientResources, Floating, InvalidType }
+public enum BuildResult { Success, OutOfBounds, NotAir, InsufficientResources, Floating, InvalidType, Occupied }
 
 public sealed class Enemy
 {
@@ -854,6 +854,14 @@ public sealed class WorldZone
         if (type is not (BlockType.Wall or BlockType.Workstation or BlockType.KineticMill or BlockType.Dynamo or BlockType.Transformer or BlockType.Cable or BlockType.Alternator or BlockType.ShockPylon or BlockType.Conduit)) return BuildResult.InvalidType;
         if (!VoxelChunk.InBounds(x, y, z)) return BuildResult.OutOfBounds;
         if (Chunk.Get(x, y, z) != BlockType.Air) return BuildResult.NotAir;
+        // Actor cells are air for the voxel renderer/aim trace, but must not
+        // become solid around a live unit or conceal the objective. Check
+        // before support/cost, so a refusal is completely non-destructive.
+        if ((!Player.IsDead && Player.X == x && Player.Y == y && Player.Z == z)
+            || (CoreHealth > 0 && CoreX == x && CoreY == y && CoreZ == z)
+            || Enemies.Any(enemy => !enemy.IsDead && enemy.X == x && enemy.Y == y && enemy.Z == z)
+            || Squads.Any(squad => !squad.IsDead && squad.X == x && squad.Y == y && squad.Z == z))
+            return BuildResult.Occupied;
         // Support rule: at least one neighbouring cell must be solid, or y == 0 ground (bedrock layer is solid anyway, but keep the rule explicit).
         bool supported = false;
         foreach (var (dx, dy, dz) in Neighbours)

@@ -22,6 +22,18 @@
     {
       "relativePath": "Forgeborne_Data\\Plugins\\x86_64\\Forgeborne.Windows.dll",
       "sha256": "aac9637da3eb96bb0f683b2eaf0e7978b4f779aa4ab73b518b27109d45222c9c"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\Managed\\Assembly-CSharp.dll",
+      "sha256": "a18b2b19e1d5ac856e91b7eac9adaab80bd4725e7033879d4b3e6531e756bb18"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\globalgamemanagers",
+      "sha256": "4d49d9edd7c6f0a45513dc4aa3bb64ca3c0614a9c4348c93b58cbbd173f58b7a"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\resources.assets",
+      "sha256": "5b9b6642d357c10b7595b34ab4311419a5045b9610591fef94242ebf0a6c1e10"
     }
   ],
   "acceptance": "Packaged only; this executable has not been launched. Native input, heard mix, performance and fun remain unverified."

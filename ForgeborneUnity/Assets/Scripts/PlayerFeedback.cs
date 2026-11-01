@@ -200,6 +200,7 @@ public sealed class PlayerFeedback : MonoBehaviour
     {
         if (result == BuildResult.Success) { Sound("ConstructionLatch"); Signal(cell+Vector3.up*0.6f); Message(Name(type) + " PLACED",false); }
         else Message(result == BuildResult.InsufficientResources ? "INSUFFICIENT BUILD RESOURCES"
+            : result == BuildResult.Occupied ? "BUILD SPACE OCCUPIED · AIM ELSEWHERE"
             : result == BuildResult.NotAir ? "BUILD CELL OCCUPIED" : result == BuildResult.Floating ? "AIM AT A SUPPORTED SURFACE"
             : "BUILD LOCATION UNAVAILABLE",true);
     }

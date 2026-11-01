@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.120.0 — 2026-11-01 — Construction occupancy safety
+
+- Fixed resource-spending placement through the suit, live units and relay.
+  Aimed building uses the movement body's full footprint, including head and
+  fractional shoulder overlap. Clear placement costs/support remain unchanged.
+- Added explicit occupied-space refusal feedback. Defeated unit/relay cells
+  remain reusable; prior saves are not rewritten.
+- 5181 core checks pass, Release build 0 warnings/errors. Unity MCP production
+  construction/feedback/orbital checks pass and restore exact state in one
+  Simulation. Added a 1920×1080 camera-only shot render, clearly prototype art.
+- Evidence and native/input/performance/fun limits:
+  docs/construction-safety-checkpoint.md. Work remains local and unpublished.
+
 ## 0.119.0 — 2026-11-01 — Resolved action feedback and original audio
 
 - Added read-only canonical aim inspection and resolved shot facts without

@@ -30,7 +30,10 @@ audio remain active work. A perspective overhead command view now has live
 component/render evidence; its full keyboard/native play gate remains open.
 Resolved combat/gather/build feedback and eleven original synthesized audio
 candidates now pass scripted Unity integration checks; heard mix review is open.
+Placement rejects suit/unit/relay overlap before spending resources, with
+production adapter checks and exact refusal-state preservation.
 See [the production tracker](docs/production-status.md),
+[construction safety evidence](docs/construction-safety-checkpoint.md),
 [action feedback evidence](docs/action-feedback-checkpoint.md),
 [Windows transfer evidence](docs/windows-save-transfer-checkpoint.md),
 [orbital camera evidence](docs/orbital-camera-checkpoint.md),
