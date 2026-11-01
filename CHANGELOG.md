@@ -12,6 +12,9 @@
   Simulation. Added a 1920×1080 camera-only shot render, clearly prototype art.
 - Evidence and native/input/performance/fun limits:
   docs/construction-safety-checkpoint.md. Work remains local and unpublished.
+- Follow-up live orbital cadence probe: 4.0001 wall seconds, 3.9596 game seconds,
+  948 player frames and 7 real world ticks. Exact state/configuration restored.
+  Temporary background execution is disclosed; no native/performance acceptance.
 
 ## 0.119.0 — 2026-11-01 — Resolved action feedback and original audio
 

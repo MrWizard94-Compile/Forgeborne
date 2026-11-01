@@ -12,8 +12,8 @@ file or passing source tests does not complete the game. Full acceptance is open
 Worktree C:/WPAI/Gaming/Forgeborne, branch codex/unity-main-scene, remote base main
 0.112.0 / 3e28b575. Prior coherent commits: b65233e integration, 292c82b pacing,
 91e056e flow, 51282d3 persistence, fc35868 Windows transfer, bdca2e5 orbital.
-0.119 action feedback is committed as 7a3fdca. Current 0.120 construction safety
-is ready for its local commit; inspect Git.
+0.119 action feedback is committed as 7a3fdca; 0.120 construction safety as
+9dcf10f. Subsequent orbital cadence tooling/evidence is separate; inspect Git.
 No push/main/visibility/licence change or publication is authorized.
 
 Frozen law: Constitution 6.18.0 accepted SHA
@@ -69,6 +69,15 @@ state, valid placement/cost and same Simulation. Action/orbital checks pass agai
 A real 1920x1080 camera render of a paused canonical shot fixture is in
 docs/evidence/2026-11-01/action-camera-prototype.png. It excludes overlay UI,
 restores the original state, and visibly remains prototype art.
+
+Live orbital cadence follow-up: tools/unity-orbital-cadence.cs observed 4.0001
+wall seconds, 3.9596 game seconds, 948 Time.frameCount frames and 7 world ticks,
+with the real sole Main driver and one Simulation. Background execution was
+temporarily true for this unfocused Editor probe, then restored false. Exact
+JSON restored in place; separate MCP query confirmed paused/menu/input suppressed,
+FPS mode, tick 0 and one GameManager. Scoped console 0. No focused/native/input/
+performance/fun claim. Artifact: orbital-background-cadence.json. Its originally
+overbroad renderFrames label was corrected to playerFrames; numeric data unchanged.
 
 Ordinary Windows x64/Mono 0.120 package passed: None, 0 errors/warnings,
 101865611 reported bytes, 41.10 s. Output:

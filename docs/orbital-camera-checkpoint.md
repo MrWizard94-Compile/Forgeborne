@@ -79,6 +79,24 @@ death/load camera recovery, native FPS/orbital/save flow and sustained represent
 1440p profiling. Full encounter/gather/build/combat feedback, original audio,
 final art/animation and director quality/fun review remain active work.
 
+## Elapsed-time follow-up on 0.120
+
+`tools/unity-orbital-cadence.cs` ran the real Main frame driver in orbital mode
+for **4.0001 wall seconds / 3.9596 game seconds**, observing **948 player frames
+and 7 world ticks**. The two-tick/second clock passed its frame-boundary tolerance;
+there was no synthetic call to Tick/AdvanceFrame in the probe. Mode, live state,
+enabled sole driver and one Simulation were checked. The exact original JSON was
+restored in place. A separate MCP query then confirmed menu open, time scale 0,
+world tick 0, FPS mode, input suppressed, one GameManager and background execution
+restored to false. The scoped console returned zero entries.
+
+Background execution was temporarily enabled only for this unfocused Editor
+probe. This proves a scoped production cadence path under that configuration;
+focused keyboard control, native behavior and representative performance remain
+open. The frame metric is Time.frameCount delta, not proof of completed GPU
+renders or an FPS benchmark. Its original label was corrected without changing
+measurements in the [retained evidence](evidence/2026-11-01/orbital-background-cadence.json).
+
 Section 0: 1 FAIL (full goal), 2 PASS, 3 PASS for scoped checks, 4 FAIL (whole
 player/native flow), 5 PASS, 6 PASS, 7 FAIL (representative performance), 8 PASS,
 9 PASS for scripted camera recovery, 10 PASS, 11 PASS with asset/build identity
