@@ -81,6 +81,7 @@ public static class ForgeborneSceneBuilder
         lighting.SkyboxMaterial = sky;
         RenderSettings.skybox = sky;
         AddOrbitalCamera(manager);
+        AddActionFeedback(manager);
         EditorSceneManager.SaveScene(scene, MainPath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainPath, true) }
             .Concat(EditorBuildSettings.scenes.Where(s => s.path != MainPath)).ToArray();
@@ -124,6 +125,33 @@ public static class ForgeborneSceneBuilder
         rig.FirstPersonReticle = labels.FirstOrDefault(label => label.name == "Crosshair")?.gameObject;
         rig.FirstPersonControls = labels.FirstOrDefault(label => label.name == "Controls")?.gameObject;
         return rig;
+    }
+
+    [MenuItem("Forgeborne/Add Action Feedback to Main")]
+    public static void AddActionFeedbackToMain()
+    {
+        var scene = SceneManager.GetActiveScene();
+        if (EditorApplication.isPlayingOrWillChangePlaymode || scene.path != MainPath || scene.isDirty)
+            throw new InvalidOperationException("Open saved Main with Play stopped before adding action feedback.");
+        var managers = UnityEngine.Object.FindObjectsByType<GameManager>(FindObjectsSortMode.None);
+        if (managers.Length != 1) throw new InvalidOperationException("Expected the existing single GameManager.");
+        AddActionFeedback(managers[0]);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+    }
+
+    public static PlayerFeedback AddActionFeedback(GameManager manager)
+    {
+        if (manager.FpsAdapter == null || manager.HudDisplay == null)
+            throw new InvalidOperationException("Wire the existing FPS/HUD before action feedback.");
+        var feedback = manager.FpsAdapter.GetComponent<PlayerFeedback>();
+        if (feedback == null) feedback = manager.FpsAdapter.gameObject.AddComponent<PlayerFeedback>();
+        feedback.Manager = manager;
+        feedback.InputAdapter = manager.FpsAdapter;
+        feedback.ViewModel = manager.FpsAdapter.GetComponent<WeaponViewModel>();
+        feedback.Reticle = manager.HudDisplay.GetComponentsInChildren<Text>(true).FirstOrDefault(label => label.name == "Crosshair");
+        manager.FpsAdapter.Feedback = feedback;
+        return feedback;
     }
 
     [MenuItem("Forgeborne/Configure URP")]

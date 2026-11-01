@@ -9861,6 +9861,7 @@ CourtyardEncounterTests.Run(Check);
 LocalSaveStoreTests.Run(Check);
 RuntimePersistenceTests.Run(Check);
 ImportedSaveTests.Run(Check);
+ActionFeedbackTests.Run(Check);
 
 Console.WriteLine($"\n{passed} passed, {failed} failed.");
 return failed == 0 ? 0 : 1;

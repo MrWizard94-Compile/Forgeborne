@@ -1,0 +1,96 @@
+{
+  "generator": "tools/generate-original-audio.py",
+  "original": true,
+  "source": "Original synthesis from oscillators, seeded noise and envelopes; no recordings or external assets",
+  "acceptance": "Signal/format checks only; audible/native mix review remains required",
+  "sounds": [
+    {
+      "file": "PulseDischarge.wav",
+      "seconds": 0.19,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.09538651060215701,
+      "sha256": "bc44ee486564d918f2d7f83cc3ce3c3af501e041c67e7965e0b6d293f9520865"
+    },
+    {
+      "file": "StoneChisel.wav",
+      "seconds": 0.15,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.07556341632720774,
+      "sha256": "a9628d8541ba2960da33b0ba56923815b0ed9a572e7f2ff7e428ed552fc6f87b"
+    },
+    {
+      "file": "ConstructionLatch.wav",
+      "seconds": 0.25,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.10938283350188607,
+      "sha256": "b91f0abc27842fbac09c1f59a08f940435b8f2053896b4a881a13b9c3d635bba"
+    },
+    {
+      "file": "MagazineLatch.wav",
+      "seconds": 0.3,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.07853086802193544,
+      "sha256": "1fe8b5ca73bc4dc685436fa9c638aab6acfaf647cde44d6e77df4ac138b97d61"
+    },
+    {
+      "file": "Impact.wav",
+      "seconds": 0.11,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.08124494412032565,
+      "sha256": "7fba340c08a2b03856de3094948b29f03802b7b94b704c854fa0e018a0e231f6"
+    },
+    {
+      "file": "SuitImpact.wav",
+      "seconds": 0.19,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.12820665362899847,
+      "sha256": "fd1309bc4119721dd5dd288e45ee511fe76002c777e97820c62d1ba7bce46c10"
+    },
+    {
+      "file": "ActionRefused.wav",
+      "seconds": 0.12,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.16430578640319687,
+      "sha256": "0cdc723e191c90de0d2b600e36aa2f16007c5c834bd3a94eaef56061c356e1a0"
+    },
+    {
+      "file": "Footfall.wav",
+      "seconds": 0.16,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.08809875078556724,
+      "sha256": "2d1444ac385bd8c3679ba0636c35faa0bd4e896f6568117d07a6efe3213eef66"
+    },
+    {
+      "file": "SuitBreach.wav",
+      "seconds": 0.7,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.1682756713625305,
+      "sha256": "a550197e8e6bda56744ed6483c405fb132e12cdac0e430168c73304ff500cb39"
+    },
+    {
+      "file": "RelayCollapse.wav",
+      "seconds": 0.85,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.11980495990026764,
+      "sha256": "5e41e9483dc680892da2774219781fc5f03fe53368a3a94d13ff3215143432cb"
+    },
+    {
+      "file": "FoundryBed.wav",
+      "seconds": 8.0,
+      "sampleRate": 48000,
+      "peak": 0.6199951171875,
+      "rms": 0.22636099419188654,
+      "sha256": "d6e6a3e939bafa530eaccb523dd34b48155122b34c0986f2eb5335a1adf9ee96"
+    }
+  ]
+}

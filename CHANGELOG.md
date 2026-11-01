@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.119.0 — 2026-11-01 — Resolved action feedback and original audio
+
+- Added read-only canonical aim inspection and resolved shot facts without
+  changing the existing ammo/damage/clock rule or Simulation ownership.
+- Wired firing, impacts, gathering, building, reloads and suit damage to original
+  presentation, target/action labels and eleven locally synthesized sound clips.
+  Interaction reset clears transient effects immediately; full-pack refusal
+  accurately reports that the surface was kept.
+- 5165 core checks pass; build 0 warnings/errors. Unity MCP production-action,
+  signal reset, full-pack safety and orbital handoff checks pass; scoped console 0.
+  Heard/native mix, actual input, performance and fun remain open.
+- Evidence and boundaries: docs/action-feedback-checkpoint.md. Work remains local
+  on codex/unity-main-scene; no push, main mutation, licence or visibility change.
+
 ## 0.118.0 — 2026-11-01 — Perspective command camera checkpoint
 
 - Added a real 3D overhead perspective camera, original suit view, pan/zoom/

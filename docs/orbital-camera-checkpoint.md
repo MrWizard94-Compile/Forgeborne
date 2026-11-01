@@ -67,7 +67,11 @@ later redundant direct attempt after the completed output was no longer empty.
 The old Windows Firewall prompt still needs manual dismissal before native input
 QA. No network permission was granted. Native play/transfer/performance are not
 established by packaging or the development entry menu. The 0.117 executable also
-does not contain this newer camera work; a fresh 0.118 build/QA is required.
+does not contain this newer camera work. Subsequent ordinary 0.118 packaging
+passed: 0 errors/warnings, 101,783,851 reported bytes, 21.35 seconds, output
+ForgeborneUnity/Builds/Windows-QA/20261101T084917Z. Native play remains unverified.
+The later 0.119 feedback package also includes the camera; see
+[action-feedback-checkpoint.md](action-feedback-checkpoint.md).
 
 Still required: actual Tab/pan/zoom/rotate/focus and cursor deployment/re-rally/
 dismiss input, unchanged real-time world cadence while commanding, pause/resume,

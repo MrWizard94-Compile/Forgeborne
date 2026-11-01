@@ -40,6 +40,9 @@ Do not equate an agent count, a schema or a green test suite with studio quality
    and sightlines, industrial dusk palette, weapon/impact feedback, lighting and
    original audio. Check all assets at FPS and orbital distances; do not add
    decorative systems to hide missing interactions.
+   Resolved action feedback and eleven original synthesis candidates now have
+   [scoped live component evidence](action-feedback-checkpoint.md); heard mix and
+   final presentation remain open.
 5. **Persistent player flow.** Save/load/export/import through the actual UI,
    safe malformed-save handling, scene restart, retained inventory/builds/enemies,
    correct adapter identity after load and a recoverable failure path.

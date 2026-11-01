@@ -28,7 +28,10 @@ verified. Windows export/import passes actual Editor UI checks; native packaging
 passes, with the full native play test still open. Studio-quality encounter/art/
 audio remain active work. A perspective overhead command view now has live
 component/render evidence; its full keyboard/native play gate remains open.
+Resolved combat/gather/build feedback and eleven original synthesized audio
+candidates now pass scripted Unity integration checks; heard mix review is open.
 See [the production tracker](docs/production-status.md),
+[action feedback evidence](docs/action-feedback-checkpoint.md),
 [Windows transfer evidence](docs/windows-save-transfer-checkpoint.md),
 [orbital camera evidence](docs/orbital-camera-checkpoint.md),
 [current persistence evidence](docs/runtime-persistence-checkpoint.md),

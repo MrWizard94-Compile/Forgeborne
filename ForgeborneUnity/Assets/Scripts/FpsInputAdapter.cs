@@ -27,6 +27,7 @@ public class FpsInputAdapter : MonoBehaviour
     public float MouseSensitivity = 2f;
     public bool CapturePointerOnStart = true;
     public bool InputSuppressed;
+    public PlayerFeedback? Feedback;
     private Camera? _commandCamera;
     public bool IsOrbitalView => _commandCamera != null;
     public Ray CommandRay => _commandCamera != null
@@ -87,6 +88,7 @@ public class FpsInputAdapter : MonoBehaviour
 
     public void ResetInteraction(bool resetLook = true)
     {
+        if (Feedback != null) Feedback.ResetSignals();
         _pendingReRally = false;
         _pendingDismiss = false;
         if (_pendingReRallyMarker != null) _pendingReRallyMarker.SetActive(false);
@@ -242,9 +244,14 @@ public class FpsInputAdapter : MonoBehaviour
         // Start, this is the whole event set: every chunk or
         // wiring change in the game reaches a refresh through
         // one of these paths, and no path refreshes blindly.
-        if (acceptsFps && Input.GetKeyDown(KeyCode.E) && Simulation.GatherAhead() == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-        if (acceptsFps && Input.GetKeyDown(KeyCode.Q) && Simulation.BuildWallAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-        if (acceptsFps && Input.GetKeyDown(KeyCode.R)) Simulation.Weapon.Reload();
+        if (acceptsFps && Input.GetKeyDown(KeyCode.E)) GatherWithFeedback();
+        if (acceptsFps && Input.GetKeyDown(KeyCode.Q)) BuildWithFeedback(BlockType.Wall,Simulation.BuildWallAhead);
+        if (acceptsFps && Input.GetKeyDown(KeyCode.R))
+        {
+            int before = Simulation.Weapon.Mag;
+            Simulation.Weapon.Reload();
+            if (Feedback != null) Feedback.Reloaded(before!=Simulation.Weapon.Mag,Simulation.Weapon.Mag==Simulation.Weapon.MagCapacity);
+        }
         // Powered Unity presence (Slice 6 Step 3): T builds a
         // Kinetic Mill (front-left, via BuildKineticMillAhead) and
         // Y builds a Dynamo (front-centre, via BuildDynamoAhead),
@@ -314,15 +321,15 @@ public class FpsInputAdapter : MonoBehaviour
         {
             // Slice 13 Step 3: each builder refreshes on success
             // only, by the event set above — see the E / Q note.
-            if (Input.GetKeyDown(KeyCode.T) && Simulation.BuildKineticMillAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-            if (Input.GetKeyDown(KeyCode.Y) && Simulation.BuildDynamoAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-            if (Input.GetKeyDown(KeyCode.U) && Simulation.BuildTransformerAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-            if (Input.GetKeyDown(KeyCode.I) && Simulation.BuildCableAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.T)) BuildWithFeedback(BlockType.KineticMill,Simulation.BuildKineticMillAhead);
+            if (Input.GetKeyDown(KeyCode.Y)) BuildWithFeedback(BlockType.Dynamo,Simulation.BuildDynamoAhead);
+            if (Input.GetKeyDown(KeyCode.U)) BuildWithFeedback(BlockType.Transformer,Simulation.BuildTransformerAhead);
+            if (Input.GetKeyDown(KeyCode.I)) BuildWithFeedback(BlockType.Cable,Simulation.BuildCableAhead);
             // Slice 10 Step 1: B builds a workstation by aim, closing
             // the workstation's missing adapter key. B is free: see
             // the key list above. Same picker guard as the other
             // builders, for the same ore reason.
-            if (Input.GetKeyDown(KeyCode.B) && Simulation.BuildWorkstationAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.B)) BuildWithFeedback(BlockType.Workstation,Simulation.BuildWorkstationAhead);
             // Slice 10 Step 2: N builds an Alternator by aim, via
             // BuildAlternatorAhead (10 Stone, no EmberOre). N is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -336,7 +343,7 @@ public class FpsInputAdapter : MonoBehaviour
             // No HUD source count rides along: the existing
             // powered-mill and powered-workstation counts are
             // the Alternator's display, as decided in core.
-            if (Input.GetKeyDown(KeyCode.N) && Simulation.BuildAlternatorAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.N)) BuildWithFeedback(BlockType.Alternator,Simulation.BuildAlternatorAhead);
             // Slice 12 Step 2: P builds a Shock Pylon by aim, via
             // BuildShockPylonAhead (5 Stone + 10 EmberOre). P is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -345,7 +352,7 @@ public class FpsInputAdapter : MonoBehaviour
             // the other builders, for the same ore reason — a
             // pylon key while picking could spend the ore a
             // pending Confirm needs.
-            if (Input.GetKeyDown(KeyCode.P) && Simulation.BuildShockPylonAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.P)) BuildWithFeedback(BlockType.ShockPylon,Simulation.BuildShockPylonAhead);
             // Slice 14 Step 1: M builds a Conduit by aim, via
             // BuildConduitAhead (5 Stone + 5 EmberOre). M is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -358,7 +365,7 @@ public class FpsInputAdapter : MonoBehaviour
             // counts are the Conduit's display, as decided in
             // core, and a Conduit with no cable counts as a lone
             // source like a lone Dynamo or Alternator.
-            if (Input.GetKeyDown(KeyCode.M) && Simulation.BuildConduitAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.M)) BuildWithFeedback(BlockType.Conduit,Simulation.BuildConduitAhead);
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's
@@ -630,13 +637,41 @@ public class FpsInputAdapter : MonoBehaviour
             // the re-rally pick to dismiss instead.
             if (Input.GetKeyDown(KeyCode.K)) TryOpenReRallyPick();
             else if (Input.GetKeyDown(KeyCode.X)) TryOpenDismissPick();
-            else if (acceptsFps && Input.GetMouseButtonDown(0)) Simulation.FireAimed();
+            else if (acceptsFps && Input.GetMouseButtonDown(0)) FireWithFeedback();
         }
     }
 
     // Slice 24 Step 1 helpers. No core rule lives here: these
     // methods only select a target, hold pending state, and
     // call the Simulation passthrough, whose gate decides.
+    private void FireWithFeedback()
+    {
+        if (Simulation == null) return;
+        Simulation.FireAimed(out var outcome);
+        if (Feedback != null) Feedback.Shot(outcome);
+    }
+
+    private void GatherWithFeedback()
+    {
+        if (Simulation == null) return;
+        var hit = Simulation.InspectAim(false);
+        var type = hit.Kind == AimTargetKind.Solid ? Simulation.World.Chunk.Get(hit.X,hit.Y,hit.Z) : BlockType.Air;
+        int before = Simulation.World.Player.Inventory.Get(type);
+        var result = Simulation.GatherAhead();
+        if (result == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+        if (Feedback != null) Feedback.Gathered(result,type,Simulation.World.Player.Inventory.Get(type)-before,
+            new Vector3(hit.X+0.5f,hit.Y+0.5f,hit.Z+0.5f));
+    }
+
+    private void BuildWithFeedback(BlockType type, System.Func<BuildResult> action)
+    {
+        if (Simulation == null) return;
+        var hit = Simulation.InspectAim(false);
+        var result = action();
+        if (result == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+        if (Feedback != null) Feedback.Built(result,type,new Vector3(hit.PrevX+0.5f,hit.PrevY+0.5f,hit.PrevZ+0.5f));
+    }
+
     private void TryOpenReRallyPick()
     {
         if (Simulation == null) return;

@@ -156,7 +156,33 @@ public class WeaponViewModel : MonoBehaviour
 
     private bool _built;
     private GameObject? _modelRoot;
+    private GameObject? _muzzleFlash;
+    private float _shotKick;
+    private float _flashLife;
+    private float _reloadAge = 1;
+    public Vector3 MuzzlePosition => _modelRoot != null ? _modelRoot.transform.TransformPoint(new Vector3(0,0.01f,0.61f)) : transform.position;
     public void SetModelVisible(bool visible) { if (_modelRoot != null) _modelRoot.SetActive(visible); }
+    public void ReactShot() { _shotKick = 1; _flashLife = 0.05f; }
+    public void ReactReload() { _reloadAge = 0; }
+    public void ResetFeedbackPose()
+    {
+        _shotKick = _flashLife = 0; _reloadAge = 1;
+        if (_modelRoot != null) { _modelRoot.transform.localPosition = ViewOffset; _modelRoot.transform.localRotation = Quaternion.identity; }
+        if (_muzzleFlash != null) _muzzleFlash.SetActive(false);
+    }
+
+    void LateUpdate()
+    {
+        if (_modelRoot == null) return;
+        float dt = Time.deltaTime;
+        _shotKick = Mathf.MoveTowards(_shotKick,0,dt*9);
+        _flashLife = Mathf.Max(0,_flashLife-dt);
+        _reloadAge += dt;
+        float reload = Mathf.Sin(Mathf.Clamp01(_reloadAge/0.3f)*Mathf.PI);
+        _modelRoot.transform.localPosition = ViewOffset + new Vector3(0,0.006f*_shotKick-0.06f*reload,-0.045f*_shotKick);
+        _modelRoot.transform.localRotation = Quaternion.Euler(-7*_shotKick+25*reload,0,-12*reload);
+        if (_muzzleFlash != null) _muzzleFlash.SetActive(_flashLife>0);
+    }
     private Material? _darkMetalMaterial;
     private Material? _energyMaterial;
     private Material? _accentMaterial;
@@ -179,7 +205,13 @@ public class WeaponViewModel : MonoBehaviour
     }
 
     private Material DarkMetal() => LazyMaterial(ref _darkMetalMaterial, new Color(0.15f, 0.15f, 0.17f));
-    private Material EnergyGlow() => LazyMaterial(ref _energyMaterial, Color.cyan);
+    private Material EnergyGlow()
+    {
+        var material = LazyMaterial(ref _energyMaterial, Color.cyan);
+        material.EnableKeyword("_EMISSION");
+        material.SetColor("_EmissionColor",new Color(0.05f,0.9f,1)*2.5f);
+        return material;
+    }
     private Material Accent() => LazyMaterial(ref _accentMaterial, new Color(1f, 0.55f, 0f));
 
     private GameObject AddPart(GameObject root, string name, PrimitiveType shape, Material material, Vector3 localPosition, Vector3 localScale, Vector3? localEuler = null)
@@ -214,6 +246,8 @@ public class WeaponViewModel : MonoBehaviour
         root.transform.SetParent(CameraAnchor, false);
         root.transform.localPosition = ViewOffset;
         root.transform.localRotation = Quaternion.identity;
+        _muzzleFlash = AddPart(root,"Pulse muzzle",PrimitiveType.Sphere,EnergyGlow(),new Vector3(0,0.01f,0.62f),new Vector3(0.075f,0.075f,0.2f));
+        _muzzleFlash.SetActive(false);
 
         // Receiver, barrel, stock, grip: worn dark metal.
         AddPart(root, "Receiver", PrimitiveType.Cube, DarkMetal(), new Vector3(0f, 0f, 0.05f), new Vector3(0.09f, 0.11f, 0.40f));

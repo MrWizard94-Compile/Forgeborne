@@ -3,11 +3,9 @@ using System.Text.Json;
 namespace Forgeborne.Core;
 
 /// <summary>
-/// Headless simulation loop for Slice 1: one world, one FPS controller,
-/// one weapon, one objective core. This is the build-around for
-/// "no playable Unity build in this environment": the full loop
-/// (move, gather, build, fight, survive, objective) runs and is
-/// tested here, and Unity later only renders it and feeds it input.
+/// Canonical pure-C# simulation: one world, FPS controller, look, weapon and
+/// objective. Unity renders this state and supplies input; the same rules also
+/// run headlessly. Presentation never creates a parallel game simulation.
 /// </summary>
 public sealed class Simulation
 {
@@ -276,6 +274,9 @@ public sealed class Simulation
         AimRay.Trace(World.Chunk, World.Enemies, World.CoreX, World.CoreY, World.CoreZ,
             Fps.X, Fps.Y + EyeHeight, Fps.Z, Look.Forward(), AimReach, includeActors);
 
+    /// <summary>Read-only aim inspection through the same rule used by actions. Consumes no ammo or time.</summary>
+    public AimHit InspectAim(bool includeActors = true) => TraceAim(includeActors);
+
     /// <summary>
     /// Slice 8 Step 2 — gather by aim, replacing the fixed +Z
     /// ground cell: the first solid along the aim ray is the
@@ -517,18 +518,32 @@ public sealed class Simulation
     /// alive under its old name.
     /// </summary>
     public bool FireAimed()
+        => FireAimed(out _);
+
+    /// <summary>Fire through the existing rule and return resolved facts for sound/impact/HUD feedback.</summary>
+    public bool FireAimed(out ShotOutcome outcome)
     {
+        outcome = default;
         if (!Weapon.Fire()) return false;
         var hit = TraceAim(includeActors: true);
+        int applied = 0;
+        bool destroyed = false;
         if (hit.Kind == AimTargetKind.Enemy && hit.Enemy != null)
         {
+            int before = hit.Enemy.Health;
             World.AttackEnemy(hit.Enemy, EffectiveDamage);
+            applied = before - hit.Enemy.Health;
+            destroyed = before > 0 && hit.Enemy.IsDead;
             if (hit.Enemy.IsDead) EnemiesKilled++;
         }
         else if (hit.Kind == AimTargetKind.Core)
         {
+            int before = World.CoreHealth;
             World.DamageCore(EffectiveCoreDamage);
+            applied = before - World.CoreHealth;
+            destroyed = before > 0 && World.CoreHealth <= 0;
         }
+        outcome = new ShotOutcome(true, hit.Kind, hit.X, hit.Y, hit.Z, applied, destroyed);
         return true; // shot fired; a solid, a miss, or no target still costs the round
     }
 
