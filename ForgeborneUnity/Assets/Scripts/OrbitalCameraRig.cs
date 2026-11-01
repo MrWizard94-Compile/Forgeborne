@@ -17,8 +17,6 @@ public sealed class OrbitalCameraRig : MonoBehaviour
     public float ViewDistance => _distance;
     private Camera? _camera;
     private Transform? _suit;
-    private Material? _shell;
-    private Material? _signal;
     private WorldZone? _seenWorld;
     private Vector3 _focus = new Vector3(16, 4.5f, 16);
     private float _distance = 35;
@@ -117,32 +115,10 @@ public sealed class OrbitalCameraRig : MonoBehaviour
 
     void BuildSuitView()
     {
-        var baseSurface = Resources.Load<Material>("Materials/RuntimeOpaque");
-        var glowSurface = Resources.Load<Material>("Materials/RuntimeEmissive");
-        if (baseSurface == null || glowSurface == null) throw new System.InvalidOperationException("Suit surface resources are missing.");
-        _shell = new Material(baseSurface) { color = new Color(0.12f, 0.25f, 0.28f), name = "Forgeborne suit shell" };
-        _signal = new Material(glowSurface) { color = new Color(0.05f, 0.9f, 1), name = "Forgeborne suit signal" };
-        _signal.SetColor("_EmissionColor", new Color(0.05f, 0.9f, 1) * 1.5f);
-        _suit = new GameObject("Suit position").transform;
-        _suit.SetParent(transform, false);
-        Part("Torso", new Vector3(0,1,0), new Vector3(0.56f,0.65f,0.35f), _shell);
-        Part("Helmet", new Vector3(0,1.55f,0), new Vector3(0.4f,0.36f,0.38f), _shell);
-        Part("Visor", new Vector3(0,1.57f,0.2f), new Vector3(0.32f,0.12f,0.025f), _signal);
-        Part("Left leg", new Vector3(-0.17f,0.35f,0), new Vector3(0.22f,0.7f,0.3f), _shell);
-        Part("Right leg", new Vector3(0.17f,0.35f,0), new Vector3(0.22f,0.7f,0.3f), _shell);
-        Part("Beacon", new Vector3(0,2,0), new Vector3(0.12f,0.12f,0.12f), _signal);
+        var prefab=Resources.Load<GameObject>("Art/Prefabs/ForgeSuit");
+        if(prefab==null) throw new System.InvalidOperationException("Prepare the original ForgeSuit model before Play.");
+        _suit=AuthoredSkin.Create(prefab,transform,"Suit position").transform;
         _suit.gameObject.SetActive(false);
-    }
-
-    void Part(string label, Vector3 position, Vector3 scale, Material material)
-    {
-        var part = GameObject.CreatePrimitive(PrimitiveType.Cube);
-        part.name = label;
-        part.transform.SetParent(_suit, false);
-        part.transform.localPosition = position;
-        part.transform.localScale = scale;
-        part.GetComponent<Renderer>().sharedMaterial = material;
-        Destroy(part.GetComponent<Collider>()); // View only; the canonical controller remains the player's collision owner.
     }
 
     void OnDisable()
@@ -160,7 +136,6 @@ public sealed class OrbitalCameraRig : MonoBehaviour
 
     void OnDestroy()
     {
-        if (_shell != null) Destroy(_shell);
-        if (_signal != null) Destroy(_signal);
+        if (_suit != null) Destroy(_suit.gameObject);
     }
 }

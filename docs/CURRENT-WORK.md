@@ -2,6 +2,27 @@
 
 ## Director priority — latest steering
 
+Updated objective fully read from
+C:/Users/Bulkl/.codex/attachments/7a12724c-8fa0-4efa-91ba-5f1eaee54421/goal-objective.md.
+Its one referenced production essay was fully read from the actual
+C:/Users/Bulkl/.codex/attachments/f48015b2-1d59-4fb8-87bb-11f08b0cb567/pasted-text-1.txt
+(the objective's displayed path omitted a backslash before .codex). It explicitly
+states that **all six game influences are equally important** and explicitly maps
+BioShock atmosphere, Minecraft gather/build/survive/combat, Path of Exile's massive
+skill tree, Diablo loot/gear/builds, Borderlands contribution and StarCraft-like
+mechanics. design-pillars.md gives each a responsibility. The current visual correction is a
+dependency, not a removal of any of those responsibilities. No goal completion.
+
+**Latest correction: Rob rejects the blocky world itself.** His question was
+"Bro, why is everything blocky. In what reality is Bioshock blocky?" The
+Minecraft reference was incorrectly turned into a visual requirement. Rob then
+clarified: "We use modded Minecrafts 'Gather, build, survive, combat, concept'." Stop
+refining cubic resource banks/tiles as the intended world. Believable architecture,
+sculpted terrain and detailed original models are required. The current Core cell
+representation is not authority for a block aesthetic. art-direction.md now
+supersedes historical voxel-readability rules. Collision and aiming still need to
+agree with what players see; do not hide a mismatched proxy behind prettier art.
+
 Rob returned home and saw the actual native 0.120 prototype. He rejected it as
 amateur/like a teenager's 2000s game, said vanilla Minecraft looks much better,
 and reiterated BioShock atmosphere. He explicitly specified **AAA+** as the
@@ -12,7 +33,71 @@ weapon/actor assets, materials, lighting, animation, audio/feel and performance.
 Do not show another primitive build as a quality milestone or replace actual
 Unity evidence with a concept/mockup. Preserve full scope; no goal completion.
 
-Full objective: original studio-quality 3D PC-native FPS + orbital voxel ARPG,
+## Current art work — 0.122 technical checkpoint, quality rejected
+
+Mechanical 0.121 was preserved as **5e34d63**, including the director rejection
+and AAA+ gate. No further feature expansion. Original assets now authored with
+art/tools/build_visual_assets.py: PulseCarbine (with gauntlets, moving assembly
+groups and muzzle landmark), EmberWarden, AetherRelay, ForgeSuit and RelayFoundry architectural
+context. Source .blend/JSON are in art/source; FBX exports in Resources/Art/Models.
+Recovery .blend1/.blend2 stay ignored and preserved. No third-party art used.
+
+ForgeborneArtAssets editor preparation maps all material roles to the new
+IndustrialSurface PBR/weather shader and saves runtime prefabs. It validates
+metres, muzzle point, no colliders and model bounds. Initial FBX export produced
+centimetre-scaled meshes with metre sockets; fixed at producer with
+apply_scale_options=FBX_SCALE_ALL and bake_space_transform=False. Actual Unity
+checks now see unit scale 1 and muzzle (0,.016,.665). A second runtime bug came
+from overwriting the imported root rotation: AuthoredSkin now provides a game
+wrapper while retaining the model rest/import transform. Actual FPS render shows
+the corrected carbine/warden. WeaponViewModel and WorldActorDisplay now use these
+assets; their public feedback APIs and one-Simulation ownership remain. Warden
+still has grid-stepped motion; AAA+ animation/feel is NOT solved by a small bob.
+
+Foundry architecture is original side halls, service bays, pipes/lamps, rear
+exchange field aperture/spire and distant plant massing (79,308 triangles). It is
+off-yard visual context, not colliders. Playable boundary/collision/readability
+still needs review; do not claim complete encounter from scenery. Main now has
+FoundryAtmosphere, original FoundrySky shader, local reflection/practical lights,
+HDR/post-processing and a persisted FoundryGrade (ACES, restrained bloom/grade).
+Project color space changed from Gamma to Linear, model layer 30 ForgeborneView
+reserved and excluded from the reflection capture. Pipeline uses the exact URP
+maxAdditionalLightsCount=8 API. Volume components are persisted subassets (verified
+after save). Initial saved profile/camera flags did NOT enable processing because
+the renderer's postProcessData was null. That consumer bug is fixed with official
+URP resources. Actual exposure A/B now changes mean luminance 0.1394023 → 0.2479594.
+Reflection/soft-shadow shader variants match installed URP; three shaders report
+zero messages and scoped console is zero. Current source version is 0.122.0.
+
+First room render is docs/evidence/2026-11-01/foundry-fps-candidate.png; it still
+has rejected prototype ground/resources, weak lighting/detail, and is NOT approved.
+That render exposed an X-axis reflection: the rear aperture appeared opposite
+its authored side. Producer point/game/rotation mapping now includes handedness,
+profile winding corrected, and every asset has ArtRight/ArtUp/ArtForward markers;
+editor preparation now asserts all three signed axes. Final export completed,
+all FIVE assets passed preparation, and actual authored suit handoff passes.
+Both PNG candidates predate final pipeline repairs; they are internal rejected
+captures, not the current final appearance. No Blender or native player is running.
+
+Reusable-art proof: tools/unity-art-consumer-smoke.cs passed current camera output,
+model consumers, suit handoff and exact state; tools/unity-art-lifecycle-smoke.cs
+removed the runtime atmosphere owner, restored the existing scene sky/ambient and
+preserved canonical JSON/identity. Play was stopped afterward; saved Main has the
+component again. Existing feedback/orbital/build-guide checks passed with new art.
+Evidence JSONs *-authored.json; asset/source hashes authored-0122-assets.json;
+generator art/tools/record_manifest.py. Source checks 5198/0, Release 0/0.
+
+Next priority: shared continuous surface/geometry for rendering, movement and aim,
+then a fully re-authored non-block playable environment and constructed objects.
+The blueprint already described SDF/smooth terrain; current implementation is
+binary occupancy. Do not smooth the render alone over cube collision. Read
+world-presentation-migration.md before this high-risk contract/save migration.
+The suit is no longer six primitives but still lacks skeletal animation; wardens
+still step by cells and squad markers remain primitive. Native art, heard mix and
+representative performance remain open. No 0.122 native art package was built.
+Latest native package remains 0.121 mechanics only. See authored-art-checkpoint.md.
+
+Full objective: original AAA+ target 3D PC-native FPS + orbital ARPG,
 with the strengths of modded Minecraft, StarCraft, Diablo, Path of Exile 2,
 Borderlands and BioShock. Rob directs; Codex implements and verifies. First
 polished gather → build → survive encounter precedes system/content expansion.
@@ -54,10 +139,10 @@ Do not create another Simulation to repair stale Play links.
 
 Core verification: dotnet build tests/Forgeborne.Core.Tests/Forgeborne.Core.Tests.csproj
 -c Release --no-restore --nologo, then run Release test DLL with genuine isolated
-C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5181 pass,
+C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe. Latest: 5198 pass,
 0 fail, build 0 warnings/errors. tools/build-unity-core.ps1 publishes nine DLLs.
-0.120 Core SHA-256:
-03d9e46df492fd7276138a8baebc1e5738f3e29ab08d9b7316e2b19b79c0b262.
+0.121/0.122 installed Core SHA-256 (no Core changes for art):
+3004e6def79fac0e3bdefb63f762119e23113aafe12408c63428dc7a155056c1.
 
 ## Evidence and open work
 
@@ -114,8 +199,8 @@ Cold native save/load/save SHA is 70313c49d9d8e160bb055374c83c813c3789ac8ddb295e
 Windows UI uses computer-use skill, node_repl + @oai/sky, fresh returned windows;
 read runtime docs after compaction. Do not manipulate unrelated user apps.
 
-0.121 mechanical checkpoint is implemented and ready to preserve in a local
-commit. Construction.cs centralizes unchanged prices; World.InspectBuild and
+0.121 mechanical checkpoint was preserved in local commit 5e34d63.
+Construction.cs centralizes unchanged prices; World.InspectBuild and
 Simulation.InspectBuildAhead share validation/payment with actual BuildAhead.
 ConstructionGuide now has V/wheel/LMB, same-cell outline, resources/reason,
 pause/load/view/terminal cancellation and no firing in tool mode. Saved Main
@@ -135,7 +220,7 @@ a developer tool, not shipped art/code. No third-party models/textures downloade
 Use original Blender authoring scripts under art/tools, source .blend outside
 Unity Assets and exported FBX in Assets/Resources/Art, then real Unity renders.
 
-Next: preserve the mechanical checkpoint, then correct the rejected presentation:
+Next: replace the rejected cubic world with a shared continuous surface contract,
 complete original environment/actor/weapon art/animation and convincing encounter,
 then native/input/heard mix/save recovery/1440p performance and Rob's quality/fun
 review when available. Construction safety is fixed and documented in

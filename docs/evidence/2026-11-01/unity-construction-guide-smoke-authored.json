@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "readOnlyPreview": true,
+      "resourceReason": true,
+      "exactCanonicalCell": true,
+      "noCollider": true,
+      "nineChoices": true,
+      "primaryBuildNotFire": true,
+      "unchangedCost": true,
+      "pauseAndViewCancel": true,
+      "sameSimulation": true
+    },
+    "compiler": "codedom"
+  }
+}

@@ -1,5 +1,21 @@
 # Forgeborne — Changelog
 
+## 0.122.0 — 2026-11-01 — Original art foundation; block aesthetic rejected
+
+- Authored original carbine/gauntlets, warden, relay, pressure suit and foundry
+  context with Blender sources, geometry manifests and FBX exports. Imported
+  prefabs validate metres, three signed axes, muzzle, material roles and bounds.
+- Replaced primitive weapon/enemy/relay/suit views with authored model consumers.
+  Preserved one Simulation, exact saves, feedback APIs and camera handoff.
+- Added original PBR/sky shaders, practical lighting/reflection and persisted
+  grade. Fixed missing URP post-process resources; actual camera exposure A/B
+  changed mean luminance from 0.13940 to 0.24796, proving consumer response.
+- Rob explicitly rejected block visuals and clarified Minecraft's influence as
+  gather/build/survive/combat. Updated art/mission/design/architecture direction;
+  all six influences are equally important, including the massive skill tree.
+- Current cubic world remains rejected. No native art build or visual/fun/
+  performance acceptance; this is a local technical checkpoint, not a milestone.
+
 ## 0.121.0 — 2026-11-01 — Mechanical guide; presentation rejected
 
 - Preserved shared construction pricing/validation and read-only placement guide:

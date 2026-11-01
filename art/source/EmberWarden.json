@@ -1,0 +1,33 @@
+{
+  "name": "EmberWarden",
+  "authoring": "Original Forgeborne geometry; no imported assets",
+  "tool": "4.5.15 LTS",
+  "source": "art/tools/build_visual_assets.py",
+  "gameBoundsMin": [
+    -0.41100001335144043,
+    -0.2329999953508377,
+    -0.31073299050331116
+  ],
+  "gameBoundsMax": [
+    0.41100001335144043,
+    0.29548174142837524,
+    0.3240000009536743
+  ],
+  "horizontalRadius": 0.4129418962896184,
+  "vertices": 3552,
+  "triangles": 7024,
+  "materials": [
+    "Graphite",
+    "Steel",
+    "Copper",
+    "Ceramic",
+    "Rubber",
+    "Cyan",
+    "Amber",
+    "Basalt",
+    "Paint",
+    "Warm",
+    "Glass"
+  ],
+  "status": "Authored candidate; Unity import/render and director review required"
+}

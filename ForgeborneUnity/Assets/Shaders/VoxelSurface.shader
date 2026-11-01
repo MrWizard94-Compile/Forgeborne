@@ -18,7 +18,12 @@ Shader "Forgeborne/VoxelSurface"
             #pragma vertex Vertex
             #pragma fragment Fragment
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
-            #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
+            #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
             #pragma multi_compile_fog
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
@@ -44,6 +49,7 @@ Shader "Forgeborne/VoxelSurface"
                 float4 shadowCoord : TEXCOORD2;
                 half fog : TEXCOORD3;
                 nointerpolation float blockType : TEXCOORD4;
+                half3 vertexLight : TEXCOORD5;
             };
             float Grain(float3 samplePosition)
             {
@@ -62,6 +68,22 @@ Shader "Forgeborne/VoxelSurface"
                 }
                 return result;
             }
+            float MineralEdge(float2 p)
+            {
+                float2 cell=floor(p),part=frac(p);
+                float closest=8,second=8;
+                [unroll] for(int x=-1;x<=1;x++)
+                [unroll] for(int y=-1;y<=1;y++)
+                {
+                    float2 neighbour=float2(x,y);
+                    float2 seed=cell+neighbour;
+                    float2 jitter=frac(sin(float2(dot(seed,float2(127.1,311.7)),dot(seed,float2(269.5,183.3))))*43758.5453);
+                    float distance=length(neighbour+jitter-part);
+                    if(distance<closest) {second=closest;closest=distance;}
+                    else second=min(second,distance);
+                }
+                return second-closest;
+            }
             Varyings Vertex(Attributes input)
             {
                 Varyings output;
@@ -73,6 +95,7 @@ Shader "Forgeborne/VoxelSurface"
                 output.shadowCoord = TransformWorldToShadowCoord(position.positionWS);
                 output.fog = ComputeFogFactor(position.positionCS.z);
                 output.blockType = input.blockType.x;
+                output.vertexLight = VertexLighting(position.positionWS,output.normalWS);
                 return output;
             }
             half4 Fragment(Varyings input) : SV_Target
@@ -88,15 +111,39 @@ Shader "Forgeborne/VoxelSurface"
                 half3 surface = input.color.rgb * _BaseColor.rgb;
                 surface *= 1.0 + (grain - 0.5) * _SurfaceVariation;
                 surface *= 1.0 - edge * _GridStrength;
-                Light sun = GetMainLight(input.shadowCoord);
-                half diffuse = saturate(dot(normal,sun.direction));
-                half3 illumination = SampleSH(normal) + sun.color * diffuse * sun.distanceAttenuation * sun.shadowAttenuation;
-                half3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
-                half highlight = pow(saturate(dot(normal,normalize(sun.direction + view))),32.0) * 0.10;
-                half3 colour = surface * max(illumination,0.08) + highlight * sun.color * sun.shadowAttenuation;
+                half metal=input.blockType>3.5 ? 0.5 : 0.04;
+                half smoothness=input.blockType>3.5 ? 0.48 : 0.22;
+                half3 emission=0;
+                float height=(grain-0.5)*0.001-edge*0.006;
                 if (input.blockType > 1.5 && input.blockType < 2.5)
-                    colour += surface * (0.08 + grain * grain * 0.10);
-                return half4(MixFog(colour,input.fog),1);
+                {
+                    float fracture=MineralEdge(plane*5.5);
+                    float antialias=max(fwidth(fracture),0.003);
+                    float vein=1-smoothstep(0.008,0.023+antialias,fracture);
+                    vein*=smoothstep(0.32,0.54,Grain(input.positionWS*2.1));
+                    half3 mineral=half3(0.20,0.18,0.15)*(0.72+grain*0.5);
+                    surface=lerp(mineral,surface*0.65,vein);
+                    emission=input.color.rgb*vein*0.18;
+                    height-=vein*0.0015;
+                    metal=0.34;smoothness=0.43;
+                }
+                float3 dx=ddx(input.positionWS),dy=ddy(input.positionWS);
+                float determinant=dot(normal,cross(dx,dy));
+                if(abs(determinant)>0.00000001)
+                    normal=normalize(normal-(cross(dy,normal)*ddx(height)+cross(normal,dx)*ddy(height))/determinant);
+                InputData lighting=(InputData)0;
+                lighting.positionWS=input.positionWS;lighting.positionCS=input.positionCS;
+                lighting.normalWS=normal;lighting.viewDirectionWS=GetWorldSpaceNormalizeViewDir(input.positionWS);
+                lighting.shadowCoord=input.shadowCoord;lighting.vertexLighting=input.vertexLight;
+                lighting.bakedGI=SampleSH(normal);lighting.shadowMask=half4(1,1,1,1);
+                lighting.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(input.positionCS);
+                SurfaceData material=(SurfaceData)0;
+                material.albedo=surface;material.metallic=metal;
+                material.smoothness=saturate(smoothness+(grain-0.5)*0.13);
+                material.normalTS=half3(0,0,1);material.occlusion=1;material.alpha=1;material.emission=emission;
+                half4 colour=UniversalFragmentPBR(lighting,material);
+                colour.rgb=MixFog(colour.rgb,input.fog);
+                return colour;
             }
             ENDHLSL
         }

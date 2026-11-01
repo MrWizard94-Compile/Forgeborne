@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 19a47d2460d4c2c4f925742d3683bbbf, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 1eb022ecdf621fa4a8719a69cdfb1bbb, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -119,6 +119,55 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &50139692
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 50139694}
+  - component: {fileID: 50139693}
+  m_Layer: 0
+  m_Name: Foundry grade
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &50139693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 50139692}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 5
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 73f0af1ca51cd464ebe358c88455577a, type: 2}
+--- !u!4 &50139694
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 50139692}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &470237340
 GameObject:
   m_ObjectHideFlags: 0
@@ -385,7 +434,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -532,6 +581,7 @@ GameObject:
   - component: {fileID: 1227818792}
   - component: {fileID: 1227818797}
   - component: {fileID: 1227818798}
+  - component: {fileID: 1227818799}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -674,6 +724,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConstructionGuide
   Adapter: {fileID: 1227818793}
+--- !u!114 &1227818799
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227818791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_VolumeFrameworkUpdateModeOption: 2
+  m_RenderPostProcessing: 1
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
+  m_UseScreenCoordOverride: 0
+  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_TaaSettings:
+    m_Quality: 3
+    m_FrameInfluence: 0.1
+    m_JitterScale: 1
+    m_MipBias: 0
+    m_VarianceClampScale: 0.9
+    m_ContrastAdaptiveSharpening: 0
+  m_Version: 2
 --- !u!1 &1238412836
 GameObject:
   m_ObjectHideFlags: 0
@@ -1048,6 +1142,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1769808975}
   - component: {fileID: 1769808974}
+  - component: {fileID: 1769808976}
   m_Layer: 0
   m_Name: Dusk Lighting
   m_TagString: Untagged
@@ -1068,13 +1163,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DuskLighting
   DuskLight: {fileID: 0}
-  SkyboxMaterial: {fileID: 2100000, guid: 19a47d2460d4c2c4f925742d3683bbbf, type: 2}
-  SunColor: {r: 1, g: 0.82, b: 0.6, a: 1}
-  SunIntensity: 1.1
-  SunRotation: {x: 15, y: 235, z: 0}
-  AmbientColor: {r: 0.32, g: 0.38, b: 0.46, a: 1}
-  FogColor: {r: 0.45, g: 0.52, b: 0.6, a: 1}
-  FogDensity: 0.008
+  SkyboxMaterial: {fileID: 2100000, guid: 1eb022ecdf621fa4a8719a69cdfb1bbb, type: 2}
+  SunColor: {r: 1, g: 0.85, b: 0.67, a: 1}
+  SunIntensity: 1.8
+  SunRotation: {x: 23, y: 218, z: 0}
+  AmbientColor: {r: 0.18, g: 0.25, b: 0.32, a: 1}
+  FogColor: {r: 0.27, g: 0.32, b: 0.34, a: 1}
+  FogDensity: 0.014
 --- !u!4 &1769808975
 Transform:
   m_ObjectHideFlags: 0
@@ -1090,6 +1185,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1769808976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1769808973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eff567697bab55e4895cd0d7a3c822f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FoundryAtmosphere
+  Lighting: {fileID: 1769808974}
 --- !u!1 &1812200018
 GameObject:
   m_ObjectHideFlags: 0
@@ -1564,3 +1672,4 @@ SceneRoots:
   - {fileID: 1141836405}
   - {fileID: 1812200020}
   - {fileID: 982374703}
+  - {fileID: 50139694}
