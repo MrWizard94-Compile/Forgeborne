@@ -27,6 +27,17 @@ public class FpsInputAdapter : MonoBehaviour
     public float MouseSensitivity = 2f;
     public bool CapturePointerOnStart = true;
     public bool InputSuppressed;
+    private Camera? _commandCamera;
+    public bool IsOrbitalView => _commandCamera != null;
+    public Ray CommandRay => _commandCamera != null
+        ? _commandCamera.ScreenPointToRay(Input.mousePosition) : new Ray(transform.position, transform.forward);
+    private float CommandReach => IsOrbitalView ? 120f : 30f;
+    public void SetCommandCamera(Camera? camera)
+    {
+        _commandCamera = camera;
+        _pointerCaptureFrame = Time.frameCount;
+        if (camera != null) ReleasePointer();
+    }
     public bool HasPendingCommand => _pendingReRally || _pendingDismiss || (Simulation != null && Simulation.OrbitalCommand.IsPicking);
     private bool _capturedPointer;
     private int _pointerCaptureFrame = -1;
@@ -38,6 +49,14 @@ public class FpsInputAdapter : MonoBehaviour
 
     public void CapturePointer()
     {
+        if (IsOrbitalView)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            _capturedPointer = false;
+            _pointerCaptureFrame = Time.frameCount;
+            return;
+        }
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         _capturedPointer = true;
@@ -153,19 +172,20 @@ public class FpsInputAdapter : MonoBehaviour
         bool capturedThisFrame = _pointerCaptureFrame == Time.frameCount;
         bool overUi = UnityEngine.EventSystems.EventSystem.current != null
             && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
-        if (!terminal && !InputSuppressed && Cursor.lockState != CursorLockMode.Locked && Input.GetMouseButtonDown(0) && !overUi)
+        if (!IsOrbitalView && !terminal && !InputSuppressed && Cursor.lockState != CursorLockMode.Locked && Input.GetMouseButtonDown(0) && !overUi)
         {
             CapturePointer();
             capturedThisFrame = true;
         }
-        bool acceptsInput = !terminal && !InputSuppressed && Cursor.lockState == CursorLockMode.Locked;
+        bool acceptsInput = !terminal && !InputSuppressed && (IsOrbitalView ? Application.isFocused : Cursor.lockState == CursorLockMode.Locked);
+        bool acceptsFps = acceptsInput && !IsOrbitalView;
         // WASD / arrows, raw scalars: Slice 8 Step 1 rotates them by
         // the core Look yaw inside Simulation.Tick (W walks the yaw
         // direction, D the yaw right), so no rotation lives here and
         // this adapter needs no change for yaw-rotated movement.
-        float forward = acceptsInput ? (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f) : 0f;
-        float strafe = acceptsInput ? (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f) : 0f;
-        bool jump = acceptsInput && Input.GetKeyDown(KeyCode.Space);
+        float forward = acceptsFps ? (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f) : 0f;
+        float strafe = acceptsFps ? (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f) : 0f;
+        bool jump = acceptsFps && Input.GetKeyDown(KeyCode.Space);
         // FPS pitch aiming (Slice 6 Step 1): the adapter holds NO yaw
         // or pitch of its own any more. It feeds already-scaled mouse
         // deltas into the core Look (positive Mouse Y = look up, per
@@ -183,8 +203,8 @@ public class FpsInputAdapter : MonoBehaviour
         // new binding for aim, only the renamed fire call below.
         // Movement is yaw-rotated in core (Step 1).
         Simulation.ApplyLook(
-            acceptsInput && !capturedThisFrame ? Input.GetAxis("Mouse X") * MouseSensitivity : 0f,
-            acceptsInput && !capturedThisFrame ? Input.GetAxis("Mouse Y") * MouseSensitivity : 0f);
+            acceptsFps && !capturedThisFrame ? Input.GetAxis("Mouse X") * MouseSensitivity : 0f,
+            acceptsFps && !capturedThisFrame ? Input.GetAxis("Mouse Y") * MouseSensitivity : 0f);
         Vector3 lookForward = new Vector3(
             Simulation.Look.ForwardX, Simulation.Look.ForwardY, Simulation.Look.ForwardZ);
         transform.rotation = Quaternion.LookRotation(lookForward);
@@ -222,9 +242,9 @@ public class FpsInputAdapter : MonoBehaviour
         // Start, this is the whole event set: every chunk or
         // wiring change in the game reaches a refresh through
         // one of these paths, and no path refreshes blindly.
-        if (Input.GetKeyDown(KeyCode.E) && Simulation.GatherAhead() == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-        if (Input.GetKeyDown(KeyCode.Q) && Simulation.BuildWallAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-        if (Input.GetKeyDown(KeyCode.R)) Simulation.Weapon.Reload();
+        if (acceptsFps && Input.GetKeyDown(KeyCode.E) && Simulation.GatherAhead() == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+        if (acceptsFps && Input.GetKeyDown(KeyCode.Q) && Simulation.BuildWallAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+        if (acceptsFps && Input.GetKeyDown(KeyCode.R)) Simulation.Weapon.Reload();
         // Powered Unity presence (Slice 6 Step 3): T builds a
         // Kinetic Mill (front-left, via BuildKineticMillAhead) and
         // Y builds a Dynamo (front-centre, via BuildDynamoAhead),
@@ -290,7 +310,7 @@ public class FpsInputAdapter : MonoBehaviour
         // dismiss is a pick-like modal state, and a builder
         // firing while the player decides on a removal
         // would spend resources mid-decision for no reason.
-        if (!Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
+        if (acceptsFps && !Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
         {
             // Slice 13 Step 3: each builder refreshes on success
             // only, by the event set above — see the E / Q note.
@@ -579,8 +599,8 @@ public class FpsInputAdapter : MonoBehaviour
             }
             else
             {
-                Ray ray = new Ray(transform.position, transform.forward);
-                if (Physics.Raycast(ray, out RaycastHit hit, 30f))
+                Ray ray = CommandRay;
+                if (Physics.Raycast(ray, out RaycastHit hit, CommandReach))
                 {
                     Simulation.SetOrbitalRally(
                         Mathf.FloorToInt(hit.point.x),
@@ -610,7 +630,7 @@ public class FpsInputAdapter : MonoBehaviour
             // the re-rally pick to dismiss instead.
             if (Input.GetKeyDown(KeyCode.K)) TryOpenReRallyPick();
             else if (Input.GetKeyDown(KeyCode.X)) TryOpenDismissPick();
-            else if (Input.GetMouseButtonDown(0)) Simulation.FireAimed();
+            else if (acceptsFps && Input.GetMouseButtonDown(0)) Simulation.FireAimed();
         }
     }
 
@@ -621,8 +641,9 @@ public class FpsInputAdapter : MonoBehaviour
     {
         if (Simulation == null) return;
         var snapshot = OrbitalView.Snapshot(Simulation.World);
-        Vector3 origin = transform.position;
-        Vector3 forward = transform.forward;
+        Ray commandRay = CommandRay;
+        Vector3 origin = commandRay.origin;
+        Vector3 forward = commandRay.direction;
         int bestPos = -1;
         float bestAngle = float.PositiveInfinity;
         for (int i = 0; i < snapshot.Count; i++)
@@ -640,7 +661,7 @@ public class FpsInputAdapter : MonoBehaviour
             Vector3 centre = new Vector3(s.X + 0.5f, s.Y + 0.5f, s.Z + 0.5f);
             Vector3 toSquad = centre - origin;
             float dist = toSquad.magnitude;
-            if (dist > 30f) continue;
+            if (dist > CommandReach) continue;
             // Occlusion, exact for this squad's centre line:
             // a voxel hit before the centre means a wall
             // stands between the crosshair and the marker,
@@ -692,8 +713,9 @@ public class FpsInputAdapter : MonoBehaviour
     {
         if (Simulation == null) return;
         var snapshot = OrbitalView.Snapshot(Simulation.World);
-        Vector3 origin = transform.position;
-        Vector3 forward = transform.forward;
+        Ray commandRay = CommandRay;
+        Vector3 origin = commandRay.origin;
+        Vector3 forward = commandRay.direction;
         int bestPos = -1;
         float bestAngle = float.PositiveInfinity;
         for (int i = 0; i < snapshot.Count; i++)
@@ -702,7 +724,7 @@ public class FpsInputAdapter : MonoBehaviour
             Vector3 centre = new Vector3(s.X + 0.5f, s.Y + 0.5f, s.Z + 0.5f);
             Vector3 toSquad = centre - origin;
             float dist = toSquad.magnitude;
-            if (dist > 30f) continue;
+            if (dist > CommandReach) continue;
             // Occlusion, as in the re-rally pick: a voxel hit
             // before the centre means an honestly occluded
             // marker is not selectable. Markers carry no
@@ -916,8 +938,8 @@ public class FpsInputAdapter : MonoBehaviour
             // picker leaves its pending rally unchanged —
             // the player reads the pending marker, which
             // stays on the last aimed cell.
-            Ray ray = new Ray(transform.position, transform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, 30f))
+            Ray ray = CommandRay;
+            if (Physics.Raycast(ray, out RaycastHit hit, CommandReach))
             {
                 _pendingReRallyX = Mathf.FloorToInt(hit.point.x);
                 _pendingReRallyY = Mathf.FloorToInt(hit.point.y);

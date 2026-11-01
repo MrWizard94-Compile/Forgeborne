@@ -11790,3 +11790,15 @@ QA. No security permission was granted or UI operated. An ordinary build is owed
 after manual prompt dismissal; the blocked unstarted request was cancelled before
 further source work. Detailed evidence and open full/native/fun gates are in
 docs/windows-save-transfer-checkpoint.md. Nothing was pushed or published.
+
+## 2026-11-01 — Perspective command camera (agent observation)
+
+Main now contains a 3D perspective orbital view connected to the existing
+GameManager/FPS adapter. Commands use cursor rays in that mode; FPS controls and
+gun hide, an original collision-free suit view follows the canonical player, and
+the one existing frame driver remains enabled. Live scripted switches preserve
+exact saved state and controller/Simulation identities; an actual camera-only
+Unity render is recorded. 5155 core checks pass, scoped console 0. Keyboard,
+real-time command play, native performance and fun remain unaccepted. Ordinary
+0.117 packaging subsequently passed cleanly (102 MB), distinct from this newer
+camera work. See docs/orbital-camera-checkpoint.md. No external publication.

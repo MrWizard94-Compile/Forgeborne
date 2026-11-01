@@ -1,93 +1,105 @@
 # Current work — continuation checkpoint
 
-Objective: the full original studio-quality 3D FPS/orbital voxel ARPG vision in
-`design-pillars.md`. All three director reference attachments were read in full,
-including the latest `822e6f7b-7290-4abb-bde3-ce79982ac131/goal-objective.md`.
-The studio goal is active, not complete. Do not mark it achieved merely because
-the current objective text says to read its file.
+The full original studio-quality 3D FPS/orbital voxel ARPG goal remains active.
+All three director reference attachments, including the latest
+822e6f7b-7290-4abb-bde3-ce79982ac131/goal-objective.md, were read fully.
+Do not mark the goal complete merely because its current text says to read that
+file. Concept/pre-production continue; full production and fun acceptance are open.
 
-Working branch: `codex/unity-main-scene`; never push to main or alter visibility/
-licence without Rob. Base remote main was 0.112.0 (`3e28b575...`). Integration
-commit `b65233e`, runtime/cadence commit `292c82b`, courtyard/player flow `91e056e`.
-Exact runtime persistence is committed as `51282d3`. The next checkpoint contains
-Windows save transfer/native packaging; inspect Git status first.
+Working branch: codex/unity-main-scene. No pushes, main mutation, visibility or
+licence changes. Remote base main was 0.112.0, 3e28b575. Local checkpoints:
+b65233e Main/URP/MCP, 292c82b frame pacing/actors, 91e056e courtyard/player flow,
+51282d3 exact runtime persistence, fc35868 Windows transfer/native packaging.
+The next checkpoint is perspective orbital camera work; inspect Git status.
 
-Canonical law for this continuing invocation is frozen and verified at
-`63d99cdc72a1c18b5aa91b9336d02fd30126407b`, Constitution 6.18.0. Byte-exact source
-is in `~/.codex/worktrees/forgeborne-law-63d99cdc`. One required evolution was
-already completed locally in the separate `forgeborne-cadence-evolution` worktree,
-branch `codex/realtime-cadence-evidence`, commit `922dcbb`. It is validated and
-apply-ready, staged/not propagated, and cannot govern this invocation. Do not
-start a second evolution obligation for this continuation.
+Governance is frozen and verified at Constitution 6.18.0, accepted SHA
+63d99cdc72a1c18b5aa91b9336d02fd30126407b. Byte-exact source is in
+C:/Users/Bulkl/.codex/worktrees/forgeborne-law-63d99cdc. Exactly one required
+evolution was already completed locally, separate worktree forgeborne-cadence-evolution,
+branch codex/realtime-cadence-evidence, commit 922dcbb. Validated/apply-ready,
+staged/not propagated, not retroactive law. Do not start another obligation.
 
-Unity 6000.3.27f2 is open on saved Main. After the last QA it was stopped.
-MCP for Unity 10.0.0 is pinned to upstream `d49ae295...`; a task-owned loopback
-server runs on port 8080 under Python 3.10. Tools are reached through the actual
-MCP SDK client in `tools/unity-mcp-client.py`, selecting the exact instance
-`ForgeborneUnity@9fc4dca83b83a1f1`. No native Unity namespace was exposed in the
-initial chat. Probe instances before assuming live connection.
+Unity 6000.3.27f2 is open on saved Main. The latest orbital QA ended stopped.
+MCP for Unity 10.0.0 is pinned to upstream d49ae295... and a task-owned HTTP server
+runs on 127.0.0.1:8080 under Python 3.10. It was restarted (current exec session
+48745/PID 32036 at last observation). Verify current state before process actions.
+Use the real SDK client tools/unity-mcp-client.py and exact instance
+ForgeborneUnity@9fc4dca83b83a1f1; probe instances before assuming connection.
+Interpreter: C:/Users/Bulkl/.codex/tools/unity-mcp-v10/Server/.venv-py310/Scripts/python.exe.
+Use JSON files for complex args and stop dependent commands on nonzero exit.
+Refresh/Play acknowledgments can precede import/startup. Restart Play after runtime
+script edits; nonserialized Simulation links must come from fresh GameManager.Start.
 
-Local client interpreter:
-`~/.codex/tools/unity-mcp-v10/Server/.venv-py310/Scripts/python.exe`.
-Example: `<python> tools/unity-mcp-client.py --instance ForgeborneUnity@9fc4dca83b83a1f1 --tool execute_code --code-file tools/unity-main-smoke.cs`.
-Use JSON files for complex tool arguments; always stop dependent shell commands
-on nonzero exit. Asset refresh and Play tools can acknowledge before domain
-reload/import/startup has completed; verify readiness and actual scene state.
-An unfocused Game view can produce zero rendered frames; such a probe is not
-runtime acceptance. Foreground the real Game view for time/input observations.
+Core checks: 5155 passed, 0 failed, Release build 0 warnings/errors on genuine
+.NET 8.0.33 at C:/Users/Bulkl/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe.
+Rerun tests/Forgeborne.Core.Tests/bin/Release/net8.0/Forgeborne.Core.Tests.dll after
+building when Core changes. tools/build-unity-core.ps1 publishes netstandard2.1
+and installs all nine DLLs. Never copy Core source into Assets.
+Current Core SHA-256: 173a8ab63d40bb4891a4c5f9218e213a0c61912e5958960e3ac11f02e162999c.
 
-Core tests: build with installed SDK, then run the net8.0 assembly with the
-isolated `~/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe`. That runtime was
-downloaded from Microsoft and SHA-512 verified. Latest **5155 pass, 0 fail;
-build 0 warnings/errors**. `tools/build-unity-core.ps1` publishes netstandard2.1
-and installs all nine DLLs. Never copy core source into Assets. Rebuild after
-core changes, import, then observe the actual installed API in Unity.
+One GameManager creates the one Simulation, Seed 42, and fills linked adapters.
+AdvanceFrame owns 120 Hz physics/candidate 2 Hz world ticks; explicit Tick keeps
+its legacy call-based contract. Both input is required (activeInputHandler 2).
+The authored courtyard, original shader/material channels, actor views and player
+entry/pause/terminal/restart/local saves are integrated. Exact interactive saves
+retain pose/motion/look/fractional clocks/queued jump/counters; old saves retain
+legacy behavior. Invalid records fail before changing the world.
 
-One GameManager creates the one Simulation; all linked adapters share it.
-AdvanceFrame supplies 120 Hz movement and candidate 2 Hz world progression,
-with bounded hitches/jump buffering/terminal stop. The explicit Tick API retains
-its old call-based contract. Input is legacy, Active Input Handling must be Both.
-CourtyardEncounter populates the canonical chunk only. WorldActorDisplay reads
-it; no separate state owner. Material block IDs and power tints reach the Unity
-mesh. Custom shader is `Forgeborne/VoxelSurface`, currently 0 shader messages.
+Windows export/import passes actual Editor UI: cancel, Unicode export, malformed
+rejection and exact restore with local slot retained. Original native bridge source
+is native/Forgeborne.Windows; tools/build-windows-bridge.ps1 builds its x64 DLL.
+Stop Editor/player before replacing a native DLL already loaded. Current native
+SHA-256: aac9637da3eb96bb0f683b2eaf0e7978b4f779aa4ab73b518b27109d45222c9c.
+Managed COM/Join first stalled the Editor; saved Main was recovered and backups
+preserved under ignored Assets/_Recovery. Async native STA is verified in Editor.
+Resources materials retain opaque/emissive URP Lit variants in player packaging.
 
-PlayerFlow builds real entry/pause/terminal/slot UI, controls pointer suppression
-and normal pause time, handles restart confirmation, save-on-quit failure and
-bounded atomic LocalSaveStore. The new application data path had no existing
-slot before QA; the slot/backup now contain QA snapshots only and are untracked.
-Actual UI save/load/death/restart and fresh-scene load passed. Negative load and
-backup/confirmation methods also passed in live Unity. See the current evidence
-report; do not promote it to full studio/fun acceptance.
+Native 0.117 ordinary Windows/Mono build succeeded: options None, 0 errors/warnings,
+101777147 reported bytes, 83.13 s. Output:
+ForgeborneUnity/Builds/Windows-QA/20261101T080710Z/Forgeborne.exe.
+The earlier Development build 20261101T074701Z also built cleanly (180 MB) and
+rendered its 1920x1080 entry menu, then prompted Windows Firewall. The QA process
+was closed at its paused entry; no security UI/permission was changed. The Windows
+prompt remains open. A pending async request asks Rob to click Cancel manually.
+The computer-use skill forbids operating Windows security/permission prompts.
+Do not click it, change firewall settings or kill security processes.
 
-Precise runtime persistence is now verified: exact pose/velocity/look, fractional
-movement/world clock, queued jump and counters survive local saves and fresh-scene
-UI load. Legacy/world-only saves keep their previous contract. See
-runtime-persistence-checkpoint.md. Windows export/import now passes real Editor UI:
-cancel/Unicode export/invalid import/exact re-import with local slot retained.
-See windows-save-transfer-checkpoint.md. Original native OS-dialog source lives
-outside Assets; its compiled Windows x64 plugin is in Assets. Build it with
-tools/build-windows-bridge.ps1 while native DLLs are not loaded. Managed COM/Join
-first stalled the Editor; saved Main was recovered and its backup preserved.
-The native async STA implementation works. MCP was restarted under Python 3.10
-and reconnected through Window > MCP for Unity; the instance ID is unchanged.
-The first Development player built cleanly but prompted Windows Firewall; no
-security UI was operated and the QA player was closed. The build utility now uses
-BuildOptions.None. Current output is in Library/forgeborne-last-build.txt; inspect
-its build-report.json and verify the actual native UI before accepting it.
-The ordinary request at 20261101T075254Z was blocked in Unity's delay queue by
-the Windows prompt. Only its own queued build delegate was cancelled before
-continuing source work; the folder is empty, not a build. A request to Rob to
-click Cancel manually is pending. Do not operate security UI. First development
-build 20261101T074701Z succeeded with 0 errors/warnings, matching packaged DLLs,
-and rendered its entry menu; remaining native play gates are open.
-Next after transfer/native verification: real overhead command,
-meaningful gather/build/combat feedback,
-original audio and final art/animation, a native Windows build and 1440p profiling.
-Windows standalone build support is installed. Full scope stays tracked in
-production-status.md; Rob must judge the quality/fun gate.
+The empty request 20261101T075254Z never built: the prompt held delayed callbacks.
+Only that task's delay delegate was cancelled before source changes. The successful
+ordinary build used Editor update. Build utility now schedules there and rejects
+queued/concurrent requests. Use Forgeborne > Build Windows QA Player (via MCP menu
+API is valid) with Play stopped and authored scenes saved. Fresh timestamped folder;
+Library/forgeborne-last-build.txt points to it, build-report.json proves completion.
+Do not infer completion from acknowledgment. No native full play/performance yet.
 
-For Windows UI, the computer-use skill was fully read. Use node_repl + @oai/sky,
-not PowerShell UI automation. After context compaction read the relevant runtime
-documentation before reusing window bindings. Select returned Unity window objects
-and observe before each input; current title includes ForgeborneUnity / Main.
-Do not re-use stale screenshot coordinates. No sub-agents were used or authorized.
+Perspective orbital camera work is implemented and Main wired. OrbitalCameraRig
+reads Manager.Simulation only; FpsInputAdapter stays the sole positive frame driver.
+Tab changes mode, WASD pan, Q/E rotate, wheel zoom, F focus suit, existing O/1-7/
+Enter/Escape and K/X commands use cursor rays. FPS movement/look/build/fire are
+suppressed in orbital mode; body/world stay live by implementation. One camera
+is enabled/tagged MainCamera; FPS gun/reticle/controls hide, collision-free suit
+follows canonical feet/yaw. Mode switches cancel free pending commands.
+
+Fresh paused Main ran tools/unity-orbital-smoke.cs successfully: both view switches,
+perspective/tag/pointer, suit pose/no colliders, FPS restoration, exact full JSON,
+controller/Look/Simulation identity and enabled sole driver. Final console 0.
+Actual camera-only Unity render (no overlay UI) is
+ docs/evidence/2026-11-01/orbital-prototype.png (1100x506, prototype art).
+This is scripted component/render evidence, not keyboard/elapsed-time/native/fun
+acceptance. Camera source now versioned as candidate 0.118.0; the 0.117 executable
+predates it. See docs/orbital-camera-checkpoint.md for evidence/open gates.
+
+Next: finish actual keyboard/cursor/cadence and native flow when the prompt is
+manually dismissed; then meaningful gather/build/combat/loot feedback, original
+audio, final environment/weapon/actor art and animation, a complete convincing
+encounter, native regression and representative 1440p profiling. Retain full six-game
+vision. An optional death/world-retention preference is also pending; keep current
+load/restart behavior until Rob answers. A passing check does not prove fun.
+
+For Windows UI use computer-use skill and node_repl + @oai/sky. Re-read runtime
+docs after compaction. Re-select returned window objects, observe before each
+input, never operate the current security prompt. Last Editor window ID 40632432;
+old native window 1183036 is closed. No agents were spawned/authorized. Relevant
+memory used root routing; final replies need the memory citation block (registry
+MEMORY.md:298-314, ad-hoc root-context note lines 3-6). Never update memories unless
+Rob explicitly requests it.

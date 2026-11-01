@@ -16,6 +16,7 @@ public sealed class PlayerFlow : MonoBehaviour
     private Text? _heading;
     private Text? _status;
     private Text? _resources;
+    private Text? _viewHints;
     private Button? _resume;
     private Button? _save;
     private Button? _export;
@@ -61,8 +62,14 @@ public sealed class PlayerFlow : MonoBehaviour
         if (_resources != null)
         {
             var inventory = simulation.World.Player.Inventory;
-            _resources.text = $"STONE {inventory.Get(BlockType.Stone)}   EMBER {inventory.Get(BlockType.EmberOre)}   WOOD {inventory.Get(BlockType.Wood)}\nQ  WALL · 2 STONE     B  WORKSTATION · 10 STONE + 5 EMBER";
+            string controls = InputAdapter != null && InputAdapter.IsOrbitalView
+                ? "WASD PAN · Q/E ROTATE · WHEEL ZOOM · F SUIT · TAB FIRST PERSON"
+                : "Q  WALL · 2 STONE     B  WORKSTATION · 10 STONE + 5 EMBER";
+            _resources.text = $"STONE {inventory.Get(BlockType.Stone)}   EMBER {inventory.Get(BlockType.EmberOre)}   WOOD {inventory.Get(BlockType.Wood)}\n{controls}";
         }
+        if (_viewHints != null) _viewHints.text = InputAdapter != null && InputAdapter.IsOrbitalView
+            ? "ORBITAL COMMAND · REAL TIME · SUIT REMAINS EXPOSED\nO DEPLOY · 1–7 KIND/DOCTRINE · ENTER CONFIRM · ESC CANCEL/PAUSE"
+            : "FIRST PERSON · TAB ORBITAL COMMAND";
         if (!_transferInProgress && !terminal && Input.GetKeyDown(KeyCode.Escape) && (InputAdapter == null || !InputAdapter.HasPendingCommand))
         {
             if (IsMenuOpen) Resume();
@@ -305,6 +312,8 @@ public sealed class PlayerFlow : MonoBehaviour
 
         _resources = Label(canvasObject.transform, "Resources", Vector2.zero, new Vector2(38, 130), new Vector2(1000, 70), 21,
             new Color(0.78f,0.87f,0.91f), TextAnchor.LowerLeft);
+        _viewHints = Label(canvasObject.transform, "View controls", new Vector2(0.5f,1), new Vector2(0,-24), new Vector2(650,80), 18,
+            new Color(0.5f,0.88f,0.95f), TextAnchor.UpperCenter);
         var menu = Box(canvasObject.transform, "Encounter menu", new Vector2(0.5f,0.5f), Vector2.zero, Vector2.zero);
         menu.anchorMin = Vector2.zero;
         menu.anchorMax = Vector2.one;

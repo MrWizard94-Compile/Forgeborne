@@ -155,6 +155,8 @@ public class WeaponViewModel : MonoBehaviour
     public Vector3 ViewOffset = new Vector3(0.22f, -0.22f, 0.60f);
 
     private bool _built;
+    private GameObject? _modelRoot;
+    public void SetModelVisible(bool visible) { if (_modelRoot != null) _modelRoot.SetActive(visible); }
     private Material? _darkMetalMaterial;
     private Material? _energyMaterial;
     private Material? _accentMaterial;
@@ -208,6 +210,7 @@ public class WeaponViewModel : MonoBehaviour
             return;
         }
         var root = new GameObject("ForgeborneWeaponViewModel");
+        _modelRoot = root;
         root.transform.SetParent(CameraAnchor, false);
         root.transform.localPosition = ViewOffset;
         root.transform.localRotation = Quaternion.identity;

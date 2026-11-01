@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 /// <summary>Repeatable local QA packaging. Never publishes, overwrites a prior build or creates game state.</summary>
 public static class ForgeborneWindowsBuild
 {
+    private static bool _queued;
     [Serializable]
     private sealed class Evidence
     {
@@ -27,7 +28,8 @@ public static class ForgeborneWindowsBuild
     [MenuItem("Forgeborne/Build Windows QA Player")]
     public static void Request()
     {
-        if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling)
+        if (_queued || BuildPipeline.isBuildingPlayer || EditorApplication.isPlayingOrWillChangePlaymode
+            || EditorApplication.isCompiling || EditorApplication.isUpdating)
             throw new InvalidOperationException("Stop Play and finish imports before building.");
         for (int index = 0; index < SceneManager.sceneCount; index++)
             if (SceneManager.GetSceneAt(index).isDirty)
@@ -38,7 +40,15 @@ public static class ForgeborneWindowsBuild
         if (Directory.Exists(folder)) throw new InvalidOperationException("Build directory already exists; prior evidence was kept.");
         Directory.CreateDirectory(folder);
         File.WriteAllText(Path.GetFullPath(Path.Combine(Application.dataPath, "../Library/forgeborne-last-build.txt")), folder);
-        EditorApplication.delayCall += () => Build(folder);
+        _queued = true;
+        EditorApplication.CallbackFunction job = null;
+        job = () =>
+        {
+            EditorApplication.update -= job;
+            _queued = false;
+            Build(folder);
+        };
+        EditorApplication.update += job;
         Debug.Log("Forgeborne Windows QA build requested: " + folder);
     }
 

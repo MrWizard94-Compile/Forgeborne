@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.118.0 — 2026-11-01 — Perspective command camera checkpoint
+
+- Added a real 3D overhead perspective camera, original suit view, pan/zoom/
+  rotation/focus bindings, camera-aware command rays and mode-specific controls.
+  The existing FPS adapter remains the only frame driver; one Simulation persists.
+- Saved Main wiring in Unity MCP. Scripted live view swaps preserve exact state,
+  controller identities and collision ownership; actual camera render captured.
+  Legacy Both input/scroll axis checked; 5155 core checks pass; scoped console 0.
+- Ordinary 0.117 Windows/Mono packaging also passed: 0 warnings/errors, 102 MB.
+  Local QA builds now schedule on Editor update and reject concurrent requests.
+- Evidence and remaining keyboard/native/fun gates:
+  docs/orbital-camera-checkpoint.md. Windows security prompt dismissal is still
+  pending; no permission or security setting was changed. No push/publication.
+
 ## 0.117.0 — 2026-11-01 — Windows save transfer and local native packaging
 
 - Added original asynchronous Windows Common Item Dialog bridge and actual menu

@@ -80,11 +80,50 @@ public static class ForgeborneSceneBuilder
         }
         lighting.SkyboxMaterial = sky;
         RenderSettings.skybox = sky;
+        AddOrbitalCamera(manager);
         EditorSceneManager.SaveScene(scene, MainPath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainPath, true) }
             .Concat(EditorBuildSettings.scenes.Where(s => s.path != MainPath)).ToArray();
         AssetDatabase.SaveAssets();
         Debug.Log("Forgeborne Main created in Unity: Seed 42, one GameManager, all five adapters linked. Play validation still required.");
+    }
+
+    [MenuItem("Forgeborne/Add Orbital Camera to Main")]
+    public static void AddOrbitalCameraToMain()
+    {
+        var scene = SceneManager.GetActiveScene();
+        if (EditorApplication.isPlayingOrWillChangePlaymode || scene.path != MainPath || scene.isDirty)
+            throw new InvalidOperationException("Open saved Main with Play stopped before adding its command camera.");
+        var managers = UnityEngine.Object.FindObjectsByType<GameManager>(FindObjectsSortMode.None);
+        if (managers.Length != 1) throw new InvalidOperationException("Expected the existing single GameManager.");
+        AddOrbitalCamera(managers[0]);
+        EditorSceneManager.MarkSceneDirty(scene);
+        EditorSceneManager.SaveScene(scene);
+    }
+
+    public static OrbitalCameraRig AddOrbitalCamera(GameManager manager)
+    {
+        var existing = UnityEngine.Object.FindObjectsByType<OrbitalCameraRig>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+            .Where(rig => rig.Manager == manager).ToArray();
+        if (existing.Length > 1) throw new InvalidOperationException("Duplicate command rigs require review.");
+        if (existing.Length == 1) return existing[0];
+        if (manager.FpsAdapter == null || manager.HudDisplay == null)
+            throw new InvalidOperationException("Wire the existing FPS/HUD before its command camera.");
+        var firstPerson = manager.FpsAdapter.GetComponent<Camera>();
+        if (firstPerson == null) throw new InvalidOperationException("FPS camera missing.");
+        var cameraObject = new GameObject("Orbital camera", typeof(Camera), typeof(UniversalAdditionalCameraData));
+        var camera = cameraObject.GetComponent<Camera>();
+        camera.CopyFrom(firstPerson);
+        camera.enabled = false;
+        var rig = cameraObject.AddComponent<OrbitalCameraRig>();
+        rig.Manager = manager;
+        rig.InputAdapter = manager.FpsAdapter;
+        rig.FirstPersonCamera = firstPerson;
+        rig.ViewModel = manager.FpsAdapter.GetComponent<WeaponViewModel>();
+        var labels = manager.HudDisplay.GetComponentsInChildren<Text>(true);
+        rig.FirstPersonReticle = labels.FirstOrDefault(label => label.name == "Crosshair")?.gameObject;
+        rig.FirstPersonControls = labels.FirstOrDefault(label => label.name == "Controls")?.gameObject;
+        return rig;
     }
 
     [MenuItem("Forgeborne/Configure URP")]

@@ -76,6 +76,11 @@ movement, pause, transfer and recovery remain unverified; reschedule a fresh
 ordinary build after the prompt is dismissed. No full native-flow acceptance is
 claimed from the development player's entry menu.
 
+Later follow-up: the ordinary 0.117 build passed with options `None`, zero
+errors/warnings and 101,777,147 reported bytes using the helper on Editor update.
+Output/evidence and the continuing native-input boundary are recorded in
+orbital-camera-checkpoint.md. No security UI was operated.
+
 Unity serialized its default volume components, runtime settings, shader
 prefilter values and standalone batching during packaging. These generated
 settings are retained with the verified pipeline; they are not an authored final
