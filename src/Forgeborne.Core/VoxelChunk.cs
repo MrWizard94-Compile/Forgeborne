@@ -12,6 +12,41 @@ public sealed class VoxelChunk
     public const int Volume = Size * Size * Size;
 
     private readonly byte[] _blocks = new byte[Volume];
+    private SurfaceProfile _surfaceProfile;
+    private long _revision;
+    private long _geometryRevision = -1;
+    private TerrainGeometry? _geometry;
+    private readonly bool[] _dirtyRegions=new bool[TerrainMesher.RegionCount];
+
+    public SurfaceProfile SurfaceProfile
+    {
+        get => _surfaceProfile;
+        set
+        {
+            if(value!=SurfaceProfile.LegacyBlocks && value!=SurfaceProfile.ContinuousTerrainV1)
+                throw new ArgumentOutOfRangeException(nameof(value));
+            if(_surfaceProfile==value) return;
+            _surfaceProfile=value;_revision++;_geometry=null;
+        }
+    }
+    public long Revision => _revision;
+
+    /// <summary>The one immutable geometric snapshot of this chunk revision, shared by render/physical queries.</summary>
+    public TerrainGeometry Geometry
+    {
+        get
+        {
+            if(_surfaceProfile!=SurfaceProfile.ContinuousTerrainV1)
+                throw new InvalidOperationException("Continuous geometry requires an explicit saved surface profile.");
+            if(_geometry==null || _geometryRevision!=_revision)
+            {
+                _geometry=TerrainMesher.Build(this,_geometry,_dirtyRegions);
+                _geometryRevision=_revision;
+                Array.Clear(_dirtyRegions,0,_dirtyRegions.Length);
+            }
+            return _geometry;
+        }
+    }
 
     public VoxelChunk() { }
 
@@ -23,7 +58,12 @@ public sealed class VoxelChunk
     public bool TrySet(int x, int y, int z, BlockType type)
     {
         if (!InBounds(x, y, z)) return false;
-        _blocks[Index(x, y, z)] = (byte)type;
+        int index=Index(x,y,z);
+        if(_blocks[index]!=(byte)type)
+        {
+            _blocks[index]=(byte)type;_revision++;
+            if(_geometry!=null)TerrainMesher.MarkAffected(_dirtyRegions,x,y,z);
+        }
         return true;
     }
 
@@ -39,6 +79,7 @@ public sealed class VoxelChunk
     {
         if (data.Length != Volume) throw new ArgumentException($"Chunk data must be {Volume} bytes, got {data.Length}.");
         Array.Copy(data, _blocks, Volume);
+        _revision++;_geometry=null;
     }
 
     /// <summary>

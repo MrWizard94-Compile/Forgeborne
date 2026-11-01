@@ -1,5 +1,160 @@
 # Forgeborne — Changelog
 
+## 0.123.0 — 2026-11-01 — Shared continuous surface infrastructure
+
+- Added an explicit saved surface profile, immutable regional contour/field/BVH
+  snapshots, swept FPS contacts and shared terrain aiming. Legacy save/schema/
+  behavior is retained; unknown profiles fail before world replacement.
+- Unity region meshes and colliders consume the exact Core triangles. Edits reuse
+  unchanged regions; remote power changes still refresh their visible tints.
+  Shot/gather feedback consumes resolved surface distances.
+- Fixed edge interpolation cracks and ambiguous contour topology. 5486 core
+  checks pass, Release 0 warnings/errors, including all 255 local occupancy
+  arrangements, independent geometry oracles, movement and exact saves.
+- Actual Unity rays/buffers, production actions and recovery pass. Cadenced edit
+  samples reach 17.219 ms and a 40.388 ms observed frame: full performance remains
+  unmet. Main's default and final art/actor/construction/native gates remain open.
+- This preserves infrastructure, not a visual milestone. The camera diagnostic
+  still rejects the old softened layout. See docs/continuous-surface-checkpoint.md.
+
+## 0.122.0 — 2026-11-01 — Original art foundation; block aesthetic rejected
+
+- Authored original carbine/gauntlets, warden, relay, pressure suit and foundry
+  context with Blender sources, geometry manifests and FBX exports. Imported
+  prefabs validate metres, three signed axes, muzzle, material roles and bounds.
+- Replaced primitive weapon/enemy/relay/suit views with authored model consumers.
+  Preserved one Simulation, exact saves, feedback APIs and camera handoff.
+- Added original PBR/sky shaders, practical lighting/reflection and persisted
+  grade. Fixed missing URP post-process resources; actual camera exposure A/B
+  changed mean luminance from 0.13940 to 0.24796, proving consumer response.
+- Rob explicitly rejected block visuals and clarified Minecraft's influence as
+  gather/build/survive/combat. Updated art/mission/design/architecture direction;
+  all six influences are equally important, including the massive skill tree.
+- Current cubic world remains rejected. No native art build or visual/fun/
+  performance acceptance; this is a local technical checkpoint, not a milestone.
+
+## 0.121.0 — 2026-11-01 — Mechanical guide; presentation rejected
+
+- Preserved shared construction pricing/validation and read-only placement guide:
+  V toggle, wheel selection, primary click build, resource/reason feedback and
+  pause/view/load cancellation. Existing prices/types and direct keys retained.
+- 5198 core checks pass; Release build and Windows packaging 0 warnings/errors.
+  Scripted Main consumer checks pass. Native guide input remains unverified.
+- Director rejected the actual 0.120 presentation and specified AAA+ for the
+  finished game. No visual/fun approval. Pause feature expansion; prioritize
+  original 3D art, atmosphere, animation and a cohesive playable vertical slice.
+- Evidence: docs/construction-guide-checkpoint.md; feedback: DECISIONS.md.
+
+## 0.120.0 — 2026-11-01 — Construction occupancy safety
+
+- Fixed resource-spending placement through the suit, live units and relay.
+  Aimed building uses the movement body's full footprint, including head and
+  fractional shoulder overlap. Clear placement costs/support remain unchanged.
+- Added explicit occupied-space refusal feedback. Defeated unit/relay cells
+  remain reusable; prior saves are not rewritten.
+- 5181 core checks pass, Release build 0 warnings/errors. Unity MCP production
+  construction/feedback/orbital checks pass and restore exact state in one
+  Simulation. Added a 1920×1080 camera-only shot render, clearly prototype art.
+- Evidence and native/input/performance/fun limits:
+  docs/construction-safety-checkpoint.md. Work remains local and unpublished.
+- Follow-up live orbital cadence probe: 4.0001 wall seconds, 3.9596 game seconds,
+  948 player frames and 7 real world ticks. Exact state/configuration restored.
+  Temporary background execution is disclosed; no native/performance acceptance.
+
+## 0.119.0 — 2026-11-01 — Resolved action feedback and original audio
+
+- Added read-only canonical aim inspection and resolved shot facts without
+  changing the existing ammo/damage/clock rule or Simulation ownership.
+- Wired firing, impacts, gathering, building, reloads and suit damage to original
+  presentation, target/action labels and eleven locally synthesized sound clips.
+  Interaction reset clears transient effects immediately; full-pack refusal
+  accurately reports that the surface was kept.
+- 5165 core checks pass; build 0 warnings/errors. Unity MCP production-action,
+  signal reset, full-pack safety and orbital handoff checks pass; scoped console 0.
+  Heard/native mix, actual input, performance and fun remain open.
+- Evidence and boundaries: docs/action-feedback-checkpoint.md. Work remains local
+  on codex/unity-main-scene; no push, main mutation, licence or visibility change.
+
+## 0.118.0 — 2026-11-01 — Perspective command camera checkpoint
+
+- Added a real 3D overhead perspective camera, original suit view, pan/zoom/
+  rotation/focus bindings, camera-aware command rays and mode-specific controls.
+  The existing FPS adapter remains the only frame driver; one Simulation persists.
+- Saved Main wiring in Unity MCP. Scripted live view swaps preserve exact state,
+  controller identities and collision ownership; actual camera render captured.
+  Legacy Both input/scroll axis checked; 5155 core checks pass; scoped console 0.
+- Ordinary 0.117 Windows/Mono packaging also passed: 0 warnings/errors, 102 MB.
+  Local QA builds now schedule on Editor update and reject concurrent requests.
+- Evidence and remaining keyboard/native/fun gates:
+  docs/orbital-camera-checkpoint.md. Windows security prompt dismissal is still
+  pending; no permission or security setting was changed. No push/publication.
+
+## 0.117.0 — 2026-11-01 — Windows save transfer and local native packaging
+
+- Added original asynchronous Windows Common Item Dialog bridge and actual menu
+  export/import, including Unicode paths, cancellation and state-preserving invalid
+  import. Imported weapon text stays literal; malformed save shapes fail safely.
+- Added a repeatable local Windows x64 build utility, shader resource references,
+  platform-restricted native plugin and its original buildable source/tooling.
+- Core: 5155 checks pass; build 0 warnings/errors. Actual Editor UI transfer paths
+  pass. Native development packaging: 0 warnings/errors, 180 MB; entry menu renders.
+  A Windows Firewall prompt stopped native input QA. No security UI/permission was
+  changed. Build utility now uses ordinary player options; native play test open.
+- Evidence, failed attempts and remaining quality gates:
+  docs/windows-save-transfer-checkpoint.md. No push or publication.
+
+## 0.116.0 — 2026-11-01 — Exact interactive runtime persistence
+
+- Added versioned runtime snapshots for precise FPS pose, motion, look,
+  fractional clocks, queued jump, gathering remainder and earned run counters.
+  Invalid/partial records fail before world replacement; legacy saves remain valid.
+- Retained controller, look and Simulation identity. Initialized interactive pose
+  without advancing time while preserving the legacy constructor/tick contract.
+- 5145 checks passed on .NET 8.0.33; build 0 warnings/errors. Actual Unity menu
+  save/load and fresh-Play disk load restored an exact mid-jump snapshot.
+  Final scoped console query: zero errors/warnings.
+- Evidence: docs/runtime-persistence-checkpoint.md. Export/import, overhead view,
+  full gameplay/art/audio/native-quality gates remain open. No push/publication.
+
+## 0.115.0 — 2026-10-31 — Authored courtyard, material channels and player flow
+
+- Authored original salvage banks, cover/relay geometry and visible forward
+  warden approaches in the canonical chunk. Added block-ID mesh channels and
+  the original URP voxel surface shader/material; inspected the real result.
+- Added entry/pause/terminal UI, restart confirmation, resource hints and
+  player-facing local save/load with bounded UTF-8, atomic slot replacement and
+  a recoverable backup. Retained the single Simulation and legacy Both input.
+- Core build 0 warnings/errors; 5118/5118 checks passed on .NET 8.0.33. Actual
+  Unity UI save/load/death/restart/fresh-session restore passed; invalid load
+  kept the world. Shader messages and final scoped console findings: zero.
+- Evidence and remaining studio-quality gates:
+  docs/courtyard-player-flow-checkpoint.md. Exact pose/time persistence,
+  export/import, overhead command, final art/audio/native QA remain active.
+## 0.114.0 — 2026-10-31 — Frame-independent runtime and canonical actor views
+
+- Added Simulation.AdvanceFrame: fixed 120 Hz movement, candidate 2 Hz world,
+  bounded hitch catch-up, buffered jump, terminal-state stop; explicit Tick
+  and old-save load contracts retained. Unity uses the new installed DLL.
+- Added original enemy/core views, pointer capture/release and an in-place
+  encounter restart API. Added owned mesh/material teardown and guarded
+  core-publish exit/cleanup behavior. Preserved all existing test assertions.
+- 5094/5094 checks passed on .NET 8.0.33; full build 0 warnings/errors.
+  Live Main: 6 world ticks / 3.051 seconds / 888 render frames, same Simulation.
+- Evidence and open studio-quality gates: docs/runtime-pacing-checkpoint.md.
+  Full vision: docs/design-pillars.md. Local checkpoint only; no publication.
+## 0.113.0 — 2026-10-31 — Windows Main integration checkpoint
+
+- Saved Main in Unity 6000.3.27f2; all five adapters share GameManager's
+  Seed 42 Simulation. Added real-Editor scene assembly/overwrite protection,
+  pinned local Unity MCP tooling, saved Unity metadata/settings and package lock.
+- Observed initial magenta rendering; created and assigned URP assets in Unity.
+  Verified rendered chunk/model/HUD, legacy input, shared mesh/collider and
+  production in-place save/load. Core build: 0 warnings/errors; tests: 5061/5061
+  using explicit .NET 9 runtime roll-forward because .NET 8 was absent locally.
+- Evidence and failed/open gameplay gates: docs/unity-main-integration.md.
+  Studio production remains in pre-production: docs/production-status.md.
+  This is an integration checkpoint, not a final-quality or fun acceptance.
+- No push, release, repository visibility or licence change.
 ## 0.112.0 — 2026-10-31 — Integration Step 5 preparation: Main scene Windows checklist, documentation only
 
 - Step taken: Integration Step 5 preparation, the headless sub-step of the Windows-only Main scene step. No scene file built, no Play pressed, no gate item passed, by design — a headless run cannot build a Unity scene or observe Play, and a `.unity` file written headlessly and claimed as a built scene would be a fake, not a step, per the Slice 26 review.

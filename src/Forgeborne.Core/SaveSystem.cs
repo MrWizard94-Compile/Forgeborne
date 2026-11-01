@@ -36,6 +36,10 @@ public sealed class SaveData
     public int? WeaponMagCapacity { get; set; }
     public int? WeaponMag { get; set; }
     public int? WeaponReserve { get; set; }
+    /// <summary>Optional v1 interactive pose, clocks and run counters. Missing in legacy/world-only saves.</summary>
+    public RuntimeSaveState? Runtime { get; set; }
+    /// <summary>Absent in legacy saves. Unknown profiles fail before the live world is replaced.</summary>
+    public int? SurfaceProfile { get; set; }
 }
 
 /// <summary>A loaded save: the world, plus the Simulation-level state
@@ -49,6 +53,7 @@ public sealed class LoadedSave
     public required WorldZone World { get; set; }
     public SkillBuild? Skills { get; set; }
     public Weapon? Weapon { get; set; }
+    public RuntimeSaveState? Runtime { get; set; }
 }
 
 public static class SaveSystem
@@ -62,7 +67,12 @@ public static class SaveSystem
     public static string SaveZone(WorldZone world) => SaveZone(world, null, null);
 
     public static string SaveZone(WorldZone world, SkillBuild? skills, Weapon? weapon)
+        => SaveZone(world, skills, weapon, null);
+
+    public static string SaveZone(WorldZone world, SkillBuild? skills, Weapon? weapon, RuntimeSaveState? runtime)
     {
+        if (runtime != null && !runtime.Matches(world))
+            throw new ArgumentException("Interactive save state must be complete and consistent with the world.", nameof(runtime));
         var data = new SaveData
         {
             Seed = world.Seed,
@@ -83,6 +93,8 @@ public static class SaveSystem
             WeaponMagCapacity = weapon?.MagCapacity,
             WeaponMag = weapon?.Mag,
             WeaponReserve = weapon?.Reserve,
+            Runtime = runtime,
+            SurfaceProfile = world.Chunk.SurfaceProfile==SurfaceProfile.LegacyBlocks ? null : (int)world.Chunk.SurfaceProfile,
         };
         return JsonSerializer.Serialize(data, SaveOptions);
     }
@@ -93,8 +105,20 @@ public static class SaveSystem
     {
         var data = JsonSerializer.Deserialize<SaveData>(json)
             ?? throw new InvalidOperationException("Save data is null.");
+        if (data.Inventory == null || data.Enemies == null || data.Squads == null)
+            throw new InvalidOperationException("Save collections cannot be null.");
+        // Imported coordinates must leave distance arithmetic inside integer
+        // range. This also matches the supported interactive snapshot range.
+        static bool SupportedPosition(int x, int y, int z) => Math.Abs((long)x) <= 1_000_000
+            && Math.Abs((long)y) <= 1_000_000 && Math.Abs((long)z) <= 1_000_000;
+        if (!SupportedPosition(data.PlayerX, data.PlayerY, data.PlayerZ))
+            throw new InvalidOperationException("Saved player position is outside the supported range.");
+        if(data.SurfaceProfile.HasValue && data.SurfaceProfile.Value!=(int)SurfaceProfile.LegacyBlocks
+            && data.SurfaceProfile.Value!=(int)SurfaceProfile.ContinuousTerrainV1)
+            throw new InvalidOperationException("Saved surface profile is unsupported.");
         var world = new WorldZone(data.Seed);
         world.Chunk.FromBytes(Convert.FromBase64String(data.ChunkBase64));
+        world.Chunk.SurfaceProfile=(SurfaceProfile)(data.SurfaceProfile ?? 0);
         // Parse the skill build BEFORE restoring the player, so the
         // raised shield cap is in place before shields are restored:
         // without this, a skilled save with 100 shields would clamp
@@ -127,11 +151,14 @@ public static class SaveSystem
         world.Enemies.Clear();
         foreach (var e in data.Enemies)
         {
+            if (e == null) continue;
+            if ((e.Length == 3 || e.Length == 4) && !SupportedPosition(e[0], e[1], e[2]))
+                throw new InvalidOperationException("Saved enemy position is outside the supported range.");
             if (e.Length == 3) world.Enemies.Add(new Enemy(e[0], e[1], e[2]));
             else if (e.Length == 4)
             {
                 var enemy = new Enemy(e[0], e[1], e[2]);
-                enemy.TakeDamage(30 - e[3]);
+                enemy.TakeDamage(30 - Math.Clamp(e[3], 0, 30));
                 world.Enemies.Add(enemy);
             }
         }
@@ -142,7 +169,7 @@ public static class SaveSystem
             // Skip malformed entries rather than failing the whole load:
             // wrong length, out-of-bounds position/rally, unknown
             // doctrine/kind, or a dead squad (removed on next tick anyway).
-            if (s.Length != 9) continue;
+            if (s == null || s.Length != 9) continue;
             if (!VoxelChunk.InBounds(s[0], s[1], s[2]) || !VoxelChunk.InBounds(s[3], s[4], s[5])) continue;
             if (!Enum.IsDefined(typeof(TacticalDoctrine), s[7]) || !Enum.IsDefined(typeof(SquadKind), s[8])) continue;
             if (s[6] <= 0) continue;
@@ -159,9 +186,13 @@ public static class SaveSystem
         if (data.WeaponName != null && data.WeaponDamage.HasValue && data.WeaponMagCapacity.HasValue
             && data.WeaponMag.HasValue && data.WeaponReserve.HasValue)
         {
+            if (data.WeaponName.Length > 128)
+                throw new InvalidOperationException("Saved weapon name exceeds the supported display length.");
             weapon = Weapon.FromSaved(data.WeaponName, data.WeaponDamage.Value, data.WeaponMagCapacity.Value,
                 data.WeaponMag.Value, data.WeaponReserve.Value);
         }
-        return new LoadedSave { World = world, Skills = skills, Weapon = weapon };
+        if (data.Runtime != null && !data.Runtime.Matches(world))
+            throw new InvalidOperationException("Interactive save pose/clock state is incomplete, unsupported or inconsistent with the world.");
+        return new LoadedSave { World = world, Skills = skills, Weapon = weapon, Runtime = data.Runtime };
     }
 }

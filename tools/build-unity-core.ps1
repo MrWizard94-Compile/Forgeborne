@@ -41,6 +41,7 @@ $Dlls = @(
 $Stage = Join-Path ([System.IO.Path]::GetTempPath()) ('forgeborne-publish-' + [Guid]::NewGuid().ToString('N'))
 try {
     & $Dotnet publish src/Forgeborne.Core/Forgeborne.Core.csproj -f netstandard2.1 -c Release -o $Stage --nologo
+    if ($LASTEXITCODE -ne 0) { throw "core publish failed with exit code $LASTEXITCODE; Plugins left unchanged" }
     foreach ($Dll in $Dlls) {
         $Src = Join-Path $Stage $Dll
         if (-not (Test-Path $Src)) {
@@ -55,6 +56,12 @@ try {
     Write-Host 'appears under ForgeborneUnity/Assets/.'
 } finally {
     if (Test-Path $Stage) {
-        Remove-Item $Stage -Recurse -Force
+        $ResolvedStage = [System.IO.Path]::GetFullPath($Stage)
+        $ExpectedTemp = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath()).TrimEnd([System.IO.Path]::DirectorySeparatorChar)
+        if ([System.IO.Path]::GetDirectoryName($ResolvedStage) -ne $ExpectedTemp -or
+            -not [System.IO.Path]::GetFileName($ResolvedStage).StartsWith('forgeborne-publish-')) {
+            throw "refusing cleanup outside the verified task staging directory: $ResolvedStage"
+        }
+        Remove-Item -LiteralPath $ResolvedStage -Recurse -Force
     }
 }

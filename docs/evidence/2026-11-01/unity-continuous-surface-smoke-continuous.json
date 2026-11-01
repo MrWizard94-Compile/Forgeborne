@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "triangles": 24604,
+      "vertices": 73812,
+      "regions": 162,
+      "firstMeshAndBvhMilliseconds": 217.7898,
+      "gatherRebuildMilliseconds": 1.112,
+      "gatherRegionsRebuilt": 1,
+      "actualMeshBufferIdentity": true,
+      "actualColliderRays": 200,
+      "maximumRayDifferenceMetres": 7.15255737e-07,
+      "productionGatherRemovedGeometry": true,
+      "actualShotDistanceFeedback": true,
+      "sharedFloorMotion": true,
+      "exactSaveRecovery": true,
+      "badTransformRejected": true,
+      "sameSimulation": true,
+      "scope": "Scripted paused fixture; final authored world/actors/construction/native/performance/quality remain open"
+    },
+    "compiler": "codedom"
+  }
+}

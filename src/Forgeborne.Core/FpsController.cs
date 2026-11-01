@@ -38,14 +38,31 @@ public sealed class FpsController
         IsGrounded = false;
     }
 
+    internal void RestoreRuntime(float x, float y, float z, float velocity, bool grounded)
+    {
+        X = x; Y = y; Z = z;
+        VelocityY = velocity;
+        IsGrounded = grounded;
+    }
+
+    private static (int X0, int X1, int Y0, int Y1, int Z0, int Z1) BodyCells(float px, float py, float pz) =>
+        ((int)Math.Floor(px - HalfWidth), (int)Math.Floor(px + HalfWidth),
+         (int)Math.Floor(py), (int)Math.Floor(py + Height - 0.001f),
+         (int)Math.Floor(pz - HalfWidth), (int)Math.Floor(pz + HalfWidth));
+
+    /// <summary>True for a voxel touched by the same body footprint used by movement collision.</summary>
+    public bool OverlapsCell(int x, int y, int z)
+    {
+        var cells = BodyCells(X, Y, Z);
+        return x >= cells.X0 && x <= cells.X1 && y >= cells.Y0 && y <= cells.Y1 && z >= cells.Z0 && z <= cells.Z1;
+    }
+
     private bool Collides(VoxelChunk chunk, float px, float py, float pz)
     {
-        int x0 = (int)Math.Floor(px - HalfWidth), x1 = (int)Math.Floor(px + HalfWidth);
-        int y0 = (int)Math.Floor(py), y1 = (int)Math.Floor(py + Height - 0.001f);
-        int z0 = (int)Math.Floor(pz - HalfWidth), z1 = (int)Math.Floor(pz + HalfWidth);
-        for (int x = x0; x <= x1; x++)
-        for (int y = y0; y <= y1; y++)
-        for (int z = z0; z <= z1; z++)
+        var cells = BodyCells(px, py, pz);
+        for (int x = cells.X0; x <= cells.X1; x++)
+        for (int y = cells.Y0; y <= cells.Y1; y++)
+        for (int z = cells.Z0; z <= cells.Z1; z++)
         {
             if (!VoxelChunk.InBounds(x, y, z)) continue;
             if (BlockInfo.IsSolid(chunk.Get(x, y, z))) return true;
@@ -74,6 +91,8 @@ public sealed class FpsController
     /// </summary>
     public void UpdateWorld(float dt, float dx, float dz, bool jump, VoxelChunk chunk)
     {
+        if(chunk.SurfaceProfile==SurfaceProfile.ContinuousTerrainV1)
+        {UpdateContinuous(dt,dx,dz,jump,chunk.Geometry);return;}
         // Horizontal X, then Z, separately, so sliding along a wall
         // still works: a blocked X component does not cancel Z.
         float nx = X + dx * EffectiveSpeed * dt;
@@ -125,5 +144,43 @@ public sealed class FpsController
                 Math.Abs(Y - (below + 1)) < 0.01f)
                 IsGrounded = true;
         }
+    }
+
+    private void UpdateContinuous(float dt,float dx,float dz,bool jump,TerrainGeometry geometry)
+    {
+        var position=new System.Numerics.Vector3(X,Y,Z);
+        const float stepHeight=0.35f;
+        const float walkableNormalY=0.642788f;
+        void Horizontal(System.Numerics.Vector3 movement)
+        {
+            if(movement.LengthSquared()<1e-16f)return;
+            var sweep=geometry.SweepBody(position,movement);
+            if(sweep.Hit && IsGrounded)
+            {
+                var up=new System.Numerics.Vector3(0,stepHeight,0);
+                var lift=geometry.SweepBody(position,up);
+                var across=geometry.SweepBody(position+up,movement);
+                var down=new System.Numerics.Vector3(0,-stepHeight-0.02f,0);
+                var landing=geometry.SweepBody(position+up+movement,down);
+                if(!lift.Hit && !across.Hit && landing.Hit && landing.Normal.Y>=walkableNormalY)
+                {position+=up+movement+down*landing.Fraction;return;}
+            }
+            position+=movement*sweep.Fraction;
+        }
+        Horizontal(new System.Numerics.Vector3(dx*EffectiveSpeed*dt,0,0));
+        Horizontal(new System.Numerics.Vector3(0,0,dz*EffectiveSpeed*dt));
+        if(jump && IsGrounded){VelocityY=JumpVelocity;IsGrounded=false;}
+        VelocityY+=Gravity*dt;
+        var vertical=new System.Numerics.Vector3(0,VelocityY*dt,0);
+        var contact=geometry.SweepBody(position,vertical);
+        position+=vertical*contact.Fraction;
+        IsGrounded=contact.Hit && VelocityY<=0 && contact.Normal.Y>=walkableNormalY;
+        if(contact.Hit)VelocityY=0;
+        if(!IsGrounded && VelocityY<=0)
+        {
+            var probe=geometry.SweepBody(position,new System.Numerics.Vector3(0,-0.002f,0));
+            IsGrounded=probe.Hit && probe.Normal.Y>=walkableNormalY;
+        }
+        X=position.X;Y=position.Y;Z=position.Z;
     }
 }

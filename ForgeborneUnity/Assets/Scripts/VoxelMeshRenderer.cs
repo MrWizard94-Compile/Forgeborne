@@ -5,6 +5,7 @@
 // Canonical state is Forgeborne.Core.WorldZone, via Simulation.
 using UnityEngine;
 using Forgeborne.Core;
+using System.Collections.Generic;
 
 // MeshCollider added in 0.15.0 so the Orbital rally picker's
 // crosshair raycast can hit the voxel mesh: without a collider
@@ -44,6 +45,19 @@ public class VoxelMeshRenderer : MonoBehaviour
     public Material? ChunkMaterial;
     private Mesh? _mesh;
     private MeshCollider? _collider;
+    private Material? _runtimeMaterial;
+    private MeshRenderer? _renderer;
+    private sealed class RegionView
+    {
+        public GameObject Root=null!;
+        public Mesh Mesh=null!;
+        public MeshCollider Collider=null!;
+        public TerrainRegion? Region;
+        public BlockType[] Types=System.Array.Empty<BlockType>();
+    }
+    private readonly Dictionary<int,RegionView> _regions=new Dictionary<int,RegionView>();
+    private bool _continuousVisible;
+    public int LastRegionsRebuilt { get; private set; }
 
     void Awake()
     {
@@ -51,16 +65,36 @@ public class VoxelMeshRenderer : MonoBehaviour
         GetComponent<MeshFilter>().mesh = _mesh;
         _collider = GetComponent<MeshCollider>();
         var renderer = GetComponent<MeshRenderer>();
+        _renderer=renderer;
         if (ChunkMaterial != null)
         {
             renderer.sharedMaterial = ChunkMaterial;
         }
         else
         {
-            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            if (shader != null) renderer.sharedMaterial = new Material(shader);
+            var shader = Shader.Find("Forgeborne/VoxelSurface") ?? Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            if (shader != null)
+            {
+                _runtimeMaterial = new Material(shader);
+                renderer.sharedMaterial = _runtimeMaterial;
+            }
             else Debug.LogWarning("Forgeborne chunk material: neither Universal Render Pipeline/Lit nor Standard shader found; chunk renders with its Inspector material, and vertex tints may not show — see playtest-gate items 26 and 30.");
         }
+    }
+
+    void OnDestroy()
+    {
+        foreach(var region in _regions.Values)
+        {
+            if(region.Collider!=null)region.Collider.sharedMesh=null;
+            if(region.Root!=null)region.Root.SetActive(false);
+            if(region.Mesh!=null)Destroy(region.Mesh);
+            if(region.Root!=null)Destroy(region.Root);
+        }
+        _regions.Clear();
+        if (_collider != null) _collider.sharedMesh = null;
+        if (_mesh != null) Destroy(_mesh);
+        if (_runtimeMaterial != null) Destroy(_runtimeMaterial);
     }
 
     // Call this when the chunk changes (gather / build / destruction).
@@ -88,28 +122,108 @@ public class VoxelMeshRenderer : MonoBehaviour
     public void RefreshMesh()
     {
         if (Simulation == null || _mesh == null) return;
-        var data = MeshBuilder.BuildFromChunk(Simulation.World.Chunk, Simulation.World.PowerState);
+        bool continuous=Simulation.World.Chunk.SurfaceProfile==SurfaceProfile.ContinuousTerrainV1;
+        if(continuous){RefreshRegions();return;}
+        LastRegionsRebuilt=0;
+        if(_continuousVisible)
+        {
+            foreach(var region in _regions.Values)
+            {
+                region.Root.SetActive(false);region.Collider.sharedMesh=null;region.Mesh.Clear();
+                region.Region=null;region.Types=System.Array.Empty<BlockType>();
+            }
+            _continuousVisible=false;
+        }
+        if(_renderer!=null)_renderer.enabled=true;
+        var data=MeshBuilder.BuildFromChunk(Simulation.World.Chunk,Simulation.World.PowerState);
+        Upload(_mesh,_collider,data);
+    }
+
+    private void RefreshRegions()
+    {
+        if(Simulation==null || _mesh==null || _renderer==null)return;
+        var matrix=transform.localToWorldMatrix;
+        for(int row=0;row<4;row++)for(int column=0;column<4;column++)
+            if(Mathf.Abs(matrix[row,column]-(row==column ? 1 : 0))>0.000001f)
+                throw new System.InvalidOperationException("Current canonical chunk surfaces require an identity world transform.");
+        if(!_continuousVisible)
+        {
+            if(_collider!=null)_collider.sharedMesh=null;
+            _mesh.Clear();_renderer.enabled=false;_continuousVisible=true;
+        }
+        LastRegionsRebuilt=0;
+        var geometry=Simulation.World.Chunk.Geometry;
+        foreach(var region in geometry.Regions)
+        {
+            _regions.TryGetValue(region.Id,out var view);
+            if(region.TriangleCount==0)
+            {
+                if(view!=null && view.Root.activeSelf)
+                {view.Root.SetActive(false);view.Collider.sharedMesh=null;view.Mesh.Clear();view.Region=null;view.Types=System.Array.Empty<BlockType>();}
+                continue;
+            }
+            if(view==null)
+            {
+                var root=new GameObject("Surface region "+region.Id,typeof(MeshFilter),typeof(MeshRenderer),typeof(MeshCollider));
+                root.transform.SetParent(transform,false);
+                var surface=root.GetComponent<MeshRenderer>();surface.sharedMaterial=_renderer.sharedMaterial;
+                var properties=new MaterialPropertyBlock();properties.SetFloat("_GridStrength",0);surface.SetPropertyBlock(properties);
+                view=new RegionView{Root=root,Mesh=new Mesh{name="Forgeborne surface "+region.Id},Collider=root.GetComponent<MeshCollider>()};
+                root.GetComponent<MeshFilter>().sharedMesh=view.Mesh;_regions.Add(region.Id,view);
+            }
+            view.Root.SetActive(true);
+            if(!object.ReferenceEquals(view.Region,region))
+            {
+                var data=region.HasPowerSensitiveMaterials ? region.BuildMesh(Simulation.World.PowerState) : region.BuildMesh();
+                Upload(view.Mesh,view.Collider,data);view.Types=data.BlockTypes.ToArray();view.Region=region;LastRegionsRebuilt++;
+            }
+            else if(region.HasPowerSensitiveMaterials)
+            {
+                var colours=region.BuildColors(Simulation.World.PowerState);var result=new Color[colours.Length];
+                for(int i=0;i<result.Length;i++)
+                {var c=colours[i];result[i]=SurfaceColor(view.Types[i])*new Color(c.Item1,c.Item2,c.Item3,c.Item4);}
+                view.Mesh.colors=result;
+            }
+        }
+    }
+
+    private static void Upload(Mesh mesh,MeshCollider? collider,MeshData data)
+    {
         var verts = new Vector3[data.Vertices.Count];
         var norms = new Vector3[data.Normals.Count];
         var uvs = new Vector2[data.Uvs.Count];
         var cols = new Color[data.Colors.Count];
+        var types = new Vector2[data.BlockTypes.Count];
         for (int i = 0; i < verts.Length; i++)
         {
             verts[i] = new Vector3(data.Vertices[i].Item1, data.Vertices[i].Item2, data.Vertices[i].Item3);
             norms[i] = new Vector3(data.Normals[i].Item1, data.Normals[i].Item2, data.Normals[i].Item3);
             uvs[i] = new Vector2(data.Uvs[i].Item1, data.Uvs[i].Item2);
-            cols[i] = new Color(data.Colors[i].Item1, data.Colors[i].Item2, data.Colors[i].Item3, data.Colors[i].Item4);
+            var tint = new Color(data.Colors[i].Item1, data.Colors[i].Item2, data.Colors[i].Item3, data.Colors[i].Item4);
+            cols[i] = SurfaceColor(data.BlockTypes[i]) * tint;
+            types[i] = new Vector2((int)data.BlockTypes[i], 0);
         }
-        _mesh.Clear();
-        if (_collider != null) _collider.sharedMesh = null;
-        _mesh.vertices = verts;
-        _mesh.normals = norms;
-        _mesh.uv = uvs;
-        _mesh.colors = cols;
-        _mesh.triangles = data.Indices.ToArray();
-        _mesh.RecalculateBounds();
+        if (collider != null) collider.sharedMesh = null;
+        mesh.Clear();
+        mesh.indexFormat=verts.Length>65535 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16;
+        mesh.vertices = verts;mesh.normals = norms;mesh.uv = uvs;mesh.colors = cols;mesh.uv2 = types;
+        mesh.triangles = data.Indices.ToArray();mesh.RecalculateBounds();
         // Re-attach after the clear/rebuild, so the raycast collider
         // matches the freshly built mesh instead of the cleared one.
-        if (_collider != null) _collider.sharedMesh = _mesh;
+        if (collider != null) collider.sharedMesh = mesh;
+    }
+
+    private static Color SurfaceColor(BlockType block)
+    {
+        switch (block)
+        {
+            case BlockType.Stone: return new Color(0.22f, 0.27f, 0.30f);
+            case BlockType.EmberOre: return new Color(0.86f, 0.29f, 0.07f);
+            case BlockType.Wood: return new Color(0.34f, 0.17f, 0.075f);
+            case BlockType.Wall: return new Color(0.10f, 0.16f, 0.20f);
+            case BlockType.Workstation: return new Color(0.09f, 0.40f, 0.46f);
+            case BlockType.Bedrock: return new Color(0.055f, 0.065f, 0.08f);
+            default: return new Color(0.22f, 0.32f, 0.38f);
+        }
     }
 }

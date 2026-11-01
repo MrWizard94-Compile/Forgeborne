@@ -3,11 +3,9 @@ using System.Text.Json;
 namespace Forgeborne.Core;
 
 /// <summary>
-/// Headless simulation loop for Slice 1: one world, one FPS controller,
-/// one weapon, one objective core. This is the build-around for
-/// "no playable Unity build in this environment": the full loop
-/// (move, gather, build, fight, survive, objective) runs and is
-/// tested here, and Unity later only renders it and feeds it input.
+/// Canonical pure-C# simulation: one world, FPS controller, look, weapon and
+/// objective. Unity renders this state and supplies input; the same rules also
+/// run headlessly. Presentation never creates a parallel game simulation.
 /// </summary>
 public sealed class Simulation
 {
@@ -35,6 +33,16 @@ public sealed class Simulation
     // not advance it. Reset on ApplySkills so a respec cannot carry
     // a near-complete bonus from an old build.
     private double _gatherBonusCarry;
+    // The interactive runtime uses fixed movement steps and an elapsed-time
+    // world clock. Tick remains the explicit one-world-step API for tools/tests.
+    public const double FrameStepSeconds = 1.0 / 120.0;
+    public const int WorldTicksPerSecond = 2;
+    public const float MaximumFrameSeconds = 0.25f;
+    internal const int MovementStepsPerWorldTick = 120 / WorldTicksPerSecond;
+    private double _frameCarry;
+    private int _movementStepsSinceWorldTick;
+    private bool _queuedJump;
+    private bool _interactiveClockUsed;
 
     public Simulation(int seed, GeneratedWeapon? equipped = null, SkillBuild? skills = null)
     {
@@ -86,6 +94,10 @@ public sealed class Simulation
     {
         if (loaded == null) return false;
         World = loaded;
+        _frameCarry = 0;
+        _movementStepsSinceWorldTick = 0;
+        _queuedJump = false;
+        _interactiveClockUsed = false;
         Fps.Teleport(loaded.Player.X, loaded.Player.Y, loaded.Player.Z);
         EnemiesKilled = 0;
         BlocksGathered = 0;
@@ -96,7 +108,16 @@ public sealed class Simulation
     }
 
     /// <summary>Full save: world, applied skill build, and equipped weapon, via SaveSystem.SaveZone. World-only callers should keep using SaveSystem.SaveZone directly.</summary>
-    public string SaveToJson() => SaveSystem.SaveZone(World, AppliedSkills, Weapon);
+    public string SaveToJson() => SaveSystem.SaveZone(World, AppliedSkills, Weapon,
+        _interactiveClockUsed ? new RuntimeSaveState
+        {
+            Version = 1, X = Fps.X, Y = Fps.Y, Z = Fps.Z,
+            VelocityY = Fps.VelocityY, Grounded = Fps.IsGrounded,
+            Yaw = Look.Yaw, Pitch = Look.Pitch,
+            FrameRemainder = _frameCarry, MovementPhase = _movementStepsSinceWorldTick,
+            QueuedJump = _queuedJump, GatherBonusCarry = _gatherBonusCarry,
+            BlocksGathered = BlocksGathered, BlocksBuilt = BlocksBuilt, EnemiesKilled = EnemiesKilled,
+        } : null);
 
     /// <summary>
     /// Load a full save JSON into this Simulation via RestoreWorld.
@@ -120,12 +141,28 @@ public sealed class Simulation
             if (!RestoreWorld(loaded.World)) return false;
             if (loaded.Skills != null) ApplySkills(loaded.Skills);
             if (loaded.Weapon != null) Weapon = loaded.Weapon;
+            if (loaded.Runtime != null) RestoreRuntime(loaded.Runtime);
             return true;
         }
         catch (Exception ex) when (ex is JsonException or FormatException or InvalidOperationException or ArgumentException)
         {
             return false;
         }
+    }
+
+    private void RestoreRuntime(RuntimeSaveState saved)
+    {
+        // LoadSave validated every required member before the world was swapped.
+        Fps.RestoreRuntime(saved.X!.Value, saved.Y!.Value, saved.Z!.Value, saved.VelocityY!.Value, saved.Grounded!.Value);
+        Look.RestoreRuntime(saved.Yaw!.Value, saved.Pitch!.Value);
+        _frameCarry = saved.FrameRemainder!.Value;
+        _movementStepsSinceWorldTick = saved.MovementPhase!.Value;
+        _queuedJump = saved.QueuedJump!.Value;
+        _gatherBonusCarry = saved.GatherBonusCarry!.Value;
+        BlocksGathered = saved.BlocksGathered!.Value;
+        BlocksBuilt = saved.BlocksBuilt!.Value;
+        EnemiesKilled = saved.EnemiesKilled!.Value;
+        _interactiveClockUsed = true;
     }
 
     /// <summary>Swap to a generated weapon (e.g. an enemy drop). Fresh weapon: full mag, 120 reserve. Returns false for null, leaving the current weapon untouched.</summary>
@@ -154,23 +191,64 @@ public sealed class Simulation
     /// </summary>
     public void Tick(float dt, float forward, float strafe, bool jump)
     {
+        Move(dt, forward, strafe, jump);
+        World.Advance();
+    }
+
+    /// <summary>
+    /// Interactive time entry: 120 Hz collision/movement and two world ticks per
+    /// second, independent of render callback rate. A frame contributes at most
+    /// 250 ms, so returning from a hitch cannot apply an unbounded damage burst.
+    /// Jump edges survive frames shorter than a movement step. Death or victory
+    /// ends progression until the player restores/restarts the world.
+    /// Loading a legacy world restarts the sub-tick clock, retaining saved ticks.
+    /// </summary>
+    public int AdvanceFrame(float dt, float forward, float strafe, bool jump)
+    {
+        if (float.IsNaN(dt) || float.IsInfinity(dt) || dt < 0)
+            throw new ArgumentOutOfRangeException(nameof(dt), "Frame time must be finite and nonnegative.");
+        _interactiveClockUsed = true;
+        SynchronizePlayerGrid();
+        if (IsPlayerDead || IsObjectiveComplete || dt == 0) return 0;
+        _queuedJump |= jump;
+        _frameCarry += Math.Min(dt, MaximumFrameSeconds);
+        int advanced = 0;
+        // At most 31 iterations: one prior fractional step plus a capped frame.
+        for (int step = 0; step < 31 && _frameCarry + 1e-8 >= FrameStepSeconds; step++)
+        {
+            _frameCarry = Math.Max(0, _frameCarry - FrameStepSeconds);
+            Move((float)FrameStepSeconds, forward, strafe, _queuedJump);
+            _queuedJump = false;
+            if (++_movementStepsSinceWorldTick == MovementStepsPerWorldTick)
+            {
+                _movementStepsSinceWorldTick = 0;
+                World.Advance();
+                advanced++;
+                if (IsPlayerDead || IsObjectiveComplete)
+                {
+                    _frameCarry = 0;
+                    break;
+                }
+            }
+        }
+        return advanced;
+    }
+
+    private void Move(float dt, float forward, float strafe, bool jump)
+    {
         float yawRad = Look.Yaw * (float)Math.PI / 180f;
         float sin = (float)Math.Sin(yawRad), cos = (float)Math.Cos(yawRad);
         float worldX = forward * sin + strafe * cos;
         float worldZ = forward * cos - strafe * sin;
         Fps.UpdateWorld(dt, worldX, worldZ, jump, World.Chunk);
+        SynchronizePlayerGrid();
+    }
+
+    private void SynchronizePlayerGrid()
+    {
         World.Player.X = (int)Math.Floor(Fps.X);
         World.Player.Y = (int)Math.Floor(Fps.Y);
         World.Player.Z = (int)Math.Floor(Fps.Z);
-        int before = World.Enemies.Count;
-        World.Advance();
-        // Note: World.Advance removes dead enemies; kills are counted
-        // by the caller via Attack, not here, to avoid double-counting
-        // enemies that die from other causes in future slices.
-        _ = before;
-        // Damage from adjacent enemies is applied in World.Advance via
-        // the grid player, which is synced from the FPS controller above.
-        // Sync FPS health display back through HudState in callers.
     }
 
     /// <summary>
@@ -195,6 +273,9 @@ public sealed class Simulation
     private AimHit TraceAim(bool includeActors) =>
         AimRay.Trace(World.Chunk, World.Enemies, World.CoreX, World.CoreY, World.CoreZ,
             Fps.X, Fps.Y + EyeHeight, Fps.Z, Look.Forward(), AimReach, includeActors);
+
+    /// <summary>Read-only aim inspection through the same rule used by actions. Consumes no ammo or time.</summary>
+    public AimHit InspectAim(bool includeActors = true) => TraceAim(includeActors);
 
     /// <summary>
     /// Slice 8 Step 2 — gather by aim, replacing the fixed +Z
@@ -253,15 +334,31 @@ public sealed class Simulation
     /// a powered pair is still a mill face-adjacent to a
     /// Dynamo, however the two blocks were placed.
     /// </summary>
-    private BuildResult BuildAimed(BlockType type)
+    public BuildPreview InspectBuildAhead(BlockType type)
     {
+        if (!BuildCost.TryGet(type, out var cost))
+            return new(type, false, 0, 0, 0, BuildResult.InvalidType, default);
         var hit = TraceAim(includeActors: false);
         if (hit.Kind != AimTargetKind.Solid)
-            return hit.LeftBounds ? BuildResult.OutOfBounds : BuildResult.Floating;
-        var r = World.Build(hit.PrevX, hit.PrevY, hit.PrevZ, type);
+            return new(type, false, hit.PrevX, hit.PrevY, hit.PrevZ,
+                hit.LeftBounds ? BuildResult.OutOfBounds : BuildResult.Floating, cost);
+        // Grid occupancy alone misses the suit's head and fractional-width
+        // overlap into adjacent cells. Use the movement body's exact footprint.
+        var result = Fps.OverlapsCell(hit.PrevX, hit.PrevY, hit.PrevZ) ? BuildResult.Occupied
+            : World.InspectBuild(hit.PrevX, hit.PrevY, hit.PrevZ, type);
+        return new(type, true, hit.PrevX, hit.PrevY, hit.PrevZ, result, cost);
+    }
+
+    public BuildResult BuildAhead(BlockType type)
+    {
+        var preview = InspectBuildAhead(type);
+        if (preview.Result != BuildResult.Success) return preview.Result;
+        var r = World.Build(preview.X, preview.Y, preview.Z, type);
         if (r == BuildResult.Success) BlocksBuilt++;
         return r;
     }
+
+    private BuildResult BuildAimed(BlockType type) => BuildAhead(type);
 
     public BuildResult BuildWallAhead() => BuildAimed(BlockType.Wall);
 
@@ -437,18 +534,32 @@ public sealed class Simulation
     /// alive under its old name.
     /// </summary>
     public bool FireAimed()
+        => FireAimed(out _);
+
+    /// <summary>Fire through the existing rule and return resolved facts for sound/impact/HUD feedback.</summary>
+    public bool FireAimed(out ShotOutcome outcome)
     {
+        outcome = default;
         if (!Weapon.Fire()) return false;
         var hit = TraceAim(includeActors: true);
+        int applied = 0;
+        bool destroyed = false;
         if (hit.Kind == AimTargetKind.Enemy && hit.Enemy != null)
         {
+            int before = hit.Enemy.Health;
             World.AttackEnemy(hit.Enemy, EffectiveDamage);
+            applied = before - hit.Enemy.Health;
+            destroyed = before > 0 && hit.Enemy.IsDead;
             if (hit.Enemy.IsDead) EnemiesKilled++;
         }
         else if (hit.Kind == AimTargetKind.Core)
         {
+            int before = World.CoreHealth;
             World.DamageCore(EffectiveCoreDamage);
+            applied = before - World.CoreHealth;
+            destroyed = before > 0 && World.CoreHealth <= 0;
         }
+        outcome = new ShotOutcome(true, hit.Kind, hit.X, hit.Y, hit.Z, applied, destroyed, hit.Distance);
         return true; // shot fired; a solid, a miss, or no target still costs the round
     }
 

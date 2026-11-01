@@ -2,13 +2,17 @@
 
 ## Mission
 
-Build a studio-grade, production-grade, PC-native FPS-RTS voxel ARPG
+Build an AAA+ target, production-grade, PC-native FPS-RTS ARPG
 hybrid that is fun because gather → build → survive works as a loop,
 not because it has many systems.
+All six influences are equally important. Modded Minecraft supplies the
+gather/build/survive/combat concept; believable original 3D art and BioShock-inspired
+atmosphere are required. The director rejected cubic/blocky world presentation.
 
 ## Scope (in scope, in order)
 
-1. Voxel world that can be gathered, terraformed, and built in.
+1. Persistent 3D world that can be gathered, terraformed, and built in, with
+   sculpted terrain and authored architecture rather than a block aesthetic.
 2. FPS gather / build / combat, with Orbital Tactical command.
 3. Survival pressure: swarms, elites, bosses, and world events that test
    what the player gathered and built.

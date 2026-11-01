@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "perspectiveHandoff": true,
+      "cursorFree": true,
+      "suitUsesCanonicalPose": true,
+      "noExtraCollisionOwner": true,
+      "fpsRestored": true,
+      "exactStatePreserved": true,
+      "simulationIdentityPreserved": true,
+      "soleFrameDriverEnabled": true
+    },
+    "compiler": "codedom"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "removedRuntimeOwner": true,
+      "existingSkyRestored": true,
+      "existingAmbientRestored": true,
+      "exactStatePreserved": true,
+      "sameSimulation": true,
+      "stopPlayRequired": true
+    },
+    "compiler": "codedom"
+  }
+}

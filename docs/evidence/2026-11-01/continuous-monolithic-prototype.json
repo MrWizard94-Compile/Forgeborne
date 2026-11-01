@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "triangles": 20480,
+      "vertices": 61440,
+      "firstMeshAndBvhMilliseconds": 529.2229,
+      "actualMeshBufferIdentity": true,
+      "actualColliderRays": 200,
+      "maximumRayDifferenceMetres": 7.15255737e-07,
+      "productionGatherRemovedGeometry": true,
+      "actualShotDistanceFeedback": true,
+      "sharedFloorMotion": true,
+      "exactSaveRecovery": true,
+      "sameSimulation": true,
+      "scope": "Scripted paused fixture; final authored world/actors/construction/native/performance/quality remain open"
+    },
+    "compiler": "codedom"
+  }
+}

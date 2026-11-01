@@ -1,0 +1,425 @@
+{
+  "checkpoint": "0.122.0 authored art technical checkpoint",
+  "artOrigin": "Original Forgeborne geometry and shader authoring; no imported art",
+  "blender": "4.5.15 LTS",
+  "blenderArchiveSha256": "52dd02fd74877fa08e74b67d7854cf32468a232c02aaa19b6844c91285574f8d",
+  "runtimeCore": {
+    "path": "ForgeborneUnity/Assets/Plugins/Forgeborne.Core.dll",
+    "bytes": 93696,
+    "sha256": "3004e6def79fac0e3bdefb63f762119e23113aafe12408c63428dc7a155056c1"
+  },
+  "models": [
+    "PulseCarbine",
+    "EmberWarden",
+    "AetherRelay",
+    "ForgeSuit",
+    "RelayFoundry"
+  ],
+  "hashConvention": "Raw current workspace bytes; Git checkout line endings may change text hashes without changing source semantics",
+  "files": [
+    {
+      "path": "art/source/AetherRelay.blend",
+      "bytes": 774714,
+      "sha256": "d24f4190059fabddf868cb4961e4c6296238d45c4d87d26f25405c42d93e9666"
+    },
+    {
+      "path": "art/source/AetherRelay.json",
+      "bytes": 739,
+      "sha256": "0c92d6724e5815e634655e5246863bdecc826c15527527a2b74cf19d129fc3ac"
+    },
+    {
+      "path": "art/source/EmberWarden.blend",
+      "bytes": 929199,
+      "sha256": "ad0e217c57fee3142ca53bc8c8621b7dbbad41f57b126fb7531cef531c1733fe"
+    },
+    {
+      "path": "art/source/EmberWarden.json",
+      "bytes": 738,
+      "sha256": "17545bb4ac1b770a4eb12fe12f1bb93f721b41cebd7517a808e7e2da60d146d6"
+    },
+    {
+      "path": "art/source/ForgeSuit.blend",
+      "bytes": 1307419,
+      "sha256": "cacc9ee577bc5a512e3f04a74ce8ec5155c1869f3f72e7094833cb6b08051eb7"
+    },
+    {
+      "path": "art/source/ForgeSuit.json",
+      "bytes": 716,
+      "sha256": "2d689b87daf3a4954f42726102150bdd6f4ad9845c60f286fb56505c6844a415"
+    },
+    {
+      "path": "art/source/PulseCarbine.blend",
+      "bytes": 1879635,
+      "sha256": "96fb9bef25ec8a902fb867cd679b2bbd01ae16fa09d8c9f0954c988395d8ded9"
+    },
+    {
+      "path": "art/source/PulseCarbine.json",
+      "bytes": 738,
+      "sha256": "f570b118aefec78eeece5759a7dd5853fc10b8ab91a144907a9f922b97f7a04c"
+    },
+    {
+      "path": "art/source/RelayFoundry.blend",
+      "bytes": 5561656,
+      "sha256": "5fa5a03b86acf1cf11e74d0177cbd74004f748eb6a4d9180166c372f2ee1f1a0"
+    },
+    {
+      "path": "art/source/RelayFoundry.json",
+      "bytes": 692,
+      "sha256": "16ff8db580cc807e7ee27dc9a4806c9f521c9b5d679bbc3adc5a2d24e2a497ed"
+    },
+    {
+      "path": "art/tools/build_visual_assets.py",
+      "bytes": 23136,
+      "sha256": "66d8d1f09e155adf0a8b66fe4bc64a5620eddb0f696a3f9c6d992a157766eda0"
+    },
+    {
+      "path": "art/tools/record_manifest.py",
+      "bytes": 2884,
+      "sha256": "cdc9e7f98c1b8bffef0f4e58dd084fee9d3a380b0acfe0bc3a08061549a1419f"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Editor/ForgeborneArtAssets.cs",
+      "bytes": 13312,
+      "sha256": "918229831899373688a516e6a1be023be54ccefb304c7de914803c70e3aefa5d"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Rendering/ForgebornePipeline.asset",
+      "bytes": 4697,
+      "sha256": "440127c32b2eaf3bc4953dc24ebd9df0c9ce9dcaf037b37129ba54a8372de05d"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Rendering/ForgeborneRenderer.asset",
+      "bytes": 2693,
+      "sha256": "d6b61e4d3e802f372121551dcd20d2558d63723d21c5ccef0f7d5ed1b71a87a1"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Rendering/FoundryGrade.asset",
+      "bytes": 3463,
+      "sha256": "a3105c3c1084e8e8b9b039fe2d1700649b0f9d48b7df34006121fcaf0ddb2027"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Amber.mat",
+      "bytes": 997,
+      "sha256": "363100c60f85b652b87dedfcac1e0de2ee513aaea1a0e4b4a9c912c840704799"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Amber.mat.meta",
+      "bytes": 188,
+      "sha256": "9cd852dd9b0f721d5ed8e3280ee69e51c6f94c800bca9d92b98a59c8e1ad828a"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Basalt.mat",
+      "bytes": 986,
+      "sha256": "2ba231a568a99d300c95eee498113a496938871bb5772a87b2bf0c4fb0f6fff8"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Basalt.mat.meta",
+      "bytes": 188,
+      "sha256": "dfa0d4f3973b113e74570c8d4b9aff7067d820338afe746739224449d64db173"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Ceramic.mat",
+      "bytes": 986,
+      "sha256": "07de447f461b5f30882011e6bc3f145813ef3677dcee8f29652120883ae75999"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Ceramic.mat.meta",
+      "bytes": 188,
+      "sha256": "d058429702485561d65761759609375e187ddaa7031eca37047c68a669d7ffa1"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Copper.mat",
+      "bytes": 985,
+      "sha256": "7536b87a965fc88c1f873d1e27b396a38c618eaa8681a97b8b7788f2b707e5a2"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Copper.mat.meta",
+      "bytes": 188,
+      "sha256": "d8406b4e9d256fce160a16361b118f9bb1f4a205788abb59522b987c75af7621"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Cyan.mat",
+      "bytes": 996,
+      "sha256": "70301a33c846314fd94e32350608bea36987387ac6973ae5a59734b502fb32a5"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Cyan.mat.meta",
+      "bytes": 188,
+      "sha256": "5ac1a9da2cc23b7dea77cb642115c97d9499c7cff1a145072d56c83fa0050528"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/FoundrySky.mat",
+      "bytes": 1012,
+      "sha256": "392518e1ed75d85345c1345db7495f7d547ac3d44df077a90cb82eb65853a7ea"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/FoundrySky.mat.meta",
+      "bytes": 188,
+      "sha256": "bdcb593a603a7cc90e56913647ddfcca9f65544f8ef6dbab46695fee72cc122f"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Glass.mat",
+      "bytes": 1012,
+      "sha256": "7335bbf52aee7d53b09e9f2c336b7de8e07c2648e05713bba8b1e332ce4b6a88"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Glass.mat.meta",
+      "bytes": 188,
+      "sha256": "72ab87898d750a61be976c5c60e62bf6986fd7e9dfc50e623c810e0cdf5d541b"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Graphite.mat",
+      "bytes": 988,
+      "sha256": "c931b461d5a600c50cdd7aaafb01cc56ba43580d5eb91b04c5ce72204460b62b"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Graphite.mat.meta",
+      "bytes": 188,
+      "sha256": "e4b4a047366e18578f4e4fc7a3eda211b58d2ce1b3f56d1ae2a53bab1f346fcf"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Paint.mat",
+      "bytes": 984,
+      "sha256": "13e0f6fd68a293118a4d58ad082281fd494886ea91368e8850ee51f484bf7b25"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Paint.mat.meta",
+      "bytes": 188,
+      "sha256": "88c48dd41ad69b5c588b0a9b795bfec9cdc2fe30975e224385fd625e703ee16c"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Rubber.mat",
+      "bytes": 985,
+      "sha256": "35a2f728f13e53e8bb08ab4c92013ceb646861a28765d3c0183d138672978c33"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Rubber.mat.meta",
+      "bytes": 188,
+      "sha256": "b37be725b7edf8cb0954372b57a4a2b341e5b33622c5229895427cb99b064713"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Steel.mat",
+      "bytes": 985,
+      "sha256": "1ac35408e60d907e05eb4123f8cc47ff18e70be03ac6c3217e43f082a87af5b4"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Steel.mat.meta",
+      "bytes": 188,
+      "sha256": "0452f4ac29b31ca2dac7230b357740500f02dfabbe15b626240a17d0bf5d1b99"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Warm.mat",
+      "bytes": 987,
+      "sha256": "9af5ffb2f88ba6e7fd2f30ae74cfa80eb95244f373d2c68b3cc5fb7074c1a478"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Warm.mat.meta",
+      "bytes": 188,
+      "sha256": "e2a2161b51dcf7ebfcad84641bead29c97981266fd4f1a8f7a31232b1cc788d3"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials.meta",
+      "bytes": 172,
+      "sha256": "077df724d39ad8f2ef68c3d195277fa9baf397e7e6610b6e69af690d8cf2e127"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/AetherRelay.fbx",
+      "bytes": 109916,
+      "sha256": "0213daeee050602b0fd01cceac1aa6d42d3c37001a4baa8b33f206da16d9210e"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/AetherRelay.fbx.meta",
+      "bytes": 2891,
+      "sha256": "cf547b4d5f36ed05d9d23f24f7b8e79da0b888a93ba3e7a87f81984ffd70fe24"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/EmberWarden.fbx",
+      "bytes": 174844,
+      "sha256": "7e404bcf7e954ce0dd1af3e40a7a2508610aacafb32f3c4446a4cf612400c95e"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/EmberWarden.fbx.meta",
+      "bytes": 2891,
+      "sha256": "ad63b79961d13b82222ad650cffe9dfd7e81aee8841d0aaaf431e4059459fc81"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/ForgeSuit.fbx",
+      "bytes": 272972,
+      "sha256": "8c4a1ba716cd4ae23448def60fb9ff4919d0ae3ceea6ae466b009b76bff62d64"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/ForgeSuit.fbx.meta",
+      "bytes": 2891,
+      "sha256": "294a8c7f5226f6a2d7f6a504f1b5463e175647259639107c8664333e0524f438"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/PulseCarbine.fbx",
+      "bytes": 490524,
+      "sha256": "ed7d244123d36914ec858050f098e581b9db7e48f8ff1824a244d80cf5d5a462"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/PulseCarbine.fbx.meta",
+      "bytes": 2891,
+      "sha256": "b798edfe5ab97ce5acab897ee54ad45c006b65e211c331bdd2968a865e749b5d"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/RelayFoundry.fbx",
+      "bytes": 1299660,
+      "sha256": "d235181387af95a3762b8e1509bbd055f4e1301bd0a038e1f7e62cedba3961f0"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models/RelayFoundry.fbx.meta",
+      "bytes": 2891,
+      "sha256": "c1e6e20c4aca97d831aad3c6ac909b268cdf0d2a4527f7152f30aeeba35c00f6"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Models.meta",
+      "bytes": 172,
+      "sha256": "b66e50ebb4052f84a9cf2125708010aa6dde8dd376c24922842ad328488627ff"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/AetherRelay.prefab",
+      "bytes": 3455,
+      "sha256": "35fe8246105965f40c6ba8616d485eb8d8bd8f2e662d2f91b5d395eda05918e7"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/AetherRelay.prefab.meta",
+      "bytes": 154,
+      "sha256": "517130e53908e64050fc3aabff6ec197a212d535275a176b9692a3870644c30c"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/EmberWarden.prefab",
+      "bytes": 3700,
+      "sha256": "895b4a518e2dec94969d14ec4592a84c48689a00a4d072c1fb7bdd5805fe4f2d"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/EmberWarden.prefab.meta",
+      "bytes": 154,
+      "sha256": "1058f978bf836ff098108303d62247add14bbaa42adcfaead39e77b34b14daff"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/ForgeSuit.prefab",
+      "bytes": 8610,
+      "sha256": "a44a6b01dfaf7b3ffac73e6b9b533122d090c6b89eed86ca737b3ac3ad34acbf"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/ForgeSuit.prefab.meta",
+      "bytes": 154,
+      "sha256": "cb42ddc87aa402a4598d58c103ba1dd96bb28e52e160d0a206ab82fd861928fa"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/PulseCarbine.prefab",
+      "bytes": 6802,
+      "sha256": "76ee3bc3dbaa3eac23ac0d0c2d6841ab8c29a96a57259f976ce0ec07080c97dd"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/PulseCarbine.prefab.meta",
+      "bytes": 154,
+      "sha256": "2c4d657f68e6e8e8de5e26e75d4e380051a89084c655fe2fb554d0095d4bd205"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/RelayFoundry.prefab",
+      "bytes": 4932,
+      "sha256": "b8940d499f752ad155af7375f4dd1e00a501870b8de110ebe8f802414392bf59"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs/RelayFoundry.prefab.meta",
+      "bytes": 154,
+      "sha256": "0386f76b86af026bcaa06229e9fe8e896ce55dcbda1c89f8019790a5895d3586"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Prefabs.meta",
+      "bytes": 172,
+      "sha256": "d6b6bc4bf03c91bbfb7c017ca2c8cc9304f0d372a0e13d8447964a8df21196ce"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scenes/Main.unity",
+      "bytes": 47321,
+      "sha256": "d98e6cbf23bd3775d6442eb9a84acb1b85193a5bef091b959e05c315b461a02b"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/AuthoredSkin.cs",
+      "bytes": 770,
+      "sha256": "c8dd464a8d7de09ddf300399a09218429654f0f39c3b008e0dbc1811365b5c2f"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/AuthoredSkin.cs.meta",
+      "bytes": 59,
+      "sha256": "cf60de2fab00325e6506d5a30715be0ccecbe27b14d3041fd085e2589f7094f4"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/FoundryAtmosphere.cs",
+      "bytes": 4902,
+      "sha256": "a7ad3601d638b0a78c4c17b81000675d69d92563b1b79a79e9db45d89389eab6"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/FoundryAtmosphere.cs.meta",
+      "bytes": 59,
+      "sha256": "4c963bc75fcc24296d5a633c565fac67b8bcde661bca7907e0b927ce40126d92"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/OrbitalCameraRig.cs",
+      "bytes": 5850,
+      "sha256": "a63eea190945e324e16879ea5244e0db446d0827d91ebefdfc001254d4e1ec0d"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/OrbitalCameraRig.cs.meta",
+      "bytes": 59,
+      "sha256": "e2fa894ec21bddc4ca6d4b4396c85efb9500da0f3b998337b104dfc118c3ef81"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/WeaponViewModel.cs",
+      "bytes": 5325,
+      "sha256": "39a6daafafdaba2404edca809fc6081b5b624f2d43cad2628d4aa5452ec9778e"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/WeaponViewModel.cs.meta",
+      "bytes": 59,
+      "sha256": "c6bbbdbd45fb784cbb2553321ea1444764fa4b1ffe7451737b5395aa233ea32b"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/WorldActorDisplay.cs",
+      "bytes": 3389,
+      "sha256": "0db183fd36ed5b9942004ee559f347c7b4e586dab285bad22b23c210c842c9ab"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/WorldActorDisplay.cs.meta",
+      "bytes": 59,
+      "sha256": "1ea977408466a354cb417754a14b37449737d633f8eb887b737d431f475be28b"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Shaders/FoundrySky.shader",
+      "bytes": 2953,
+      "sha256": "509cf5cc3363ee4cb25ebf446b11a516ec719ee16ea03656f135d9fbb22049ac"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Shaders/IndustrialSurface.shader",
+      "bytes": 6157,
+      "sha256": "d1c3ae6b689bb169a8b25bace568b690b2ed1eeeac6862dfd0c3366436110804"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Shaders/VoxelSurface.shader",
+      "bytes": 7939,
+      "sha256": "7ce96c0612553ccc1faeaec2438276bbbfd912afe7db12e580b3969460f2174b"
+    },
+    {
+      "path": "ForgeborneUnity/ProjectSettings/GraphicsSettings.asset",
+      "bytes": 2615,
+      "sha256": "50e099c8f469a1b6800d5202d5f41d1b9b3c1a9d9f6b6c25630869cc068f3e5f"
+    },
+    {
+      "path": "ForgeborneUnity/ProjectSettings/ProjectSettings.asset",
+      "bytes": 22390,
+      "sha256": "c55b7d10cf2fff8cdd1791778824628c210194fbdcf8ebe9a86d9cc1313f9e62"
+    },
+    {
+      "path": "ForgeborneUnity/ProjectSettings/TagManager.asset",
+      "bytes": 425,
+      "sha256": "2c5a2a307cbc9e4015b6b2987fb42d24e392dd94c0429434543ab993fb4613ff"
+    }
+  ],
+  "reproduction": "Container bytes may vary; validate geometry counts/bounds, roles, signed axes, metres and muzzle in Unity",
+  "nativeArtPackage": "NOT BUILT",
+  "worldVisualAcceptance": "FAIL: director rejected cubic world; geometry migration required",
+  "performanceAndFunAcceptance": "NOT ESTABLISHED"
+}

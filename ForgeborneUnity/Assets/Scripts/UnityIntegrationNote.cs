@@ -1,20 +1,11 @@
-// Forgeborne Unity skeleton — NOT compiled in the Linux headless environment.
-// This file documents the intended Unity integration. The authoritative,
-// tested logic lives in src/Forgeborne.Core (pure C#, no UnityEngine).
-//
-// In Unity 6000 on Windows:
-//  - Open ForgeborneUnity/ as a Unity project.
-//  - Add the Entities / DOTS packages from Packages/manifest.json.
-//  - Drive VoxelChunk / WorldZone from a MonoBehaviour / System:
-//    WorldZone is the canonical state; Unity rendering, input, and UI
-//    must read from it and send commands to it, never maintain a
-//    second copy of chunk / inventory / health state.
-//  - Voxel meshing: implement GPU greedy meshing in a later Slice 1
-//    step, reading VoxelChunk.ToBytes() and building a mesh per chunk.
-//    Do not add a second voxel representation.
-//
-// Slice 1 Step 1 status: core logic only. No Unity scene, no meshing,
-// no input, no UI yet. Those are Slice 1 Steps 2-4, in that order.
+// Unity 6000.3.27f2 integration: open Assets/Scenes/Main.unity.
+// GameManager creates the only Simulation and shares it with its linked
+// rendering/input/HUD/squad adapters. Core ships as DLLs in Assets/Plugins;
+// never copy src/Forgeborne.Core into Assets. Active Input Handling is Both:
+// the FPS adapter uses legacy Input.GetKey/GetAxis/GetMouseButton.
+// Windows integration evidence and remaining gameplay gates are recorded in
+// docs/unity-main-integration.md. GPU meshing, studio presentation, and
+// director gameplay acceptance are not established by the Main scene.
 namespace Forgeborne.Unity
 {
     public static class UnityIntegrationNote

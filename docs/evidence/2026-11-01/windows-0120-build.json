@@ -1,0 +1,40 @@
+{
+  "unityVersion": "6000.3.27f2",
+  "productVersion": "0.120.0",
+  "output": "C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261101T113541Z\\Forgeborne.exe",
+  "backend": "Mono2x",
+  "options": "None",
+  "result": "Succeeded",
+  "errors": 0,
+  "warnings": 0,
+  "bytes": 101865611,
+  "seconds": 41.0982932,
+  "exception": "",
+  "artifactHashes": [
+    {
+      "relativePath": "Forgeborne.exe",
+      "sha256": "d91dbfa5c7d67cdf2c521d83112df029079f358519a1282d531baad4e1cd80c9"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\Managed\\Forgeborne.Core.dll",
+      "sha256": "03d9e46df492fd7276138a8baebc1e5738f3e29ab08d9b7316e2b19b79c0b262"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\Plugins\\x86_64\\Forgeborne.Windows.dll",
+      "sha256": "aac9637da3eb96bb0f683b2eaf0e7978b4f779aa4ab73b518b27109d45222c9c"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\Managed\\Assembly-CSharp.dll",
+      "sha256": "c6a9e09786bb8f3eadffe8c7423c00831e50c1c9de8d3d40d606b7bcaee344a9"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\globalgamemanagers",
+      "sha256": "3bcf4c6937062cdbb0ed8344cd67c0d095b0e8aae7214c24bb883dd8f68ec480"
+    },
+    {
+      "relativePath": "Forgeborne_Data\\resources.assets",
+      "sha256": "5b9b6642d357c10b7595b34ab4311419a5045b9610591fef94242ebf0a6c1e10"
+    }
+  ],
+  "acceptance": "Packaged only; executable not launched. Native input, heard mix, representative performance and fun are unverified."
+}

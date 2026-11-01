@@ -1,14 +1,17 @@
 # Forgeborne
 
-Studio-grade, PC-native, FPS-RTS voxel ARPG hybrid.
+AAA+ target, PC-native, FPS-RTS ARPG hybrid.
 
 **Gather. Build. Survive.**
 
 Forgeborne merges, in original form only, the strengths of modded Minecraft
 (gather / craft / build / forge), StarCraft (real-time macro and escalating
-pressure), Diablo and Path of Exile (procedural loot, builds, and a deep
+pressure), Diablo and Path of Exile 2 (procedural loot, builds, and a deep
 passive graph), BioShock (immersive atmosphere and systemic powers), and
 Borderlands (procedural weapon variety and personality).
+All six influences are equally important. Rob clarified that modded Minecraft
+supplies the gather/build/survive/combat concept. Forgeborne requires believable
+original 3D environments; the blocky world aesthetic is explicitly rejected.
 
 No assets, lore, characters, items, music, code, or trademarks from those
 games are copied. Inspiration is by mechanics and feel only. All world,
@@ -16,12 +19,41 @@ names, story, art, code, and audio in this repository are original.
 
 ## Status
 
-**Foundation only. No playable game yet.**
+**Pre-production. Director rejected current presentation; AAA+ target unmet.**
 
-This commit establishes the repository structure, the WPAI Constitution
-pointer, the locked director decisions, the architecture summary, and the
-Slice 1 plan. It does not claim a working game, a chosen engine, or any
-performance result. A passing check does not prove usefulness or fun.
+Rob's 2026-11-01 review rejected the sparse primitive presentation. Original
+environment/weapon/actor art, atmospheric lighting, animation and a cohesive
+playable encounter now take priority over feature expansion. Technical checks
+are scoped evidence; visual, gameplay and fun acceptance remain closed.
+The binary-cell world renderer is now a rejected prototype foundation. Its
+replacement must share geometry with collision and aim, as tracked in
+[the world migration](docs/world-presentation-migration.md). Original authored
+weapon/actor/suit models and render-pipeline repairs are reusable technical work,
+not visual acceptance of the current courtyard.
+
+`ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
+It wires the FPS, chunk, HUD and squad adapters to GameManager's single
+Seed 42 Simulation, with a URP renderer, dusk sky, original weapon/drone/core
+views, an authored salvage courtyard, resource materials, pointer capture,
+entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
+to create and inspect the scene on Windows. Exact interactive pose/time saves are
+verified. Windows export/import passes actual Editor UI checks; native packaging
+passes, with the full native play test still open. Studio-quality encounter/art/
+audio remain active work. A perspective overhead command view now has live
+component/render evidence; its full keyboard/native play gate remains open.
+Resolved combat/gather/build feedback and eleven original synthesized audio
+candidates now pass scripted Unity integration checks; heard mix review is open.
+Placement rejects suit/unit/relay overlap before spending resources, with
+production adapter checks and exact refusal-state preservation.
+See [the production tracker](docs/production-status.md),
+[construction safety evidence](docs/construction-safety-checkpoint.md),
+[action feedback evidence](docs/action-feedback-checkpoint.md),
+[Windows transfer evidence](docs/windows-save-transfer-checkpoint.md),
+[orbital camera evidence](docs/orbital-camera-checkpoint.md),
+[current persistence evidence](docs/runtime-persistence-checkpoint.md),
+[player-flow evidence](docs/courtyard-player-flow-checkpoint.md), and
+[integration setup](docs/unity-main-integration.md).
+A passing check does not prove usefulness or fun.
 
 ## Locked decisions (director: Rob, 2026-10-29)
 

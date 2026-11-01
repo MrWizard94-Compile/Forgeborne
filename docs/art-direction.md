@@ -1,5 +1,32 @@
 # Forgeborne — Art Direction
 
+## Current director gate — 2026-11-01
+
+**Director correction: no blocky world aesthetic.** Rob explicitly challenged
+the visible block forms: "In what reality is Bioshock blocky?" He clarified:
+"We use modded Minecrafts 'Gather, build, survive, combat, concept'." Its
+influence concerns that gameplay loop and systemic freedom. It
+does not prescribe cubic terrain, one-metre art modules or a voxel visual style.
+Believable architecture, sculpted natural surfaces and detailed original models
+are the required presentation. Any historical voxel-readability rule below is
+superseded by this correction. Internal spatial data is an implementation detail;
+it must not dictate the look of the game or justify visibly wrong collision/aim.
+Remove the block presentation itself before seeking another visual acceptance.
+
+**AAA+ is the finished-game target. Current presentation is rejected.** Rob
+compared the actual 0.120 player unfavorably to vanilla Minecraft and reiterated
+BioShock's atmosphere. The old minimal-art scope below is historical; it does
+not authorize primitive placeholder presentation as an accepted milestone.
+
+The next review must use the actual Unity game: cohesive original architecture,
+environmental storytelling, authored materials with wear and surface response,
+layered practical lighting/depth, properly modeled weapon/actors, animation,
+effects and audio. Preserve gameplay readability, canonical collision/aim and
+measured PC performance. A dark filter, bloom, decorative clutter or a concept
+image alone cannot pass this gate. The entire playable encounter needs cohesion.
+Use the established industrial sci-fi palette/setting; do not copy BioShock art,
+Rapture/Columbia, names, architecture, trademarks or assets.
+
 ## Reference
 
 Director-provided reference image, 2026-10-29 (Gemini-generated,
@@ -35,10 +62,11 @@ shipped as a game asset.
    blue-grey sky at dusk, neon cyan as the primary energy / HUD colour,
    orange as the secondary accent for objectives, warnings, and fire.
    Magenta sparingly, for city signage, not for gameplay-critical UI.
-2. **Voxel readability:** Voxel blocks must read at FPS distance —
-   large, chunky, with clear edges and destruction debris, not smooth
-   photoreal terrain. Destruction must be visible: debris, smoke,
-   and collapsed geometry, not just a disappearing block.
+2. **World readability:** Believable continuous architecture and sculpted terrain
+   must read clearly at FPS distance. Minecraft-like blocks are rejected by the
+   director. Resource seams, machinery, cover and destructible surfaces must be
+   identifiable through shape/material/function. Destruction needs convincing
+   fracture, debris and material response rather than disappearing cubes.
 3. **FPS weapon feel:** Weapon occupies the lower-right frame, with
    a readable digital sight. Energy weapons glow; kinetic weapons
    should read as worn, functional, industrial — not pristine.

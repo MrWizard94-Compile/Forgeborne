@@ -1,0 +1,20 @@
+{
+  "checkpoint": "0.123.0",
+  "unity": "6000.3.27f2",
+  "coreSha256": "ac9c2c6dee9282f5902a0ff065c1b432d181f852613ca357a5a211865d647bb0",
+  "releaseBuildErrors": 0,
+  "releaseBuildWarnings": 0,
+  "coreTestsPassed": 5486,
+  "coreTestsFailed": 0,
+  "runtime": "isolated Microsoft.NETCore.App 8.0.33",
+  "surfaceProfile": 1,
+  "legacyMainDefault": 0,
+  "localBranch": "codex/unity-main-scene",
+  "actualConsumer": "unity-continuous-surface-smoke-continuous.json",
+  "cadencedEdits": "continuous-cadenced-edits-profile1-final.json",
+  "nativeSurfacePackage": false,
+  "visualAcceptance": "FAIL: old softened layout remains",
+  "fullGameAcceptance": "NOT ACHIEVED",
+  "frozenConstitution": "63d99cdc72a1c18b5aa91b9336d02fd30126407b",
+  "evolution": "922dcbb staged, not propagated"
+}

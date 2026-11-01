@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "models": [
+        "PulseCarbine",
+        "EmberWarden",
+        "AetherRelay",
+        "ForgeSuit",
+        "RelayFoundry"
+      ],
+      "originalMeanLuminance": 0.1394022914113423,
+      "exposurePlusOneMeanLuminance": 0.24795935642616312,
+      "actualPostProcessResponse": true,
+      "authoredSuitHandoff": true,
+      "noArtColliders": true,
+      "geometryAcceptance": "FAIL: rejected cubic courtyard remains",
+      "nativeAcceptance": false
+    },
+    "compiler": "codedom"
+  }
+}

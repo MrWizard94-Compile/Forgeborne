@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "timedEdits": 16,
+      "meanEditMilliseconds": 10.388524999999998,
+      "maxEditMilliseconds": 28.501900000000003,
+      "largestRegionsRebuilt": 8,
+      "individualEditMilliseconds": [
+        1.2014,
+        1.107,
+        1.103,
+        1.0924,
+        13.614500000000001,
+        13.5028,
+        13.6822,
+        13.713600000000001,
+        13.575000000000001,
+        16.945600000000002,
+        28.501900000000003,
+        13.5091,
+        8.7507,
+        8.5947,
+        8.6752,
+        8.6473
+      ],
+      "geometryMilliseconds": [
+        0.9666,
+        0.9222,
+        0.9171,
+        0.9117000000000001,
+        11.3693,
+        11.4594,
+        11.5989,
+        11.546100000000001,
+        11.4852,
+        11.4176,
+        26.3336,
+        11.4234,
+        7.311400000000001,
+        7.274500000000001,
+        7.2819,
+        7.2805
+      ],
+      "unityUploadAndColliderMilliseconds": [
+        0.2348,
+        0.18479999999999996,
+        0.18589999999999995,
+        0.18069999999999997,
+        2.2452000000000005,
+        2.0434,
+        2.0832999999999995,
+        2.1675000000000004,
+        2.0898000000000003,
+        5.528000000000002,
+        2.168300000000002,
+        2.085699999999999,
+        1.4392999999999994,
+        1.320199999999999,
+        1.3933,
+        1.3667999999999996
+      ],
+      "unchangedRegionPowerTintUpdated": true,
+      "sameSimulation": true,
+      "scope": "Scoped paused Editor CPU/collider edit samples; not native frame-rate or final workload acceptance"
+    },
+    "compiler": "codedom"
+  }
+}

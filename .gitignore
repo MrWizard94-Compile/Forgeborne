@@ -1,6 +1,6 @@
-# Forgeborne .gitignore — engine not yet locked, so generic only.
-# Add engine-specific ignores when the engine is chosen, in DECISIONS.md.
+# Forgeborne: pure C# core plus Unity 6000 project.
 /build/
+/Builds/
 /out/
 /dist/
 *.log
@@ -18,6 +18,13 @@ Thumbs.db
 ForgeborneUnity/Library/
 ForgeborneUnity/Temp/
 ForgeborneUnity/Builds/
+ForgeborneUnity/Logs/
+ForgeborneUnity/UserSettings/
+ForgeborneUnity/Assets/Screenshots/
+ForgeborneUnity/Assets/Screenshots.meta
+ForgeborneUnity/Assets/_Recovery/
+ForgeborneUnity/Assets/_Recovery.meta
+**/__pycache__/
 # OS / editor
 .vscode/
 .idea/

@@ -1,6 +1,11 @@
 # Forgeborne — Slice 1 Playtest Gate
 
 **Status: HEADLESS GATE MET, DIRECTOR PLAYTEST STILL PENDING.**
+
+Windows Main-scene wiring, rendering and limited input were exercised on
+2026-10-31. See [the integration evidence](unity-main-integration.md) for
+exact results and unresolved findings. These observations do not close the
+director gate or establish that the complete loop is playable or fun.
 Do not claim Slice 1 is approved until the director playtest
 section below is marked pass by Rob. This document is evidence,
 not approval.

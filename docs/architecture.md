@@ -1,5 +1,18 @@
 # Forgeborne — Architecture Summary
 
+## Current director clarification — 2026-11-01
+
+All six game influences are equally important. Modded Minecraft contributes the
+gather/build/survive/combat concept; it does not prescribe a block aesthetic.
+Rob explicitly rejects the current cubic world. The smooth terrain/SDF concept
+in the blueprint below remains a viable internal technique; authored architecture
+and detailed models must not be constrained to the current coarse binary-cell
+renderer. Existing collision and aim use whole occupied cells and therefore need
+a shared surface contract before adopting curved/sculpted gameplay surfaces.
+Rendering alone cannot make that migration truthful. Preserve the one Simulation,
+save recovery and full gameplay scope during the replacement. See
+world-presentation-migration.md for the implementation order and rollback.
+
 Source: "Technical and Systems Architecture for a Studio-Grade
 FPS-RTS Voxel ARPG Hybrid", Version 3, blueprint for Ember (muse.ai)
 to build. This file is a summary, not a copy of the full blueprint.

@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "files": [
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-01\\continuous-fps-diagnostic.png",
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-01\\continuous-orbital-diagnostic.png"
+      ],
+      "actualCameras": true,
+      "overlayUiIncluded": false,
+      "pausedFixture": true,
+      "acceptance": "Rejected layout compatibility diagnostic; no final-art/native/input/fun acceptance"
+    },
+    "compiler": "codedom"
+  }
+}

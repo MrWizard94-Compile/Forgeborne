@@ -1,0 +1,16 @@
+{
+  "unityVersion": "6000.3.27f2",
+  "productVersion": "0.120.0",
+  "wallSeconds": 4.0001261999999995,
+  "gameSeconds": 3.95956369047619,
+  "worldTicks": 7,
+  "expectedTicksPerSecond": 2,
+  "liveOrbitalAndSingleDriver": true,
+  "cadencePass": true,
+  "exactStateRestoredInPlace": true,
+  "recoveryError": "",
+  "temporaryBackgroundExecution": true,
+  "nativeInputPerformanceAndFunAcceptance": false,
+  "playerFrames": 948,
+  "measurementNotes": "Frame count is UnityEngine.Time.frameCount delta, not proof of GPU render completion or representative performance. The original renderFrames label was corrected to playerFrames without changing any measurement."
+}

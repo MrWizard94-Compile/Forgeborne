@@ -19,15 +19,17 @@ Requires .NET 8 SDK. From this repository root:
 dotnet run --project tests/Forgeborne.Core.Tests
 ```
 
-Expected, verified 2026-10-29: **70 passed, 0 failed** (42 in Step 1, +28 in Steps 2-3: mesher, FPS, weapon, HUD).
+Current runtime checkpoint: **5155 passed, 0 failed**, with a full rebuild
+reporting 0 warnings/errors and execution on genuine .NET 8.0.33. The earlier
+integration baseline used explicit .NET 9 roll-forward; an isolated verified
+.NET 8 runtime has since closed that toolchain gap. See
+`docs/courtyard-player-flow-checkpoint.md` for current live Unity evidence.
 
-## What is NOT here yet (Slice 1 Steps 2-4)
+## Unity integration
 
-- Unity scene, FPS input / movement, voxel meshing / rendering.
-- HUD (health, shields, objective, ammo, mini-map).
-- Orbital Tactical mode, squads, loot, passive graph, automation tiers.
-- Networking (deferred).
-
-Unity integration notes are in `ForgeborneUnity/Assets/Scripts/UnityIntegrationNote.cs`.
-That Unity skeleton is NOT compiled in the Linux headless environment;
-open `ForgeborneUnity/` in Unity 6000 on Windows to verify it.
+Core ships as DLLs under `ForgeborneUnity/Assets/Plugins`; never copy core
+source into Assets. The saved Main scene uses one GameManager-owned
+Simulation. Open it with Unity 6000.3.27f2 and Active Input Handling = Both.
+The core suite remains separate from rendered gameplay and director
+acceptance; the current Windows evidence and remaining gaps are in
+`docs/unity-main-integration.md`. Networking remains deferred.

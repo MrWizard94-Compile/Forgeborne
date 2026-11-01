@@ -18,6 +18,8 @@ public sealed class MeshData
     public List<(float, float, float)> Vertices { get; } = new();
     public List<(float, float, float)> Normals { get; } = new();
     public List<(float, float)> Uvs { get; } = new();
+    /// <summary>One stable block ID per vertex, for presentation palettes. Never authoritative world state.</summary>
+    public List<BlockType> BlockTypes { get; } = new();
     /// <summary>Slice 13 Step 3: one RGBA colour per vertex, in the
     /// same order as Vertices, so Colors.Count always equals
     /// Vertices.Count. Every vertex of a quad shares that quad's
@@ -55,6 +57,7 @@ public static class MeshBuilder
                 data.Vertices.Add(corners[i]);
                 data.Normals.Add(normalTuple);
                 data.Uvs.Add(uvs[i]);
+                data.BlockTypes.Add(q.Type);
                 data.Colors.Add(colour);
             }
             foreach (var idx in order) data.Indices.Add(baseIndex + idx);

@@ -4,6 +4,44 @@ Dated, director-made decisions. Superseded proposals are kept here so
 the history is honest; they are not deleted to make the current plan
 look inevitable.
 
+## 2026-11-01 — Push the feature branch for review
+
+Rob explicitly directed that the work be pushed to GitHub. The assistant had
+over-applied the restriction on pushing main and kept the working branch local.
+Synchronize verified checkpoints on `codex/unity-main-scene` to `origin` and verify
+the remote SHA. Main, merges, visibility, licensing and releases remain subject
+to Rob's review. This does not authorize changes to the separate Constitution
+repository or turn an unaccepted technical checkpoint into a quality milestone.
+
+## 2026-11-01 — Minecraft informs the loop, not block visuals
+
+Rob rejected the blocky world and clarified: "We use modded Minecrafts
+'Gather, build, survive, combat, concept'." The assistant incorrectly turned
+that influence into a visual requirement. Forgeborne needs believable original
+architecture, sculpted environments and detailed models with BioShock-inspired
+atmosphere. The historical requirement that voxel blocks read as chunky cubes is
+superseded. Replace the block presentation before another visual acceptance
+request. Internal occupancy data must not dictate the art, and visible surfaces
+must agree with movement, aiming, gathering and construction. This clarification
+does not remove the full gameplay scope or the PC-native FPS/orbital boundaries.
+
+## 2026-11-01 — Director rejection and AAA+ target
+
+Rob saw the actual 0.120 player and rejected its presentation as amateur,
+comparing it unfavorably with vanilla Minecraft and reiterating BioShock's
+atmosphere as an influence. This was the actual prototype, not a debug-only
+view. The director explicitly raised/reaffirmed the finished-game target as
+**AAA+**. No visual, gameplay, or milestone acceptance was granted.
+
+The sparse platform, primitive models, weak architecture/materials/lighting,
+limited animation and lack of atmosphere fail that target. Pause feature
+expansion and prioritize a cohesive original playable vertical slice with
+architectural identity, environmental storytelling, detailed original 3D assets,
+layered lighting, animation, audio, responsive combat and measured performance.
+Judge rendered/player evidence against the director's bar. Technical tests do
+not grant aesthetic, experience or fun acceptance. Preserve the full original
+FPS/orbital voxel ARPG scope and existing platform/ownership/IP boundaries.
+
 ## 2026-10-29 — New foundation, not a reforge
 
 - Do NOT reforge Ember Forge. Classify Ember Forge as a learning
@@ -11716,3 +11754,89 @@ marker proximity targeting, item 42
 - Deliberately NOT in this step: any code change, any test, any demo scenario, any gate item passed, any graphics retune, any economy change, any claim of Play, any scene/asset/shader/URP file, and any Slice 27 scope.
 - Next step: Integration Step 5 itself, on Windows only, by this sheet, with the result recorded in DECISIONS.md with the Unity version and GPU.
 - Push-time correction: the draft sheet's legacy-input count said 35 call sites; recount during push verification found 37 call sites on 35 lines, so the sheet and CHANGELOG now say 37. No other sheet claim changed.
+
+## 2026-10-31 — Windows Main integration checkpoint (agent observation)
+
+Unity 6000.3.27f2 (22188f149405), DX12, NVIDIA GeForce GTX 1660 Ti.
+Main was assembled and saved through the actual Unity Editor using Unity MCP
+on branch codex/unity-main-scene, based on 0.112.0. All five adapters shared
+GameManager's one Seed 42 Simulation in live reference checks; input, mesh,
+HUD and in-memory save/load were exercised. Initial magenta rendering failed
+because no URP pipeline was assigned; Unity-created pipeline assets fixed it.
+The complete results, commands, inherited failures and Section 0 scores are in
+docs/unity-main-integration.md. This records an agent's observed checkpoint,
+not director approval. Studio-quality gameplay, full player persistence,
+real-time pacing and representative performance remain unpassed. The
+studio-production reference supplied by Rob was read in full; the ongoing
+vertical-slice gates and ownership are in docs/production-status.md. No push,
+licence change, visibility change, release or fun/quality acceptance occurred.
+
+## 2026-10-31 — Real-time vertical-slice contract (implementation candidate)
+
+Following Rob's studio-quality direction and the fully read production brief,
+advance the interactive world by elapsed time rather than rendered frames.
+The review candidate is 120 Hz movement/collision and two authoritative world
+steps per second, preserving existing per-tick rules and the explicit Tick API.
+This changes real-time encounter pacing intentionally and remains subject to
+Rob's playtest veto. The same Simulation owns all clocks and views. 5094 core
+checks passed on .NET 8.0.33 with zero build warnings/errors. Live foreground
+Main observed 6 world ticks in 3.051 seconds across 888 render frames, 100 HP,
+and the same Simulation identity. The first unfocused probe exercised zero
+render frames and was rejected. Runtime/legacy-save/input limits are recorded
+in docs/runtime-pacing-checkpoint.md and docs/vertical-slice-runtime-contract.md.
+Original drone/core views and production in-place restart are integrated; final
+world/art/audio, player-facing persistence/recovery, overhead command and full
+native-player acceptance remain owed. The full six-game inspiration brief,
+including Path of Exile 2, is retained in docs/design-pillars.md. No studio/fun
+acceptance or external publication is claimed.
+
+## 2026-10-31 — Courtyard and player flow (agent observation, approval pending)
+
+The canonical voxel courtyard now contains purposeful resource banks/cover,
+forward warden approaches and a relay platform. Original resource colours and
+block IDs reach an original URP shader in the real renderer. A first shader
+compile error was corrected, then ShaderUtil reported zero messages. Actual
+Unity UI exercised entry, pause, slot save, natural death, load recovery,
+restart and disk restore after a fresh Play session. Scripted live checks also
+verified malformed-save state preservation, final restart confirmation and
+exact prior-slot backup bytes. The new application save path had no prior
+player slot before QA. 5118 checks passed on genuine .NET 8.0.33, with zero
+build warnings/errors. Details and open gates are recorded in
+docs/courtyard-player-flow-checkpoint.md. Studio quality and fun are NOT
+accepted; exact pose/time persistence, export/import, overhead view,
+complete combat/gather feedback, final art/audio, native build and sustained
+hardware profiling remain active. No external publication occurred.
+
+## 2026-11-01 — Runtime persistence (agent observation, approval pending)
+
+Versioned interactive saves now retain exact controller/look, fractional clocks,
+queued input and run counters while preserving legacy save/constructor behavior.
+Partial/invalid runtime records are rejected before world replacement. 5145 core
+checks pass with zero build warnings/errors. Actual Unity UI save/load and a
+fresh-Play disk load restored an exact mid-jump snapshot. Evidence and remaining
+gates: docs/runtime-persistence-checkpoint.md. No native performance, fun or
+studio-quality acceptance is claimed; nothing was pushed.
+
+## 2026-11-01 — Windows transfer/native packaging (agent observation)
+
+Windows export/import passes real Editor UI cancellation, Unicode export,
+malformed rejection and exact restore with the local slot retained. Core build:
+5155 passing checks, 0 warnings/errors. Original native dialog source and x64 DLL
+are versioned with a local build utility. Native development packaging succeeded
+cleanly and rendered the entry menu, then a Windows Firewall prompt blocked input
+QA. No security permission was granted or UI operated. An ordinary build is owed
+after manual prompt dismissal; the blocked unstarted request was cancelled before
+further source work. Detailed evidence and open full/native/fun gates are in
+docs/windows-save-transfer-checkpoint.md. Nothing was pushed or published.
+
+## 2026-11-01 — Perspective command camera (agent observation)
+
+Main now contains a 3D perspective orbital view connected to the existing
+GameManager/FPS adapter. Commands use cursor rays in that mode; FPS controls and
+gun hide, an original collision-free suit view follows the canonical player, and
+the one existing frame driver remains enabled. Live scripted switches preserve
+exact saved state and controller/Simulation identities; an actual camera-only
+Unity render is recorded. 5155 core checks pass, scoped console 0. Keyboard,
+real-time command play, native performance and fun remain unaccepted. Ordinary
+0.117 packaging subsequently passed cleanly (102 MB), distinct from this newer
+camera work. See docs/orbital-camera-checkpoint.md. No external publication.

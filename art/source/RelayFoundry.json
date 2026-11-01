@@ -1,0 +1,33 @@
+{
+  "name": "RelayFoundry",
+  "authoring": "Original Forgeborne geometry; no imported assets",
+  "tool": "4.5.15 LTS",
+  "source": "art/tools/build_visual_assets.py",
+  "gameBoundsMin": [
+    -42.0,
+    -3.000000238418579,
+    -21.500001907348633
+  ],
+  "gameBoundsMax": [
+    46.5,
+    61.70000076293945,
+    70.5
+  ],
+  "horizontalRadius": 84.39606696915872,
+  "vertices": 40256,
+  "triangles": 79308,
+  "materials": [
+    "Graphite",
+    "Steel",
+    "Copper",
+    "Ceramic",
+    "Rubber",
+    "Cyan",
+    "Amber",
+    "Basalt",
+    "Paint",
+    "Warm",
+    "Glass"
+  ],
+  "status": "Authored candidate; Unity import/render and director review required"
+}

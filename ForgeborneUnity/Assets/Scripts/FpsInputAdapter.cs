@@ -25,6 +25,81 @@ public class FpsInputAdapter : MonoBehaviour
     // scene actually runs on.
     public VoxelMeshRenderer? MeshRenderer;
     public float MouseSensitivity = 2f;
+    public bool CapturePointerOnStart = true;
+    public bool InputSuppressed;
+    public PlayerFeedback? Feedback;
+    public ConstructionGuide? Construction;
+    private Camera? _commandCamera;
+    public bool IsOrbitalView => _commandCamera != null;
+    public Ray CommandRay => _commandCamera != null
+        ? _commandCamera.ScreenPointToRay(Input.mousePosition) : new Ray(transform.position, transform.forward);
+    private float CommandReach => IsOrbitalView ? 120f : 30f;
+    public void SetCommandCamera(Camera? camera)
+    {
+        _commandCamera = camera;
+        _pointerCaptureFrame = Time.frameCount;
+        if (camera != null) ReleasePointer();
+    }
+    public bool HasPendingCommand => _pendingReRally || _pendingDismiss || (Simulation != null && Simulation.OrbitalCommand.IsPicking);
+    private bool _capturedPointer;
+    private int _pointerCaptureFrame = -1;
+
+    void Start()
+    {
+        if (CapturePointerOnStart && !InputSuppressed) CapturePointer();
+    }
+
+    public void CapturePointer()
+    {
+        if (IsOrbitalView)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            _capturedPointer = false;
+            _pointerCaptureFrame = Time.frameCount;
+            return;
+        }
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        _capturedPointer = true;
+        _pointerCaptureFrame = Time.frameCount;
+    }
+
+    public void ReleasePointer()
+    {
+        if (!_capturedPointer) return;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        _capturedPointer = false;
+    }
+
+    void OnApplicationFocus(bool focused)
+    {
+        if (!focused) ReleasePointer();
+    }
+
+    void OnDisable() => ReleasePointer();
+
+    void OnDestroy()
+    {
+        ReleasePointer();
+        if (_pendingReRallyMarker != null) Destroy(_pendingReRallyMarker);
+        if (_pendingReRallyMaterial != null) Destroy(_pendingReRallyMaterial);
+    }
+
+    public void ResetInteraction(bool resetLook = true)
+    {
+        CancelConstruction();
+        if (Feedback != null) Feedback.ResetSignals();
+        _pendingReRally = false;
+        _pendingDismiss = false;
+        if (_pendingReRallyMarker != null) _pendingReRallyMarker.SetActive(false);
+        if (Simulation != null)
+        {
+            Simulation.CancelOrbitalPick();
+            if (resetLook) Simulation.ApplyLook(-Simulation.Look.Yaw, -Simulation.Look.Pitch);
+        }
+    }
 
     // Slice 24 Step 1 (0.97.0): K re-rally pending state, decided
     // in that step (rationale in DECISIONS.md). This is an OWN
@@ -94,13 +169,27 @@ public class FpsInputAdapter : MonoBehaviour
     void Update()
     {
         if (Simulation == null) return;
+        bool terminal = Simulation.IsPlayerDead || Simulation.IsObjectiveComplete;
+        if (terminal) ReleasePointer();
+        if (!InputSuppressed && _pointerCaptureFrame != Time.frameCount && Input.GetKeyDown(KeyCode.Escape) && !Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
+            ReleasePointer();
+        bool capturedThisFrame = _pointerCaptureFrame == Time.frameCount;
+        bool overUi = UnityEngine.EventSystems.EventSystem.current != null
+            && UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
+        if (!IsOrbitalView && !terminal && !InputSuppressed && Cursor.lockState != CursorLockMode.Locked && Input.GetMouseButtonDown(0) && !overUi)
+        {
+            CapturePointer();
+            capturedThisFrame = true;
+        }
+        bool acceptsInput = !terminal && !InputSuppressed && (IsOrbitalView ? Application.isFocused : Cursor.lockState == CursorLockMode.Locked);
+        bool acceptsFps = acceptsInput && !IsOrbitalView;
         // WASD / arrows, raw scalars: Slice 8 Step 1 rotates them by
         // the core Look yaw inside Simulation.Tick (W walks the yaw
         // direction, D the yaw right), so no rotation lives here and
         // this adapter needs no change for yaw-rotated movement.
-        float forward = (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f);
-        float strafe = (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f);
-        bool jump = Input.GetKeyDown(KeyCode.Space);
+        float forward = acceptsFps ? (Input.GetKey(KeyCode.W) ? 1f : 0f) - (Input.GetKey(KeyCode.S) ? 1f : 0f) : 0f;
+        float strafe = acceptsFps ? (Input.GetKey(KeyCode.D) ? 1f : 0f) - (Input.GetKey(KeyCode.A) ? 1f : 0f) : 0f;
+        bool jump = acceptsFps && Input.GetKeyDown(KeyCode.Space);
         // FPS pitch aiming (Slice 6 Step 1): the adapter holds NO yaw
         // or pitch of its own any more. It feeds already-scaled mouse
         // deltas into the core Look (positive Mouse Y = look up, per
@@ -118,8 +207,8 @@ public class FpsInputAdapter : MonoBehaviour
         // new binding for aim, only the renamed fire call below.
         // Movement is yaw-rotated in core (Step 1).
         Simulation.ApplyLook(
-            Input.GetAxis("Mouse X") * MouseSensitivity,
-            Input.GetAxis("Mouse Y") * MouseSensitivity);
+            acceptsFps && !capturedThisFrame ? Input.GetAxis("Mouse X") * MouseSensitivity : 0f,
+            acceptsFps && !capturedThisFrame ? Input.GetAxis("Mouse Y") * MouseSensitivity : 0f);
         Vector3 lookForward = new Vector3(
             Simulation.Look.ForwardX, Simulation.Look.ForwardY, Simulation.Look.ForwardZ);
         transform.rotation = Quaternion.LookRotation(lookForward);
@@ -137,10 +226,20 @@ public class FpsInputAdapter : MonoBehaviour
         // and item 27 is the observation that proves or refutes
         // that expectation.
         int destroyedBefore = Simulation.World.DestroyedMills;
-        Simulation.Tick(Time.deltaTime, forward, strafe, jump);
+        // Render frequency must not set combat/automation speed. The one
+        // Simulation owns the fixed movement and authoritative world clocks.
+        Simulation.AdvanceFrame(Time.deltaTime, forward, strafe, jump);
         if (Simulation.World.DestroyedMills != destroyedBefore && MeshRenderer != null) MeshRenderer.RefreshMesh();
         // Camera follows the FPS controller's feet position + eye height.
         transform.position = new Vector3(Simulation.Fps.X, Simulation.Fps.Y + 1.6f, Simulation.Fps.Z);
+        if (!acceptsInput || capturedThisFrame || Simulation.IsPlayerDead || Simulation.IsObjectiveComplete) return;
+
+        if (acceptsFps && !HasPendingCommand && Construction != null)
+        {
+            if (Input.GetKeyDown(KeyCode.V)) Construction.Toggle();
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (scroll != 0) Construction.Cycle(scroll > 0 ? 1 : -1);
+        }
 
         // Slice 13 Step 3 refresh event set, continued: a
         // successful gather or build refreshes the mesh at once,
@@ -154,9 +253,14 @@ public class FpsInputAdapter : MonoBehaviour
         // Start, this is the whole event set: every chunk or
         // wiring change in the game reaches a refresh through
         // one of these paths, and no path refreshes blindly.
-        if (Input.GetKeyDown(KeyCode.E) && Simulation.GatherAhead() == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-        if (Input.GetKeyDown(KeyCode.Q) && Simulation.BuildWallAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-        if (Input.GetKeyDown(KeyCode.R)) Simulation.Weapon.Reload();
+        if (acceptsFps && Input.GetKeyDown(KeyCode.E)) GatherWithFeedback();
+        if (acceptsFps && Input.GetKeyDown(KeyCode.Q)) BuildWithFeedback(BlockType.Wall,Simulation.BuildWallAhead);
+        if (acceptsFps && Input.GetKeyDown(KeyCode.R))
+        {
+            int before = Simulation.Weapon.Mag;
+            Simulation.Weapon.Reload();
+            if (Feedback != null) Feedback.Reloaded(before!=Simulation.Weapon.Mag,Simulation.Weapon.Mag==Simulation.Weapon.MagCapacity);
+        }
         // Powered Unity presence (Slice 6 Step 3): T builds a
         // Kinetic Mill (front-left, via BuildKineticMillAhead) and
         // Y builds a Dynamo (front-centre, via BuildDynamoAhead),
@@ -222,19 +326,19 @@ public class FpsInputAdapter : MonoBehaviour
         // dismiss is a pick-like modal state, and a builder
         // firing while the player decides on a removal
         // would spend resources mid-decision for no reason.
-        if (!Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
+        if (acceptsFps && !Simulation.OrbitalCommand.IsPicking && !_pendingReRally && !_pendingDismiss)
         {
             // Slice 13 Step 3: each builder refreshes on success
             // only, by the event set above — see the E / Q note.
-            if (Input.GetKeyDown(KeyCode.T) && Simulation.BuildKineticMillAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-            if (Input.GetKeyDown(KeyCode.Y) && Simulation.BuildDynamoAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-            if (Input.GetKeyDown(KeyCode.U) && Simulation.BuildTransformerAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
-            if (Input.GetKeyDown(KeyCode.I) && Simulation.BuildCableAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.T)) BuildWithFeedback(BlockType.KineticMill,Simulation.BuildKineticMillAhead);
+            if (Input.GetKeyDown(KeyCode.Y)) BuildWithFeedback(BlockType.Dynamo,Simulation.BuildDynamoAhead);
+            if (Input.GetKeyDown(KeyCode.U)) BuildWithFeedback(BlockType.Transformer,Simulation.BuildTransformerAhead);
+            if (Input.GetKeyDown(KeyCode.I)) BuildWithFeedback(BlockType.Cable,Simulation.BuildCableAhead);
             // Slice 10 Step 1: B builds a workstation by aim, closing
             // the workstation's missing adapter key. B is free: see
             // the key list above. Same picker guard as the other
             // builders, for the same ore reason.
-            if (Input.GetKeyDown(KeyCode.B) && Simulation.BuildWorkstationAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.B)) BuildWithFeedback(BlockType.Workstation,Simulation.BuildWorkstationAhead);
             // Slice 10 Step 2: N builds an Alternator by aim, via
             // BuildAlternatorAhead (10 Stone, no EmberOre). N is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -248,7 +352,7 @@ public class FpsInputAdapter : MonoBehaviour
             // No HUD source count rides along: the existing
             // powered-mill and powered-workstation counts are
             // the Alternator's display, as decided in core.
-            if (Input.GetKeyDown(KeyCode.N) && Simulation.BuildAlternatorAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.N)) BuildWithFeedback(BlockType.Alternator,Simulation.BuildAlternatorAhead);
             // Slice 12 Step 2: P builds a Shock Pylon by aim, via
             // BuildShockPylonAhead (5 Stone + 10 EmberOre). P is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -257,7 +361,7 @@ public class FpsInputAdapter : MonoBehaviour
             // the other builders, for the same ore reason — a
             // pylon key while picking could spend the ore a
             // pending Confirm needs.
-            if (Input.GetKeyDown(KeyCode.P) && Simulation.BuildShockPylonAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.P)) BuildWithFeedback(BlockType.ShockPylon,Simulation.BuildShockPylonAhead);
             // Slice 14 Step 1: M builds a Conduit by aim, via
             // BuildConduitAhead (5 Stone + 5 EmberOre). M is
             // free: existing keys are WASD / Space / E / Q / R /
@@ -270,7 +374,7 @@ public class FpsInputAdapter : MonoBehaviour
             // counts are the Conduit's display, as decided in
             // core, and a Conduit with no cable counts as a lone
             // source like a lone Dynamo or Alternator.
-            if (Input.GetKeyDown(KeyCode.M) && Simulation.BuildConduitAhead() == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+            if (Input.GetKeyDown(KeyCode.M)) BuildWithFeedback(BlockType.Conduit,Simulation.BuildConduitAhead);
         }
         // Orbital doctrine menu / rally picker (0.15.0, replaces the
         // provisional O key, which deployed instantly at the player's
@@ -511,8 +615,8 @@ public class FpsInputAdapter : MonoBehaviour
             }
             else
             {
-                Ray ray = new Ray(transform.position, transform.forward);
-                if (Physics.Raycast(ray, out RaycastHit hit, 30f))
+                Ray ray = CommandRay;
+                if (Physics.Raycast(ray, out RaycastHit hit, CommandReach))
                 {
                     Simulation.SetOrbitalRally(
                         Mathf.FloorToInt(hit.point.x),
@@ -542,19 +646,64 @@ public class FpsInputAdapter : MonoBehaviour
             // the re-rally pick to dismiss instead.
             if (Input.GetKeyDown(KeyCode.K)) TryOpenReRallyPick();
             else if (Input.GetKeyDown(KeyCode.X)) TryOpenDismissPick();
-            else if (Input.GetMouseButtonDown(0)) Simulation.FireAimed();
+            else if (acceptsFps && Input.GetMouseButtonDown(0)) PrimaryAction();
         }
     }
 
     // Slice 24 Step 1 helpers. No core rule lives here: these
     // methods only select a target, hold pending state, and
     // call the Simulation passthrough, whose gate decides.
+    public void CancelConstruction() { if (Construction != null) Construction.Cancel(); }
+
+    private void PrimaryAction()
+    {
+        if (Simulation == null) return;
+        if (Construction != null && Construction.IsActive)
+        {
+            var type = Construction.SelectedType;
+            BuildWithFeedback(type, () => Simulation.BuildAhead(type));
+        }
+        else FireWithFeedback();
+    }
+
+    private void FireWithFeedback()
+    {
+        if (Simulation == null) return;
+        Simulation.FireAimed(out var outcome);
+        if (Feedback != null) Feedback.Shot(outcome);
+    }
+
+    private void GatherWithFeedback()
+    {
+        if (Simulation == null) return;
+        var hit = Simulation.InspectAim(false);
+        var type = hit.Kind == AimTargetKind.Solid ? Simulation.World.Chunk.Get(hit.X,hit.Y,hit.Z) : BlockType.Air;
+        int before = Simulation.World.Player.Inventory.Get(type);
+        var result = Simulation.GatherAhead();
+        if (result == GatherResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+        var point=new Vector3(hit.X+0.5f,hit.Y+0.5f,hit.Z+0.5f);
+        if(hit.Distance.HasValue) point=new Vector3(Simulation.Fps.X,Simulation.Fps.Y+Forgeborne.Core.Simulation.EyeHeight,Simulation.Fps.Z)
+            +new Vector3(Simulation.Look.ForwardX,Simulation.Look.ForwardY,Simulation.Look.ForwardZ)*hit.Distance.Value;
+        if (Feedback != null) Feedback.Gathered(result,type,Simulation.World.Player.Inventory.Get(type)-before,point);
+    }
+
+    private void BuildWithFeedback(BlockType type, System.Func<BuildResult> action)
+    {
+        if (Simulation == null) return;
+        if (Construction != null && Construction.IsActive) Construction.Select(type);
+        var hit = Simulation.InspectAim(false);
+        var result = action();
+        if (result == BuildResult.Success && MeshRenderer != null) MeshRenderer.RefreshMesh();
+        if (Feedback != null) Feedback.Built(result,type,new Vector3(hit.PrevX+0.5f,hit.PrevY+0.5f,hit.PrevZ+0.5f));
+    }
+
     private void TryOpenReRallyPick()
     {
         if (Simulation == null) return;
         var snapshot = OrbitalView.Snapshot(Simulation.World);
-        Vector3 origin = transform.position;
-        Vector3 forward = transform.forward;
+        Ray commandRay = CommandRay;
+        Vector3 origin = commandRay.origin;
+        Vector3 forward = commandRay.direction;
         int bestPos = -1;
         float bestAngle = float.PositiveInfinity;
         for (int i = 0; i < snapshot.Count; i++)
@@ -572,7 +721,7 @@ public class FpsInputAdapter : MonoBehaviour
             Vector3 centre = new Vector3(s.X + 0.5f, s.Y + 0.5f, s.Z + 0.5f);
             Vector3 toSquad = centre - origin;
             float dist = toSquad.magnitude;
-            if (dist > 30f) continue;
+            if (dist > CommandReach) continue;
             // Occlusion, exact for this squad's centre line:
             // a voxel hit before the centre means a wall
             // stands between the crosshair and the marker,
@@ -624,8 +773,9 @@ public class FpsInputAdapter : MonoBehaviour
     {
         if (Simulation == null) return;
         var snapshot = OrbitalView.Snapshot(Simulation.World);
-        Vector3 origin = transform.position;
-        Vector3 forward = transform.forward;
+        Ray commandRay = CommandRay;
+        Vector3 origin = commandRay.origin;
+        Vector3 forward = commandRay.direction;
         int bestPos = -1;
         float bestAngle = float.PositiveInfinity;
         for (int i = 0; i < snapshot.Count; i++)
@@ -634,7 +784,7 @@ public class FpsInputAdapter : MonoBehaviour
             Vector3 centre = new Vector3(s.X + 0.5f, s.Y + 0.5f, s.Z + 0.5f);
             Vector3 toSquad = centre - origin;
             float dist = toSquad.magnitude;
-            if (dist > 30f) continue;
+            if (dist > CommandReach) continue;
             // Occlusion, as in the re-rally pick: a voxel hit
             // before the centre means an honestly occluded
             // marker is not selectable. Markers carry no
@@ -848,8 +998,8 @@ public class FpsInputAdapter : MonoBehaviour
             // picker leaves its pending rally unchanged —
             // the player reads the pending marker, which
             // stays on the last aimed cell.
-            Ray ray = new Ray(transform.position, transform.forward);
-            if (Physics.Raycast(ray, out RaycastHit hit, 30f))
+            Ray ray = CommandRay;
+            if (Physics.Raycast(ray, out RaycastHit hit, CommandReach))
             {
                 _pendingReRallyX = Mathf.FloorToInt(hit.point.x);
                 _pendingReRallyY = Mathf.FloorToInt(hit.point.y);
