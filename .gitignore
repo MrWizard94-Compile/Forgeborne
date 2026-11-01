@@ -1,5 +1,6 @@
 # Forgeborne: pure C# core plus Unity 6000 project.
 /build/
+/Builds/
 /out/
 /dist/
 *.log
@@ -21,6 +22,8 @@ ForgeborneUnity/Logs/
 ForgeborneUnity/UserSettings/
 ForgeborneUnity/Assets/Screenshots/
 ForgeborneUnity/Assets/Screenshots.meta
+ForgeborneUnity/Assets/_Recovery/
+ForgeborneUnity/Assets/_Recovery.meta
 **/__pycache__/
 # OS / editor
 .vscode/

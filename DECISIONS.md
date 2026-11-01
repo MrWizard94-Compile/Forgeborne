@@ -11778,3 +11778,15 @@ checks pass with zero build warnings/errors. Actual Unity UI save/load and a
 fresh-Play disk load restored an exact mid-jump snapshot. Evidence and remaining
 gates: docs/runtime-persistence-checkpoint.md. No native performance, fun or
 studio-quality acceptance is claimed; nothing was pushed.
+
+## 2026-11-01 — Windows transfer/native packaging (agent observation)
+
+Windows export/import passes real Editor UI cancellation, Unicode export,
+malformed rejection and exact restore with the local slot retained. Core build:
+5155 passing checks, 0 warnings/errors. Original native dialog source and x64 DLL
+are versioned with a local build utility. Native development packaging succeeded
+cleanly and rendered the entry menu, then a Windows Firewall prompt blocked input
+QA. No security permission was granted or UI operated. An ordinary build is owed
+after manual prompt dismissal; the blocked unstarted request was cancelled before
+further source work. Detailed evidence and open full/native/fun gates are in
+docs/windows-save-transfer-checkpoint.md. Nothing was pushed or published.

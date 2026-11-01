@@ -9,7 +9,8 @@ the current objective text says to read its file.
 Working branch: `codex/unity-main-scene`; never push to main or alter visibility/
 licence without Rob. Base remote main was 0.112.0 (`3e28b575...`). Integration
 commit `b65233e`, runtime/cadence commit `292c82b`, courtyard/player flow `91e056e`.
-The next checkpoint contains exact runtime persistence; inspect Git status first.
+Exact runtime persistence is committed as `51282d3`. The next checkpoint contains
+Windows save transfer/native packaging; inspect Git status first.
 
 Canonical law for this continuing invocation is frozen and verified at
 `63d99cdc72a1c18b5aa91b9336d02fd30126407b`, Constitution 6.18.0. Byte-exact source
@@ -37,7 +38,7 @@ runtime acceptance. Foreground the real Game view for time/input observations.
 
 Core tests: build with installed SDK, then run the net8.0 assembly with the
 isolated `~/.codex/tools/dotnet-runtime-8.0.33/dotnet.exe`. That runtime was
-downloaded from Microsoft and SHA-512 verified. Latest **5145 pass, 0 fail;
+downloaded from Microsoft and SHA-512 verified. Latest **5155 pass, 0 fail;
 build 0 warnings/errors**. `tools/build-unity-core.ps1` publishes netstandard2.1
 and installs all nine DLLs. Never copy core source into Assets. Rebuild after
 core changes, import, then observe the actual installed API in Unity.
@@ -61,7 +62,25 @@ report; do not promote it to full studio/fun acceptance.
 Precise runtime persistence is now verified: exact pose/velocity/look, fractional
 movement/world clock, queued jump and counters survive local saves and fresh-scene
 UI load. Legacy/world-only saves keep their previous contract. See
-runtime-persistence-checkpoint.md. Next work: export/import, real overhead command,
+runtime-persistence-checkpoint.md. Windows export/import now passes real Editor UI:
+cancel/Unicode export/invalid import/exact re-import with local slot retained.
+See windows-save-transfer-checkpoint.md. Original native OS-dialog source lives
+outside Assets; its compiled Windows x64 plugin is in Assets. Build it with
+tools/build-windows-bridge.ps1 while native DLLs are not loaded. Managed COM/Join
+first stalled the Editor; saved Main was recovered and its backup preserved.
+The native async STA implementation works. MCP was restarted under Python 3.10
+and reconnected through Window > MCP for Unity; the instance ID is unchanged.
+The first Development player built cleanly but prompted Windows Firewall; no
+security UI was operated and the QA player was closed. The build utility now uses
+BuildOptions.None. Current output is in Library/forgeborne-last-build.txt; inspect
+its build-report.json and verify the actual native UI before accepting it.
+The ordinary request at 20261101T075254Z was blocked in Unity's delay queue by
+the Windows prompt. Only its own queued build delegate was cancelled before
+continuing source work; the folder is empty, not a build. A request to Rob to
+click Cancel manually is pending. Do not operate security UI. First development
+build 20261101T074701Z succeeded with 0 errors/warnings, matching packaged DLLs,
+and rendered its entry menu; remaining native play gates are open.
+Next after transfer/native verification: real overhead command,
 meaningful gather/build/combat feedback,
 original audio and final art/animation, a native Windows build and 1440p profiling.
 Windows standalone build support is installed. Full scope stays tracked in

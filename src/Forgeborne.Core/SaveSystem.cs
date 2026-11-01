@@ -102,6 +102,14 @@ public static class SaveSystem
     {
         var data = JsonSerializer.Deserialize<SaveData>(json)
             ?? throw new InvalidOperationException("Save data is null.");
+        if (data.Inventory == null || data.Enemies == null || data.Squads == null)
+            throw new InvalidOperationException("Save collections cannot be null.");
+        // Imported coordinates must leave distance arithmetic inside integer
+        // range. This also matches the supported interactive snapshot range.
+        static bool SupportedPosition(int x, int y, int z) => Math.Abs((long)x) <= 1_000_000
+            && Math.Abs((long)y) <= 1_000_000 && Math.Abs((long)z) <= 1_000_000;
+        if (!SupportedPosition(data.PlayerX, data.PlayerY, data.PlayerZ))
+            throw new InvalidOperationException("Saved player position is outside the supported range.");
         var world = new WorldZone(data.Seed);
         world.Chunk.FromBytes(Convert.FromBase64String(data.ChunkBase64));
         // Parse the skill build BEFORE restoring the player, so the
@@ -136,11 +144,14 @@ public static class SaveSystem
         world.Enemies.Clear();
         foreach (var e in data.Enemies)
         {
+            if (e == null) continue;
+            if ((e.Length == 3 || e.Length == 4) && !SupportedPosition(e[0], e[1], e[2]))
+                throw new InvalidOperationException("Saved enemy position is outside the supported range.");
             if (e.Length == 3) world.Enemies.Add(new Enemy(e[0], e[1], e[2]));
             else if (e.Length == 4)
             {
                 var enemy = new Enemy(e[0], e[1], e[2]);
-                enemy.TakeDamage(30 - e[3]);
+                enemy.TakeDamage(30 - Math.Clamp(e[3], 0, 30));
                 world.Enemies.Add(enemy);
             }
         }
@@ -151,7 +162,7 @@ public static class SaveSystem
             // Skip malformed entries rather than failing the whole load:
             // wrong length, out-of-bounds position/rally, unknown
             // doctrine/kind, or a dead squad (removed on next tick anyway).
-            if (s.Length != 9) continue;
+            if (s == null || s.Length != 9) continue;
             if (!VoxelChunk.InBounds(s[0], s[1], s[2]) || !VoxelChunk.InBounds(s[3], s[4], s[5])) continue;
             if (!Enum.IsDefined(typeof(TacticalDoctrine), s[7]) || !Enum.IsDefined(typeof(SquadKind), s[8])) continue;
             if (s[6] <= 0) continue;
@@ -168,6 +179,8 @@ public static class SaveSystem
         if (data.WeaponName != null && data.WeaponDamage.HasValue && data.WeaponMagCapacity.HasValue
             && data.WeaponMag.HasValue && data.WeaponReserve.HasValue)
         {
+            if (data.WeaponName.Length > 128)
+                throw new InvalidOperationException("Saved weapon name exceeds the supported display length.");
             weapon = Weapon.FromSaved(data.WeaponName, data.WeaponDamage.Value, data.WeaponMagCapacity.Value,
                 data.WeaponMag.Value, data.WeaponReserve.Value);
         }

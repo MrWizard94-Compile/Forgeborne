@@ -18,10 +18,13 @@ public sealed class PlayerFlow : MonoBehaviour
     private Text? _resources;
     private Button? _resume;
     private Button? _save;
+    private Button? _export;
     private Button? _restart;
     private bool _begun;
     private bool _quitWithoutSaveArmed;
     private bool _restartArmed;
+    private bool _transferInProgress;
+    private CanvasGroup? _menuGroup;
     public bool IsMenuOpen => _menu != null && _menu.activeSelf;
     public string SavePath => Path.Combine(Application.persistentDataPath, "saves", "slot-1.json");
     public string Status => _status != null ? _status.text : "";
@@ -50,12 +53,17 @@ public sealed class PlayerFlow : MonoBehaviour
             _save.interactable = !terminal && _begun;
             _save.GetComponentInChildren<Text>().color = _save.interactable ? Color.white : new Color(0.4f,0.48f,0.52f);
         }
+        if (_export != null)
+        {
+            _export.interactable = !terminal && _begun;
+            _export.GetComponentInChildren<Text>().color = _export.interactable ? Color.white : new Color(0.4f,0.48f,0.52f);
+        }
         if (_resources != null)
         {
             var inventory = simulation.World.Player.Inventory;
             _resources.text = $"STONE {inventory.Get(BlockType.Stone)}   EMBER {inventory.Get(BlockType.EmberOre)}   WOOD {inventory.Get(BlockType.Wood)}\nQ  WALL · 2 STONE     B  WORKSTATION · 10 STONE + 5 EMBER";
         }
-        if (!terminal && Input.GetKeyDown(KeyCode.Escape) && (InputAdapter == null || !InputAdapter.HasPendingCommand))
+        if (!_transferInProgress && !terminal && Input.GetKeyDown(KeyCode.Escape) && (InputAdapter == null || !InputAdapter.HasPendingCommand))
         {
             if (IsMenuOpen) Resume();
             else OpenMenu();
@@ -166,6 +174,61 @@ public sealed class PlayerFlow : MonoBehaviour
 #endif
     }
 
+    public async void ExportSave()
+    {
+        var simulation = Manager != null ? Manager.Simulation : null;
+        if (_transferInProgress || simulation == null || simulation.IsPlayerDead || simulation.IsObjectiveComplete || !_begun) return;
+        OpenMenu();
+        SetTransferBusy(true);
+        try
+        {
+            string? path = await WindowsSaveDialog.Choose(true);
+            if (this == null) return;
+            if (path == null) { SetStatus("Export cancelled. Your encounter was kept."); return; }
+            LocalSaveStore.Write(path, Manager!.SaveToJson());
+            SetStatus("Save exported. Keep the JSON file to restore this encounter.");
+        }
+        catch (Exception error) when (IsTransferError(error))
+        { if (this != null) SetStatus("Export failed. Your encounter was kept. " + TransferError(error)); }
+        finally { if (this != null) SetTransferBusy(false); }
+    }
+
+    public async void ImportSave()
+    {
+        if (_transferInProgress || Manager == null) return;
+        OpenMenu();
+        SetTransferBusy(true);
+        try
+        {
+            string? path = await WindowsSaveDialog.Choose(false);
+            if (this == null || Manager == null) return;
+            if (path == null) { SetStatus("Import cancelled. Your encounter was kept."); return; }
+            string json = LocalSaveStore.Read(path);
+            if (!Manager.TryLoadFromJson(json)) { SetStatus("This save is invalid. Your encounter and local slot were kept."); return; }
+            _begun = true;
+            _quitWithoutSaveArmed = false;
+            _restartArmed = false;
+            SetStatus("Save imported. Local slot unchanged. Resume when ready.");
+        }
+        catch (Exception error) when (IsTransferError(error))
+        { if (this != null) SetStatus("Import failed. Your encounter and local slot were kept. " + TransferError(error)); }
+        finally { if (this != null) SetTransferBusy(false); }
+    }
+
+    void SetTransferBusy(bool busy)
+    {
+        _transferInProgress = busy;
+        if (_menuGroup != null) _menuGroup.interactable = !busy;
+    }
+
+    static bool IsTransferError(Exception error) => error is IOException || error is UnauthorizedAccessException
+        || error is ArgumentException || error is InvalidOperationException || error is PlatformNotSupportedException
+        || error is System.Runtime.InteropServices.ExternalException || error is DllNotFoundException || error is EntryPointNotFoundException || error is BadImageFormatException;
+
+    static string TransferError(Exception error) => error is InvalidOperationException || error is PlatformNotSupportedException
+        || error is System.Runtime.InteropServices.ExternalException || error is DllNotFoundException || error is EntryPointNotFoundException || error is BadImageFormatException
+        ? "Windows could not open the file dialog." : FileError(error);
+
     void SetStatus(string message) { if (_status != null) _status.text = message; }
 
     static string FileError(Exception error)
@@ -201,14 +264,15 @@ public sealed class PlayerFlow : MonoBehaviour
         text.color = colour;
         text.alignment = alignment;
         text.raycastTarget = false;
+        text.supportRichText = false;
         text.horizontalOverflow = HorizontalWrapMode.Wrap;
         text.verticalOverflow = VerticalWrapMode.Overflow;
         return text;
     }
 
-    static Button ActionButton(Transform parent, string label, float top, UnityEngine.Events.UnityAction action)
+    static Button ActionButton(Transform parent, string label, float top, UnityEngine.Events.UnityAction action, float x = 0, float width = 650)
     {
-        var rect = Box(parent, label, new Vector2(0.5f, 1), new Vector2(0, -top), new Vector2(650, 52));
+        var rect = Box(parent, label, new Vector2(0.5f, 1), new Vector2(x, -top), new Vector2(width, 52));
         var image = rect.gameObject.AddComponent<Image>();
         image.color = new Color(0.08f, 0.18f, 0.23f, 1);
         var button = rect.gameObject.AddComponent<Button>();
@@ -220,7 +284,7 @@ public sealed class PlayerFlow : MonoBehaviour
         colours.disabledColor = new Color(0.35f, 0.4f, 0.45f);
         button.colors = colours;
         button.onClick.AddListener(action);
-        var text = Label(rect, "Label", new Vector2(0.5f,0.5f), Vector2.zero, new Vector2(620, 44), 22, Color.white, TextAnchor.MiddleCenter);
+        var text = Label(rect, "Label", new Vector2(0.5f,0.5f), Vector2.zero, new Vector2(width - 30, 44), 22, Color.white, TextAnchor.MiddleCenter);
         text.text = label;
         return button;
     }
@@ -247,7 +311,8 @@ public sealed class PlayerFlow : MonoBehaviour
         menu.offsetMin = menu.offsetMax = Vector2.zero;
         menu.gameObject.AddComponent<Image>().color = new Color(0.015f,0.028f,0.045f,0.94f);
         _menu = menu.gameObject;
-        var card = Box(menu, "Briefing", new Vector2(0.5f,0.5f), Vector2.zero, new Vector2(840, 820));
+        _menuGroup = menu.gameObject.AddComponent<CanvasGroup>();
+        var card = Box(menu, "Briefing", new Vector2(0.5f,0.5f), Vector2.zero, new Vector2(840, 850));
         card.gameObject.AddComponent<Image>().color = new Color(0.035f,0.065f,0.09f,1);
         var stripe = Box(card, "Energy rule", new Vector2(0.5f,1), Vector2.zero, new Vector2(840, 4));
         stripe.gameObject.AddComponent<Image>().color = new Color(0.15f,0.85f,1f);
@@ -260,10 +325,12 @@ public sealed class PlayerFlow : MonoBehaviour
         _restart = ActionButton(card, "RESTART ENCOUNTER", 374, Restart);
         _save = ActionButton(card, "SAVE SLOT", 438, SaveSlot);
         ActionButton(card, "LOAD SLOT", 502, LoadSlot);
-        ActionButton(card, "QUIT", 566, Quit);
-        _status = Label(card, "Save status", new Vector2(0.5f,1), new Vector2(0,-650), new Vector2(700,100), 20,
+        _export = ActionButton(card, "EXPORT SAVE", 566, ExportSave, -167, 316);
+        ActionButton(card, "IMPORT SAVE", 566, ImportSave, 167, 316);
+        ActionButton(card, "QUIT", 630, Quit);
+        _status = Label(card, "Save status", new Vector2(0.5f,1), new Vector2(0,-706), new Vector2(700,70), 20,
             new Color(1f,0.7f,0.35f), TextAnchor.UpperCenter);
-        Label(card, "Footer", new Vector2(0.5f,0), new Vector2(0,30), new Vector2(700,35), 18,
+        Label(card, "Footer", new Vector2(0.5f,0), new Vector2(0,20), new Vector2(700,30), 18,
             new Color(0.6f,0.7f,0.76f), TextAnchor.LowerCenter).text = "WIZARD PRODUCTIONS AI STUDIO  ·  SINGLE PLAYER";
     }
 }

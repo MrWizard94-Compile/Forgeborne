@@ -69,7 +69,11 @@ public class HudDisplay : MonoBehaviour
         if (HealthText != null) HealthText.text = $"HEALTH {hud.Health} HP";
         if (ShieldsText != null) ShieldsText.text = $"SHIELDS: {hud.Shields}";
         if (ObjectiveText != null) ObjectiveText.text = $"{hud.ObjectiveName} - {hud.ObjectiveDistanceMetres}m\n{hud.ObjectivePercentCompleted}% COMPLETED";
-        if (AmmoText != null) AmmoText.text = $"{hud.WeaponName}\n{hud.AmmoMag}/{hud.AmmoReserve}";
+        if (AmmoText != null)
+        {
+            AmmoText.supportRichText = false;
+            AmmoText.text = $"{hud.WeaponName}\n{hud.AmmoMag}/{hud.AmmoReserve}";
+        }
         if (PowerText != null) PowerText.text = $"POWER: {hud.PoweredMills}/{hud.TotalMills} MILLS POWERED";
         if (WorkstationPowerText != null) WorkstationPowerText.text = $"POWER: {hud.PoweredWorkstations}/{hud.TotalWorkstations} WORKSTATIONS POWERED";
         if (LivePowerText != null) LivePowerText.text = $"POWER: {hud.LiveNetworks} LIVE NETWORKS, {hud.LoneSources} LONE SOURCES";

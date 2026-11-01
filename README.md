@@ -24,8 +24,11 @@ Seed 42 Simulation, with a URP renderer, dusk sky, original weapon/drone/core
 views, an authored salvage courtyard, resource materials, pointer capture,
 entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
 to create and inspect the scene on Windows. Exact interactive pose/time saves are
-verified. Studio-quality encounter/art/audio, export/import and a true overhead command view remain
-active work. See [the production tracker](docs/production-status.md),
+verified. Windows export/import passes actual Editor UI checks; native packaging
+passes, with the full native play test still open. Studio-quality encounter/art/
+audio and a true overhead command view remain active work.
+See [the production tracker](docs/production-status.md),
+[Windows transfer evidence](docs/windows-save-transfer-checkpoint.md),
 [current persistence evidence](docs/runtime-persistence-checkpoint.md),
 [player-flow evidence](docs/courtyard-player-flow-checkpoint.md), and
 [integration setup](docs/unity-main-integration.md).

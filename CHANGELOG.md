@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.117.0 — 2026-11-01 — Windows save transfer and local native packaging
+
+- Added original asynchronous Windows Common Item Dialog bridge and actual menu
+  export/import, including Unicode paths, cancellation and state-preserving invalid
+  import. Imported weapon text stays literal; malformed save shapes fail safely.
+- Added a repeatable local Windows x64 build utility, shader resource references,
+  platform-restricted native plugin and its original buildable source/tooling.
+- Core: 5155 checks pass; build 0 warnings/errors. Actual Editor UI transfer paths
+  pass. Native development packaging: 0 warnings/errors, 180 MB; entry menu renders.
+  A Windows Firewall prompt stopped native input QA. No security UI/permission was
+  changed. Build utility now uses ordinary player options; native play test open.
+- Evidence, failed attempts and remaining quality gates:
+  docs/windows-save-transfer-checkpoint.md. No push or publication.
+
 ## 0.116.0 — 2026-11-01 — Exact interactive runtime persistence
 
 - Added versioned runtime snapshots for precise FPS pose, motion, look,

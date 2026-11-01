@@ -19,7 +19,7 @@ Requires .NET 8 SDK. From this repository root:
 dotnet run --project tests/Forgeborne.Core.Tests
 ```
 
-Current runtime checkpoint: **5145 passed, 0 failed**, with a full rebuild
+Current runtime checkpoint: **5155 passed, 0 failed**, with a full rebuild
 reporting 0 warnings/errors and execution on genuine .NET 8.0.33. The earlier
 integration baseline used explicit .NET 9 roll-forward; an isolated verified
 .NET 8 runtime has since closed that toolchain gap. See
