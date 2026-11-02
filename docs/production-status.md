@@ -20,6 +20,13 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
+Current 0.125 checkpoint: sixteen original paired material maps, calibrated colour
+and fourteen practicals; v1 physical geometry remains unchanged. Current native
+Windows QA build succeeded with zero warnings/errors; actual entry, Tab orbital
+and Escape pause observed. Full native loop/export/cold recovery, representative
+performance, heard audio and fun remain open. Native imagery still fails AAA+.
+See [current evidence and full acceptance audit](surface-material-checkpoint.md).
+
 The director's studio-production reference was read in full on 2026-10-31.
 Adopt its discipline ownership, design contracts, dependency gates, short evidence
 handoffs and engine/runtime verification. Treat its claimed timelines, guaranteed

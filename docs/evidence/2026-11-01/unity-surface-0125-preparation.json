@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.125.0",
+      "roles": [
+        "Graphite",
+        "Steel",
+        "Copper",
+        "Ceramic",
+        "Rubber",
+        "Basalt",
+        "Paint",
+        "Timber"
+      ],
+      "pairedMaps": 16,
+      "identityUnchanged": true
+    },
+    "compiler": "codedom"
+  }
+}

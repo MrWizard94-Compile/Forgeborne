@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "scene": "Assets/Scenes/Main.unity",
+      "version": "0.125.0",
+      "actualEntryIsAuthored": true,
+      "oldCourtyardDisabled": true,
+      "legacyBlockRootEmpty": true,
+      "modelShapedConstruction": true,
+      "managerCount": 1,
+      "seed": 42,
+      "allLinkedAdaptersShareOneSimulation": true,
+      "soleFrameDriverEnabled": true,
+      "pausedForReview": true,
+      "currentEnemies": 3,
+      "shaderMessages": 0,
+      "contentSha256": "3aaa044009b8db239b903b52bd3d928a59efd678e813a1b2eb36b25333863272",
+      "limits": "Editor entry and scripted consumer evidence only. No AAA+, native controls, heard audio, performance or fun acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

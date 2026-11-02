@@ -9,6 +9,11 @@ Shader "Forgeborne/IndustrialSurface"
         _Weather("Weathering",Range(0,1))=0.35
         _WorldWeather("World-space architectural wear",Range(0,1))=0
         _EmissionColor("Emission",Color)=(0,0,0,1)
+        _BaseMap("Original pigment (sRGB)",2D)="white"{}
+        _SurfaceMap("Original height / roughness / occlusion / metal",2D)="white"{}
+        _TextureStrength("Authored surface maps",Range(0,1))=0
+        _SurfaceTiling("Repeats per metre",Float)=1
+        _ReliefMetres("Material relief in metres",Float)=0.001
     }
     SubShader
     {
@@ -34,7 +39,10 @@ Shader "Forgeborne/IndustrialSurface"
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor, _WearColor, _EmissionColor;
                 float _Metallic, _Smoothness, _Weather, _WorldWeather;
+                float _TextureStrength, _SurfaceTiling, _ReliefMetres;
             CBUFFER_END
+            TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
+            TEXTURE2D(_SurfaceMap); SAMPLER(sampler_SurfaceMap);
             struct Attributes { float4 positionOS:POSITION; float3 normalOS:NORMAL; };
             struct Varyings
             {
@@ -44,6 +52,7 @@ Shader "Forgeborne/IndustrialSurface"
                 float3 patternPosition:TEXCOORD2;
                 half3 vertexLight:TEXCOORD3;
                 half fog:TEXCOORD4;
+                half3 patternNormal:TEXCOORD5;
             };
             float Lattice(float3 cell)
             {
@@ -71,29 +80,55 @@ Shader "Forgeborne/IndustrialSurface"
                 output.positionCS=position.positionCS; output.positionWS=position.positionWS;
                 output.normalWS=TransformObjectToWorldNormal(input.normalOS);
                 output.patternPosition=input.positionOS.xyz;
+                output.patternNormal=input.normalOS;
                 output.vertexLight=VertexLighting(position.positionWS,output.normalWS);
                 output.fog=ComputeFogFactor(position.positionCS.z);
                 return output;
             }
+            void OriginalSurface(float3 p,half3 n,out half3 pigment,out half4 packed)
+            {
+                half3 weight=pow(abs(n),4);weight/=max(dot(weight,half3(1,1,1)),0.0001);
+                float3 uv=p*_SurfaceTiling;
+                pigment=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv.zy).rgb*weight.x
+                    +SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv.xz).rgb*weight.y
+                    +SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,uv.xy).rgb*weight.z;
+                packed=SAMPLE_TEXTURE2D(_SurfaceMap,sampler_SurfaceMap,uv.zy)*weight.x
+                    +SAMPLE_TEXTURE2D(_SurfaceMap,sampler_SurfaceMap,uv.xz)*weight.y
+                    +SAMPLE_TEXTURE2D(_SurfaceMap,sampler_SurfaceMap,uv.xy)*weight.z;
+            }
             half4 Fragment(Varyings input):SV_Target
             {
                 float3 p=lerp(input.patternPosition,input.positionWS,_WorldWeather);
-                float broad=Noise(p*0.43)*0.65+Noise(p*3.1)*0.35;
-                float grain=Noise(p*170.0);
-                float scratches=smoothstep(0.93,0.985,Noise(p*float3(260,38,3)));
-                float worn=saturate((broad-0.35)*0.6+scratches*0.65)*_Weather;
-                half3 base=lerp(_BaseColor.rgb,_WearColor.rgb,worn);
-                base*=0.92+grain*0.15;
-                float streak=Noise(p*float3(2.7,0.075,2.7));
-                float grime=smoothstep(0.54,0.82,broad*0.5+streak*0.5)*_Weather;
-                base*=1-grime*0.55;
+                half3 base;half metal,smooth,occlusion=1;float height;
+                if(_TextureStrength>0.5)
+                {
+                    half3 pigment;half4 packed;
+                    OriginalSurface(p,normalize(lerp(input.patternNormal,input.normalWS,_WorldWeather)),pigment,packed);
+                    float variation=0.91+Noise(p*0.27)*0.16;
+                    base=pigment*_BaseColor.rgb*variation;
+                    metal=packed.a;smooth=1-packed.g;occlusion=packed.b;
+                    height=(packed.r-0.5)*_ReliefMetres;
+                }
+                else
+                {
+                    float broad=Noise(p*0.43)*0.65+Noise(p*3.1)*0.35;
+                    float grain=Noise(p*170.0);
+                    float scratches=smoothstep(0.93,0.985,Noise(p*float3(260,38,3)));
+                    float worn=saturate((broad-0.35)*0.6+scratches*0.65)*_Weather;
+                    base=lerp(_BaseColor.rgb,_WearColor.rgb,worn)*(0.92+grain*0.15);
+                    float streak=Noise(p*float3(2.7,0.075,2.7));
+                    float grime=smoothstep(0.54,0.82,broad*0.5+streak*0.5)*_Weather;
+                    base*=1-grime*0.55;metal=_Metallic;
+                    smooth=saturate(_Smoothness+(grain-0.5)*0.12-worn*0.25);
+                    height=(grain-0.5)*0.00018*_Weather;
+                }
                 half3 normal=normalize(input.normalWS);
                 float3 dx=ddx(input.positionWS),dy=ddy(input.positionWS);
-                float height=(grain-0.5)*0.00018*_Weather;
                 float determinant=dot(normal,cross(dx,dy));
                 if(abs(determinant)>0.00000001)
                 {
                     float3 gradient=(cross(dy,normal)*ddx(height)+cross(normal,dx)*ddy(height))/determinant;
+                    gradient*=min(1.0,0.8/max(length(gradient),0.0001));
                     normal=normalize(normal-gradient);
                 }
                 InputData lighting=(InputData)0;
@@ -104,9 +139,8 @@ Shader "Forgeborne/IndustrialSurface"
                 lighting.normalizedScreenSpaceUV=GetNormalizedScreenSpaceUV(input.positionCS);
                 lighting.shadowMask=half4(1,1,1,1);
                 SurfaceData surface=(SurfaceData)0;
-                surface.albedo=base; surface.metallic=_Metallic;
-                surface.smoothness=saturate(_Smoothness+(grain-0.5)*0.12-worn*0.25);
-                surface.normalTS=half3(0,0,1); surface.alpha=1; surface.occlusion=1;
+                surface.albedo=base; surface.metallic=metal;surface.smoothness=smooth;
+                surface.normalTS=half3(0,0,1); surface.alpha=1; surface.occlusion=occlusion;
                 surface.emission=_EmissionColor.rgb;
                 half4 colour=UniversalFragmentPBR(lighting,surface);
                 colour.rgb=MixFog(colour.rgb,input.fog);

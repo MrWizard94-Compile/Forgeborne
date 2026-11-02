@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.125.0 — 2026-11-02 — Paired original surfaces and native QA
+
+- Added sixteen original matched pigment/HROM maps across eight surface roles,
+  explicit BC7/colour-data import contracts and triplanar PBR consumers. Fixed
+  measured Color-property calibration and powered tint handling.
+- Added six bay spot practicals, adjusted sky fill/reflection capture; published
+  v1 physical geometry and Core DLL remain byte-exact unchanged.
+- 5535 source checks pass; actual GPU samples, material/power consumers, shared
+  Main geometry/ownership/recovery and shaders pass. Windows QA build succeeded
+  with zero warnings/errors; native entry, Tab orbital and Escape pause observed.
+- AAA+ presentation still FAILS. Full native play/export/cold recovery, frame-time,
+  heard audio and fun remain unverified. Export was cancelled; original slots were
+  unchanged at the recorded check. See docs/surface-material-checkpoint.md.
+
 ## 0.124.0 — 2026-11-01 — Main enters the original authored foundry
 
 - Replaced Main's default block courtyard with original Cinder Exchange closed

@@ -198,16 +198,25 @@ public class VoxelMeshRenderer : MonoBehaviour
                 view.Properties.SetFloat("_WorldWeather",1);view.Renderer.SetPropertyBlock(view.Properties);
                 var data=region.HasPowerSensitiveMaterials ? region.BuildMesh(Simulation.World.PowerState) : region.BuildMesh();
                 Upload(view.Mesh,view.Collider,data);view.Types=data.BlockTypes.ToArray();view.Region=region;LastRegionsRebuilt++;
-                if(region.MaterialRole=="Warm")
+                bool bay=region.MaterialRole=="Cyan" && region.Label!=null && region.Label.StartsWith("Bay cyan wayfinding lamp",System.StringComparison.Ordinal);
+                if(region.MaterialRole=="Warm" || bay)
                 {
                     if(view.Practical==null)
                     {
                         var lightRoot=new GameObject("Authored practical light");lightRoot.transform.SetParent(view.Root.transform,false);
-                        view.Practical=lightRoot.AddComponent<Light>();view.Practical.type=LightType.Point;
-                        view.Practical.color=new Color(1,0.56f,0.28f);view.Practical.intensity=12;view.Practical.range=10;
+                        view.Practical=lightRoot.AddComponent<Light>();
                         view.Practical.shadows=LightShadows.None;
                     }
-                    view.Practical.transform.localPosition=view.Mesh.bounds.center+Vector3.down*0.10f;
+                    view.Practical.type=bay ? LightType.Spot : LightType.Point;
+                    view.Practical.color=bay ? new Color(.35f,.70f,.85f) : new Color(1,.56f,.28f);
+                    view.Practical.intensity=bay ? 18 : 12;view.Practical.range=bay ? 7 : 10;
+                    var centre=view.Mesh.bounds.center;float inward=centre.x<16 ? 1 : -1;
+                    view.Practical.transform.localPosition=centre+Vector3.down*.10f+(bay ? Vector3.right*inward*.20f : Vector3.zero);
+                    if(bay)
+                    {
+                        view.Practical.spotAngle=85;view.Practical.innerSpotAngle=55;
+                        view.Practical.transform.localRotation=Quaternion.LookRotation(new Vector3(inward*.35f,-1,0));
+                    }
                     view.Practical.enabled=true;
                 }
                 else if(view.Practical!=null)view.Practical.enabled=false;
@@ -223,7 +232,8 @@ public class VoxelMeshRenderer : MonoBehaviour
             {
                 var colours=region.BuildColors(Simulation.World.PowerState);
                 var tint=colours[0];var material=view.Renderer.sharedMaterial;
-                view.Properties.SetColor("_BaseColor",material.GetColor("_BaseColor")*new Color(tint.Item1,tint.Item2,tint.Item3,tint.Item4));
+                var linear=material.GetColor("_BaseColor").linear*new Color(tint.Item1,tint.Item2,tint.Item3,tint.Item4);
+                view.Properties.SetColor("_BaseColor",linear.gamma);
                 view.Renderer.SetPropertyBlock(view.Properties);
             }
         }

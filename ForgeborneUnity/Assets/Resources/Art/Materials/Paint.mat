@@ -22,16 +22,27 @@ Material:
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
-    m_TexEnvs: []
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 060aa7df909cff840b8eec6f018e702d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SurfaceMap:
+        m_Texture: {fileID: 2800000, guid: 30c26e0024e1cc64ea63b8b397c18e1b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _Metallic: 0.55
+    - _ReliefMetres: 0.0011
     - _Smoothness: 0.42
+    - _SurfaceTiling: 0.5
+    - _TextureStrength: 1
     - _Weather: 0.42
     - _WorldWeather: 0
     m_Colors:
-    - _BaseColor: {r: 0.1, g: 0.22, b: 0.24, a: 1}
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 0}
-    - _WearColor: {r: 0.34, g: 0.39, b: 0.41, a: 1}
+    - _WearColor: {r: 0.6180314, g: 0.65762764, b: 0.67263293, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

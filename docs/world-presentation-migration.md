@@ -5,6 +5,11 @@ combat concept. Forgeborne's world must use believable original architecture,
 sculpted surfaces and detailed models. The blocky presentation is rejected.
 All six influences remain equally important; the AAA+ target remains open.
 
+Current state: 0.124 switched actual Main to shared original authored profile 2;
+0.125 adds paired surface materials and a current native QA package. Historical
+infrastructure paragraphs below describe earlier states, not today's default.
+See [current evidence and remaining visual failures](surface-material-checkpoint.md).
+
 ## Verified cause and boundary
 
 The current `VoxelChunk` stores one-metre material cells. `MeshBuilder` emits

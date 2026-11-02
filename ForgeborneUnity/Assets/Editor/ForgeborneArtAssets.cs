@@ -186,8 +186,9 @@ public static class ForgeborneArtAssets
         material.name=name; material.shader=shader;
         material.SetColor("_BaseColor",colour);
         material.SetFloat("_Metallic",metal); material.SetFloat("_Smoothness",smooth); material.SetFloat("_Weather",weather);
-        material.SetColor("_WearColor",name=="Copper" ? new Color(0.14f,0.25f,0.19f) : new Color(0.34f,0.39f,0.41f));
+        material.SetColor("_WearColor",(name=="Copper" ? new Color(0.14f,0.25f,0.19f) : new Color(0.34f,0.39f,0.41f)).gamma);
         material.SetColor("_EmissionColor",colour*emission);
+        ForgeborneSurfaceAssets.Configure(material,name,colour,colour*emission);
         EditorUtility.SetDirty(material);
         return material;
     }

@@ -40,7 +40,7 @@ try
         vertices+=actual.Length;triangles+=indices.Length/3;colliders.Add(collider);
         practicals+=collider.GetComponentsInChildren<Light>().Count(l=>l.enabled);
     }
-    if(triangles!=geometry.TriangleCount || practicals!=8)throw new System.InvalidOperationException("Authored world or practical fixtures are incomplete.");
+    if(triangles!=geometry.TriangleCount || practicals!=14)throw new System.InvalidOperationException("Authored world or eight warm/six bay practical fixtures are incomplete.");
     Physics.SyncTransforms();
     var random=new System.Random(124);int rays=0;float maximumDifference=0;
     for(int i=0;i<300;i++)
@@ -77,7 +77,7 @@ try
             {
                 view.targetTexture=target;view.Render();RenderTexture.active=target;
                 pixels.ReadPixels(new Rect(0,0,1920,1080),0,0);pixels.Apply();
-                string path=System.IO.Path.Combine(directory,orbital ? "authored-foundry-orbital-diagnostic.png" : "authored-foundry-fps-diagnostic.png");
+                string path=System.IO.Path.Combine(directory,"authored-foundry-"+(orbital ? "orbital-" : "fps-")+Application.version+".png");
                 System.IO.File.WriteAllBytes(path,pixels.EncodeToPNG());paths.Add(path);
             }
             finally{view.targetTexture=previous;}

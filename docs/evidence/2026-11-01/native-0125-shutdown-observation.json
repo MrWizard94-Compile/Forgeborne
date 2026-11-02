@@ -1,0 +1,10 @@
+{
+  "observedAtUtc": "2026-11-02T05:02:04.6800864Z",
+  "nativeProcessPresent": false,
+  "logLastWriteTimeUtc": "2026-11-02T04:51:27.8632090Z",
+  "logBytes": 1987,
+  "ending": "Physics backend cleanup, Input System ShutdownInProgress, polling thread exited, Shutdown",
+  "terminationControl": "not observed",
+  "userSlotRestoration": "none",
+  "scope": "bounded process/log observation, not crash-matrix acceptance"
+}

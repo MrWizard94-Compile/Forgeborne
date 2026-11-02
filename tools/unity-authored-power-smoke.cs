@@ -20,7 +20,7 @@ try
         throw new System.InvalidOperationException("Power-only change rebuilt the unchanged workstation geometry.");
     renderer.GetPropertyBlock(properties);var actual=properties.GetColor("_BaseColor");
     var tint=region.BuildColors(s.World.PowerState)[0];
-    var expected=renderer.sharedMaterial.GetColor("_BaseColor")*new Color(tint.Item1,tint.Item2,tint.Item3,tint.Item4);
+    var expected=(renderer.sharedMaterial.GetColor("_BaseColor").linear*new Color(tint.Item1,tint.Item2,tint.Item3,tint.Item4)).gamma;
     if(actual==before || actual!=expected || !s.World.IsWorkstationPowered(16,4,13))
         throw new System.InvalidOperationException("Authored powered tint did not reach the actual industrial material property consumer.");
     s.World.Chunk.TrySet(17,4,13,Forgeborne.Core.BlockType.Air);g.MeshRenderer.RefreshMesh();renderer.GetPropertyBlock(properties);

@@ -29,7 +29,7 @@ Main now enters the original Cinder Exchange through saved surface profile 2.
 Authored architecture, deposits and constructed machines share their exact
 triangles with collision and aiming. Model-shaped construction ghosts replace
 the cube outline for new games. Old saves retain their previous rules. See
-[the actual Main evidence and remaining quality gaps](docs/authored-foundry-checkpoint.md)
+[the current surfaces/native evidence and remaining quality gaps](docs/surface-material-checkpoint.md)
 and [the world migration](docs/world-presentation-migration.md).
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
@@ -39,10 +39,11 @@ views, the authored exchange hall, resource materials, pointer capture,
 entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
 to create and inspect the scene on Windows. Exact interactive pose/time saves are
 verified. Windows export/import passes earlier actual Editor UI checks. Earlier
-native packages passed; 0.124's authored world has no current native package or
-native play acceptance. Studio-quality encounter/art/
+native packages passed; 0.125's authored world now has a successful current Windows
+QA package and actual entry/Tab/Escape checks. Full native loop, export/cold-save
+recovery and performance acceptance remain open. Studio-quality encounter/art/
 audio remain active work. A perspective overhead command view now has live
-component/render evidence; its full keyboard/native play gate remains open.
+component/render evidence and a native Tab-switch check; its full play gate remains open.
 Resolved combat/gather/build feedback and eleven original synthesized audio
 candidates now pass scripted Unity integration checks; heard mix review is open.
 Placement rejects suit/unit/relay overlap before spending resources, with

@@ -55,13 +55,13 @@ public sealed class FoundryAtmosphere : MonoBehaviour
         RenderSettings.reflectionIntensity=1.0f;
         _fill=new GameObject("Foundry sky fill");_fill.transform.SetParent(transform,false);
         var fill=_fill.AddComponent<Light>();fill.type=LightType.Directional;
-        fill.color=new Color(0.65f,0.79f,0.93f);fill.intensity=0.8f;fill.shadows=LightShadows.None;
+        fill.color=new Color(0.65f,0.79f,0.93f);fill.intensity=0.36f;fill.shadows=LightShadows.None;
         _fill.transform.rotation=Quaternion.Euler(35,45,0);
         _probeObject=new GameObject("Foundry local reflection");_probeObject.transform.SetParent(transform,false);
         _probeObject.transform.position=new Vector3(16,8,16);
         var probe=_probeObject.AddComponent<ReflectionProbe>();
         probe.mode=ReflectionProbeMode.Realtime;probe.refreshMode=ReflectionProbeRefreshMode.ViaScripting;
-        probe.resolution=128;probe.size=new Vector3(50,30,50);probe.boxProjection=true;
+        probe.resolution=256;probe.size=new Vector3(50,30,50);probe.boxProjection=true;
         probe.cullingMask=~(1<<30);
         probe.clearFlags=ReflectionProbeClearFlags.Skybox;
         StartCoroutine(CaptureReflection(probe));

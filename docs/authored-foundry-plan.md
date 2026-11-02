@@ -6,6 +6,10 @@ codex/authored-foundry during implementation. Rob subsequently directed "just
 update main": commit/push verified checkpoints on main, with no extra PR gate.
 Constitution 6.18.0 remains frozen at 63d99cdc72a1c18b5aa91b9336d02fd30126407b.
 
+Historical implementation plan: 0.124 completed the default-entry/shared-geometry
+checkpoint; 0.125 adds original surface materials and limited native QA evidence.
+See surface-material-checkpoint.md. The visual target remains failed, not accepted.
+
 The next implementation binds original closed mesh pieces to the existing
 material ledger. Static architecture, gatherable deposits and constructed
 machines use those same triangles for rendering, rays and swept movement.

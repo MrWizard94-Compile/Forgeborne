@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "colorSpace": "Linear",
+      "renderTarget": "Linear ARGBFloat; no post-processing",
+      "setColor": 0.214041144,
+      "setVector": 0.214041144,
+      "propertyBlockColor": 0.214041144,
+      "expectedLinear": 0.214041144
+    },
+    "compiler": "codedom"
+  }
+}

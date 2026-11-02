@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "message": "Retrieved 1 log entries.",
+  "data": [
+    {
+      "type": "Warning",
+      "message": "1 URP assets included in build",
+      "file": "./Library/PackageCache/com.unity.render-pipelines.universal@ee0b6bbace10/Editor/BuildProcessors/URPPreprocessBuild.cs",
+      "line": 73,
+      "stackTrace": "UnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)\nForgeborneWindowsBuild:Build (string) (at Assets/Editor/ForgeborneWindowsBuild.cs:68)\nForgeborneWindowsBuild/<>c__DisplayClass2_0:<Request>b__0 () (at Assets/Editor/ForgeborneWindowsBuild.cs:49)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()"
+    }
+  ]
+}

@@ -1,5 +1,23 @@
 # Forgeborne continuation checkpoint
 
+## Current checkpoint — 0.125 surfaces and native QA
+
+Eight original paired surface recipes / sixteen 1024-square maps, measured colour
+calibration, triplanar material consumers and fourteen practicals are integrated.
+The physical v1 geometry and Core DLL remain byte-exact unchanged. Release source
+QA: 5535/0; GPU map samples 48 pass; actual Main buffers/rays/gather/build/power/
+recovery/ownership and shader checks pass. A current native Windows QA package
+succeeded 0 errors/warnings and was launched: entry, Tab orbital and Escape pause
+observed. Export was cancelled, not accepted. User slots were byte-exact unchanged
+at 2026-11-02T04:47:17Z. Native player was left paused for Rob; Editor Play stopped.
+Do not restore private slot backups over later user saves or interfere with him.
+The player subsequently ended; the bounded log ends in backend/input shutdown.
+Its termination control was not observed; no current-open-player claim.
+Actual native images still FAIL AAA+ art. Full native loop/cold recovery/performance,
+continuous actors, animation/audio/fun and six-influence depth remain open.
+See surface-material-checkpoint.md for exact paths, manifest, commands, diagnostic
+classification, full Section 0 audit and the unchanged single evolution status.
+
 ## Director priority — latest steering
 
 **Latest authority and correction:** Rob merged PR #1; verified origin/main is
@@ -20,7 +38,7 @@ Two final geometry generations match SHA
 3aaa044009b8db239b903b52bd3d928a59efd678e813a1b2eb36b25333863272.
 **Freeze this published v1 geometry**; future geometry changes need retained
 versioned content/profile resolution or an explicit tested migration. Main is
-paused in Play with the new entry for review; no native player/slot write occurred.
+paused in Play at that historical checkpoint; no native player/slot write occurred then.
 Actual FPS/orbital captures inspected: full AAA+ art still FAIL, native/performance/
 continuous actors/fun still open. See authored-foundry-checkpoint.md and its full
 15-point audit/commands/limits. All six influences/full goal stay active.

@@ -1,0 +1,705 @@
+{
+  "authoring": "Original Forgeborne procedural surface fields; no external art",
+  "blender": "4.5.15 LTS",
+  "numpy": "1.26.4",
+  "resolution": 1024,
+  "source": "art/tools/bake_surface_library.py",
+  "materials": {
+    "Graphite": {
+      "recipe": {
+        "color": [
+          0.075,
+          0.09,
+          0.1
+        ],
+        "tileMetres": 0.65,
+        "heightMetres": 0.00032,
+        "metal": 0.34,
+        "rough": 0.49,
+        "seed": 101
+      },
+      "color": {
+        "file": "Graphite_Color.png",
+        "bytes": 1021802,
+        "sha256": "485e9dad0d60e3a3209e3d16e53aaab7cd653a30c0ae307a9119c80fe98db429"
+      },
+      "surface": {
+        "file": "Graphite_HROM.png",
+        "bytes": 1934586,
+        "sha256": "3892960d7fb4ccb1c1a21d344f7a3d6fec315d42376047fe92f977a2e8bc0e73"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.08843601941312759,
+            0.10376575443575291,
+            0.11307885690411362
+          ],
+          "surface": [
+            0.5673577899471095,
+            0.476482876126995,
+            1.0,
+            0.3944031311147447
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.07658571501448712,
+            0.09190285801738454,
+            0.1021142841499472
+          ],
+          "surface": [
+            0.4923317143965198,
+            0.4732893855193043,
+            1.0,
+            0.3400000035762787
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.06837305193871873,
+            0.08204766232646248,
+            0.09116406698754091
+          ],
+          "surface": [
+            0.4992896042021424,
+            0.47209038733752495,
+            1.0,
+            0.3400000035762787
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.07740735351220301,
+        0.0923018606530539,
+        0.10200577451036515
+      ],
+      "roughnessRange": [
+        0.36522816532344027,
+        0.8829589555658448
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "Steel": {
+      "recipe": {
+        "color": [
+          0.35,
+          0.4,
+          0.42
+        ],
+        "tileMetres": 0.7,
+        "heightMetres": 0.00013,
+        "metal": 0.94,
+        "rough": 0.32,
+        "seed": 211
+      },
+      "color": {
+        "file": "Steel_Color.png",
+        "bytes": 1102837,
+        "sha256": "5c281700bab1db14ffff33c97856f21a376d222e854f3da21bfd7ae0af341c3e"
+      },
+      "surface": {
+        "file": "Steel_HROM.png",
+        "bytes": 1839293,
+        "sha256": "b166d2c48b553237626f7e87b795c5d5f354b6f300ee5c5dccef7926b50f81ed"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.31704587187988714,
+            0.3623381508611406,
+            0.3804550408566055
+          ],
+          "surface": [
+            0.4838093247783202,
+            0.31960713312718314,
+            1.0,
+            0.9399999976158142
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.3429583197322271,
+            0.3919523779237142,
+            0.4115499778381271
+          ],
+          "surface": [
+            0.5273791372328374,
+            0.37783497890372725,
+            1.0,
+            0.9399999976158142
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.3330741877185414,
+            0.38065622669023247,
+            0.39968901959003
+          ],
+          "surface": [
+            0.43521184006310665,
+            0.394176303696942,
+            0.9676072597503662,
+            0.9399999976158142
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.34182669599312454,
+        0.39065909360914647,
+        0.4101920293704555
+      ],
+      "roughnessRange": [
+        0.19329802840927862,
+        0.7037111274740131
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "Copper": {
+      "recipe": {
+        "color": [
+          0.4,
+          0.19,
+          0.075
+        ],
+        "tileMetres": 0.75,
+        "heightMetres": 0.00036,
+        "metal": 0.91,
+        "rough": 0.38,
+        "seed": 307
+      },
+      "color": {
+        "file": "Copper_Color.png",
+        "bytes": 985779,
+        "sha256": "4ab70fe30ae6eb51536afed9574bc207f7503b98ee196126bf4d9adb6bf97ac4"
+      },
+      "surface": {
+        "file": "Copper_HROM.png",
+        "bytes": 1851086,
+        "sha256": "df7ea588005e4c0cb401beb758be13e15d50cd6ec7d7e87724c5eaa051cc0607"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.22591227462508698,
+            0.16229511479183795,
+            0.09384365857315018
+          ],
+          "surface": [
+            0.5735030309917915,
+            0.5683705071364132,
+            1.0,
+            0.7162876725196838
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.3928347020197004,
+            0.1865964783373762,
+            0.07365650845797292
+          ],
+          "surface": [
+            0.522912162309183,
+            0.40263477481265936,
+            1.0,
+            0.9100000262260437
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.3818154002057596,
+            0.18136231011942966,
+            0.0715903893165464
+          ],
+          "surface": [
+            0.49922063148570944,
+            0.3752400230378935,
+            1.0,
+            0.9100000262260437
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.3302037430919601,
+        0.17609200991824508,
+        0.07993286005150571
+      ],
+      "roughnessRange": [
+        0.3302174167957841,
+        0.669893180573415
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "Ceramic": {
+      "recipe": {
+        "color": [
+          0.53,
+          0.58,
+          0.55
+        ],
+        "tileMetres": 1.2,
+        "heightMetres": 0.0003,
+        "metal": 0,
+        "rough": 0.38,
+        "seed": 401
+      },
+      "color": {
+        "file": "Ceramic_Color.png",
+        "bytes": 1037379,
+        "sha256": "f407e8dc301800bc6d5ca7b6cdcddf833989164553ef28bf2d95209fcaf52253"
+      },
+      "surface": {
+        "file": "Ceramic_HROM.png",
+        "bytes": 1645593,
+        "sha256": "4919b6990896f2007be4591f1d373af8ad811daba4638246a459a75843bb669e"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.5170643025673771,
+            0.5658439680161566,
+            0.5365762036368161
+          ],
+          "surface": [
+            0.5552821314692203,
+            0.404249916921306,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.5045958123581459,
+            0.5521992048017348,
+            0.5236372033841729
+          ],
+          "surface": [
+            0.5124355583701794,
+            0.3983014364203416,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.5070087259336288,
+            0.5548397517999553,
+            0.526141170491567
+          ],
+          "surface": [
+            0.4736123794686309,
+            0.3668532058615279,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.5206952984820128,
+        0.5698175108153668,
+        0.5403442185502625
+      ],
+      "roughnessRange": [
+        0.33008572031656247,
+        0.5206755112357626
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "Rubber": {
+      "recipe": {
+        "color": [
+          0.025,
+          0.03,
+          0.033
+        ],
+        "tileMetres": 0.25,
+        "heightMetres": 0.00022,
+        "metal": 0,
+        "rough": 0.76,
+        "seed": 503
+      },
+      "color": {
+        "file": "Rubber_Color.png",
+        "bytes": 880663,
+        "sha256": "ca54304478e81cfe50b701750e90f78231491537144d5e899f5fd9678ec484c1"
+      },
+      "surface": {
+        "file": "Rubber_HROM.png",
+        "bytes": 1872800,
+        "sha256": "73d991deb3de1cbfdb0b516cd87c4e201f93eff34c96224838310a8af85ca7ce"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.023582927360504553,
+            0.02829951177836647,
+            0.031129463483322614
+          ],
+          "surface": [
+            0.564332037722796,
+            0.783505917420209,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.024631438523805248,
+            0.029557725127455203,
+            0.032513498190756274
+          ],
+          "surface": [
+            0.4138938225345278,
+            0.7210098684348181,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.026817350916468193,
+            0.03218081990093284,
+            0.03539890249044062
+          ],
+          "surface": [
+            0.6108074104516666,
+            0.7911114672044056,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.024078823199746132,
+        0.028894586763288363,
+        0.03178404597782193
+      ],
+      "roughnessRange": [
+        0.670098602061612,
+        0.849833401411825
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "Basalt": {
+      "recipe": {
+        "color": [
+          0.13,
+          0.145,
+          0.15
+        ],
+        "tileMetres": 2.0,
+        "heightMetres": 0.0022,
+        "metal": 0,
+        "rough": 0.83,
+        "seed": 601
+      },
+      "color": {
+        "file": "Basalt_Color.png",
+        "bytes": 1492403,
+        "sha256": "34f09b3a26ebe51f2193cd764e694c1fb29504445233c5a2df745b1b075a41ad"
+      },
+      "surface": {
+        "file": "Basalt_HROM.png",
+        "bytes": 2019857,
+        "sha256": "0988c9aeb22cd3d9eaf71ca95ea37c3d6b22e8eea2a805ce52c39c0cfeed4351"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.1319131422552984,
+            0.14713389060171395,
+            0.1522074834641554
+          ],
+          "surface": [
+            0.5312928005343255,
+            0.8658839055342215,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.16179370938236404,
+            0.1786007887140187,
+            0.1825400292233429
+          ],
+          "surface": [
+            0.5870705336708838,
+            0.8651057396767484,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.14333767954425844,
+            0.1598757984601148,
+            0.1653877604028077
+          ],
+          "surface": [
+            0.5074478106820419,
+            0.8673458674681647,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.13445263719952827,
+        0.14972391461340492,
+        0.15459769319099545
+      ],
+      "roughnessRange": [
+        0.7800665835739157,
+        1.0096152599896784
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "Paint": {
+      "recipe": {
+        "color": [
+          0.085,
+          0.2,
+          0.215
+        ],
+        "tileMetres": 2.0,
+        "heightMetres": 0.0011,
+        "metal": 0.02,
+        "rough": 0.46,
+        "seed": 701
+      },
+      "color": {
+        "file": "Paint_Color.png",
+        "bytes": 1012776,
+        "sha256": "68f75dac5352cce3bf6e12492a5587131e64108e5d33cd24baeeb959e3f434cd"
+      },
+      "surface": {
+        "file": "Paint_HROM.png",
+        "bytes": 1792539,
+        "sha256": "55c75c5d1f243f72bcff4624f26b9ef035887afaa26c2e58cc22354215ffc407"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.07245770058559636,
+            0.17048870800742666,
+            0.1832753614255436
+          ],
+          "surface": [
+            0.4464562708746698,
+            0.4262646338878497,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.09165021178076001,
+            0.21564755807631736,
+            0.23182112533371602
+          ],
+          "surface": [
+            0.5248684859466459,
+            0.49945283241126953,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.07465223248640201,
+            0.17565231250254104,
+            0.18882623626740952
+          ],
+          "surface": [
+            0.4563995109431051,
+            0.47603383633344676,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.0844922986584372,
+        0.19060221096391025,
+        0.20411652060383967
+      ],
+      "roughnessRange": [
+        0.41005365525813403,
+        0.8975626627431309
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "Timber": {
+      "recipe": {
+        "color": [
+          0.26,
+          0.125,
+          0.045
+        ],
+        "tileMetres": 1.0,
+        "heightMetres": 0.0012,
+        "metal": 0,
+        "rough": 0.77,
+        "seed": 809
+      },
+      "color": {
+        "file": "Timber_Color.png",
+        "bytes": 936661,
+        "sha256": "87b49e3de8bd8e08f349644bfc2ce8f2d4e69c236f446f1d2d0cc5f5c2b86e63"
+      },
+      "surface": {
+        "file": "Timber_HROM.png",
+        "bytes": 1696442,
+        "sha256": "d3f65bc5d96f182d6fb462f3db6700f1015524f0fe6c9164fb1d23ceb54afd08"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.2418325726787166,
+            0.11626566420628981,
+            0.041855640777458
+          ],
+          "surface": [
+            0.5790088907760425,
+            0.7312563301121936,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.23154344498269883,
+            0.11131896801714523,
+            0.040074830078602894
+          ],
+          "surface": [
+            0.3850373073018578,
+            0.7676645730057935,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.21922469566344163,
+            0.10539649216565183,
+            0.03794273868734357
+          ],
+          "surface": [
+            0.4840723119451738,
+            0.817575241993082,
+            0.9952924251556396,
+            0.0
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.24163553273154834,
+        0.11617093345898162,
+        0.041821537707070755
+      ],
+      "roughnessRange": [
+        0.720037843747138,
+        0.9388017243870316
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    }
+  }
+}
