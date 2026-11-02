@@ -10,6 +10,7 @@ from pathlib import Path
 import bpy
 import bmesh
 from mathutils import Vector
+from mathutils.kdtree import KDTree
 
 A=None
 
@@ -108,11 +109,64 @@ def grip_shell(name,sections,role,parent="Frame"):
     return A.finish_part(obj,name,role,parent,.003)
 
 
+def glove_palm(side,wrist,direction):
+    """Original wrist/metacarpal fan, with a thinner back and staggered knuckles."""
+    if side=="Right":
+        sections=[((.057,-.154,-.180),(.018,.030)),
+                  ((.050,-.137,-.160),(.016,.037)),((.048,-.118,-.140),(.0155,.032)),
+                  ((.047,-.104,-.120),(.013,.0175)),((.045,-.103,-.114),(.007,.009))]
+    else:
+        sections=[((-.068,-.061,.280),(.020,.024)),
+                  ((-.053,-.049,.302),(.016,.027)),((-.044,-.042,.330),(.015,.027)),
+                  ((-.043,-.045,.351),(.0155,.0265)),((-.043,-.050,.372),(.013,.0175)),
+                  ((-.043,-.051,.378),(.007,.009))]
+    sections=[(wrist-direction*.014,(.028,.023)),(wrist,(.025,.021))]+sections
+    return tube(side+" tailored metacarpal glove",[p for p,_ in sections],[r for _,r in sections],
+                sides=24,steps=6)
+
+
+def glove_digit(side,digit,path):
+    """Shaped phalanges and a rounded pad; the original joint rest rig is retained."""
+    a,b,c,tip=[Vector(p) for p in path]
+    if digit=="Thumb":tip=c.lerp(tip,.75)
+    tangent=(tip-c).normalized()
+    radius=.0092 if digit=="Thumb" else .0076 if digit=="Little" else .0087
+    centres=[a,a.lerp(b,.72),b,b.lerp(c,.40),b.lerp(c,.78),c,c.lerp(tip,.66),
+             tip,tip+tangent*.003,tip+tangent*.005]
+    profile=[1.05,.93,1.07,.87,.85,.95,.78,.65,.35,.04]
+    # Oval pads distinguish the dorsal knuckle width from the softer finger pad.
+    radii=[(radius*r,radius*r*.86) for r in profile]
+    return tube(side+" "+digit+" shaped glove",centres,radii,steps=3,sides=16)
+
+
+def fitted_dorsal_stitches(side,skin):
+    """Project original seam dashes onto the real glove, not a floating guide."""
+    right=side=="Right"
+    yz=[(-.156,-.180),(-.143,-.164),(-.126,-.145),(-.108,-.126),(-.100,-.131),
+        (-.115,-.153),(-.134,-.176)] if right else [(-.054,.281),(-.059,.301),(-.059,.326),
+        (-.057,.351),(-.048,.365),(-.030,.349),(-.021,.324),(-.028,.299),(-.042,.281)]
+    inverse=skin.matrix_world.inverted()
+    direction=(inverse.to_3x3()@A.point((-1 if right else 1,0,0))).normalized()
+    def project(y,z):
+        origin=inverse@A.point((.18 if right else -.18,y,z))
+        hit,point,normal,_=skin.ray_cast(origin,direction,distance=.4)
+        if not hit:raise RuntimeError(side+" authored dorsal seam missed the original glove")
+        return Vector(A.game(skin.matrix_world@(point+normal*.0004)))
+    parts=[]
+    for start,end in zip(yz,yz[1:]):
+        start,end=Vector(start),Vector(end)
+        count=max(1,math.ceil((end-start).length/.0045))
+        for i in range(count):
+            a=start.lerp(end,(i+.18)/count);b=start.lerp(end,(i+.68)/count)
+            parts.append(tube(side+" fitted saddle stitch",[project(*a),project(*b)],
+                              [.0004,.0004],"GloveStitch",steps=1,sides=6))
+    return parts
+
+
 def build_hand(side):
     right=side=="Right"
     if right:
         elbow=Vector((.21,-.32,-.365));wrist=Vector((.065,-.174,-.202));palm=Vector((.048,-.128,-.149))
-        palm_size=(.037,.086,.101)
         paths={"Index":[(.047,-.101,-.130),(.039,-.084,-.095),(.022,-.084,-.051),(.002,-.093,-.037)],
                "Middle":[(.052,-.116,-.148),(.046,-.112,-.108),(.005,-.112,-.097),(-.027,-.119,-.124)],
                "Ring":[(.052,-.139,-.152),(.043,-.136,-.117),(.001,-.135,-.108),(-.026,-.142,-.136)],
@@ -120,7 +174,7 @@ def build_hand(side):
                "Thumb":[(.050,-.096,-.164),(.028,-.074,-.180),(-.014,-.075,-.158),(-.028,-.096,-.136)]}
     else:
         elbow=Vector((-.195,-.235,.045));wrist=Vector((-.078,-.074,.255));palm=Vector((-.044,-.042,.327))
-        palm_size=(.033,.077,.105);paths={}
+        paths={}
         for name,z,length in zip(("Index","Middle","Ring","Little"),(.365,.340,.315,.290),(.96,1.04,.98,.84)):
             paths[name]=[(-.044,-.052,z),(-.044+.021*length,-.080,z),
                          (-.044+.060*length,-.071,z),(-.044+.086*length,-.044,z-.004)]
@@ -128,27 +182,27 @@ def build_hand(side):
     length=(wrist-elbow).length
     if not .24<length<.32:raise RuntimeError(side+" forearm proportions are outside the authored adult suit range")
     bones={side+"Forearm":(elbow,wrist,None),side+"Palm":(wrist,palm+Vector((0,0,.025)),side+"Forearm")}
-    soft=[A.rounded_volume(side+" anatomical palm",palm,palm_size,"GloveFabric","SkinBuild")]
     direction=(wrist-elbow).normalized()
+    soft=[glove_palm(side,wrist,direction)]
     continuation=elbow+Vector((.035 if right else -.045,-.22,-.095))
-    soft.append(tube(side+" tailored continuous sleeve",[continuation,elbow,elbow*.65+wrist*.35,elbow*.25+wrist*.75,wrist,palm],
-                     [(.063,.050),(.057,.046),(.052,.041),(.039,.031),(.029,.024),(.023,.021)],
+    soft.append(tube(side+" tailored continuous sleeve",[continuation,elbow,elbow*.65+wrist*.35,elbow*.25+wrist*.75,wrist],
+                     [(.063,.050),(.057,.046),(.052,.041),(.039,.031),(.029,.024)],
                      steps=8,sides=24,folds=True))
     # The palm's thumb pad and little-finger heel are distinct volumes, rather
     # than one overinflated ellipsoid hiding all metacarpal structure.
-    thenar=(.036,-.099,-.169) if right else (-.038,-.014,.305)
+    thenar=(.043,-.118,-.164) if right else (-.038,-.014,.305)
     heel=(.044,-.157,-.170) if right else (-.045,-.043,.291)
-    soft.append(A.rounded_volume(side+" opposed thumb pad",thenar,(.035,.044,.046),"GloveFabric","SkinBuild"))
-    soft.append(A.rounded_volume(side+" little finger palm heel",heel,(.031,.035,.051),"GloveFabric","SkinBuild"))
+    thumb_pad_size=(.024,.044,.028) if right else (.027,.034,.038)
+    soft.append(A.rounded_volume(side+" opposed thumb pad",thenar,thumb_pad_size,"GloveFabric","SkinBuild"))
+    soft.append(A.rounded_volume(side+" little finger palm heel",heel,(.025,.027,.041),"GloveFabric","SkinBuild"))
     for digit,path in paths.items():
-        radius=.0100 if digit=="Thumb" else .0078 if digit=="Little" else .0090
-        soft.append(tube(side+" "+digit+" continuous glove",path,[radius*1.16,radius,radius*.92,radius*.74],steps=6,sides=16))
+        soft.append(glove_digit(side,digit,path))
         for i in range(3):bones[side+digit+str(i)]=(Vector(path[i]),Vector(path[i+1]),side+"Palm" if i==0 else side+digit+str(i-1))
     skin=join(soft,side+" continuous glove and sleeve")
-    remesh=skin.modifiers.new("Continuous original glove volume","REMESH");remesh.mode="VOXEL";remesh.voxel_size=.0018
+    remesh=skin.modifiers.new("Continuous original glove volume","REMESH");remesh.mode="VOXEL";remesh.voxel_size=.0015
     remesh.use_smooth_shade=True;remesh.use_remove_disconnected=False
     bpy.ops.object.modifier_apply(modifier=remesh.name)
-    smooth=skin.modifiers.new("Pressure fabric relaxation","SMOOTH");smooth.factor=.65;smooth.iterations=3
+    smooth=skin.modifiers.new("Pressure fabric relaxation","SMOOTH");smooth.factor=.45;smooth.iterations=2
     bpy.ops.object.modifier_apply(modifier=smooth.name)
     triangles=sum(len(p.vertices)-2 for p in skin.data.polygons)
     if triangles>24000:
@@ -204,11 +258,7 @@ def build_hand(side):
         centre=wrist+direction*offset
         obj=A.ring(side+" stitched cuff welt",centre,.033,.0012,"Rubber","SkinBuild",axis=tuple(direction))
         trim.append((obj,side+"Forearm"))
-    if right:
-        seam=[(.066,-.159,-.173),(.068,-.126,-.181),(.065,-.094,-.163)]
-    else:
-        seam=[(-.060,-.065,.291),(-.062,-.039,.329),(-.059,-.017,.369)]
-    trim.append((tube(side+" sewn palm seam",seam,[.00065]*3,"GloveStitch",steps=5,sides=6),side+"Palm"))
+    trim.extend((obj,None) for obj in fitted_dorsal_stitches(side,skin))
     # Individual small dorsal reinforcements retain the knuckle rhythm instead
     # of a single hard plate that made the whole hand read as a mechanical claw.
     for digit in ("Index","Middle","Ring","Little"):
@@ -221,8 +271,22 @@ def build_hand(side):
         b=point+Vector((.023 if right else -.023,.035,0))
         c=point+Vector((0,.040,.002))
         trim.append((tube(side+" articulated sleeve dart",[a,b,c],[.0011]*3,"SleeveFabric",steps=4,sides=6),side+"Forearm"))
+    tree=KDTree(len(skin.data.vertices))
+    for vertex in skin.data.vertices:tree.insert(vertex.co,vertex.index)
+    tree.balance()
     for obj,bone in trim:
-        obj.vertex_groups.new(name=bone).add(list(range(len(obj.data.vertices))),1,"REPLACE")
+        if bone is not None:
+            obj.vertex_groups.new(name=bone).add(list(range(len(obj.data.vertices))),1,"REPLACE")
+        else:
+            # Stitch dashes inherit their nearest actual skin vertex's normalized
+            # four-weight binding, including the wrist transition and knuckles.
+            transform=skin.matrix_world.inverted()@obj.matrix_world
+            for vertex in obj.data.vertices:
+                _,index,_=tree.find(transform@vertex.co)
+                for weight in skin.data.vertices[index].groups:
+                    name=skin.vertex_groups[weight.group].name
+                    group=obj.vertex_groups.get(name) or obj.vertex_groups.new(name=name)
+                    group.add([vertex.index],weight.weight,"REPLACE")
     combined=join([skin]+[obj for obj,_ in trim],side+"HandSkinned")
     combined.parent=rig
     modifier=combined.modifiers.new("Original four-weight glove deformation","ARMATURE");modifier.object=rig

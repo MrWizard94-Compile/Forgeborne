@@ -1,6 +1,28 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.129 support-hand motion and sleeve cuffs
+## Current checkpoint — 0.130 organic glove form
+
+Original tapered wrist/palm forms, shaped phalanges, rounded fingertips, smaller
+thumb pads and fitted skin-weighted stitches replace the swollen glove shapes.
+Surfaces/bindings change intentionally; rest rigs/landmarks and quantized weapon
+surfaces remain preserved. Source/import: 89,528 triangles. Actual normalized
+weights, closed body, fit, pose/contact/cadence/reset/shot and rendering checks pass.
+Native inspection rejected an isolated thumb pad; its corrected blend was rebuilt
+and checked again. Core/runtime C#/Main/DLLs/catalogs/twenty maps stay unchanged.
+
+Final Windows package 20261102T225546Z has zero build/console errors/warnings,
+193 files and no MCP DLL/assembly entry. Actual FPS, fire/reload poses, Tab,
+Escape and existing-slot load observed. Both saves exact at 23:04:02Z; exact final
+process present, last observed paused, Editor stopped. These are dated checks.
+Earlier 0.128/0.129 sessions were not closed; only the ownership-verified rejected
+0.130 QA process was stopped, bypassing Quit/autosave with saves unchanged.
+See glove-form-checkpoint.md and evidence/2026-11-02/glove-form-0130.
+
+Full six-influence AAA+ goal stays active and unaccepted. Further hand tailoring,
+continuous motion, actors/environment, full native loop/cold recovery, budgets,
+heard mix and director experience/fun remain open. Frozen law/evolution unchanged.
+
+## Historical checkpoint — 0.129 support-hand motion and sleeve cuffs
 
 Original 1.2-second reload now grasps/withdraws/reseats the capacitor magazine,
 hooks/pulls/releases the charging slide, then returns to the foregrip. Fingers

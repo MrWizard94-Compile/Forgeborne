@@ -20,7 +20,18 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.129 connects the support-hand reload to the magazine and charging slide,
+Current 0.130 replaces swollen palms and uniform fingers with original tapered
+glove forms, shaped phalanges, blended thumb pads and fitted skin-weighted stitches.
+Rest rigs/landmarks and quantized weapon surfaces remain preserved; new glove
+surfaces/bindings are intentional. Actual import/pose/shot/render checks pass.
+Native inspection rejected a thumb candidate, corrected before the final build.
+Windows package 20261102T225546Z and console have zero errors/warnings; affected
+native controls/reload/slot load observed. Saves exact at 23:04:02Z, exact process
+present and last observed paused; Editor stopped. Earlier sessions were not closed.
+Further tailoring/animation and full-game gates remain open. See
+[current glove-form evidence](glove-form-checkpoint.md).
+
+The preceding 0.129 connects the support-hand reload to the magazine and charging slide,
 with finger curl/thumb opposition and a 1.2-second cosmetic gesture. Rendered
 inspection rejected an open pose and corrected sleeve cuffs bound to the palm.
 Actual source/import binding, rig/contact/cadence/reset/shot checks pass. Windows
@@ -28,7 +39,7 @@ package 20261102T214317Z and console pass with zero errors/warnings; native relo
 poses, firing, orbital/FPS, pause and existing-slot load observed. Saves exact at
 21:50:16Z; new player present and last observed paused, earlier native session
 not closed, Editor stopped. No final art, timed gameplay reload or fun approval.
-See [current hand-motion evidence](hand-motion-checkpoint.md).
+See [preceding hand-motion evidence](hand-motion-checkpoint.md).
 
 The preceding 0.128 refines the original receiver proportions/assemblies and first-person
 holding angle, preserving the corrected hand surfaces, bindings and rest rigs.

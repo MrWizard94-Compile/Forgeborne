@@ -1,0 +1,147 @@
+{
+  "blender": "4.5.15 LTS",
+  "weaponAssemblies": [
+    {
+      "mesh": "FrameMesh",
+      "triangles": 30360,
+      "orientedSurfaceAndRoleSha256": "615e18efd2f5edc570415dbb9dd9547879de1c31abb20598c23dc221efb16843",
+      "positionQuantumMetres": 1e-07
+    },
+    {
+      "mesh": "MagazineMesh",
+      "triangles": 1824,
+      "orientedSurfaceAndRoleSha256": "9b422695809d5944a58736a54619d787e3659e8b01335f8c1ca2f4a52793da9b",
+      "positionQuantumMetres": 1e-07
+    },
+    {
+      "mesh": "ChargingHandleMesh",
+      "triangles": 376,
+      "orientedSurfaceAndRoleSha256": "cd0f5259769c938d18d2599cd544f32e1c551c4d841a1af9d5f4a80280dfc0b9",
+      "positionQuantumMetres": 1e-07
+    }
+  ],
+  "hands": [
+    {
+      "side": "Left",
+      "vertices": 14408,
+      "triangles": 28604,
+      "rigObjectWorldMatrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "sourceComponentsIncludingTrim": 55,
+      "closedPrimaryBodyVertices": 12002,
+      "nonmanifoldEdges": 0,
+      "primaryBodyMaterialRoles": [
+        "GloveFabric",
+        "SleeveFabric"
+      ],
+      "primaryBodyActiveJoints": 17,
+      "maximumInfluences": 4,
+      "maximumWeightSumError": 4.307366907596588e-08,
+      "stitchVertices": 540,
+      "maximumStitchDistanceFromBodyMetres": 0.0008256460423581302,
+      "maximumStitchNearestSkinWeightL1Error": 0
+    },
+    {
+      "side": "Right",
+      "vertices": 14264,
+      "triangles": 28364,
+      "rigObjectWorldMatrix": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "sourceComponentsIncludingTrim": 43,
+      "closedPrimaryBodyVertices": 12002,
+      "nonmanifoldEdges": 0,
+      "primaryBodyMaterialRoles": [
+        "GloveFabric",
+        "SleeveFabric"
+      ],
+      "primaryBodyActiveJoints": 17,
+      "maximumInfluences": 4,
+      "maximumWeightSumError": 4.400499165058136e-08,
+      "stitchVertices": 396,
+      "maximumStitchDistanceFromBodyMetres": 0.0007999982335604727,
+      "maximumStitchNearestSkinWeightL1Error": 0
+    }
+  ],
+  "modelSpaceBlenderLandmarks": {
+    "MuzzleSocket": [
+      0.0,
+      -0.6650000214576721,
+      0.01600000075995922
+    ],
+    "ArtRight": [
+      -0.25,
+      0.0,
+      0.0
+    ],
+    "ArtUp": [
+      0.0,
+      0.0,
+      0.25
+    ],
+    "ArtForward": [
+      0.0,
+      -0.25,
+      0.0
+    ],
+    "LeftPalmContact": [
+      0.04399999976158142,
+      -0.3269999921321869,
+      -0.041999999433755875
+    ],
+    "RightPalmContact": [
+      -0.04800000041723251,
+      0.14900000393390656,
+      -0.12800000607967377
+    ]
+  },
+  "fittedStitchContractRequired": true,
+  "scope": "Source topology/binding and quantized oriented weapon surfaces. No claim of natural anatomy, actual import, rendered skin, native controls or director acceptance."
+}

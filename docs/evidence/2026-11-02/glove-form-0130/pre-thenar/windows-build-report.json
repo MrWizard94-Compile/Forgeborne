@@ -1,0 +1,17 @@
+{
+    "unityVersion": "6000.3.27f2",
+    "productVersion": "0.130.0",
+    "output": "C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261102T223352Z\\Forgeborne.exe",
+    "backend": "Mono2x",
+    "options": "None",
+    "result": "Succeeded",
+    "errors": 0,
+    "warnings": 0,
+    "bytes": 167898870,
+    "seconds": 15.361047699999999,
+    "exception": "",
+    "excludedDevelopmentAssemblies": [
+        "MCPForUnity.Runtime.dll"
+    ],
+    "developmentAssembliesAbsent": true
+}

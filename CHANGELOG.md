@@ -1,5 +1,19 @@
 # Forgeborne — Changelog
 
+## 0.130.0 — 2026-11-02 — Organic glove form and fitted stitching
+
+- Replaced swollen palms and uniform finger tubes with original tapered glove
+  forms, shaped phalanges, rounded fingertips and smaller blended thumb pads.
+  Dorsal stitches now fit the real surface and inherit nearby skin weights.
+- Regenerated glove surfaces/bindings while preserving rest rigs, landmarks and
+  quantized oriented weapon surfaces. Source/import: 89,528 triangles. Actual
+  weights, pose/contact/cadence/reset/shot and rendered consumers pass.
+- Rejected an earlier thumb candidate after native inspection and corrected it.
+  Final Windows build/console: zero errors/warnings; affected native controls,
+  reload poses and existing-slot load observed with saves unchanged at check.
+- Further hand/actor/environment craft, full native loop, budgets, heard mix and
+  director fun acceptance remain open. See docs/glove-form-checkpoint.md.
+
 ## 0.129.0 — 2026-11-02 — Support-hand reload and sleeve cuff binding
 
 - Connected the support-hand sequence to magazine grasp/withdrawal/reseating and

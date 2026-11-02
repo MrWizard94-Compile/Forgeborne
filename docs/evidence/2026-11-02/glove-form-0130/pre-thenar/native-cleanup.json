@@ -1,0 +1,21 @@
+{
+  "checkedAtUtc": "2026-11-02T22:57:27.5362228Z",
+  "rejectedPackage": "20261102T223352Z",
+  "launchOwnershipAndCreationTimeVerified": true,
+  "nativeUiObservedPausedWithInitialHud": true,
+  "terminatedOnlyPid": 26540,
+  "control": "Stop only this launch-owned rejected test process, bypassing Quit/autosave",
+  "exactProcessAbsent": true,
+  "currentSlotsUnchanged": true,
+  "files": [
+    {
+      "name": "slot-1.json",
+      "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+    },
+    {
+      "name": "slot-1.json.backup",
+      "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+    }
+  ],
+  "earlier0128And0129PlayersNotClosed": true
+}

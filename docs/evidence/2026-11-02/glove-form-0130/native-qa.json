@@ -1,0 +1,127 @@
+{
+  "version": "0.130.0",
+  "recordedAtUtc": "2026-11-02T23:04:03.0049739Z",
+  "package": "ForgeborneUnity/Builds/Windows-QA/20261102T225546Z",
+  "interface": "Actual native Windows player via sky inputs, no injected gameplay calls",
+  "observations": {
+    "enteredFirstPerson": true,
+    "mouseShot": {
+      "before": "42/120",
+      "after": "41/120"
+    },
+    "legacyRReload": {
+      "returnedToForegrip": true,
+      "chargingGloveAndStitchesVisible": true,
+      "ammo": "42/119",
+      "magazineReachVisible": true
+    },
+    "revisedThumbBlendInspectedInNativeFps": true,
+    "tabOrbitalHidesView": true,
+    "tabReturnsSelectedFraming": true,
+    "escapePauses": true,
+    "existingSlotLoadedAndLastObservedPaused": true,
+    "loadedHud": {
+      "stone": 3,
+      "wood": 6,
+      "ammo": "20/119",
+      "squadVisible": true,
+      "coreDistanceMetres": 10
+    }
+  },
+  "frames": [
+    {
+      "path": "native-charging.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a9f01bba1c91795d1e3c62e1c0a593cf2d9dbf30680ffb4aeb951e672d2d776b"
+    },
+    {
+      "path": "native-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "58546688cc704d4eda2d220bef15bf74caac32893ac33f5218948130edad4956"
+    },
+    {
+      "path": "native-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "cae70ca49f7259173cf36cb790d9f171c8a01e7040ae948752fba64e7309c014"
+    },
+    {
+      "path": "native-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "65cf6ebab910c9368163900dec8c23c4dd3258abc1a0d9265ad88739f14a11b9"
+    },
+    {
+      "path": "native-loaded.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "e7874ec49741aacd013b9dd87b5c97c0a61211c817ef427cce3407e8883cfbc8"
+    },
+    {
+      "path": "native-orbital.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "5a845e4f5b7012dd17a01aad498328ad7dbad451ebebde8392119d39a218c222"
+    },
+    {
+      "path": "native-paused.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "bfeeda92d25a14cb9fd6c4b342a23c697e663f61a0adcef4edaee8dd2d6ccf92"
+    },
+    {
+      "path": "native-reload.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "6d5f9932ab0d840b5ee4cecd2a7e8cad12fae09aa88a48a49c0bb0351354a245"
+    },
+    {
+      "path": "native-rest.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "6d9a7dacfab0e432f2a3344225e574056315ef5af58b3952113c072127571190"
+    },
+    {
+      "path": "native-restored.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "e17803c1b6ac2d467191b58b9c88a4f5fb02b643f8e5a2064eea9ba82a3066e1"
+    }
+  ],
+  "savePreservation": {
+    "checkedAtUtc": "2026-11-02T23:04:02.8077276Z",
+    "namesMatch": true,
+    "files": [
+      {
+        "name": "slot-1.json",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      },
+      {
+        "name": "slot-1.json.backup",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      }
+    ],
+    "allHashesMatch": true,
+    "restoredOrWrittenByQa": false
+  },
+  "boundedNativeLog": {
+    "snapshotAtUtc": "2026-11-02T23:04:02.8384500Z",
+    "bytes": 1764,
+    "sha256": "27158c8a2830b62d85abe16025999f3f87d9685cc5fd941d23d31e4faddaedf5",
+    "separateQaLog": true,
+    "observedProjectExceptionPatternCount": 0,
+    "d3d12InfoQueueDiagnosticCount": 1,
+    "classification": "Inherited D3D12 validation-info diagnostic retained; see surface-material-checkpoint.md. Read-only live snapshot, not shutdown or full stability evidence."
+  },
+  "processAtReceipt": [
+    {
+      "pid": 16072,
+      "exactPackage": true,
+      "separateLogArgumentVerified": true
+    }
+  ],
+  "rejectedCandidateCleanup": "pre-thenar/native-cleanup.json",
+  "limits": "Scoped dated controls/poses/slot evidence. No full native loop, current-v2 cold recovery, representative budgets, heard mix, stability, final art or fun acceptance. Later user changes take precedence."
+}
