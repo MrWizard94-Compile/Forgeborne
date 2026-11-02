@@ -1,0 +1,99 @@
+{
+  "baselineCommit": "586f8f79133a804bfdadd70346727e66ad047cfa",
+  "comparisons": [
+    {
+      "side": "Left",
+      "exactAttributes": {
+        "positions": true,
+        "faces": false,
+        "materialRoles": true,
+        "weights": true,
+        "bones": true
+      },
+      "maximumVertexDistanceMetres": 0.0,
+      "weightNamesExact": true,
+      "maximumWeightError": 0.0
+    },
+    {
+      "side": "Right",
+      "exactAttributes": {
+        "positions": true,
+        "faces": false,
+        "materialRoles": true,
+        "weights": true,
+        "bones": true
+      },
+      "maximumVertexDistanceMetres": 0.0,
+      "weightNamesExact": true,
+      "maximumWeightError": 0.0
+    }
+  ],
+  "baseline": {
+    "blender": "4.5.15 LTS",
+    "hands": [
+      {
+        "side": "Left",
+        "vertices": 13934,
+        "bones": 17,
+        "attributeSha256": {
+          "positions": "47348b8748da9de24b3f653f92d2d401a4381fa2630845cbdf0bdc1455df83ee",
+          "faces": "9c310089ee47d9d5212fb097e1356d65d3ff45d7aa11a6ac665dce374097c812",
+          "materialRoles": "12f4a5935b7f92007c200e189c522f4c1b35b66489bdf4b4836a7d4e224d93f6",
+          "weights": "9e285039e27608ab226fd996a58d17f625723b17127cbedf87b25a1c3a7182f3",
+          "bones": "7c752c3824945410fb0d30230e4d00eb54f6f162fe8bbbbd53a4ff437fe0f612"
+        },
+        "orientedGeometryMaterialBindingAndRestSha256": "d1ae9b11cb1d38943ac05bd539383d83302ed9e6e0750aa215b40b9c11513358"
+      },
+      {
+        "side": "Right",
+        "vertices": 13934,
+        "bones": 17,
+        "attributeSha256": {
+          "positions": "82db10b6255b0dcb9a1f00104fc95e53ca268010ff58a3a27f411c6901ccbbc7",
+          "faces": "eb1a7c4b2a579e5b7a772b4983805c5b239ebb1824154820f5783fb506e814e7",
+          "materialRoles": "25601a14b30c2863e7d7276064bdbca8acb5438671309a944f62a7b04a187657",
+          "weights": "981fa9db1c28a55fbf209831eb40d7bfa4637bd67a59426b80276437e461c9a0",
+          "bones": "0c5003e473618ba51d676f8ceafbf3e57ee12c3c95133fcc779612a9a0ff7ad6"
+        },
+        "orientedGeometryMaterialBindingAndRestSha256": "874760ca84bc0fe60bcdb2e2a289631528add7f95994a29f42e4b96f2b1e7c67"
+      }
+    ],
+    "scope": "Source rest geometry, topology, material roles, weights and rig; not motion, visible pixels or director acceptance."
+  },
+  "current": {
+    "blender": "4.5.15 LTS",
+    "hands": [
+      {
+        "side": "Left",
+        "vertices": 13934,
+        "bones": 17,
+        "attributeSha256": {
+          "positions": "47348b8748da9de24b3f653f92d2d401a4381fa2630845cbdf0bdc1455df83ee",
+          "faces": "cee06360368130bd676ba7e948905e00486eec80ffaa635d0bc3b2009dfb679f",
+          "materialRoles": "12f4a5935b7f92007c200e189c522f4c1b35b66489bdf4b4836a7d4e224d93f6",
+          "weights": "9e285039e27608ab226fd996a58d17f625723b17127cbedf87b25a1c3a7182f3",
+          "bones": "7c752c3824945410fb0d30230e4d00eb54f6f162fe8bbbbd53a4ff437fe0f612"
+        },
+        "orientedGeometryMaterialBindingAndRestSha256": "d1ae9b11cb1d38943ac05bd539383d83302ed9e6e0750aa215b40b9c11513358"
+      },
+      {
+        "side": "Right",
+        "vertices": 13934,
+        "bones": 17,
+        "attributeSha256": {
+          "positions": "82db10b6255b0dcb9a1f00104fc95e53ca268010ff58a3a27f411c6901ccbbc7",
+          "faces": "bdf277b9546fa116d4bef99b44d2db733a8b004abd5ae1126cd6909f7257862d",
+          "materialRoles": "25601a14b30c2863e7d7276064bdbca8acb5438671309a944f62a7b04a187657",
+          "weights": "981fa9db1c28a55fbf209831eb40d7bfa4637bd67a59426b80276437e461c9a0",
+          "bones": "0c5003e473618ba51d676f8ceafbf3e57ee12c3c95133fcc779612a9a0ff7ad6"
+        },
+        "orientedGeometryMaterialBindingAndRestSha256": "874760ca84bc0fe60bcdb2e2a289631528add7f95994a29f42e4b96f2b1e7c67"
+      }
+    ],
+    "scope": "Source rest geometry, topology, material roles, weights and rig; not motion, visible pixels or director acceptance."
+  },
+  "semanticOrientedGeometryMaterialBindingsAndRigsExact": true,
+  "rawOrderedFaceAttributeExact": false,
+  "variance": "Raw polygon-list/corner order differs in trim. Indexed positions, skin weights and bone rests are byte-exact. Winding-preserving polygon-cycle/material multisets are exact; reversed faces are not normalized away.",
+  "rawOrderedSourceAttributesExact": false
+}

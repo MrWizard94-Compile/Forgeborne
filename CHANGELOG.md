@@ -1,5 +1,22 @@
 # Forgeborne — Changelog
 
+## 0.128.0 — 2026-11-02 — Carbine housing and first-person framing
+
+- Slimmed the original receiver and refitted its panels, charging slide, optic,
+  selector and grip/magazine sockets. Added saved rest orientation composed with
+  recoil/reload, improving the side silhouette and firing-hand visibility.
+- Preserved corrected glove positions, oriented surfaces, materials, weights and
+  rigs; raw trim polygon ordering variance is documented. All twenty surface maps,
+  Core sources/DLLs and retained physical catalogs remain unchanged.
+- Source/import agree on 88,224 triangles. Actual rig/reset/state and independent
+  production shot/muzzle/canonical-hit consumers pass. Current Windows build and
+  console have zero errors/warnings; native firing/reload/orbital/pause/slot load
+  were observed with current saves preserved.
+- Excluded unused authoring MCP assemblies through Unity's supported build filter;
+  final player DLLs/assembly metadata are clean and Editor MCP remains available.
+- AAA+ art/animation, full native loop, representative budgets, heard mix and fun
+  remain open. See docs/first-person-framing-checkpoint.md.
+
 ## 0.127.0 — 2026-11-02 — Original carbine and continuous skinned gloves
 
 - Rebuilt the original view weapon with continuous anatomical gloves, seventeen

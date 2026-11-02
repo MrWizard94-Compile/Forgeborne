@@ -1,0 +1,87 @@
+{
+  "baselineCommit": "586f8f79133a804bfdadd70346727e66ad047cfa",
+  "allExistingMapsByteExact": true,
+  "count": 20,
+  "maps": [
+    {
+      "name": "Basalt_Color.png",
+      "sha256": "34f09b3a26ebe51f2193cd764e694c1fb29504445233c5a2df745b1b075a41ad"
+    },
+    {
+      "name": "Basalt_HROM.png",
+      "sha256": "0988c9aeb22cd3d9eaf71ca95ea37c3d6b22e8eea2a805ce52c39c0cfeed4351"
+    },
+    {
+      "name": "Ceramic_Color.png",
+      "sha256": "f407e8dc301800bc6d5ca7b6cdcddf833989164553ef28bf2d95209fcaf52253"
+    },
+    {
+      "name": "Ceramic_HROM.png",
+      "sha256": "4919b6990896f2007be4591f1d373af8ad811daba4638246a459a75843bb669e"
+    },
+    {
+      "name": "Copper_Color.png",
+      "sha256": "4ab70fe30ae6eb51536afed9574bc207f7503b98ee196126bf4d9adb6bf97ac4"
+    },
+    {
+      "name": "Copper_HROM.png",
+      "sha256": "df7ea588005e4c0cb401beb758be13e15d50cd6ec7d7e87724c5eaa051cc0607"
+    },
+    {
+      "name": "GloveFabric_Color.png",
+      "sha256": "11d9e913a4dd48a674e03e7d316f5ede48d3f6c5306cc4f8694f570640bcdcf9"
+    },
+    {
+      "name": "GloveFabric_HROM.png",
+      "sha256": "e7b766a9d2cb335012863a1825cf737f0c9ec82628778d0ae6778f46026fcb5f"
+    },
+    {
+      "name": "Graphite_Color.png",
+      "sha256": "485e9dad0d60e3a3209e3d16e53aaab7cd653a30c0ae307a9119c80fe98db429"
+    },
+    {
+      "name": "Graphite_HROM.png",
+      "sha256": "3892960d7fb4ccb1c1a21d344f7a3d6fec315d42376047fe92f977a2e8bc0e73"
+    },
+    {
+      "name": "Paint_Color.png",
+      "sha256": "68f75dac5352cce3bf6e12492a5587131e64108e5d33cd24baeeb959e3f434cd"
+    },
+    {
+      "name": "Paint_HROM.png",
+      "sha256": "55c75c5d1f243f72bcff4624f26b9ef035887afaa26c2e58cc22354215ffc407"
+    },
+    {
+      "name": "Rubber_Color.png",
+      "sha256": "ca54304478e81cfe50b701750e90f78231491537144d5e899f5fd9678ec484c1"
+    },
+    {
+      "name": "Rubber_HROM.png",
+      "sha256": "73d991deb3de1cbfdb0b516cd87c4e201f93eff34c96224838310a8af85ca7ce"
+    },
+    {
+      "name": "SleeveFabric_Color.png",
+      "sha256": "63bc70545dcb875de892481ecc79e1d2f8ab79e96c0e2b4de91dbf15f452560c"
+    },
+    {
+      "name": "SleeveFabric_HROM.png",
+      "sha256": "191a512a4756d91f0706f86f1190ebbeee3eb5018d61b6118c22f4f9ed63d7b0"
+    },
+    {
+      "name": "Steel_Color.png",
+      "sha256": "5c281700bab1db14ffff33c97856f21a376d222e854f3da21bfd7ae0af341c3e"
+    },
+    {
+      "name": "Steel_HROM.png",
+      "sha256": "b166d2c48b553237626f7e87b795c5d5f354b6f300ee5c5dccef7926b50f81ed"
+    },
+    {
+      "name": "Timber_Color.png",
+      "sha256": "87b49e3de8bd8e08f349644bfc2ce8f2d4e69c236f446f1d2d0cc5f5c2b86e63"
+    },
+    {
+      "name": "Timber_HROM.png",
+      "sha256": "d3f65bc5d96f182d6fb462f3db6700f1015524f0fe6c9164fb1d23ceb54afd08"
+    }
+  ]
+}

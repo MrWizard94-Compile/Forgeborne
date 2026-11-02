@@ -10,12 +10,12 @@
   ],
   "gameBoundsMax": [
     0.30599984526634216,
-    0.15945370495319366,
+    0.13345371186733246,
     0.6639999747276306
   ],
   "horizontalRadius": 0.664598425260185,
-  "vertices": 44194,
-  "triangles": 87884,
+  "vertices": 44368,
+  "triangles": 88224,
   "materials": [
     "Graphite",
     "Steel",

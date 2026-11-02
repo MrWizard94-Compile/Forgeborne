@@ -1,0 +1,62 @@
+[
+  {
+    "setter": {
+      "label": "baseline-rest",
+      "offset": "(0.20, -0.17, 0.70)",
+      "age": 0.0,
+      "setFrame": 1,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\framing-0128\\candidates\\baseline-rest.png",
+      "offset": "(0.20, -0.17, 0.70)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.66, 0.15, 0.55)",
+      "leftPalmRestLandmarkViewport": "(0.56, 0.37, 1.03)",
+      "normalFramesCrossed": 514,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "setter": {
+      "label": "shoulder-rest",
+      "offset": "(0.14, -0.08, 0.50)",
+      "age": 0.0,
+      "setFrame": 1110,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\framing-0128\\candidates\\shoulder-rest.png",
+      "offset": "(0.14, -0.08, 0.50)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.70, 0.11, 0.35)",
+      "leftPalmRestLandmarkViewport": "(0.54, 0.40, 0.83)",
+      "normalFramesCrossed": 582,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "setter": {
+      "label": "balanced-rest",
+      "offset": "(0.15, -0.10, 0.58)",
+      "age": 0.0,
+      "setFrame": 2279,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\framing-0128\\candidates\\balanced-rest.png",
+      "offset": "(0.15, -0.10, 0.58)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.67, 0.16, 0.43)",
+      "leftPalmRestLandmarkViewport": "(0.54, 0.40, 0.91)",
+      "normalFramesCrossed": 577,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  }
+]

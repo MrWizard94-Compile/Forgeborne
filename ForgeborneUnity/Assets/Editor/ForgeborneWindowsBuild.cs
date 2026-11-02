@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -23,6 +24,8 @@ public static class ForgeborneWindowsBuild
         public ulong bytes;
         public double seconds;
         public string exception;
+        public string[] excludedDevelopmentAssemblies;
+        public bool developmentAssembliesAbsent;
     }
 
     [MenuItem("Forgeborne/Build Windows QA Player")]
@@ -65,6 +68,7 @@ public static class ForgeborneWindowsBuild
         };
         try
         {
+            ForgebornePlayerAssemblyFilter.BeginRecord();
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = new[] { ForgeborneSceneBuilder.MainPath },
@@ -79,9 +83,17 @@ public static class ForgeborneWindowsBuild
             evidence.warnings = report.summary.totalWarnings;
             evidence.bytes = report.summary.totalSize;
             evidence.seconds = report.summary.totalTime.TotalSeconds;
+            evidence.excludedDevelopmentAssemblies = ForgebornePlayerAssemblyFilter.RemovedAssemblyNames;
+            string managed = Path.Combine(folder, "Forgeborne_Data", "Managed");
+            evidence.developmentAssembliesAbsent = Directory.Exists(managed)
+                && !Directory.GetFiles(managed, "*.dll").Any(path =>
+                    Path.GetFileName(path).StartsWith("MCPForUnity", StringComparison.OrdinalIgnoreCase));
+            if (evidence.result == "Succeeded" && !evidence.developmentAssembliesAbsent)
+                throw new InvalidOperationException("Player package still includes local MCP authoring assemblies.");
         }
         catch (Exception error)
         {
+            evidence.result = "Failed";
             evidence.exception = error.ToString();
             Debug.LogException(error);
         }

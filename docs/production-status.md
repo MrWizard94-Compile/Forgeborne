@@ -20,11 +20,22 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.127 adds original continuous anatomical gloves, a 34-joint rig, refined
+Current 0.128 refines the original receiver proportions/assemblies and first-person
+holding angle, preserving the corrected hand surfaces, bindings and rest rigs.
+Source/import, actual skin/reset/state and production shot/muzzle/hit checks pass.
+Windows package 20261102T210226Z succeeded with zero build/console errors/warnings;
+native firing/reload, orbital/FPS, pause and slot load observed. Slots exact at
+21:13:44Z, same process present, last observed UI paused. These are dated checks;
+later user changes take precedence. A supported build filter excludes unused
+MCP helper assemblies from the player; Editor MCP access remains verified.
+Earlier unfiltered native evidence is retained separately. Revised art remains unaccepted. See
+[current first-person craft evidence](first-person-framing-checkpoint.md).
+
+The preceding 0.127 adds original continuous anatomical gloves, a 34-joint rig, refined
 carbine assembly, transparent optic and reload presentation. Actual imported
 skins, CPU poses/reset/state isolation, frame-boundary GPU captures/materials
 and native firing/reload/orbital/pause/existing-slot load pass their scoped checks.
-Current Windows QA build is 20261102T163104Z, zero build/console errors/warnings;
+That Windows QA build is 20261102T163104Z, zero build/console errors/warnings;
 user slots unchanged at 16:34:55Z, player left paused. See
 [current carbine evidence and full audit](carbine-art-checkpoint.md).
 

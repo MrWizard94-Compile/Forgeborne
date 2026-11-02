@@ -7,7 +7,8 @@ using UnityEngine;
 public sealed class WeaponViewModel : MonoBehaviour
 {
     public Transform? CameraAnchor;
-    public Vector3 ViewOffset = new Vector3(0.20f,-0.17f,0.70f);
+    public Vector3 ViewOffset = new Vector3(0.19f,-0.10f,0.55f);
+    public Vector3 ViewAngles = new Vector3(0,-12,0);
     private GameObject? _modelRoot;
     private Transform? _muzzle;
     private Transform? _chargingHandle;
@@ -125,7 +126,7 @@ public sealed class WeaponViewModel : MonoBehaviour
     public void ResetFeedbackPose()
     {
         _shotKick=_flashLife=0;_reloadAge=ReloadPresentationSeconds;
-        if(_modelRoot!=null){_modelRoot.transform.localPosition=ViewOffset;_modelRoot.transform.localRotation=Quaternion.identity;}
+        if(_modelRoot!=null){_modelRoot.transform.localPosition=ViewOffset;_modelRoot.transform.localRotation=Quaternion.Euler(ViewAngles);}
         foreach(var bone in _boneRest)bone.Restore();
         if(_chargingHandle!=null) _chargingHandle.localPosition=_chargingLocalRest;
         if(_magazine!=null) _magazine.localPosition=_magazineLocalRest;
@@ -154,7 +155,7 @@ public sealed class WeaponViewModel : MonoBehaviour
         float time=_reloadAge/ReloadPresentationSeconds;
         float reload=Mathf.Sin(time*Mathf.PI);
         _modelRoot.transform.localPosition=ViewOffset+new Vector3(0,.006f*_shotKick-.025f*reload,-.045f*_shotKick);
-        _modelRoot.transform.localRotation=Quaternion.Euler(-7*_shotKick+12*reload,0,-6*reload);
+        _modelRoot.transform.localRotation=Quaternion.Euler(ViewAngles)*Quaternion.Euler(-7*_shotKick+12*reload,0,-6*reload);
         foreach(var bone in _boneRest)bone.Restore();
         float reach=Ease(.04f,.25f,time)*(1-Ease(.78f,.99f,time));
         float draw=Ease(.30f,.45f,time)*(1-Ease(.58f,.76f,time));

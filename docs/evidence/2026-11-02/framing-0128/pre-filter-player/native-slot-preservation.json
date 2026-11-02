@@ -1,0 +1,15 @@
+{
+  "checkedAtUtc": "2026-11-02T20:20:21.6656171Z",
+  "namesMatch": true,
+  "files": [
+    {
+      "name": "slot-1.json",
+      "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+    },
+    {
+      "name": "slot-1.json.backup",
+      "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+    }
+  ],
+  "allHashesMatch": true
+}

@@ -32,10 +32,13 @@ triangles with collision and aiming. Model-shaped construction ghosts replace
 the cube outline for new games. Old saves retain their previous rules. See
 [the current organic meshes/native evidence and remaining quality gaps](docs/foundry-v2-checkpoint.md)
 and [the world migration](docs/world-presentation-migration.md).
-The current 0.127 adds original continuous skinned gloves, refined carbine
+The preceding 0.127 adds original continuous skinned gloves, refined carbine
 assemblies, transparent optic and reload presentation. Source/import, actual GPU
 poses/materials and native firing/reload/orbital/pause/load checks are recorded in
 [the carbine checkpoint](docs/carbine-art-checkpoint.md). AAA+ remains unmet.
+Current 0.128 slims the housing and refits its assemblies, with a saved holding
+angle that exposes the firing hand. Actual render, shot and native evidence is in
+[the first-person craft checkpoint](docs/first-person-framing-checkpoint.md).
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single

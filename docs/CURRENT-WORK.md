@@ -1,6 +1,32 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.127 original carbine and anatomical gloves
+## Current checkpoint — 0.128 first-person carbine craft
+
+Original receiver cross sections are slimmer; panels, charging slide, optic and
+grip/magazine sockets are refitted. Actual Main uses (.19,-.10,.55), yaw -12 at
+the unchanged 75-degree FPS FOV. Rest orientation composes with recoil/reload and
+survives reset/orbital return. Source/import: 88,224 triangles, zero degenerate
+faces. Corrected hand positions, weights and bone rests remain exact; oriented
+polygon/material sets match despite raw trim-face ordering variance. All twenty
+maps, Core source/DLLs/tests and physical v1/v2 catalogs stay unchanged.
+
+Actual rig and independent production-shot/muzzle/hit/reset probes pass; Main
+still has one Seed-42 Simulation/sole frame driver. Windows QA package
+20261102T210226Z succeeded with zero build/console errors or warnings. Native
+entry/FPS, shot (41/120), R reload (42/119 and mid-gesture), Tab orbital/FPS,
+Escape and existing-slot load were observed. Slots were exact at 21:13:44Z;
+the same process was present and the last observed UI was paused. Editor Play
+stopped. Preserve later user changes; these are dated observations.
+The build now excludes unused MCP helper assemblies through Unity's supported
+assembly filter. No MCP DLL or scripting-assembly entry remains in this player;
+Editor MCP still works. Earlier unfiltered native evidence is archived separately.
+See first-person-framing-checkpoint.md and evidence/2026-11-02/framing-0128.
+
+Full AAA+ goal remains active and unaccepted. Actor/environment craft, continuous
+motion, complete native loop/cold recovery, budgets, heard mix and fun remain
+open; retain all six equally important influences. Frozen law/evolution unchanged.
+
+## Historical checkpoint — 0.127 original carbine and anatomical gloves
 
 Rob questioned the initial native arm/hand appearance before publication.
 That candidate is preserved under rejected-155646Z. The revised candidate has

@@ -1,0 +1,86 @@
+[
+  {
+    "setter": {
+      "label": "legacy-placement-rest",
+      "offset": "(0.20, -0.17, 0.70)",
+      "yaw": 0.0,
+      "age": 0.0,
+      "setFrame": 1,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\framing-0128\\candidates\\legacy-placement-rest.png",
+      "offset": "(0.20, -0.17, 0.70)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.66, 0.15, 0.55)",
+      "leftPalmRestLandmarkViewport": "(0.56, 0.37, 1.03)",
+      "normalFramesCrossed": 530,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "setter": {
+      "label": "shoulder-angled-rest",
+      "offset": "(0.20, -0.10, 0.50)",
+      "yaw": -15.0,
+      "age": 0.0,
+      "setFrame": 1099,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\framing-0128\\candidates\\shoulder-angled-rest.png",
+      "offset": "(0.20, -0.10, 0.50)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.78, 0.10, 0.37)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.38, 0.80)",
+      "normalFramesCrossed": 573,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "setter": {
+      "label": "balanced-angled-rest",
+      "offset": "(0.20, -0.10, 0.55)",
+      "yaw": -10.0,
+      "age": 0.0,
+      "setFrame": 2235,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\framing-0128\\candidates\\balanced-angled-rest.png",
+      "offset": "(0.20, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.14, 0.41)",
+      "leftPalmRestLandmarkViewport": "(0.54, 0.39, 0.86)",
+      "normalFramesCrossed": 573,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "setter": {
+      "label": "selected-rest",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.0,
+      "setFrame": 3397,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\framing-0128\\candidates\\selected-rest.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.14, 0.41)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.39, 0.86)",
+      "normalFramesCrossed": 602,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  }
+]

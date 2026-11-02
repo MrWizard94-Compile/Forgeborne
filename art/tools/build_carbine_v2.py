@@ -244,7 +244,7 @@ def build_refined_carbine(authoring):
     A.material("GloveStitch",(.28,.21,.13),0,.85)
     A.material("OpticGlass",(.76,.90,.94),0,.08)
     outline=[(-.5,-.28),(-.36,-.5),(.34,-.5),(.5,-.29),(.5,.24),(.29,.5),(-.30,.5),(-.5,.24)]
-    A.profile("Forged contoured pressure receiver",[(-.255,.105,.125),(-.19,.145,.148),(.125,.145,.148),(.215,.119,.113),(.265,.082,.085)],outline,bevel=.005)
+    A.profile("Forged contoured pressure receiver",[(-.255,.065,.075),(-.19,.090,.105),(.125,.090,.105),(.215,.080,.090),(.265,.050,.060)],outline,bevel=.004)
     A.profile("Dropped shoulder recoil stock",[(-.475,.075,.093),(-.441,.10,.123),(-.295,.075,.095),(-.25,.075,.101)],
               [(x,y-1.0) for x,y in outline],"Rubber",bevel=.006)
     for y in (-.040,-.020,0,.020,.040):
@@ -253,15 +253,17 @@ def build_refined_carbine(authoring):
          [.013,.014,.012],"Steel","Frame",sides=12,steps=5)
     panel=[(-.041,-.185),(-.048,-.135),(-.044,.115),(-.019,.177),(.028,.135),(.045,-.118),(.030,-.184)]
     for side in (-1,1):
-        side_panel("Sculpted removable receiver cheek",side,panel,.071,.006,"Paint")
-        side_panel("Inset machined service insert",side,[(-.020,-.137),(-.025,.072),(.018,.093),(.029,-.124)],.078,.002,"Graphite")
+        side_panel("Sculpted removable receiver cheek",side,panel,.046,.004,"Paint")
+        side_panel("Inset machined service insert",side,[(-.020,-.137),(-.025,.072),(.018,.093),(.029,-.124)],.051,.002,"Graphite")
         for y,z in ((-.027,-.154),(.027,-.145),(-.022,.111),(.018,.116)):
-            socket_bolt((side*.081,y,z),side)
+            socket_bolt((side*.056,y,z),side)
         for z in (-.095,-.072,-.049,-.026):
-            A.box("Receiver recessed cooling louvre",(side*.081,.009,z),(.0014,.025,.010),"Rubber",bevel=.0004)
-            A.box("Louvre lower machined lip",(side*.082,-.003,z),(.0018,.002,.010),"Steel",bevel=.0005)
-        A.box("Service latch seat",(side*.084,-.025,.036),(.004,.013,.027),"Steel",bevel=.0015)
-        A.cylinder("Service latch pivot",(side*.088,-.023,.029),.003,.003,"Copper",axis=(side,0,0),sides=12,bevel=.0004)
+            A.box("Receiver recessed cooling louvre",(side*.054,.009,z),(.0014,.025,.010),"Rubber",bevel=.0004)
+            A.box("Louvre lower machined lip",(side*.055,-.003,z),(.0018,.002,.010),"Steel",bevel=.0005)
+        A.box("Service latch seat",(side*.057,-.025,.036),(.004,.013,.027),"Steel",bevel=.0015)
+        A.cylinder("Service latch pivot",(side*.061,-.023,.029),.003,.003,"Copper",axis=(side,0,0),sides=12,bevel=.0004)
+    A.box("Seated magazine socket",(0,-.055,.101),(.078,.027,.121),"Graphite",bevel=.004)
+    A.box("Pistol grip receiver bridge",(0,-.045,-.128),(.057,.020,.075),"Graphite",bevel=.003)
     A.cylinder("Barrel inner pressure tube",(0,.016,.433),.0195,.36,"Steel",sides=40)
     annulus("Actually bored muzzle crown",(0,.016,.626),.031,.0195,.070,"Graphite",sides=40)
     annulus("Machined open muzzle lip",(0,.016,.661),.029,.020,.006,"Steel",sides=40)
@@ -274,7 +276,7 @@ def build_refined_carbine(authoring):
                  [.004,.004,.003],"Graphite","Frame",sides=8,steps=3)
         for z in (.31,.35,.39,.43,.47,.51):
             A.box("Ceramic vent separator",(side*.035,.016,z),(.006,.044,.007),"Ceramic",bevel=.0015)
-        tube("Continuous copper transfer line",[(side*.071,-.018,.11),(side*.066,-.035,.20),(side*.045,-.023,.265),(side*.028,-.003,.29)],
+        tube("Continuous copper transfer line",[(side*.046,-.018,.11),(side*.044,-.035,.20),(side*.032,-.023,.265),(side*.028,-.003,.29)],
              [.0034]*4,"Copper","Frame",sides=10,steps=6)
     # The support-hand grip has rounded, tapered side profiles and real relief.
     A.profile("Lower grip pressure chassis",[(.23,.059,.053),(.27,.072,.063),(.38,.069,.062),(.42,.049,.039)],
@@ -294,23 +296,23 @@ def build_refined_carbine(authoring):
     for side in (-1,1):
         for z in (.079,.102,.125):
             A.box("Recessed magazine status aperture",(side*.038,-.105,z),(.002,.037,.005),"Cyan","Magazine",.0005)
-    A.box("Integrated optic dovetail",(0,.079,-.025),(.042,.014,.22),"Steel",bevel=.003)
+    A.box("Integrated optic dovetail",(0,.053,-.025),(.042,.014,.22),"Steel",bevel=.003)
     for z in (-.121,-.092,-.063,-.034,-.005,.024,.053):
-        A.box("Dovetail transverse slot",(0,.087,z),(.044,.003,.007),"Graphite",bevel=.0007)
+        A.box("Dovetail transverse slot",(0,.061,z),(.044,.003,.007),"Graphite",bevel=.0007)
     # A genuinely open hood, rather than a solid cylinder standing in for glass.
-    tube("Open reflex protective hood",[(-.024,.091,.091),(-.029,.137,.091),(-.016,.154,.091),(.017,.154,.091),(.029,.137,.091),(.024,.091,.091)],
+    tube("Open reflex protective hood",[(-.024,.063,.091),(-.029,.111,.091),(-.016,.128,.091),(.017,.128,.091),(.029,.111,.091),(.024,.063,.091)],
          [.0035]*6,"Graphite","Frame",sides=10,steps=4)
-    A.box("Recessed reflex combiner",(0,.129,.092),(.041,.030,.0015),"OpticGlass",bevel=.0003)
-    A.box("Reflex central emission mark",(0,.129,.090),(.0018,.0018,.0010),"Cyan",bevel=.0003)
-    A.box("Charging slide",(-.077,.038,-.095),(.028,.013,.069),"Steel","ChargingHandle",.003)
-    A.box("Charging grip inset",(-.092,.041,-.095),(.010,.014,.030),"Rubber","ChargingHandle",.002)
-    A.cylinder("Selector bezel",(.086,.017,-.174),.010,.005,"Copper",axis=(1,0,0),sides=24,bevel=.0008)
-    A.box("Selector lever",(.090,.020,-.162),(.005,.008,.026),"Graphite",bevel=.0015)
+    A.box("Recessed reflex combiner",(0,.103,.092),(.041,.030,.0015),"OpticGlass",bevel=.0003)
+    A.box("Reflex central emission mark",(0,.103,.090),(.0018,.0018,.0010),"Cyan",bevel=.0003)
+    A.box("Charging slide",(-.057,.038,-.095),(.028,.013,.069),"Steel","ChargingHandle",.003)
+    A.box("Charging grip inset",(-.072,.041,-.095),(.010,.014,.030),"Rubber","ChargingHandle",.002)
+    A.cylinder("Selector bezel",(.058,.017,-.174),.010,.005,"Copper",axis=(1,0,0),sides=24,bevel=.0008)
+    A.box("Selector lever",(.062,.020,-.162),(.005,.008,.026),"Graphite",bevel=.0015)
     gloves=[build_hand("Right"),build_hand("Left")]
     socket=bpy.data.objects.new("MuzzleSocket",None);bpy.context.collection.objects.link(socket)
     socket.parent=A.GROUPS["Root"];socket.location=A.point((0,.016,.665))
     # Named exact assembly pivots are exportable independently of the hand rig.
-    for name,pivot in (("Magazine",(0,-.11,.105)),("ChargingHandle",(-.077,.038,-.095))):
+    for name,pivot in (("Magazine",(0,-.11,.105)),("ChargingHandle",(-.057,.038,-.095))):
         bpy.context.view_layer.update()
         group=A.GROUPS[name];matrices=[(child,child.matrix_world.copy()) for child in group.children]
         group.location=A.point(pivot)

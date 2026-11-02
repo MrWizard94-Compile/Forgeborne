@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.128.0",
+      "offset": "(0.19, -0.10, 0.55)",
+      "angles": "(0.00, -12.00, 0.00)",
+      "triangles": 88224,
+      "scope": "Actual source/import and saved presentation; independent rendered/native verification still required."
+    },
+    "compiler": "codedom"
+  }
+}

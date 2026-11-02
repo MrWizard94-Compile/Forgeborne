@@ -1,0 +1,114 @@
+{
+  "version": "0.128.0",
+  "recordedAtUtc": "2026-11-02T20:22:25.548566+00:00",
+  "package": "ForgeborneUnity/Builds/Windows-QA/20261102T201106Z",
+  "interface": "Actual native Windows player through sky computer-use APIs; no injected gameplay calls",
+  "observations": {
+    "enteredFirstPerson": true,
+    "mouseShot": {
+      "before": "42/120",
+      "after": "41/120"
+    },
+    "legacyRReload": {
+      "ammo": "42/119",
+      "startOfGestureVisible": true,
+      "fullMagazineTransferNotClaimedFromThisSingleFrame": true
+    },
+    "tabOrbitalHidesView": true,
+    "tabReturnsSelectedFraming": true,
+    "escapePauses": true,
+    "currentSlotLoadedAndLeftPaused": true,
+    "pauseClaimIsLastObservedStateOnly": true
+  },
+  "frames": [
+    {
+      "path": "native-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "924d9162ebe28b7b1fa249d576ae0199433a722a973a82e13b129b3ffd6269ff"
+    },
+    {
+      "path": "native-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "37f875eb987ffd6897213ba7750f6afc3fd56646dfdc08ab7c4692614f286a38"
+    },
+    {
+      "path": "native-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "ad260cd98f12d2d052cd3e99747c9b8deaf125eadcd0a7b8fdca99532a3e8d8e"
+    },
+    {
+      "path": "native-reload.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "31c354759a051c20df7214930b0197b735a0a35104471556140f64e569508dd9"
+    },
+    {
+      "path": "native-orbital.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a6c490c73970bb2ce655c5d06fac53cf69e3cef96bb7124f59db656d3a2457ce"
+    },
+    {
+      "path": "native-restored.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "86ef9320064878af9ba779767fccd034b9ae88a69dbfe6e2b004820454b414a5"
+    },
+    {
+      "path": "native-paused.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "6736767b963234e7c67b0f7148d5bd7323db9c0c83568a096ac0af69502b5613"
+    },
+    {
+      "path": "native-loaded.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a4203b235dcc138d85c440d98f51510e88d863e6478da97180c45850ce236f11"
+    }
+  ],
+  "savePreservation": {
+    "checkedAtUtc": "2026-11-02T20:20:21.6656171Z",
+    "namesMatch": true,
+    "files": [
+      {
+        "name": "slot-1.json",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      },
+      {
+        "name": "slot-1.json.backup",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      }
+    ],
+    "allHashesMatch": true
+  },
+  "boundedNativeLog": {
+    "bytes": 1987,
+    "sha256": "b88d6773af21750ead0299af73a572405f12f8c2779b058619ea365aeae204f3",
+    "observedProjectExceptionPatternCount": 0,
+    "d3d12InfoQueueDiagnosticCount": 1,
+    "classification": "Retained inherited validation-info diagnostic; see surface-material-checkpoint.md. No suppression, OS graphics-tool installation or security change."
+  },
+  "limits": "Scoped control/slot evidence, not complete native gather/build/survive, current-v2 cold recovery, sustained performance/stability, heard mix, final art or fun acceptance. Later user save changes take precedence.",
+  "subsequentState": {
+    "checkedAtUtc": "2026-11-02T20:24:41.8218681Z",
+    "exactPackageRunning": false,
+    "shutdownControlObserved": false,
+    "files": [
+      {
+        "name": "slot-1.json",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      },
+      {
+        "name": "slot-1.json.backup",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      }
+    ],
+    "namesMatch": true,
+    "allHashesMatch": true
+  },
+  "currentlyRunning": false
+}
