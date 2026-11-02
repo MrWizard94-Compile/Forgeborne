@@ -75,7 +75,7 @@ public class GameManager : MonoBehaviour
         Simulation.AdvanceFrame(0, 0, 0, false);
         if(UseAuthoredFoundry)
         {
-            AuthoredFoundry.Populate(Simulation.World);
+            AuthoredFoundry.Populate(Simulation.World,SurfaceProfile.AuthoredFoundryV2);
             Simulation.Fps.Teleport(16.5f,4,7.5f);Simulation.AdvanceFrame(0,0,0,false);
         }
         else if (UseCourtyardEncounter) CourtyardEncounter.Populate(Simulation.World);

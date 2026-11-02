@@ -1,0 +1,91 @@
+[
+  {
+    "name": "Forgeborne.Core.dll",
+    "sourceIdentity": "Forgeborne.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "packageIdentity": "Forgeborne.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "sourceSha256": "855e6ea07332f59d0b14cd3519baf2d4a09c8c72a5b1e0475bd295300bd67211",
+    "packageSha256": "855e6ea07332f59d0b14cd3519baf2d4a09c8c72a5b1e0475bd295300bd67211",
+    "identical": true,
+    "matchingUnityRuntimeFile": []
+  },
+  {
+    "name": "Microsoft.Bcl.AsyncInterfaces.dll",
+    "sourceIdentity": "Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "packageIdentity": "Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "sourceSha256": "136d5965cf4768e8420b547a8bddea882921f426c371833d558a858a2f0c235a",
+    "packageSha256": "136d5965cf4768e8420b547a8bddea882921f426c371833d558a858a2f0c235a",
+    "identical": true,
+    "matchingUnityRuntimeFile": []
+  },
+  {
+    "name": "System.Buffers.dll",
+    "sourceIdentity": "System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "packageIdentity": "System.Buffers, Version=4.0.99.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "sourceSha256": "c65fff603b283dc966d1a8b730c11d5e5e750e8021bd24640612f6cc3f2c6fb7",
+    "packageSha256": "762f8fdbe975e05b76be5fe996c53ce7c75e4a2830f2f50b02a5948ef6ba0aeb",
+    "identical": false,
+    "matchingUnityRuntimeFile": [
+      "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\Facades\\System.Buffers.dll"
+    ]
+  },
+  {
+    "name": "System.Memory.dll",
+    "sourceIdentity": "System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "packageIdentity": "System.Memory, Version=4.0.99.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "sourceSha256": "11590d8bb3b12f29f4202b3ef8593229a5cd6debb61e76cba9ac5493a82ee382",
+    "packageSha256": "c4f030a2cba7da7cdcf493257c24560e203d355904aee490d645a935842f834a",
+    "identical": false,
+    "matchingUnityRuntimeFile": [
+      "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\Facades\\System.Memory.dll"
+    ]
+  },
+  {
+    "name": "System.Numerics.Vectors.dll",
+    "sourceIdentity": "System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
+    "packageIdentity": "System.Numerics.Vectors, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
+    "sourceSha256": "2324ee5a35674269225e2aa20957ce8830dbca0cffb918bd593f7a3222dee480",
+    "packageSha256": "3a56fec0630487fd588ddbfb8503160818aa6408d69dfd986da2bd5317e4f20c",
+    "identical": false,
+    "matchingUnityRuntimeFile": [
+      "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\System.Numerics.Vectors.dll"
+    ]
+  },
+  {
+    "name": "System.Runtime.CompilerServices.Unsafe.dll",
+    "sourceIdentity": "System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
+    "packageIdentity": "System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
+    "sourceSha256": "01748200f2400c742aa689f1f5101bd6298efdfd92c00c18f4fa473847235ba9",
+    "packageSha256": "01748200f2400c742aa689f1f5101bd6298efdfd92c00c18f4fa473847235ba9",
+    "identical": true,
+    "matchingUnityRuntimeFile": []
+  },
+  {
+    "name": "System.Text.Encodings.Web.dll",
+    "sourceIdentity": "System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "packageIdentity": "System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "sourceSha256": "5ad1f348223f281c34b9b857445a1c3412a430026ef049aeac641c53a92408be",
+    "packageSha256": "5ad1f348223f281c34b9b857445a1c3412a430026ef049aeac641c53a92408be",
+    "identical": true,
+    "matchingUnityRuntimeFile": []
+  },
+  {
+    "name": "System.Text.Json.dll",
+    "sourceIdentity": "System.Text.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "packageIdentity": "System.Text.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "sourceSha256": "42a3d66464aa3f52202a625fb8d719663ceae07678081253b54d6ed56a95ea0a",
+    "packageSha256": "42a3d66464aa3f52202a625fb8d719663ceae07678081253b54d6ed56a95ea0a",
+    "identical": true,
+    "matchingUnityRuntimeFile": []
+  },
+  {
+    "name": "System.Threading.Tasks.Extensions.dll",
+    "sourceIdentity": "System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "packageIdentity": "System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
+    "sourceSha256": "09901f63ebc4b8f0897b0128fb230c146529aee5c5cc90d7a7872e66a976bb5f",
+    "packageSha256": "96150abdca5df4446b376560e069d59b3550212deda8cbdd316272f6b834f597",
+    "identical": false,
+    "matchingUnityRuntimeFile": [
+      "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\Facades\\System.Threading.Tasks.Extensions.dll"
+    ]
+  }
+]

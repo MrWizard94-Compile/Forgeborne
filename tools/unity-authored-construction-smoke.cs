@@ -1,7 +1,7 @@
 var g=UnityEngine.Object.FindFirstObjectByType<GameManager>();
 var flow=UnityEngine.Object.FindFirstObjectByType<PlayerFlow>();
 if(!Application.isPlaying || g==null || g.Simulation==null || flow==null || !flow.IsMenuOpen || Time.timeScale!=0
-    || g.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV1)
+    || g.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV2)
     throw new System.InvalidOperationException("Started paused authored Main required.");
 var s=g.Simulation;var adapter=g.FpsAdapter;var guide=adapter.Construction;
 string original=g.SaveToJson();bool suppressed=adapter.InputSuppressed;var selected=guide.SelectedType;
@@ -21,7 +21,7 @@ try
             || ghost.position!=new Vector3(preview.X,preview.Y,preview.Z) || ghost.rotation!=Quaternion.identity
             || ghost.GetComponentsInChildren<Collider>().Length!=0)
             throw new System.InvalidOperationException("Authored guide lost canonical placement, read-only state, world orientation or no-collider ownership.");
-        var filters=ghost.GetComponentsInChildren<MeshFilter>();var expected=Forgeborne.Core.AuthoredFoundry.ConstructionTemplate(type);
+        var filters=ghost.GetComponentsInChildren<MeshFilter>();var expected=Forgeborne.Core.AuthoredFoundry.ConstructionTemplate(type,s.World.Chunk.SurfaceProfile);
         if(filters.Length!=expected.Count)throw new System.InvalidOperationException("Actual machine preview component count mismatch.");
         for(int i=0;i<filters.Length;i++)
         {

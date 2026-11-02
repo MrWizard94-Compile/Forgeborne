@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "actualProductionShader": "Forgeborne/IndustrialSurface",
+      "linearTargetNoPostProcessing": true,
+      "pixels": 4096,
+      "meanLinearChannelDifference": 0.1584208482915225,
+      "maximumLinearChannelDifference": 0.5279033,
+      "productionRoughnessBias": -0.16,
+      "productionReliefMetres": 0.00012,
+      "scope": "Isolated actual GPU material response; not representative gameplay, performance or AAA+ evidence."
+    },
+    "compiler": "codedom"
+  }
+}

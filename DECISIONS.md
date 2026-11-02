@@ -4,6 +4,14 @@ Dated, director-made decisions. Superseded proposals are kept here so
 the history is honest; they are not deleted to make the current plan
 look inevitable.
 
+## 2026-11-02 — Preserve the direction; make meshes realistic and organic
+
+Rob said the hall is beginning to look good and called it real progress, while
+emphasizing how much remains. He then required more realistic, organic meshes.
+Retain the emerging place/palette/atmosphere and improve the actual shapes,
+surfaces, weapon/actor construction and animation. This is direction acceptance,
+not a final AAA+ visual/gameplay/fun pass. All six influences remain equally important.
+
 ## 2026-11-01 — Push the feature branch for review
 
 Superseded by the later same-day instruction below.

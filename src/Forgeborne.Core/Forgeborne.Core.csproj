@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Content/CinderExchangeV1.json" />
+    <EmbeddedResource Include="Content/CinderExchangeV2.json" />
   </ItemGroup>
   <!-- System.Text.Json is in-box for net8.0, but not for
        netstandard2.1: reference the package for that target only,

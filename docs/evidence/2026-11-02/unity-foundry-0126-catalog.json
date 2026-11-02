@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "oneSimulation": true,
+      "profilesExercised": [
+        3,
+        2,
+        3
+      ],
+      "actualPreviewVertexCounts": [
+        1560,
+        1296,
+        1560
+      ],
+      "differentRetainedTemplatesReachConsumer": true,
+      "noSlotWrites": true,
+      "originalRecoveredInFinally": true
+    },
+    "compiler": "codedom"
+  }
+}

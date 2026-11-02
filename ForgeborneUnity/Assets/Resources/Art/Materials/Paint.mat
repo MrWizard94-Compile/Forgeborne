@@ -35,6 +35,7 @@ Material:
     m_Floats:
     - _Metallic: 0.55
     - _ReliefMetres: 0.0011
+    - _RoughnessBias: 0
     - _Smoothness: 0.42
     - _SurfaceTiling: 0.5
     - _TextureStrength: 1

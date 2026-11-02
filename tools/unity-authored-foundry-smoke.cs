@@ -7,12 +7,13 @@ if(!Application.isPlaying || g==null || g.Simulation==null || flow==null || !flo
     throw new System.InvalidOperationException("Started paused Main required.");
 var s=g.Simulation;var fps=s.Fps;var look=s.Look;string original=g.SaveToJson();
 var camera=g.FpsAdapter.GetComponent<Camera>();var oldPosition=camera.transform.position;var oldRotation=camera.transform.rotation;bool oldMode=rig.IsOrbital;
-var directory=System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath,"../../docs/evidence/2026-11-01"));
+var directory=System.IO.Path.GetFullPath(System.IO.Path.Combine(Application.dataPath,"../../docs/evidence/2026-11-02"));
 try
 {
     var timer=System.Diagnostics.Stopwatch.StartNew();
-    bool entryAlreadyAuthored=s.World.Chunk.SurfaceProfile==Forgeborne.Core.SurfaceProfile.AuthoredFoundryV1;
-    if(!entryAlreadyAuthored)Forgeborne.Core.AuthoredFoundry.Populate(s.World);
+    var profile=s.World.Chunk.SurfaceProfile;
+    bool entryAlreadyAuthored=profile==Forgeborne.Core.SurfaceProfile.AuthoredFoundryV2;
+    if(!entryAlreadyAuthored)throw new System.InvalidOperationException("Actual Main must already enter authored v2; a fixture replacement cannot satisfy this check.");
     timer.Stop();double contentLoad=timer.Elapsed.TotalMilliseconds;
     s.Fps.Teleport(16.5f,4,7.5f);s.AdvanceFrame(0,0,0,false);s.ApplyLook(-s.Look.Yaw,4-s.Look.Pitch);
     timer.Restart();var geometry=s.World.Chunk.Geometry;g.MeshRenderer.RefreshMesh();timer.Stop();double firstBuild=timer.Elapsed.TotalMilliseconds;
@@ -105,8 +106,8 @@ try
     string snapshot=g.SaveToJson();
     if(!g.TryLoadFromJson(snapshot) || g.SaveToJson()!=snapshot || !object.ReferenceEquals(s,g.Simulation))
         throw new System.InvalidOperationException("Authored exact in-place save recovery failed.");
-    return new{version=Application.version,contentId=Forgeborne.Core.AuthoredFoundry.ContentId,contentSha256=Forgeborne.Core.AuthoredFoundry.ContentSha256,
-        sourcePieces=Forgeborne.Core.AuthoredFoundry.SourcePartCount,activeRegions=colliders.Count,triangles=triangles,vertices=vertices,
+    return new{version=Application.version,contentId=Forgeborne.Core.AuthoredFoundry.GetContentId(profile),contentSha256=Forgeborne.Core.AuthoredFoundry.GetContentSha256(profile),
+        sourcePieces=Forgeborne.Core.AuthoredFoundry.GetSourcePartCount(profile),activeRegions=colliders.Count,triangles=triangles,vertices=vertices,
         entryAlreadyAuthored=entryAlreadyAuthored,contentPopulationMilliseconds=contentLoad,compoundAndUploadMilliseconds=firstBuild,gatherRefreshMilliseconds=gather,
         gatherUnaffectedMeshesRebuilt=0,constructedMachinePieces=created,actualColliderRays=rays,maximumRayDifferenceMetres=maximumDifference,
         activePracticalLights=practicals,exactBuffersAndMaterialConsumers=true,productionGather=true,constructedOriginalMeshes=true,

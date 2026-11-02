@@ -289,14 +289,25 @@ public sealed class TerrainGeometry
         float entry=float.NegativeInfinity,exit=float.PositiveInfinity;
         bool Axis(Vector3 axis)
         {
-            if(axis.LengthSquared()<1e-14f)return true;
-            float a=Vector3.Dot(face.A,axis),b=Vector3.Dot(face.B,axis),c=Vector3.Dot(face.C,axis);
+            float lengthSquared=axis.LengthSquared();
+            if(lengthSquared<1e-14f)return true;
+            // Work near the body origin. Large world-space dot products lost
+            // enough precision to leave a resolved contact microscopically
+            // intersecting, after which every direction reported time zero.
+            float a=Vector3.Dot(face.A-centre,axis),b=Vector3.Dot(face.B-centre,axis),c=Vector3.Dot(face.C-centre,axis);
             float low=Math.Min(a,Math.Min(b,c)),high=Math.Max(a,Math.Max(b,c));
-            float radius=Vector3.Dot(half,Vector3.Abs(axis)),position=Vector3.Dot(centre,axis);
+            float radius=Vector3.Dot(half,Vector3.Abs(axis));
             float speed=Vector3.Dot(velocity,axis);
+            float scale=MathF.Sqrt(lengthSquared),tolerance=Epsilon*scale;
+            // A ten-micrometre contact can separate or travel tangentially.
+            // Approaching motion still collides, as do genuinely contained
+            // bodies. Scale this spatial tolerance with each SAT axis; mesh
+            // triangle size must not change the controller's contact rules.
+            if(!overlapOnly && ((high<=-radius+10*tolerance && speed>=0)
+                || (low>=radius-10*tolerance && speed<=0)))return false;
             // Parallel contact is not penetration: a body may slide on a floor.
-            if(Math.Abs(speed)<1e-9f) return high>position-radius+Epsilon && low<position+radius-Epsilon;
-            float start=(low-radius-position)/speed,end=(high+radius-position)/speed;
+            if(Math.Abs(speed)<1e-9f*scale) return high>-radius+tolerance && low<radius-tolerance;
+            float start=(low-radius)/speed,end=(high+radius)/speed;
             if(start>end){float swap=start;start=end;end=swap;}
             entry=Math.Max(entry,start);exit=Math.Min(exit,end);
             return entry<=exit+Epsilon;

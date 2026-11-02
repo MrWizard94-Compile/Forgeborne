@@ -34,6 +34,10 @@ public class FpsInputAdapter : MonoBehaviour
     public Ray CommandRay => _commandCamera != null
         ? _commandCamera.ScreenPointToRay(Input.mousePosition) : new Ray(transform.position, transform.forward);
     private float CommandReach => IsOrbitalView ? 120f : 30f;
+    public int CommandRaycastMask => IsOrbitalView
+        ? Physics.DefaultRaycastLayers & ~(1<<VoxelMeshRenderer.OverheadLayer) : Physics.DefaultRaycastLayers;
+    public bool TryGetCommandSurface(Ray ray,out RaycastHit hit)
+        => Physics.Raycast(ray,out hit,CommandReach,CommandRaycastMask);
     public void SetCommandCamera(Camera? camera)
     {
         _commandCamera = camera;
@@ -616,7 +620,7 @@ public class FpsInputAdapter : MonoBehaviour
             else
             {
                 Ray ray = CommandRay;
-                if (Physics.Raycast(ray, out RaycastHit hit, CommandReach))
+                if (TryGetCommandSurface(ray, out RaycastHit hit))
                 {
                     Simulation.SetOrbitalRally(
                         Mathf.FloorToInt(hit.point.x),
@@ -730,7 +734,7 @@ public class FpsInputAdapter : MonoBehaviour
             // carry no colliders, so they never appear as a
             // hit here; the squad's own cell is air, so no
             // hit lands exactly on the centre.
-            if (Physics.Raycast(origin, toSquad.normalized, out RaycastHit blockHit, dist)
+            if (Physics.Raycast(origin, toSquad.normalized, out RaycastHit blockHit, dist, CommandRaycastMask)
                 && blockHit.distance < dist) continue;
             float angle = Vector3.Angle(forward, toSquad);
             float tolerance = Mathf.Max(2f, Mathf.Atan(0.6f / dist) * Mathf.Rad2Deg);
@@ -789,7 +793,7 @@ public class FpsInputAdapter : MonoBehaviour
             // before the centre means an honestly occluded
             // marker is not selectable. Markers carry no
             // colliders, so they never appear as a hit here.
-            if (Physics.Raycast(origin, toSquad.normalized, out RaycastHit blockHit, dist)
+            if (Physics.Raycast(origin, toSquad.normalized, out RaycastHit blockHit, dist, CommandRaycastMask)
                 && blockHit.distance < dist) continue;
             float angle = Vector3.Angle(forward, toSquad);
             float tolerance = Mathf.Max(2f, Mathf.Atan(0.6f / dist) * Mathf.Rad2Deg);
@@ -999,7 +1003,7 @@ public class FpsInputAdapter : MonoBehaviour
             // the player reads the pending marker, which
             // stays on the last aimed cell.
             Ray ray = CommandRay;
-            if (Physics.Raycast(ray, out RaycastHit hit, CommandReach))
+            if (TryGetCommandSurface(ray, out RaycastHit hit))
             {
                 _pendingReRallyX = Mathf.FloorToInt(hit.point.x);
                 _pendingReRallyY = Mathf.FloorToInt(hit.point.y);

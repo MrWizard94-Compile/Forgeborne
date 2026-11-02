@@ -151,6 +151,9 @@ public sealed class FpsController
         var position=new System.Numerics.Vector3(X,Y,Z);
         const float stepHeight=0.35f;
         const float walkableNormalY=0.642788f;
+        const float contactSkin=0.00005f;
+        float Travel(System.Numerics.Vector3 movement,SurfaceSweep sweep)
+            =>sweep.Hit ? Math.Max(0,sweep.Fraction-contactSkin/movement.Length()) : 1;
         void Horizontal(System.Numerics.Vector3 movement)
         {
             if(movement.LengthSquared()<1e-16f)return;
@@ -163,9 +166,9 @@ public sealed class FpsController
                 var down=new System.Numerics.Vector3(0,-stepHeight-0.02f,0);
                 var landing=geometry.SweepBody(position+up+movement,down);
                 if(!lift.Hit && !across.Hit && landing.Hit && landing.Normal.Y>=walkableNormalY)
-                {position+=up+movement+down*landing.Fraction;return;}
+                {position+=up+movement+down*Travel(down,landing);return;}
             }
-            position+=movement*sweep.Fraction;
+            position+=movement*Travel(movement,sweep);
         }
         Horizontal(new System.Numerics.Vector3(dx*EffectiveSpeed*dt,0,0));
         Horizontal(new System.Numerics.Vector3(0,0,dz*EffectiveSpeed*dt));
@@ -173,7 +176,7 @@ public sealed class FpsController
         VelocityY+=Gravity*dt;
         var vertical=new System.Numerics.Vector3(0,VelocityY*dt,0);
         var contact=geometry.SweepBody(position,vertical);
-        position+=vertical*contact.Fraction;
+        if(vertical.LengthSquared()>1e-16f)position+=vertical*Travel(vertical,contact);
         IsGrounded=contact.Hit && VelocityY<=0 && contact.Normal.Y>=walkableNormalY;
         if(contact.Hit)VelocityY=0;
         if(!IsGrounded && VelocityY<=0)

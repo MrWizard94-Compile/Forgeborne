@@ -14,6 +14,7 @@ Shader "Forgeborne/IndustrialSurface"
         _TextureStrength("Authored surface maps",Range(0,1))=0
         _SurfaceTiling("Repeats per metre",Float)=1
         _ReliefMetres("Material relief in metres",Float)=0.001
+        _RoughnessBias("Surface roughness adjustment",Range(-1,1))=0
     }
     SubShader
     {
@@ -39,7 +40,7 @@ Shader "Forgeborne/IndustrialSurface"
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor, _WearColor, _EmissionColor;
                 float _Metallic, _Smoothness, _Weather, _WorldWeather;
-                float _TextureStrength, _SurfaceTiling, _ReliefMetres;
+                float _TextureStrength, _SurfaceTiling, _ReliefMetres, _RoughnessBias;
             CBUFFER_END
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             TEXTURE2D(_SurfaceMap); SAMPLER(sampler_SurfaceMap);
@@ -106,7 +107,7 @@ Shader "Forgeborne/IndustrialSurface"
                     OriginalSurface(p,normalize(lerp(input.patternNormal,input.normalWS,_WorldWeather)),pigment,packed);
                     float variation=0.91+Noise(p*0.27)*0.16;
                     base=pigment*_BaseColor.rgb*variation;
-                    metal=packed.a;smooth=1-packed.g;occlusion=packed.b;
+                    metal=packed.a;smooth=1-saturate(packed.g+_RoughnessBias);occlusion=packed.b;
                     height=(packed.r-0.5)*_ReliefMetres;
                 }
                 else

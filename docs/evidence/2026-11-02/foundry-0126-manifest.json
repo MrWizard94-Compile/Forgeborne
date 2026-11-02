@@ -1,0 +1,1972 @@
+{
+  "version": "0.126.0",
+  "scope": "Organic shared physical meshes, retained worlds, contact-lock repair and scoped actual Unity/native evidence; full AAA+ game incomplete",
+  "generatedAtUtc": "2026-11-02T14:20:32.984305+00:00",
+  "baselineCommit": "f60c1827d26af9ad06941f8b4ac01dd836adbc81",
+  "frozenLaw": "63d99cdc72a1c18b5aa91b9336d02fd30126407b",
+  "evolution": {
+    "commit": "922dcbb",
+    "change": "elapsed-time and callback evidence",
+    "status": "staged, not propagated"
+  },
+  "sourceQA": {
+    "configuration": "Release",
+    "warnings": 0,
+    "errors": 0,
+    "passed": 5629,
+    "failed": 0,
+    "testLogSha256": "d8ef3455ec083cba80e78131da390f4d8b34c41ad6106eb61084aacbc62a169b",
+    "newContactCaseOutput": [
+      "PASS AuthoredFoundryV1: vessel collar reaches a real obstruction",
+      "PASS AuthoredFoundryV1: vessel collar permits backing away after sustained contact",
+      "PASS AuthoredFoundryV1: vessel collar escape does not tunnel through another physical surface",
+      "PASS AuthoredFoundryV1: a retained contact pose recovers without restarting or teleporting",
+      "PASS AuthoredFoundryV1: wall slide starts from free playable space",
+      "PASS AuthoredFoundryV1: pressure into the hall wall preserves tangential movement",
+      "PASS AuthoredFoundryV2: vessel collar reaches a real obstruction",
+      "PASS AuthoredFoundryV2: vessel collar permits backing away after sustained contact",
+      "PASS AuthoredFoundryV2: vessel collar escape does not tunnel through another physical surface",
+      "PASS AuthoredFoundryV2: inclined formation west contact reaches a real obstruction",
+      "PASS AuthoredFoundryV2: inclined formation west contact permits backing away after sustained contact",
+      "PASS AuthoredFoundryV2: inclined formation west contact escape does not tunnel through another physical surface",
+      "PASS AuthoredFoundryV2: inclined formation south contact reaches a real obstruction",
+      "PASS AuthoredFoundryV2: inclined formation south contact permits backing away after sustained contact",
+      "PASS AuthoredFoundryV2: inclined formation south contact escape does not tunnel through another physical surface",
+      "PASS AuthoredFoundryV2: a retained contact pose recovers without restarting or teleporting",
+      "PASS AuthoredFoundryV2: wall slide starts from free playable space",
+      "PASS AuthoredFoundryV2: pressure into the hall wall preserves tangential movement",
+      "PASS box contact permits separating motion at x=6.3",
+      "PASS box contact permits tangent motion at x=6.3",
+      "PASS box contact still blocks motion into the solid at x=6.3",
+      "PASS box contact permits separating motion at x=6.299999",
+      "PASS box contact permits tangent motion at x=6.299999",
+      "PASS box contact still blocks motion into the solid at x=6.299999",
+      "PASS contact recovery preserves independent long-sweep box obstruction",
+      "PASS deeply contained bodies cannot bypass solid geometry through contact tolerance",
+      "",
+      "5629 passed, 0 failed."
+    ],
+    "beforeRepairProbe": {
+      "v1Contacts": 12,
+      "v1ReverseLocks": 1,
+      "v2Contacts": 16,
+      "v2ReverseLocks": 3
+    },
+    "afterRepairProbe": {
+      "v1Contacts": 12,
+      "v1ReverseLocks": 0,
+      "v2Contacts": 16,
+      "v2ReverseLocks": 0
+    },
+    "scope": "Production controller, analytical box, existing complete suite; test log is private tooling output, no raw user saves"
+  },
+  "geometry": {
+    "retainedV1": {
+      "path": "src/Forgeborne.Core/Content/CinderExchangeV1.json",
+      "bytes": 8050157,
+      "sha256": "3aaa044009b8db239b903b52bd3d928a59efd678e813a1b2eb36b25333863272"
+    },
+    "currentV2": {
+      "path": "src/Forgeborne.Core/Content/CinderExchangeV2.json",
+      "bytes": 15987819,
+      "sha256": "3db547ff7a68ce12e5e51126ca755f38076448c5eb831fde659d333c07e5d6bd"
+    },
+    "profile": 3,
+    "contentId": "forgeborne.cinder-exchange.v2",
+    "sourcePieces": 369,
+    "sourceTriangles": 144624,
+    "openingPieces": 327,
+    "openingTriangles": 136320,
+    "openingExpandedVertices": 408960,
+    "maximumSourceVerticesPerPiece": 1530,
+    "twoFinalGenerationsMatch": true
+  },
+  "invariants": {
+    "singleGameManagerSeed42": true,
+    "allLinkedAdaptersShareOneSimulation": true,
+    "soleFrameDriver": true,
+    "activeInputHandlerBoth": 2,
+    "coreSourceInAssets": false
+  },
+  "installedCore": {
+    "path": "ForgeborneUnity/Assets/Plugins/Forgeborne.Core.dll",
+    "bytes": 24177664,
+    "sha256": "855e6ea07332f59d0b14cd3519baf2d4a09c8c72a5b1e0475bd295300bd67211"
+  },
+  "installedAndPackagedPlugins": [
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/Forgeborne.Core.dll",
+        "bytes": 24177664,
+        "sha256": "855e6ea07332f59d0b14cd3519baf2d4a09c8c72a5b1e0475bd295300bd67211"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/Forgeborne.Core.dll",
+        "bytes": 24177664,
+        "sha256": "855e6ea07332f59d0b14cd3519baf2d4a09c8c72a5b1e0475bd295300bd67211"
+      },
+      "unityRuntimeReplacement": []
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/Microsoft.Bcl.AsyncInterfaces.dll",
+        "bytes": 19104,
+        "sha256": "136d5965cf4768e8420b547a8bddea882921f426c371833d558a858a2f0c235a"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/Microsoft.Bcl.AsyncInterfaces.dll",
+        "bytes": 19104,
+        "sha256": "136d5965cf4768e8420b547a8bddea882921f426c371833d558a858a2f0c235a"
+      },
+      "unityRuntimeReplacement": []
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/System.Buffers.dll",
+        "bytes": 21376,
+        "sha256": "c65fff603b283dc966d1a8b730c11d5e5e750e8021bd24640612f6cc3f2c6fb7"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/System.Buffers.dll",
+        "bytes": 4608,
+        "sha256": "762f8fdbe975e05b76be5fe996c53ce7c75e4a2830f2f50b02a5948ef6ba0aeb"
+      },
+      "unityRuntimeReplacement": [
+        "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\Facades\\System.Buffers.dll"
+      ]
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/System.Memory.dll",
+        "bytes": 142752,
+        "sha256": "11590d8bb3b12f29f4202b3ef8593229a5cd6debb61e76cba9ac5493a82ee382"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/System.Memory.dll",
+        "bytes": 4608,
+        "sha256": "c4f030a2cba7da7cdcf493257c24560e203d355904aee490d645a935842f834a"
+      },
+      "unityRuntimeReplacement": [
+        "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\Facades\\System.Memory.dll"
+      ]
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/System.Numerics.Vectors.dll",
+        "bytes": 163712,
+        "sha256": "2324ee5a35674269225e2aa20957ce8830dbca0cffb918bd593f7a3222dee480"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/System.Numerics.Vectors.dll",
+        "bytes": 12288,
+        "sha256": "3a56fec0630487fd588ddbfb8503160818aa6408d69dfd986da2bd5317e4f20c"
+      },
+      "unityRuntimeReplacement": [
+        "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\System.Numerics.Vectors.dll"
+      ]
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/System.Runtime.CompilerServices.Unsafe.dll",
+        "bytes": 18024,
+        "sha256": "01748200f2400c742aa689f1f5101bd6298efdfd92c00c18f4fa473847235ba9"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/System.Runtime.CompilerServices.Unsafe.dll",
+        "bytes": 18024,
+        "sha256": "01748200f2400c742aa689f1f5101bd6298efdfd92c00c18f4fa473847235ba9"
+      },
+      "unityRuntimeReplacement": []
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/System.Text.Encodings.Web.dll",
+        "bytes": 79120,
+        "sha256": "5ad1f348223f281c34b9b857445a1c3412a430026ef049aeac641c53a92408be"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/System.Text.Encodings.Web.dll",
+        "bytes": 79120,
+        "sha256": "5ad1f348223f281c34b9b857445a1c3412a430026ef049aeac641c53a92408be"
+      },
+      "unityRuntimeReplacement": []
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/System.Text.Json.dll",
+        "bytes": 608520,
+        "sha256": "42a3d66464aa3f52202a625fb8d719663ceae07678081253b54d6ed56a95ea0a"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/System.Text.Json.dll",
+        "bytes": 608520,
+        "sha256": "42a3d66464aa3f52202a625fb8d719663ceae07678081253b54d6ed56a95ea0a"
+      },
+      "unityRuntimeReplacement": []
+    },
+    {
+      "installed": {
+        "path": "ForgeborneUnity/Assets/Plugins/System.Threading.Tasks.Extensions.dll",
+        "bytes": 25984,
+        "sha256": "09901f63ebc4b8f0897b0128fb230c146529aee5c5cc90d7a7872e66a976bb5f"
+      },
+      "packaged": {
+        "path": "Forgeborne_Data/Managed/System.Threading.Tasks.Extensions.dll",
+        "bytes": 5120,
+        "sha256": "96150abdca5df4446b376560e069d59b3550212deda8cbdd316272f6b834f597"
+      },
+      "unityRuntimeReplacement": [
+        "C:\\Program Files\\Unity\\Hub\\Editor\\6000.3.27f2\\Editor\\Data\\MonoBleedingEdge\\lib\\mono\\unityjit-win32\\Facades\\System.Threading.Tasks.Extensions.dll"
+      ]
+    }
+  ],
+  "originalSurfaceMaps": [
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Graphite_Color.png",
+      "bytes": 1021802,
+      "sha256": "485e9dad0d60e3a3209e3d16e53aaab7cd653a30c0ae307a9119c80fe98db429"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Graphite_HROM.png",
+      "bytes": 1934586,
+      "sha256": "3892960d7fb4ccb1c1a21d344f7a3d6fec315d42376047fe92f977a2e8bc0e73"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Steel_Color.png",
+      "bytes": 1102837,
+      "sha256": "5c281700bab1db14ffff33c97856f21a376d222e854f3da21bfd7ae0af341c3e"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Steel_HROM.png",
+      "bytes": 1839293,
+      "sha256": "b166d2c48b553237626f7e87b795c5d5f354b6f300ee5c5dccef7926b50f81ed"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Copper_Color.png",
+      "bytes": 985779,
+      "sha256": "4ab70fe30ae6eb51536afed9574bc207f7503b98ee196126bf4d9adb6bf97ac4"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Copper_HROM.png",
+      "bytes": 1851086,
+      "sha256": "df7ea588005e4c0cb401beb758be13e15d50cd6ec7d7e87724c5eaa051cc0607"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Ceramic_Color.png",
+      "bytes": 1037379,
+      "sha256": "f407e8dc301800bc6d5ca7b6cdcddf833989164553ef28bf2d95209fcaf52253"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Ceramic_HROM.png",
+      "bytes": 1645593,
+      "sha256": "4919b6990896f2007be4591f1d373af8ad811daba4638246a459a75843bb669e"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Rubber_Color.png",
+      "bytes": 880663,
+      "sha256": "ca54304478e81cfe50b701750e90f78231491537144d5e899f5fd9678ec484c1"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Rubber_HROM.png",
+      "bytes": 1872800,
+      "sha256": "73d991deb3de1cbfdb0b516cd87c4e201f93eff34c96224838310a8af85ca7ce"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Basalt_Color.png",
+      "bytes": 1492403,
+      "sha256": "34f09b3a26ebe51f2193cd764e694c1fb29504445233c5a2df745b1b075a41ad"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Basalt_HROM.png",
+      "bytes": 2019857,
+      "sha256": "0988c9aeb22cd3d9eaf71ca95ea37c3d6b22e8eea2a805ce52c39c0cfeed4351"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Paint_Color.png",
+      "bytes": 1012776,
+      "sha256": "68f75dac5352cce3bf6e12492a5587131e64108e5d33cd24baeeb959e3f434cd"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Paint_HROM.png",
+      "bytes": 1792539,
+      "sha256": "55c75c5d1f243f72bcff4624f26b9ef035887afaa26c2e58cc22354215ffc407"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Timber_Color.png",
+      "bytes": 936661,
+      "sha256": "87b49e3de8bd8e08f349644bfc2ce8f2d4e69c236f446f1d2d0cc5f5c2b86e63"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Surfaces/Timber_HROM.png",
+      "bytes": 1696442,
+      "sha256": "d3f65bc5d96f182d6fb462f3db6700f1015524f0fe6c9164fb1d23ceb54afd08"
+    }
+  ],
+  "unityMovement": {
+    "oneSimulation": true,
+    "sameController": true,
+    "approachReleaseScenarios": 4,
+    "details": [
+      {
+        "profile": 2,
+        "scenario": 0,
+        "contact": [
+          6.012796,
+          4.0,
+          16.5
+        ],
+        "retreatMetres": 1.00000381
+      },
+      {
+        "profile": 3,
+        "scenario": 0,
+        "contact": [
+          6.012796,
+          4.0,
+          16.5
+        ],
+        "retreatMetres": 1.00000381
+      },
+      {
+        "profile": 3,
+        "scenario": 1,
+        "contact": [
+          9.299774,
+          4.37022161,
+          23.0
+        ],
+        "retreatMetres": 1.00000381
+      },
+      {
+        "profile": 3,
+        "scenario": 2,
+        "contact": [
+          10.0,
+          4.264287,
+          22.84999
+        ],
+        "retreatMetres": 0.999984741
+      }
+    ],
+    "retainedContactRecovery": true,
+    "tangentMovement": true,
+    "noSlotWrites": true,
+    "scope": "Existing production controller in actual paused Unity Main, both retained profiles. Scripted movement, not native keyboard input or a full playthrough."
+  },
+  "unityWorld": {
+    "version": "0.126.0",
+    "contentId": "forgeborne.cinder-exchange.v2",
+    "contentSha256": "3db547ff7a68ce12e5e51126ca755f38076448c5eb831fde659d333c07e5d6bd",
+    "sourcePieces": 369,
+    "activeRegions": 327,
+    "triangles": 136320,
+    "vertices": 408960,
+    "entryAlreadyAuthored": true,
+    "contentPopulationMilliseconds": 0.0026000000000000003,
+    "compoundAndUploadMilliseconds": 0.1582,
+    "gatherRefreshMilliseconds": 1.6859000000000002,
+    "gatherUnaffectedMeshesRebuilt": 0,
+    "constructedMachinePieces": 5,
+    "actualColliderRays": 300,
+    "maximumRayDifferenceMetres": 5.722046e-06,
+    "activePracticalLights": 14,
+    "exactBuffersAndMaterialConsumers": true,
+    "productionGather": true,
+    "constructedOriginalMeshes": true,
+    "exactSaveRecovery": true,
+    "sameSimulation": true,
+    "cameraFiles": [
+      "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\authored-foundry-fps-0.126.0.png",
+      "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\authored-foundry-orbital-0.126.0.png"
+    ],
+    "limits": "Actual Main entry followed by paused scripted interactions. Not native input, representative performance, final art, audio or fun acceptance. Continuous actor migration is open."
+  },
+  "native": {
+    "currentBuildReport": "windows-0126-contact-build-report.json",
+    "localPackage": "C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261102T140715Z",
+    "files": [
+      {
+        "path": "build-report.json",
+        "bytes": 369,
+        "sha256": "2e240fabc402634360308f4d0f32d04b5a15a7d4ef2a7ce0623168447a0c0dc4"
+      },
+      {
+        "path": "D3D12/D3D12Core.dll",
+        "bytes": 4725304,
+        "sha256": "625bd40005b1c3708695d5256ecf230d278e6b8edba5a88af70f3d91324f3052"
+      },
+      {
+        "path": "Forgeborne.exe",
+        "bytes": 667136,
+        "sha256": "d91dbfa5c7d67cdf2c521d83112df029079f358519a1282d531baad4e1cd80c9"
+      },
+      {
+        "path": "Forgeborne_BurstDebugInformation_DoNotShip/Data/Plugins/x86_64/lib_burst_generated.txt",
+        "bytes": 490073,
+        "sha256": "f7297792f2b6ef85b7e792555430e014b077e53cf7e0dd08b5385950251790d7"
+      },
+      {
+        "path": "Forgeborne_Data/app.info",
+        "bytes": 39,
+        "sha256": "55b124a00eb1aea9ea51c987b264eb5201185cd528f8074d13b69829d7d48997"
+      },
+      {
+        "path": "Forgeborne_Data/boot.config",
+        "bytes": 156,
+        "sha256": "5caeb5fa96085ddaf3862d7eb4f4b02019fb0b8efd2ba168ea47c5ded79c265b"
+      },
+      {
+        "path": "Forgeborne_Data/globalgamemanagers",
+        "bytes": 213252,
+        "sha256": "486e34b7955ef782b526dbd169aa53dcea4f620e515833bd55f721b775f07f22"
+      },
+      {
+        "path": "Forgeborne_Data/globalgamemanagers.assets",
+        "bytes": 978880,
+        "sha256": "bceaec58e518efffc5fad690ab3c0a8910b6a52a3ee9e44d0951effcc546f9ee"
+      },
+      {
+        "path": "Forgeborne_Data/globalgamemanagers.assets.resS",
+        "bytes": 5718240,
+        "sha256": "9d5cd592a38d46bd823a36366b1f5b84cf0a2b3ace58dec6a6374ca0d50fe6ec"
+      },
+      {
+        "path": "Forgeborne_Data/level0",
+        "bytes": 10772,
+        "sha256": "16fc5adac9a823d12c6d10b4148d58108d657b9a9053376ff3ba3d11d9761157"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Assembly-CSharp.dll",
+        "bytes": 86528,
+        "sha256": "3b7fc05c5d0f0bb8fc2a1ae21212701839d18f39635217802f2c1a4e3ba0f084"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Forgeborne.Core.dll",
+        "bytes": 24177664,
+        "sha256": "855e6ea07332f59d0b14cd3519baf2d4a09c8c72a5b1e0475bd295300bd67211"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/MCPForUnity.Runtime.dll",
+        "bytes": 28672,
+        "sha256": "f9b489b534628477f8999ecd1e3a89e43ca329ac790b6121ba8f4ad9878ba77a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Microsoft.Bcl.AsyncInterfaces.dll",
+        "bytes": 19104,
+        "sha256": "136d5965cf4768e8420b547a8bddea882921f426c371833d558a858a2f0c235a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Mono.Security.dll",
+        "bytes": 241152,
+        "sha256": "ffb6b94c196f696fe8643800744f50ab6988ef6a8e9154ebd97987f6a8c380b8"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/mscorlib.dll",
+        "bytes": 4632064,
+        "sha256": "37112a6105aa0540579d49745a57d2dcc2148246feecd18a72fe8adee7ab38cb"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/netstandard.dll",
+        "bytes": 90112,
+        "sha256": "6ae62e082dc494a2433984177f60ca4db5fae69b1f360a8b33754172b310b8c5"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Newtonsoft.Json.dll",
+        "bytes": 691712,
+        "sha256": "a56146202232958f46bd6a28b5a7da166aea123ee0d646735a46e5c341dfbf1f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Buffers.dll",
+        "bytes": 4608,
+        "sha256": "762f8fdbe975e05b76be5fe996c53ce7c75e4a2830f2f50b02a5948ef6ba0aeb"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.ComponentModel.Composition.dll",
+        "bytes": 257024,
+        "sha256": "8161d85676aeea9a584b15324163f49e86d03765d143454096f30dba678a6786"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Configuration.dll",
+        "bytes": 124928,
+        "sha256": "4d306c0188e9c56f97774776e73bb452a7361a546c542b5383dadc18242cb685"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Core.dll",
+        "bytes": 1113088,
+        "sha256": "660bf1fe0d3bf007269eb791f9a809ea6e6ea3285bdb002bbae3ea694b2b551d"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Data.DataSetExtensions.dll",
+        "bytes": 29696,
+        "sha256": "7b657786773e617a86815cad5d8e8afe3485530a3acd1eda10bf387ac8fc9fad"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Data.dll",
+        "bytes": 2125312,
+        "sha256": "1b3bf49e7b2cc24b086503c93c638239d5555cb7ab074d21c7b5f0a8185fe464"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.dll",
+        "bytes": 2641920,
+        "sha256": "4492e20b232e35e43646d4ad4b3d7c59974605f58bf49dc771887be050312575"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Drawing.dll",
+        "bytes": 489984,
+        "sha256": "c7a6cba36403ac2389214620affd260f59be91bdf05b8640c0a8e527daa69ef5"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.EnterpriseServices.dll",
+        "bytes": 44544,
+        "sha256": "4922d9e029d183f58c6eb4fd821f68ebf574242c2bdda3d14c66e45c80608cee"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.IO.Compression.dll",
+        "bytes": 114688,
+        "sha256": "8b592aaeb79718ae973da625b7b10d83cd3130e12b9a6517acdfe36368763774"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.IO.Compression.FileSystem.dll",
+        "bytes": 18432,
+        "sha256": "5d366cb015c14ad3957506655182c84da804be8ed6adaf1c163040599b1e89c3"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Memory.dll",
+        "bytes": 4608,
+        "sha256": "c4f030a2cba7da7cdcf493257c24560e203d355904aee490d645a935842f834a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Net.Http.dll",
+        "bytes": 122880,
+        "sha256": "f294d08c8180002bc7062c16978db016ced91360c67c8e61567c7002dd592bc5"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Numerics.dll",
+        "bytes": 119296,
+        "sha256": "bf8fcdff13272b7e3532b7bd700bcbb8ed087a033248ce777c2eabaf284c8b18"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Numerics.Vectors.dll",
+        "bytes": 12288,
+        "sha256": "3a56fec0630487fd588ddbfb8503160818aa6408d69dfd986da2bd5317e4f20c"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Runtime.CompilerServices.Unsafe.dll",
+        "bytes": 18024,
+        "sha256": "01748200f2400c742aa689f1f5101bd6298efdfd92c00c18f4fa473847235ba9"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Runtime.dll",
+        "bytes": 12288,
+        "sha256": "e0a7334b7ba419aaab6bd3bb6992d693e689341a9178172c9bf99c2aa6a085bd"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Runtime.Serialization.dll",
+        "bytes": 934400,
+        "sha256": "39c93b51ba1b857db47ec20fa01ebdb8f7b6da35ee72bbf1d5511c2aa459cb9a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Security.dll",
+        "bytes": 320000,
+        "sha256": "7afe85961400ea0f4aaf26531ad3804d8b919669b9c94e3c01be9f745aed052e"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.ServiceModel.Internals.dll",
+        "bytes": 215040,
+        "sha256": "71bc4f1c26c1f871a40fe0b86426f1560833bc131b5efbbba1fe38091aac71b4"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Text.Encodings.Web.dll",
+        "bytes": 79120,
+        "sha256": "5ad1f348223f281c34b9b857445a1c3412a430026ef049aeac641c53a92408be"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Text.Json.dll",
+        "bytes": 608520,
+        "sha256": "42a3d66464aa3f52202a625fb8d719663ceae07678081253b54d6ed56a95ea0a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Threading.Tasks.Extensions.dll",
+        "bytes": 5120,
+        "sha256": "96150abdca5df4446b376560e069d59b3550212deda8cbdd316272f6b834f597"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Transactions.dll",
+        "bytes": 35328,
+        "sha256": "b85175ec1a7c6cb5d7b2f5d2b1724d9d6b4cbf7fe2e63b04f099f6a221ff8335"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Xml.dll",
+        "bytes": 3160064,
+        "sha256": "0b9361730de6fd7209413138d0c3f4871d80c37540b6c7b841f25c3c5958d86a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/System.Xml.Linq.dll",
+        "bytes": 136704,
+        "sha256": "91515a7a8256ad90955dc175dea69e2b21ea0bb0e72a9d3e9042f906eb21ac6a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Burst.dll",
+        "bytes": 296960,
+        "sha256": "918856b2cbe48885b5f15fa3298f4390b116673632597aa0346a2f14ef1e4380"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Burst.Unsafe.dll",
+        "bytes": 5632,
+        "sha256": "9d9c1ff52411decbee5d9f0d1cd61ebeaa222077aa77a52101ea3debafae98e2"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Collections.dll",
+        "bytes": 432128,
+        "sha256": "a601a929b81d465a9abb043a8a18564436d0b933285867bd2e78d059abcd9b16"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Collections.LowLevel.ILSupport.dll",
+        "bytes": 5120,
+        "sha256": "ff50383f807f9692e4913b97e47d86fefcb8faa33d6d48cd3e3fd6fc7ffb448d"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Deformations.dll",
+        "bytes": 7168,
+        "sha256": "591b30a137417ef8300c972a03c0c22c4dc5acbe78100454c8a2d07c2ae7558d"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Entities.dll",
+        "bytes": 1259008,
+        "sha256": "b32565efa684eb646d4980bde8eae153cbe94720829184dc3844d4f86fd10bda"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Entities.Hybrid.dll",
+        "bytes": 182784,
+        "sha256": "7443b15377a73990b3937ac36d5edd48693e4ae16f99beb6f1a8e8dab43d8cdc"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Entities.Hybrid.HybridComponents.dll",
+        "bytes": 17408,
+        "sha256": "740230d9668e3555587d3a06f39739a33729367e024bb4d93926ba67a5adca41"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Entities.UI.dll",
+        "bytes": 10240,
+        "sha256": "731ed88d52a0ad08fc479ea4c58fa255b6a97a794bb4fbc3074a60279552f973"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.InputSystem.dll",
+        "bytes": 1013760,
+        "sha256": "e195d6a419f4b608976cc4d00a490cd9f52ba612ccdf4371ae4f5538330ba878"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.InputSystem.ForUI.dll",
+        "bytes": 15360,
+        "sha256": "181518ef94a6f9b37b04461b75a7f94e6b19ec58eae664a16271e46db7a660be"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.InternalAPIEngineBridge.002.dll",
+        "bytes": 41984,
+        "sha256": "697f71e8d9ca5e10a0b706aad4e706193e22d1e68c683f461daed0b82ab4e683"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.InternalAPIEngineBridge.004.dll",
+        "bytes": 4096,
+        "sha256": "4be4ca9e4a09d565a6a981060d0a7b66a964fb45b37a316b5d028fb8cee66d71"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Mathematics.dll",
+        "bytes": 737280,
+        "sha256": "abc7fb399ccaf7cf86254bc94a20c8c083634e23e19374fbe64532fab73b025f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Mathematics.Extensions.dll",
+        "bytes": 7168,
+        "sha256": "c59f3106fcd0bf247331075c2d1a14a603104240cd5270f89848b6cef4cd760f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Mathematics.Extensions.Hybrid.dll",
+        "bytes": 4096,
+        "sha256": "8aa5016bd1bbcd8ea7d42ee49bc423f52b7ee2f674e77888a19c29c24c817e01"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Profiling.Core.dll",
+        "bytes": 8192,
+        "sha256": "16a371e487145e8c740c95de6e94eb9dd51e97e226e1e1d25e14a888e2cb7ac1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipeline.Universal.ShaderLibrary.dll",
+        "bytes": 7680,
+        "sha256": "d8545297fc4e8c0d49bc9b3b74a966cecd4f625965fe6bc4964184eae59334d9"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.Core.Runtime.dll",
+        "bytes": 1131520,
+        "sha256": "222ea452ca043eec178cb9a67f9aa85339d3c06e0864f6e23f36b588f4afb6fa"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.Core.Runtime.Shared.dll",
+        "bytes": 4608,
+        "sha256": "e671110ac89a7e5f18ab863a75d507b244a3c9f9dbe3def3313b025d5fffb084"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.Core.ShaderLibrary.dll",
+        "bytes": 3584,
+        "sha256": "71c1673027bdfdca6980ca668669c69e7223be5d94f48e7a91873e09565b00cd"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.GPUDriven.Runtime.dll",
+        "bytes": 220160,
+        "sha256": "cf2455456854f8305f8b4845ec93b67cc4bc975e07ea9bbc0827228409b6a13f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.ShaderGraph.ShaderGraphLibrary.dll",
+        "bytes": 3584,
+        "sha256": "9923899d984bf42a233c41829c103c38cc05cb1ba430d6a2b9782cd97eaba8ff"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.Universal.2D.Runtime.dll",
+        "bytes": 220160,
+        "sha256": "95e30c723bcdb10478522094a34b78ab77c9b2751add86d04f5d67e4b84ed5df"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.Universal.Config.Runtime.dll",
+        "bytes": 4096,
+        "sha256": "978bfad6c26717ff1aada5605c4bceab6311bdb99fa226375facb81ac0898738"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.Universal.Runtime.dll",
+        "bytes": 699392,
+        "sha256": "ce40210ea0f37b417d0a688074c8e7de89229c3a6ca47a6d9510b711c1a312ae"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.RenderPipelines.Universal.Shaders.dll",
+        "bytes": 3584,
+        "sha256": "a70389a48804dd54b01a842f0994ab5ed90f771ade78c9a0f41900a5873b25c4"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Scenes.dll",
+        "bytes": 90112,
+        "sha256": "d6c3c1232d5a1ae77e18fcfd066bf7b70f4d792dce6ceb8b6bdf96bb2e7e2526"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.ScriptableBuildPipeline.dll",
+        "bytes": 7680,
+        "sha256": "99c1b3234ab8dbae2dc3ea0efb3df3a09fe7fe21c668a9fec7be50673f5245f1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Serialization.dll",
+        "bytes": 153600,
+        "sha256": "c7f04eeff7637c0c452aca5d5f47ee61ea18b29987b90631779c65418ad45a8f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.TextMeshPro.dll",
+        "bytes": 438784,
+        "sha256": "0d71d7d52444888fbc19fa659af9c10ace7bd2718262a7800d140bab2e5cc5b7"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Transforms.dll",
+        "bytes": 35328,
+        "sha256": "b1acea9972ddd40effa3dc9b77b5afd282381fd452c9d7b287b0c2e3b7287810"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.Transforms.Hybrid.dll",
+        "bytes": 27136,
+        "sha256": "442ce824298772fedd1281e645e1f3ad61766d0a87e138e5c013ec4ad8eb81d8"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/Unity.UnifiedRayTracing.Runtime.dll",
+        "bytes": 91136,
+        "sha256": "08819796b02da0fbf0615099c822f04e5c59850796f0c53fb2e2ef37ec20b58c"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AccessibilityModule.dll",
+        "bytes": 51120,
+        "sha256": "87cfbff0671a7bb6cebabd7fc3dc55dcc7f8670122d3750d4930fc5874b2d513"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AdaptivePerformanceModule.dll",
+        "bytes": 125360,
+        "sha256": "38f249b393e916b4fbfdded6db1e4b98aabc241ad76ef0b76a40fa68656287c0"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AIModule.dll",
+        "bytes": 77232,
+        "sha256": "ee8141c93ac5904442e18a467c416361dae2909b8503cda6e9a83dc1f11f2b9e"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AMDModule.dll",
+        "bytes": 21936,
+        "sha256": "ff5cd89f657d4fc3207bbc9273d625bcd6edd37a041e125efd6f34b12a4fd8f1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AndroidJNIModule.dll",
+        "bytes": 121776,
+        "sha256": "77871783e10942aef6316efb296a422cf695e6e1a09fffdeef0fe8d766222900"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AnimationModule.dll",
+        "bytes": 225192,
+        "sha256": "3d33dbc882463c79ea62ac4c3a530a7323725f6904a8d54f9f6bdcb8640dead7"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ARModule.dll",
+        "bytes": 25512,
+        "sha256": "ee758c3148494bd3458ec1bba37732b8d46f102d9e9ccbbf58cd1a63196359f4"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AssetBundleModule.dll",
+        "bytes": 41896,
+        "sha256": "0fbed7db00e03d9f528c8d2fa7fdbefd47621702e00ae087cb2aea799eab7e97"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.AudioModule.dll",
+        "bytes": 142760,
+        "sha256": "b3ce9baf429106d953f721c4a5722c78453148744a0f309810ac12244f1a1412"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ClothModule.dll",
+        "bytes": 36264,
+        "sha256": "0bbdea0e3a2a163ac0e1ba3c05ebd94884b13ccd1f6754e8d9e2eecf0d3a3c02"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ClusterInputModule.dll",
+        "bytes": 28072,
+        "sha256": "c659b380e01b127588cd3e31c6ee7d34add509189403530382cae79d2018c42a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ClusterRendererModule.dll",
+        "bytes": 26544,
+        "sha256": "85ed21eaccb8e5fa76e8b91ba9afbdb2c62ab1135114bac529ceb0c434aaf786"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ContentLoadModule.dll",
+        "bytes": 32688,
+        "sha256": "22ac034307c9426bf574020c07a047e74e70f6952b3617e40fb2e7bd33915c02"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.CoreModule.dll",
+        "bytes": 1985960,
+        "sha256": "e6191597ee12c83c03b48e610d6644067094597ea777b3e0d01f0a6bd4d1eb2b"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.CrashReportingModule.dll",
+        "bytes": 26536,
+        "sha256": "4060e6c9b8172819261b825a5326fefaf75c414609235e8faa83deeead24a38f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.DirectorModule.dll",
+        "bytes": 41896,
+        "sha256": "2005c8cb8971f0697e53d4f4a562f98ca17d4b25998b79fc52b11d3caa1c229f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.dll",
+        "bytes": 197552,
+        "sha256": "29adc8133b96914366b27a57567eecad7df6ceb2bee0ae748ae03a91032e4f0c"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.DSPGraphModule.dll",
+        "bytes": 31664,
+        "sha256": "4c7c2899610070ba1a2710ebbb424ce3992c0e1fce9b01e08e880d264de005d8"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.GameCenterModule.dll",
+        "bytes": 46000,
+        "sha256": "d83c701849e52916b9e54f4193a77141301037676a395fa2460bcfa6f13c36a0"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.GIModule.dll",
+        "bytes": 24496,
+        "sha256": "72ba7f846f2057864f6f542aa0a5cb6816f31adf2a722efe613796696559ad94"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.GraphicsStateCollectionSerializerModule.dll",
+        "bytes": 14248,
+        "sha256": "af44d5f09c683c0d414ee38f1b72e102bf62b9beefef576c2dc7e982ceef549e"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.GridModule.dll",
+        "bytes": 30640,
+        "sha256": "8d3d5c86735d5ac613e8f3d0a26a474c50879bb0fd9df8015a96b3fd6631a53a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.HierarchyCoreModule.dll",
+        "bytes": 109488,
+        "sha256": "b70019d558867411a67e45d09d0e7cbb03cf0d3cfed4549c783937051769dead"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.HierarchyModule.dll",
+        "bytes": 102320,
+        "sha256": "47bf3cc91a2b2b00e77c10b144c6fe98203bf5fe4404abd7cc955dd938c36b30"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.HotReloadModule.dll",
+        "bytes": 24488,
+        "sha256": "71332fdfbe8d1120e81d923d86a708a42adb7bcd39af663ee5b115de0a188c1c"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.IdentifiersModule.dll",
+        "bytes": 16808,
+        "sha256": "2612c20bfbe37c7513a997d405c0b5c6f7da185e12b4533857e3e3a36c1d04ef"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ImageConversionModule.dll",
+        "bytes": 31152,
+        "sha256": "90c6433868287b7c3e294c012484c57b789c609ffb4fa01ca1d5a73618027730"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.IMGUIModule.dll",
+        "bytes": 214440,
+        "sha256": "ad7e775bf517ce3f38c3170954b5301a0315381f4084b7ddcb2c444c0da6d4c4"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.InputForUIModule.dll",
+        "bytes": 57776,
+        "sha256": "208d607b54516340fe8ed8047b2a16d476383b82f06b5b1cd29860b826dfbfd4"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.InputLegacyModule.dll",
+        "bytes": 45480,
+        "sha256": "b196961dbb8c2a74046fc00450d81a7f6c360b7c631a8100e8aaf297c7674577"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.InputModule.dll",
+        "bytes": 28584,
+        "sha256": "4ecbb1fa06c1125110aefcae455131209c522b748d2209d45fa3b5c27af16d1f"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.InsightsModule.dll",
+        "bytes": 14256,
+        "sha256": "fff88cc1ed958ed6f97b54ef304f742519ab33e2b409461187e5fd1ded8006c1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.JSONSerializeModule.dll",
+        "bytes": 27048,
+        "sha256": "2ce57bddb7a4be17f0d5826596c4121fedd5458824f34f72feb8405c12ce545d"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.LocalizationModule.dll",
+        "bytes": 27048,
+        "sha256": "7047e7e3bb3e01e8418a9bc6ac007d3549916315ce2d8fb2c468d87a9acfba43"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.MarshallingModule.dll",
+        "bytes": 83880,
+        "sha256": "c029b699823daa8e100fabc8e36b2df8ddd37cabc01a27ae31a1b5ee58bcc7fd"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.MultiplayerModule.dll",
+        "bytes": 17840,
+        "sha256": "0d88dcb65b32d788645898ff7410dc3b1e794caf28930a7fa8585cb8cffb6146"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.NVIDIAModule.dll",
+        "bytes": 40880,
+        "sha256": "881380a0713d7a3b9c925cf73e6989352acb609d2ec7c0acfdc6e3c165925749"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ParticleSystemModule.dll",
+        "bytes": 172456,
+        "sha256": "29bc65cf4d37211851c57e74a281fbe6f1f999513e88e0840f5549dd8ff349cb"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.PerformanceReportingModule.dll",
+        "bytes": 25000,
+        "sha256": "816e498572d539abe70b6770201066d85261b85694a40fd6c77dd7dc8fd90b14"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.Physics2DModule.dll",
+        "bytes": 585640,
+        "sha256": "b9e54ec8623e4fabe62caee89476fc52a60a6a77b9ede904f8471ffb6e71efe9"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.PhysicsBackendPhysXModule.dll",
+        "bytes": 14256,
+        "sha256": "025b923bc8c00e44c1aefdf3c8ae97ffbc122d60ccd12e89f853ac8cfa525646"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.PhysicsModule.dll",
+        "bytes": 183720,
+        "sha256": "090d8e9ada00c2f35961dfee0be647196d73a9576d466b5aa208b9d68f28dd08"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.PropertiesModule.dll",
+        "bytes": 134056,
+        "sha256": "ffb2c4802b5c29959d110803b68b060c8420223bf9497c1b505c328caa4e9408"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.RenderAs2DModule.dll",
+        "bytes": 25512,
+        "sha256": "36657725eefc951faf4bf8687696f3e89d69402a738fb56469a9883e5154b3b1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.RuntimeInitializeOnLoadManagerInitializerModule.dll",
+        "bytes": 24496,
+        "sha256": "59bace6dd5cd71abeaef78eb9f67e47dfa206e8c4ff02b3345858820646047ea"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ScreenCaptureModule.dll",
+        "bytes": 26544,
+        "sha256": "522fa6e55543ac5052355134eb9744a9106070bf0322a88e5ac38bdb2c43887c"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ShaderRuntimeModule.dll",
+        "bytes": 25512,
+        "sha256": "dd7b6d865093bd829d758cf26f343a99af879b0427a45fb22a40d1a1aff982e0"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.ShaderVariantAnalyticsModule.dll",
+        "bytes": 24488,
+        "sha256": "22894a18dfa1ae57b73e21a5301f65c4f7a068795c6ee60fab1e5698d79c5933"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.SharedInternalsModule.dll",
+        "bytes": 38312,
+        "sha256": "e9cc76b7a679c924f4ee4e72f79a56daff55cd39c160bf1284b530db6c10821b"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.SpriteMaskModule.dll",
+        "bytes": 28584,
+        "sha256": "cb0ba52885a48486c7cbc96fbac0f099786eb4b80a6137279da3f44d3d5c49bc"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.SpriteShapeModule.dll",
+        "bytes": 32680,
+        "sha256": "12d7bb3033c9d6a1c0215c0b6ba797ce4c6ed3057b6056b6d7ec896af9ca120b"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.StreamingModule.dll",
+        "bytes": 26024,
+        "sha256": "69c6a4c97c375cbee7013759a7773aa25049a4637a2ce9a9be2af6c379933097"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.SubstanceModule.dll",
+        "bytes": 29104,
+        "sha256": "4479ec1155436e2f09f1da71b597487780f84c45d90fc4b261b9400fe3e236f6"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.SubsystemsModule.dll",
+        "bytes": 41896,
+        "sha256": "be5e3bfad66f7787847556457a4d707da05520a3e58cfeb71102fe1260a04fa1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.TerrainModule.dll",
+        "bytes": 134064,
+        "sha256": "860d2863b88e2ae19613cb6729808f603f667da9a679755d69898463fa19f1ed"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.TerrainPhysicsModule.dll",
+        "bytes": 25512,
+        "sha256": "9941f9dde6d678ac9344fbd43d59df2eac621a56d54169ba4505a1b1c6b4b25d"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.TextCoreFontEngineModule.dll",
+        "bytes": 91568,
+        "sha256": "a1ff90b3d03500ab66c72ad2e115fb3fd76cb0a862647eac7afc5bce401c7b3c"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.TextCoreTextEngineModule.dll",
+        "bytes": 334768,
+        "sha256": "a87884ef98986904ba69cdd5a85f2a648c9b369254a55536857833bad5aa40fa"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.TextRenderingModule.dll",
+        "bytes": 39336,
+        "sha256": "da323cc7bc3dd5bc1cbfdf7cf5ae4ef0ee16222bf5e3fdff2f5f47312d1ea607"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.TilemapModule.dll",
+        "bytes": 58792,
+        "sha256": "78b713b995e56828f0caa3cbf7c998108f9e758b9235b63184598a24fa0cdb74"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.TLSModule.dll",
+        "bytes": 32176,
+        "sha256": "15cccffdc74ebd38400aa879baef30b838e5f91c097b3dcec15d0a75d65064d1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UI.dll",
+        "bytes": 263168,
+        "sha256": "7cbcad4c5133e9a90994eafac9c38d9f9a14d4eb26526f54128c04be8fdb5b55"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UIElementsModule.dll",
+        "bytes": 2453928,
+        "sha256": "b6fc37b5869862ded6dd39bd72217295e6c8e2a86f9edf0383df827ca474d9f5"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UIModule.dll",
+        "bytes": 50088,
+        "sha256": "1957275676a1f8417c463b8dbddfd1e6b12943453409cc2804e8abbbdf96ee83"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UmbraModule.dll",
+        "bytes": 24488,
+        "sha256": "579e0e2fc5c2a8ca3e728b5b1fdfb253b01c98529ede453c12a018e9fffe0860"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityAnalyticsCommonModule.dll",
+        "bytes": 35752,
+        "sha256": "af7120367bd523e1944662f5f308706471edf584579f3aceddcdaa6b64fd82bd"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityAnalyticsModule.dll",
+        "bytes": 60840,
+        "sha256": "8bdb3acd2f8b758786c4794e3848554e61292d870d9a8160089786f1664b6ac7"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityConnectModule.dll",
+        "bytes": 27560,
+        "sha256": "d00290ac3bab8691730bb386ddf8a792f5ee69a5956b11f546b88302b801c4c5"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityConsentModule.dll",
+        "bytes": 16304,
+        "sha256": "b7ec4ec273550c0959dbe14952474bb8d70be66dbee6bdc4808d31760b0a8ad7"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityCurlModule.dll",
+        "bytes": 26032,
+        "sha256": "9e2490b71e0ef4e511aa839724d8f63d2d95cad9aec52718a75f4021de58c288"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityWebRequestAssetBundleModule.dll",
+        "bytes": 28592,
+        "sha256": "0433d1d13db40b79517e9ac86e0166756e3ca307e7ba191de0e62b0e16c391fe"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityWebRequestAudioModule.dll",
+        "bytes": 28592,
+        "sha256": "38996518ac1a40991855e2413891a6105b2262ab2074c847ffb32a7e04a7fe17"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityWebRequestModule.dll",
+        "bytes": 70056,
+        "sha256": "7a3394b2d138e1a15675bc7b33f071250b9907caa2345a1f96d1ca759f7844b0"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityWebRequestTextureModule.dll",
+        "bytes": 27560,
+        "sha256": "27a12048d8f6bc23cd3d2bd0d35b0b12c66db27c64767406df34213496ba08b7"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.UnityWebRequestWWWModule.dll",
+        "bytes": 36784,
+        "sha256": "c1a2de9f21633c0057f14ce9b64c1f87640ac6c0659bea83239d925377228b8a"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.VectorGraphicsModule.dll",
+        "bytes": 254896,
+        "sha256": "1cfc1cb178da64e9095eedce41144ef474311a7c2049ee8b096d80df49b92b5e"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.VehiclesModule.dll",
+        "bytes": 31656,
+        "sha256": "096d542b3eb233254bde290e50c5ff92c31dad45b3b11ec2e9a37b0f9e7145f1"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.VFXModule.dll",
+        "bytes": 78256,
+        "sha256": "560c2f6924ff73b55552d253915fe1b8ff8336ea1163513fa7fced38f9f4c345"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.VideoModule.dll",
+        "bytes": 49064,
+        "sha256": "ce54c9c2d3c7e35a9d72b411c06104b3a58d070930acd97db296b0c43cba5a2c"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.VirtualTexturingModule.dll",
+        "bytes": 42920,
+        "sha256": "00840e6e59c33ef276c9a37567f6f49336354834cff82325637b5d7901f6dc38"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.VRModule.dll",
+        "bytes": 31664,
+        "sha256": "6d1b848678ccaed88a38b727606e0ba147a68ff3e3d815a013c5fc3e9b178710"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.WindModule.dll",
+        "bytes": 26536,
+        "sha256": "59be4388711cc33416ebd3d045dd3a03dfcd36c856818df271d2eb2d54536bcb"
+      },
+      {
+        "path": "Forgeborne_Data/Managed/UnityEngine.XRModule.dll",
+        "bytes": 88488,
+        "sha256": "1790356bf5735ffdb841beb4718a9d7b3bddc5ddf40d6866170a612ae0bfb54c"
+      },
+      {
+        "path": "Forgeborne_Data/Plugins/x86_64/Forgeborne.Windows.dll",
+        "bytes": 117760,
+        "sha256": "aac9637da3eb96bb0f683b2eaf0e7978b4f779aa4ab73b518b27109d45222c9c"
+      },
+      {
+        "path": "Forgeborne_Data/Plugins/x86_64/lib_burst_generated.dll",
+        "bytes": 2010112,
+        "sha256": "64f3f112eded8b139873768e82c5f10dc91993ad2081924c6b97dc68864cfe15"
+      },
+      {
+        "path": "Forgeborne_Data/Resources/unity default resources",
+        "bytes": 5883716,
+        "sha256": "32b58bdb9cf090212b46a8ca7436dcdae89e4ef43e9d55a835233c21d1347734"
+      },
+      {
+        "path": "Forgeborne_Data/Resources/unity_builtin_extra",
+        "bytes": 402088,
+        "sha256": "4bbacd97fc9fca0b759742c62094e8bd6e1bdba25069d8d0651201e9f3c25444"
+      },
+      {
+        "path": "Forgeborne_Data/resources.assets",
+        "bytes": 1761144,
+        "sha256": "41f764fe1acbd4e00112ed896f73d3f42c396681c63803678bfd822c8bda2850"
+      },
+      {
+        "path": "Forgeborne_Data/resources.assets.resS",
+        "bytes": 28685184,
+        "sha256": "ad4e237f2316820a38750054fa4291ea228ef4f7deb72129ac223a08bb3b5fa7"
+      },
+      {
+        "path": "Forgeborne_Data/resources.resource",
+        "bytes": 65856,
+        "sha256": "7b05d5838d83f00f81ac998123c72655c0b784b6b1e84d35fb6a51094952464a"
+      },
+      {
+        "path": "Forgeborne_Data/RuntimeInitializeOnLoads.json",
+        "bytes": 6825,
+        "sha256": "35aed8d7582640f79bd9faa0e5a617c13d119c64314914b6c81a222d862e4cbc"
+      },
+      {
+        "path": "Forgeborne_Data/ScriptingAssemblies.json",
+        "bytes": 4713,
+        "sha256": "4f3fa627b08a4ba0ea3cf16ec3a4b73dfae8e3c48a5eb6016c59128a149d72a6"
+      },
+      {
+        "path": "Forgeborne_Data/sharedassets0.assets",
+        "bytes": 97464,
+        "sha256": "14728eb076ca275c0eedb7e940c6685a699c5254b0bd315a369b13cca5d69f26"
+      },
+      {
+        "path": "Forgeborne_Data/sharedassets0.assets.resS",
+        "bytes": 524288,
+        "sha256": "393efe6399536384aa91bdfc4e64f244b4d3e1fbb6a4ff145c483ffee64ccb36"
+      },
+      {
+        "path": "Forgeborne_Data/StreamingAssets/EntityScenes/scene_info.bin",
+        "bytes": 116,
+        "sha256": "76ccc5c3c5446c3b87a1fb546c65c2d968936030a0e0289112bc1c130ee453c5"
+      },
+      {
+        "path": "MonoBleedingEdge/EmbedRuntime/mono-2.0-bdwgc.dll",
+        "bytes": 7831464,
+        "sha256": "48c582e432c1e4c2f1de176ebfcb3011e234bc3bbc61abc11830eb0e99ee7cb7"
+      },
+      {
+        "path": "MonoBleedingEdge/EmbedRuntime/MonoPosixHelper.dll",
+        "bytes": 611248,
+        "sha256": "b58ca6e5cf3da413c6aaaf7151c756c35cfc9ddfeef1f534be4e93ada1d66ec6"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/2.0/Browsers/Compat.browser",
+        "bytes": 1605,
+        "sha256": "8a1082057ac5681dcd4e9c227ed7fb8eb42ac1618963b5de3b65739dd77e2741"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/2.0/DefaultWsdlHelpGenerator.aspx",
+        "bytes": 60575,
+        "sha256": "751861040b69ea63a3827507b7c8da9c7f549dc181c1c8af4b7ca78cc97d710a"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/2.0/machine.config",
+        "bytes": 29066,
+        "sha256": "e91782a27fa39fc6c1d6ee8b08529f5d35052310d0006034b878eb04b8f2af30"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/2.0/settings.map",
+        "bytes": 2622,
+        "sha256": "49c6160f9d54af4270a3b4e997fc4a8301f79b9e2070118fa46ddbcbbc44f9a2"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/2.0/web.config",
+        "bytes": 11635,
+        "sha256": "cf2b54339e069b9e42f7d6795eecbf562c50c1011f4ca8f65f578fe52d97ff92"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.0/Browsers/Compat.browser",
+        "bytes": 1605,
+        "sha256": "8a1082057ac5681dcd4e9c227ed7fb8eb42ac1618963b5de3b65739dd77e2741"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.0/DefaultWsdlHelpGenerator.aspx",
+        "bytes": 60575,
+        "sha256": "751861040b69ea63a3827507b7c8da9c7f549dc181c1c8af4b7ca78cc97d710a"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.0/machine.config",
+        "bytes": 33598,
+        "sha256": "e60aec2c5115d65b3acb3c55ea21576dbd770f579166c017125571e46ae560ed"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.0/settings.map",
+        "bytes": 2622,
+        "sha256": "ce1db1ad8a9512073164e3eccdc193f7eda036e1a9733caec4635de21b2865c8"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.0/web.config",
+        "bytes": 18802,
+        "sha256": "e38bb8cc68fe5b4edecdfd288d094b9e8ced7629039b2a347682aba0d8bd7492"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.5/Browsers/Compat.browser",
+        "bytes": 1605,
+        "sha256": "8a1082057ac5681dcd4e9c227ed7fb8eb42ac1618963b5de3b65739dd77e2741"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.5/DefaultWsdlHelpGenerator.aspx",
+        "bytes": 60575,
+        "sha256": "751861040b69ea63a3827507b7c8da9c7f549dc181c1c8af4b7ca78cc97d710a"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.5/machine.config",
+        "bytes": 34056,
+        "sha256": "ee950004b576fb28dc85f4b0435ed04bf96612de2e8b53be84d07afe85a0de6c"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.5/settings.map",
+        "bytes": 2622,
+        "sha256": "ce1db1ad8a9512073164e3eccdc193f7eda036e1a9733caec4635de21b2865c8"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/4.5/web.config",
+        "bytes": 18811,
+        "sha256": "c4cbddd4fd9347b58cc5a72b36dc4ba1ad2bb699e65869d05cd3fb9865f0d824"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/browscap.ini",
+        "bytes": 311984,
+        "sha256": "4ddd50f31fb968f30bedefc253a46dc3f2890192d05cdaa9e0a64a056eee807e"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/config",
+        "bytes": 3815,
+        "sha256": "5776169973a26a387b8b3e5c0f2301a7ab9a6dd7c7d3efa22a96abc47fbf8662"
+      },
+      {
+        "path": "MonoBleedingEdge/etc/mono/mconfig/config.xml",
+        "bytes": 25817,
+        "sha256": "0c56e34c69124510fa8c19e7b4c2ca6c1c4ff460ae19f798dd0ca035809e396d"
+      },
+      {
+        "path": "UnityCrashHandler64.exe",
+        "bytes": 1669544,
+        "sha256": "37f0db83d807c7515bab5318f9b7c1fd8d1067f6c924affe965fd7a29717352d"
+      },
+      {
+        "path": "UnityPlayer.dll",
+        "bytes": 36799920,
+        "sha256": "2ba2e277918300e650158688bf94242c386eb21244574766aa17f687092d53b4"
+      }
+    ],
+    "packageInventoryBytes": 159967645,
+    "buildReportedBytes": 159477203,
+    "inventoryNote": "Includes all 195 local package files, including report and build/debug files; differs from Unity summary total.",
+    "currentContactQA": {
+      "observedAtUtc": "2026-11-02T14:14:46.1463677Z",
+      "nativePackage": "20261102T140715Z",
+      "privateArtifacts": "C:\\Users\\Bulkl\\.codex\\artifacts\\forgeborne-2026-11-02\\native-contact-20261102T140715Z",
+      "fixture": "exact pre-fix vessel collar contact pose; no enemies; original canonical v2 world",
+      "actualControls": [
+        "Windows import fixture",
+        "Resume",
+        "legacy W key",
+        "Escape pause",
+        "Windows export to new private file",
+        "Load existing user slot"
+      ],
+      "beforeFeet": [
+        6.0127454,
+        3.9999995,
+        16.5
+      ],
+      "afterFeet": [
+        6.11274576,
+        3.99999952,
+        16.5
+      ],
+      "nativeEscapeMetres": 0.10000036000000012,
+      "exportSha256": "05d485c5c59488f5b51ae871917c39e85a762b0d628b2f2245ac2e3519bda924",
+      "slotFiles": 2,
+      "slotFileSetAndBytesUnchanged": true,
+      "leftPausedWithExistingSlotLoaded": true,
+      "noAutomaticSlotRestoration": true,
+      "limits": "One actual native contact pose and W key; no full encounter, all-obstacle traversal, representative performance, heard mix or fun claim"
+    },
+    "earlierVisualAndControlQA": "native-0126-qa.json applies to earlier 20261102T073159Z build before contact correction; its assembly provenance is windows-0126-assembly-provenance.json",
+    "unverified": [
+      "complete native gather/build/survive loop",
+      "current-v2 cold slot across process restart",
+      "all-obstacle traversal",
+      "representative performance",
+      "heard mix",
+      "fun"
+    ]
+  },
+  "diagnostics": {
+    "ownedShaderMessages": 0,
+    "unityConsole": {
+      "errors": 0,
+      "warnings": 0,
+      "logs": 3
+    },
+    "mcpSeverity": "Upstream URP informational inventory misclassified by MCP; raw Unity modes retained, no suppression",
+    "nativeD3D12": "Existing info-queue interface diagnostic classified; representative driver stability matrix remains open"
+  },
+  "reproduction": "Exact retained JSON identities and two final v2 geometry exports match. Blender/FBX/native container reproducibility not claimed. Text fingerprints are raw workspace bytes and may vary under Git line-ending conversion.",
+  "packageSourceNote": "Corrected Core was published and actual Main consumers checked before the current native build; no runtime/shader/material/texture/scene changes followed packaging.",
+  "visualReferences": "docs/bioshock-visual-study.md records remotely viewed publisher/platform images and original observations; no third-party game art imported.",
+  "fullAAAPlusAcceptance": "FAIL",
+  "goal": "ACTIVE",
+  "section0FailuresForFullGame": [
+    1,
+    4,
+    7,
+    9
+  ],
+  "publicationAuthority": "Rob: just update main; no licence/visibility/release or separate Constitution push",
+  "files": [
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 396907,
+      "sha256": "c0a3556ab9faf0b63326a35860f4567328510b2999a9fc408499f2c504ad8f5a"
+    },
+    {
+      "path": "DECISIONS.md",
+      "bytes": 604032,
+      "sha256": "a66ea329f19e66a75a2cf36380f94f9b9dc06770369b5e80de6490f41f96cda2"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Editor/ForgeborneArtAssets.cs",
+      "bytes": 13738,
+      "sha256": "860406bfac9f3372fc93d4590ad75b49a50321fa7b22e6b26123288d069a2c95"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Editor/ForgeborneSurfaceAssets.cs",
+      "bytes": 3485,
+      "sha256": "65e3307e2700ace47448fa64b402bfff64ef5e2f72bd3118cf543b0684de7fc6"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Plugins/Forgeborne.Core.dll",
+      "bytes": 24177664,
+      "sha256": "855e6ea07332f59d0b14cd3519baf2d4a09c8c72a5b1e0475bd295300bd67211"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Amber.mat",
+      "bytes": 1351,
+      "sha256": "2c6d62995270dec401f3e97526c9a66b6e4745bc72ffca9eeee0c28b4e40fff0"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Basalt.mat",
+      "bytes": 1423,
+      "sha256": "826b23c8880325607f2378561390bad75aeb7b198b69c75bc4090e089fc213eb"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/CastFloor.mat",
+      "bytes": 1437,
+      "sha256": "fd35c553df4b6693cb047618f33163a16fd830ab534e0caa57233a5b64193a2f"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/CastFloor.mat.meta",
+      "bytes": 188,
+      "sha256": "41c49051b90077e9f9fc320510e7d5a5b2a6b4627ba44eb4f93d00c585a7c629"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Ceramic.mat",
+      "bytes": 1430,
+      "sha256": "1dbdab29dd03cfad18a43881727c1e4d702ffe754ac0232d457c7bb5da572100"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Copper.mat",
+      "bytes": 1429,
+      "sha256": "48e8c0808d1d8fb4036d4acaf5309fc0684efec523e312be1efd4c07d1eebabb"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Cyan.mat",
+      "bytes": 1359,
+      "sha256": "6c6bba455d6c916afacccea24c42d426722d126ec92022c46d812c0a065f49e3"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/EmberMineral.mat",
+      "bytes": 1373,
+      "sha256": "bcc0cfa39b5b1e1f9232f8a55dd85dc9b8aa64f08f19ccf5fcbbdd66ed3116b0"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/EmberMineral.mat.meta",
+      "bytes": 188,
+      "sha256": "478e7bc756ab9a0c1976b7d37728d19b7d66a2366dceeb4c68e48c7971cf150c"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Glass.mat",
+      "bytes": 1365,
+      "sha256": "f864b0006789dad8593b4a4cb9f54b3c0a90137acfcaaf2df034e71e1b2c0bce"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Graphite.mat",
+      "bytes": 1432,
+      "sha256": "69d836dcaa98829d5a1570adab172a4cf9f8067559ec56d10dd7ba5930f0eb38"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Paint.mat",
+      "bytes": 1423,
+      "sha256": "25e0278bf51539b44ad4e9234a5bc9a99e8fcbd42d291c8b487e28a17e0751b5"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Rubber.mat",
+      "bytes": 1419,
+      "sha256": "12141290c9aa5983196c0b847864ea5ccf91ac89b1f0e75427c5fbd36351f6db"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Steel.mat",
+      "bytes": 1430,
+      "sha256": "95bf827f4a68e02bfa5db23fd2feb6cd0b7ae0cd4d129e4aad9422d4f9c8b7f3"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Timber.mat",
+      "bytes": 1419,
+      "sha256": "7164645838e3cb8d21aad572c820a6d7b609e9dedfa765d7059b1337c31504df"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Resources/Art/Materials/Warm.mat",
+      "bytes": 1346,
+      "sha256": "594917e94af2bdbc64d3f8e6da8435c03e830531914972874dcaa476f624a8c4"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/ConstructionGuide.cs",
+      "bytes": 10392,
+      "sha256": "afc67af009c0ebdd7d666a0efd40c102932f27826f969c4b7905fb52cacc34c5"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/FoundryAtmosphere.cs",
+      "bytes": 5255,
+      "sha256": "af155e88d68a38ae812e203ff2f2e2596d8a7d55571103b3796c87d7582ce16f"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/FpsInputAdapter.cs",
+      "bytes": 59648,
+      "sha256": "e93051004689bde69d7370b22b6818d51415c67d18f031735ba0e54812033d93"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/GameManager.cs",
+      "bytes": 8377,
+      "sha256": "def5b0c5c4b9f818b36db2491d98d9da89d41b227f9be69561612775cf024e03"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/OrbitalCameraRig.cs",
+      "bytes": 6041,
+      "sha256": "f9be7e8277d54251961717472b2bc00b1e680c933d9c89b1a0bb2464b6ee6fec"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/PlayerFlow.cs",
+      "bytes": 16806,
+      "sha256": "ac33364e71465e233fc87d578bc20e1dbd12a6d2a87369e31caa2e9e3874aa7e"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Scripts/VoxelMeshRenderer.cs",
+      "bytes": 16580,
+      "sha256": "2ad53c91f28c6757fdee431b0bee528e8770b283e77d0df0aaf812e94c338953"
+    },
+    {
+      "path": "ForgeborneUnity/Assets/Shaders/IndustrialSurface.shader",
+      "bytes": 8377,
+      "sha256": "93125aa989d2429d5e26853f6491b5f010a12203a6ea8b3b1e8219a9852735ae"
+    },
+    {
+      "path": "ForgeborneUnity/ProjectSettings/ProjectSettings.asset",
+      "bytes": 22390,
+      "sha256": "b013a9e492dac74f7c745ac8fddaf18c2422de17fb884606f82189383beeac4e"
+    },
+    {
+      "path": "ForgeborneUnity/ProjectSettings/TagManager.asset",
+      "bytes": 443,
+      "sha256": "dd95624a9a474b4fa29779073c3cd03ecfc5752c84d6c46620bc6fcc0e345f2d"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8172,
+      "sha256": "b8ab5459082dafa2976c1909414692a74a3fe48de1d150d14b56c75ca5d7b53d"
+    },
+    {
+      "path": "art/README.md",
+      "bytes": 5175,
+      "sha256": "d63710c24bdf3e7b4065231e567135dd4111ea3b64b5ddb452c56c6a818a64d4"
+    },
+    {
+      "path": "art/source/CinderExchangeV2.blend",
+      "bytes": 18329987,
+      "sha256": "58d8e0a6c67f1b6474199e45fd808891727581898ca4d10b7333aa6216c547a2"
+    },
+    {
+      "path": "art/tools/build_foundry_v2.py",
+      "bytes": 31522,
+      "sha256": "7bf4594f1ee56329d1f34c8a5451127a0f57f524230a19ff5364a779edb77fa9"
+    },
+    {
+      "path": "art/tools/fracture_geometry.py",
+      "bytes": 7852,
+      "sha256": "e3d41ddf8e7ab5619f8b3912c32c779bf832a58b7bc0fec445a0b242ebcc14b6"
+    },
+    {
+      "path": "docs/CURRENT-WORK.md",
+      "bytes": 24891,
+      "sha256": "a419f204a8fd6df0cbc0f4f8037b52579f8d58d4462e428aea8929b8772c4d27"
+    },
+    {
+      "path": "docs/art-direction.md",
+      "bytes": 9380,
+      "sha256": "97de15c0ed09bc711e9bc6632c6300e101f0b161689b304ad7886407b044e2d4"
+    },
+    {
+      "path": "docs/bioshock-visual-study.md",
+      "bytes": 3742,
+      "sha256": "fe4308bb95df786445624ef4a7a3ba7c8708417c4e2e0ac0a4e16e6fa638b124"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/authored-foundry-fps-0.126.0.png",
+      "bytes": 2157302,
+      "sha256": "ddce0b871e6b9fb537840c4a3a7741ab845c0cb9faa252e8cba6f7ac5756fddf"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/authored-foundry-orbital-0.126.0.png",
+      "bytes": 918422,
+      "sha256": "9edceb7ddc08ba623416049b345dda28aeea006301293e01c15e3d9c4785098c"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-0126-fps-0.png",
+      "bytes": 2082936,
+      "sha256": "5dea8ba086aa3e3df78f91377ddd72c5b45a5cfef418130be22e0d0a8efd99bb"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-0126-fps-1.png",
+      "bytes": 2475979,
+      "sha256": "0e7f522b437c8cb6f345eff6825a95a1a2e3759b07e4ab961c4f22e9298e3de2"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-0126-fps-2.png",
+      "bytes": 1845778,
+      "sha256": "98c5dcc81586642c822c5aec8e01fa27ce62096a9800577dd00991163a5f9855"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-0126-fps-3.png",
+      "bytes": 2339100,
+      "sha256": "9e9a16ec8f1d4691a1704b03200e5b80137ec3a03f0411ab5debc559f818f5d2"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-0126-initial-fps.png",
+      "bytes": 2156586,
+      "sha256": "ab29cf5bc4bbd97654d58e9f8d9393e1cb8b15bdd2bad2e6e04d27ed9f89bf1d"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-0126-initial-fracture.png",
+      "bytes": 2388489,
+      "sha256": "6441fe959d0f5e0285efdf34bf8fb203d3c673296d4cec5abea2aa14e0d3ca39"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-v2-initial-reproduction.json",
+      "bytes": 152,
+      "sha256": "f0dbf551c3e9853a534683a315a84c00f67cd9cb62463a8f1bdec8a0f8bd44f9"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/foundry-v2-reproduction.json",
+      "bytes": 254,
+      "sha256": "9923640f6b7a2a664b198a3267a710061df82c45f10e9f80e5e52fdd3c97aba3"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/movement-source-qa.json",
+      "bytes": 2918,
+      "sha256": "a62e3a8a50a6a3106a68b2fa04932f2f58c94efc905e6cbe2b8712fc2bd36fb2"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-entry.jpg",
+      "bytes": 127140,
+      "sha256": "2efb8dbdf0278eeec5733e548ab383ec75e94f2c7922cd8a03764cfac1cb98b6"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-fired.jpg",
+      "bytes": 215023,
+      "sha256": "76d981b5c1b18fa86428d9fdd87640021985bc5c63500c990f9d10b8f325684e"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-fps.jpg",
+      "bytes": 214388,
+      "sha256": "7693d69aae70d4292dd3cc4db0361b256bb86e9b0f21f4392fcb52f0e71642c9"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-orbital.jpg",
+      "bytes": 143487,
+      "sha256": "e52ed70b60e88c63389829c25263d0beeb97529c1a481ff8d840e24baed896b3"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-paused.jpg",
+      "bytes": 125635,
+      "sha256": "3e959b1b50670d7ae9b8e2477e658e6cfbe1c5fb1ea7355379997d7849b2bc46"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-qa.json",
+      "bytes": 923,
+      "sha256": "c11b58d1e7773a7b6e47e7fcecaf80fcce271421586ed22382b86931a2d1bb74"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-reloaded.jpg",
+      "bytes": 217757,
+      "sha256": "7a7b459e316753098627a80ee57cf37dbf4f3448e6fc84fcbf8c9df8660e2426"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-0126-v1-loaded.jpg",
+      "bytes": 134019,
+      "sha256": "d833ac35e89129f6efe517fdfccf9e07a0380be8e8609c111c60c0c741c9d8ac"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-contact-after.jpg",
+      "bytes": 215676,
+      "sha256": "61aa57334aa7df57a27857467203096a6b027f5726e2b1c9daffc77a2d096e82"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-contact-before.jpg",
+      "bytes": 215643,
+      "sha256": "012224e54ff3ddda0dd65b18dd6ef4e497fea75d520c146f3b367bdafb27d473"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-contact-exported.jpg",
+      "bytes": 128978,
+      "sha256": "d223e7085d1886ffc583bf8a03c5b1d004264801d4c6565933648c3c3d3a91df"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-contact-qa.json",
+      "bytes": 1069,
+      "sha256": "c919f59b41fa194a6b02a5e7c39aa8e2513fbbbd1631c2176f0f8463b64a400e"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/native-contact-restored-paused.jpg",
+      "bytes": 122899,
+      "sha256": "1eebecee684e8f303a9f8abcd74d4d882fdcd32d04aacd84f3b3b3ac904c80c1"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-camera.json",
+      "bytes": 769,
+      "sha256": "458ffee9e5cb1832211691445473321dc860f28aa74f9ebbe06911b1a7955575"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-catalog.json",
+      "bytes": 465,
+      "sha256": "6fefd331380970c351ced28e1c2b7c89aee24ee412a1a4d9e520ed9b5971df9c"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-console-native-counts.json",
+      "bytes": 1258,
+      "sha256": "674eff3c9ff903c2d9a7411fa18512734e377f525c4cab733539714d7c1d4d29"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-construction.json",
+      "bytes": 665,
+      "sha256": "f5ec798fef61466211eba64a2dc5b8de30227d593b659a5a402c13ab5fcec969"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-cutaway.json",
+      "bytes": 801,
+      "sha256": "cb22c11a59b8bd874e71167153504b55366fde3afa9de381b9e3d3698df3ca15"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-floor-gpu.json",
+      "bytes": 566,
+      "sha256": "72968ea50de9d51148fee221b94acdc0c33ac360a04ccc22972a3f25aeafc2c4"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-initial-world.json",
+      "bytes": 1399,
+      "sha256": "49a74a7d8f7eab302c2a1c9952cdcb20b889cba1e62506cf9b20f76d5af25479"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-main-status.json",
+      "bytes": 821,
+      "sha256": "e84626c3011475e510e110d30eb6ec874daeb9bfb5f64b0e27c801bf50acf279"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-power.json",
+      "bytes": 299,
+      "sha256": "ef8383d17a447b7346ed93ca72f508efd4cf07a94eb45f6da279011b8e77b79a"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-preparation.json",
+      "bytes": 427,
+      "sha256": "998c4626b79b567603268d1c3a81f9d0651aaf9733468feda3821356b290c527"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-foundry-0126-world.json",
+      "bytes": 1462,
+      "sha256": "13afb1fae390be14a177bc17a8d325a9aa9dd5def4c61be94eebf8ab1c7a3ff1"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/unity-movement-contact.json",
+      "bytes": 1393,
+      "sha256": "3b359d69be28f50cfebae9c3101ebd3269b29b0d5849ba7dfea2a70bdb0c7745"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/windows-0126-assembly-provenance.json",
+      "bytes": 5379,
+      "sha256": "087e2378117809728d95ecb51738b39af7ea813780f7cc24d36c913c8b43af17"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/windows-0126-build-report.json",
+      "bytes": 369,
+      "sha256": "4ce95b3aa92de6fe1ac78031b0e2ae3d1c5c60be1bab8875f2d8828bb032a2c8"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/windows-0126-contact-assembly-provenance.json",
+      "bytes": 5379,
+      "sha256": "d4ae52d25231dbb2540fc980a71e300047f058d8602733092392372b5d740a3b"
+    },
+    {
+      "path": "docs/evidence/2026-11-02/windows-0126-contact-build-report.json",
+      "bytes": 369,
+      "sha256": "2e240fabc402634360308f4d0f32d04b5a15a7d4ef2a7ce0623168447a0c0dc4"
+    },
+    {
+      "path": "docs/foundry-v2-checkpoint.md",
+      "bytes": 14600,
+      "sha256": "dfd539582d8e8c9b54b5a91e2ba95fb035d01a22471ce77812e584f523d3e459"
+    },
+    {
+      "path": "docs/foundry-v2-plan.md",
+      "bytes": 3194,
+      "sha256": "75c69de0be2c3b41a9afa6d615c5ee269e728e0ce83febdc7761744a5310f573"
+    },
+    {
+      "path": "docs/movement-contact-checkpoint.md",
+      "bytes": 3796,
+      "sha256": "2762e93314df552586dae9e75fd2528deb7a2e7b1b3ed2efcba72a0c6faf7325"
+    },
+    {
+      "path": "docs/production-status.md",
+      "bytes": 6146,
+      "sha256": "c59124e0a612331191079268944696800d019f624a5a465255e8e4aee9306703"
+    },
+    {
+      "path": "docs/world-presentation-migration.md",
+      "bytes": 5446,
+      "sha256": "787c15e97284fb07e09e776630aad3fec5d2cad0d96f22817f437933d8760dd2"
+    },
+    {
+      "path": "src/Forgeborne.Core/Aim.cs",
+      "bytes": 7761,
+      "sha256": "2de01c10287eb44ec345215429e1222a800c867cbf7c76b6635ee71aeea5ec73"
+    },
+    {
+      "path": "src/Forgeborne.Core/AuthoredFoundry.cs",
+      "bytes": 15133,
+      "sha256": "328e70a4644294b4646c4297efb4cdf076e6e9baa673cbf5bc41ac638130aa2a"
+    },
+    {
+      "path": "src/Forgeborne.Core/Content/CinderExchangeV2.json",
+      "bytes": 15987819,
+      "sha256": "3db547ff7a68ce12e5e51126ca755f38076448c5eb831fde659d333c07e5d6bd"
+    },
+    {
+      "path": "src/Forgeborne.Core/Forgeborne.Core.csproj",
+      "bytes": 1070,
+      "sha256": "b24e41927feed4fad5349dbf887276c730c175e8b7820e86762d3726662b7048"
+    },
+    {
+      "path": "src/Forgeborne.Core/FpsController.cs",
+      "bytes": 8385,
+      "sha256": "d2890bf6489e1a44988e9a872da45bb90b7626a323b38a71114a28533568a96d"
+    },
+    {
+      "path": "src/Forgeborne.Core/Orbital.cs",
+      "bytes": 52627,
+      "sha256": "d91c177f9d610bb1b1afd202ec1c9f62c57759ef8eb404b05621773f0a22c7c1"
+    },
+    {
+      "path": "src/Forgeborne.Core/SaveSystem.cs",
+      "bytes": 12063,
+      "sha256": "44d2a59abaae3fb0653815d22685d0a57d1aa84d5afac71545985c7adb3df727"
+    },
+    {
+      "path": "src/Forgeborne.Core/SurfaceProfile.cs",
+      "bytes": 249,
+      "sha256": "254f22102b0ff2f924cc86e4d5fe33963ca9b0af46ee39ee029bcff5ae532f3f"
+    },
+    {
+      "path": "src/Forgeborne.Core/TerrainGeometry.cs",
+      "bytes": 19142,
+      "sha256": "8d475ef0593d23ec2c3eed00a721ad4e21d1989e23eea506e817db682385aaca"
+    },
+    {
+      "path": "src/Forgeborne.Core/VoxelChunk.cs",
+      "bytes": 4257,
+      "sha256": "34a16d403b21dc765c7c2855132313ca722a118e39f7d87a836c64195d116da7"
+    },
+    {
+      "path": "src/Forgeborne.Core/World.cs",
+      "bytes": 78520,
+      "sha256": "b846bd5a48bc269053cee80eaa934c9f794134a95837eecd5bac1495e6da63a7"
+    },
+    {
+      "path": "tests/Forgeborne.Core.Tests/AuthoredSurfaceTests.cs",
+      "bytes": 17526,
+      "sha256": "4af720509145d55a7a0c58f2295b84f32e2ccdafb2100a6e9df5b2dffc87aa83"
+    },
+    {
+      "path": "tests/Forgeborne.Core.Tests/MovementContactTests.cs",
+      "bytes": 4847,
+      "sha256": "6c07919eaec0e377d786c0038bfdf2b7cba12c281c054ddb7a36de526d776b55"
+    },
+    {
+      "path": "tests/Forgeborne.Core.Tests/Program.cs",
+      "bytes": 759084,
+      "sha256": "e7becdee455421ee03017c3f6c990266a6a33b9881b8761325e36d4f2cd65a88"
+    },
+    {
+      "path": "tools/unity-authored-construction-smoke.cs",
+      "bytes": 5564,
+      "sha256": "989272d29b21ee7354eeeda618cb353ddaf222a284115a10e456bdb9ed982078"
+    },
+    {
+      "path": "tools/unity-authored-foundry-smoke.cs",
+      "bytes": 10232,
+      "sha256": "464ec87f08ae9d8a1c2d0025909cb482708f636716f04322743f3bb6bf0dee5d"
+    },
+    {
+      "path": "tools/unity-authored-main-status.cs",
+      "bytes": 2724,
+      "sha256": "360685eab8eab26d54e4b549108e55c8153bd0e1f5f612f4d194686a698af388"
+    },
+    {
+      "path": "tools/unity-authored-power-smoke.cs",
+      "bytes": 2868,
+      "sha256": "cb2ab1e654bbf881363cade8f4d05951e0d3b810054b072ac6d6bfdd0945e919"
+    },
+    {
+      "path": "tools/unity-foundry-catalog-smoke.cs",
+      "bytes": 3800,
+      "sha256": "96e2ec5d8f213149ae5f3a0bdde00c3fbcd657e69383c6eeb06f95f91cc8fff2"
+    },
+    {
+      "path": "tools/unity-foundry-cutaway-smoke.cs",
+      "bytes": 3900,
+      "sha256": "119f03a816ea05ad93c83a1152876be652850ad442c8bc1c4574d11662716100"
+    },
+    {
+      "path": "tools/unity-foundry-floor-gpu-probe.cs",
+      "bytes": 3365,
+      "sha256": "6406ac80963517db5f7aad9411175562a1b00a7383ff2316a372524d74de2a53"
+    },
+    {
+      "path": "tools/unity-foundry-v2-capture.cs",
+      "bytes": 3157,
+      "sha256": "01ab057ddf53117f93ad336c4b85bb3f015ec7846db92906d4f8f27ea3b82eed"
+    },
+    {
+      "path": "tools/unity-foundry-v2-prepare.cs",
+      "bytes": 2650,
+      "sha256": "89dea4a4dfb8f8f49a3d06b737e2b13275010829a206e8c98614497268820651"
+    },
+    {
+      "path": "tools/unity-movement-contact-smoke.cs",
+      "bytes": 3530,
+      "sha256": "6dd4b99b668cbca1f0254b31b8b63da7019f8f4c764d86f5d6eaf68369618e5f"
+    }
+  ]
+}

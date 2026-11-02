@@ -15,6 +15,17 @@ using System.Collections.Generic;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class VoxelMeshRenderer : MonoBehaviour
 {
+    public const int OverheadLayer=31;
+    public const string OverheadLayerName="ForgeborneOverhead";
+    private bool _overheadCutaway;
+    public void SetOverheadCutaway(bool enabled)
+    {
+        if(_overheadCutaway==enabled)return;
+        _overheadCutaway=enabled;
+        foreach(var view in _regions.Values)
+            if(view.Overhead)view.Renderer.shadowCastingMode=enabled
+                ? UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly : UnityEngine.Rendering.ShadowCastingMode.On;
+    }
     public Simulation? Simulation;
     // Slice 16 Step 1: the chunk material, decided 0.68.0
     // (rationale in DECISIONS.md). Inspector-wired when a
@@ -56,6 +67,7 @@ public class VoxelMeshRenderer : MonoBehaviour
         public MeshRenderer Renderer=null!;
         public MaterialPropertyBlock Properties=new MaterialPropertyBlock();
         public Light? Practical;
+        public bool Overhead;
         public BlockType[] Types=System.Array.Empty<BlockType>();
     }
     private readonly Dictionary<int,RegionView> _regions=new Dictionary<int,RegionView>();
@@ -194,6 +206,10 @@ public class VoxelMeshRenderer : MonoBehaviour
                     material=authored;
                 }
                 view.Renderer.sharedMaterial=material;
+                view.Overhead=region.Label!=null && region.Label.StartsWith("Vaulted exchange roof shell",System.StringComparison.Ordinal);
+                view.Root.layer=view.Overhead ? OverheadLayer : gameObject.layer;
+                view.Renderer.shadowCastingMode=view.Overhead && _overheadCutaway
+                    ? UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly : UnityEngine.Rendering.ShadowCastingMode.On;
                 view.Properties.Clear();view.Properties.SetFloat("_GridStrength",0);
                 view.Properties.SetFloat("_WorldWeather",1);view.Renderer.SetPropertyBlock(view.Properties);
                 var data=region.HasPowerSensitiveMaterials ? region.BuildMesh(Simulation.World.PowerState) : region.BuildMesh();

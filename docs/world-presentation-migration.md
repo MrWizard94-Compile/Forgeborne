@@ -6,9 +6,10 @@ sculpted surfaces and detailed models. The blocky presentation is rejected.
 All six influences remain equally important; the AAA+ target remains open.
 
 Current state: 0.124 switched actual Main to shared original authored profile 2;
-0.125 adds paired surface materials and a current native QA package. Historical
+0.126 retains that world and enters rebuilt profile 3 with dense organic meshes,
+3D fractures, tactical cutaway and current native QA. Historical
 infrastructure paragraphs below describe earlier states, not today's default.
-See [current evidence and remaining visual failures](surface-material-checkpoint.md).
+See [current evidence and remaining visual failures](foundry-v2-checkpoint.md).
 
 ## Verified cause and boundary
 

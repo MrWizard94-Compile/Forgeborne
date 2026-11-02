@@ -1,0 +1,58 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "oneSimulation": true,
+      "sameController": true,
+      "approachReleaseScenarios": 4,
+      "details": [
+        {
+          "profile": 2,
+          "scenario": 0,
+          "contact": [
+            6.012796,
+            4.0,
+            16.5
+          ],
+          "retreatMetres": 1.00000381
+        },
+        {
+          "profile": 3,
+          "scenario": 0,
+          "contact": [
+            6.012796,
+            4.0,
+            16.5
+          ],
+          "retreatMetres": 1.00000381
+        },
+        {
+          "profile": 3,
+          "scenario": 1,
+          "contact": [
+            9.299774,
+            4.37022161,
+            23.0
+          ],
+          "retreatMetres": 1.00000381
+        },
+        {
+          "profile": 3,
+          "scenario": 2,
+          "contact": [
+            10.0,
+            4.264287,
+            22.84999
+          ],
+          "retreatMetres": 0.999984741
+        }
+      ],
+      "retainedContactRecovery": true,
+      "tangentMovement": true,
+      "noSlotWrites": true,
+      "scope": "Existing production controller in actual paused Unity Main, both retained profiles. Scripted movement, not native keyboard input or a full playthrough."
+    },
+    "compiler": "codedom"
+  }
+}

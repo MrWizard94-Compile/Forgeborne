@@ -3,7 +3,7 @@ if(managers.Length!=1)throw new System.InvalidOperationException("Exactly one sc
 var g=managers[0];var flow=UnityEngine.Object.FindFirstObjectByType<PlayerFlow>();
 if(!Application.isPlaying || g.Simulation==null || flow==null || !flow.IsMenuOpen || Time.timeScale!=0
     || g.Seed!=42 || !g.UseAuthoredFoundry || g.UseCourtyardEncounter
-    || g.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV1)
+    || g.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV2)
     throw new System.InvalidOperationException("Actual paused authored Main entry is not active.");
 var s=g.Simulation;
 if(!object.ReferenceEquals(s,g.MeshRenderer.Simulation) || !object.ReferenceEquals(s,g.FpsAdapter.Simulation)
@@ -26,5 +26,5 @@ return new{scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().path,
     actualEntryIsAuthored=true,oldCourtyardDisabled=true,legacyBlockRootEmpty=true,modelShapedConstruction=true,
     managerCount=managers.Length,seed=g.Seed,allLinkedAdaptersShareOneSimulation=true,soleFrameDriverEnabled=true,
     pausedForReview=true,currentEnemies=s.World.Enemies.Count,shaderMessages=messages,
-    contentSha256=Forgeborne.Core.AuthoredFoundry.ContentSha256,
+    contentSha256=Forgeborne.Core.AuthoredFoundry.GetContentSha256(s.World.Chunk.SurfaceProfile),
     limits="Editor entry and scripted consumer evidence only. No AAA+, native controls, heard audio, performance or fun acceptance."};

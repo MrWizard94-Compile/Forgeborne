@@ -634,7 +634,7 @@ public sealed class TacticalSquad
 
     private bool AuthoredStepClear(VoxelChunk chunk,int nx,int ny,int nz)
     {
-        if(chunk.SurfaceProfile!=SurfaceProfile.AuthoredFoundryV1)return true;
+        if(!AuthoredFoundry.IsAuthored(chunk.SurfaceProfile))return true;
         var start=new System.Numerics.Vector3(X+.5f,Y,Z+.5f);
         var step=new System.Numerics.Vector3(nx-X,ny-Y,nz-Z);
         return !chunk.Geometry.SweepBody(start,step,.30f,1.8f).Hit;

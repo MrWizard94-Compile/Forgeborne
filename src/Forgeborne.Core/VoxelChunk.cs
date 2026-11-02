@@ -23,7 +23,7 @@ public sealed class VoxelChunk
         get => _surfaceProfile;
         set
         {
-            if(value!=SurfaceProfile.LegacyBlocks && value!=SurfaceProfile.ContinuousTerrainV1 && value!=SurfaceProfile.AuthoredFoundryV1)
+            if(value!=SurfaceProfile.LegacyBlocks && value!=SurfaceProfile.ContinuousTerrainV1 && !AuthoredFoundry.IsAuthored(value))
                 throw new ArgumentOutOfRangeException(nameof(value));
             if(_surfaceProfile==value) return;
             _surfaceProfile=value;_revision++;_geometry=null;
@@ -40,7 +40,7 @@ public sealed class VoxelChunk
                 throw new InvalidOperationException("Continuous geometry requires an explicit saved surface profile.");
             if(_geometry==null || _geometryRevision!=_revision)
             {
-                _geometry=_surfaceProfile==SurfaceProfile.AuthoredFoundryV1 ? AuthoredFoundry.Build(this,_geometry)
+                _geometry=AuthoredFoundry.IsAuthored(_surfaceProfile) ? AuthoredFoundry.Build(this,_geometry)
                     : TerrainMesher.Build(this,_geometry,_dirtyRegions);
                 _geometryRevision=_revision;
                 Array.Clear(_dirtyRegions,0,_dirtyRegions.Length);

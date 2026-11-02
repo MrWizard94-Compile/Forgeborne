@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.126.0",
+      "contentId": "forgeborne.cinder-exchange.v2",
+      "contentSha256": "3db547ff7a68ce12e5e51126ca755f38076448c5eb831fde659d333c07e5d6bd",
+      "sourcePieces": 369,
+      "activeRegions": 327,
+      "triangles": 136320,
+      "vertices": 408960,
+      "entryAlreadyAuthored": true,
+      "contentPopulationMilliseconds": 0.0026000000000000003,
+      "compoundAndUploadMilliseconds": 0.1582,
+      "gatherRefreshMilliseconds": 1.6859000000000002,
+      "gatherUnaffectedMeshesRebuilt": 0,
+      "constructedMachinePieces": 5,
+      "actualColliderRays": 300,
+      "maximumRayDifferenceMetres": 5.722046e-06,
+      "activePracticalLights": 14,
+      "exactBuffersAndMaterialConsumers": true,
+      "productionGather": true,
+      "constructedOriginalMeshes": true,
+      "exactSaveRecovery": true,
+      "sameSimulation": true,
+      "cameraFiles": [
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\authored-foundry-fps-0.126.0.png",
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\authored-foundry-orbital-0.126.0.png"
+      ],
+      "limits": "Actual Main entry followed by paused scripted interactions. Not native input, representative performance, final art, audio or fun acceptance. Continuous actor migration is open."
+    },
+    "compiler": "codedom"
+  }
+}

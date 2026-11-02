@@ -1,7 +1,7 @@
 var g=UnityEngine.Object.FindFirstObjectByType<GameManager>();
 var flow=UnityEngine.Object.FindFirstObjectByType<PlayerFlow>();
 if(!Application.isPlaying || g==null || g.Simulation==null || flow==null || !flow.IsMenuOpen || Time.timeScale!=0
-    || g.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV1)
+    || g.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV2)
     throw new System.InvalidOperationException("Paused authored Main required.");
 var s=g.Simulation;string original=g.SaveToJson();
 try

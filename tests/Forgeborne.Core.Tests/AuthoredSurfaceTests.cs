@@ -6,8 +6,16 @@ internal static class AuthoredSurfaceTests
 {
     public static void Run(Action<bool,string> check)
     {
+        check(AuthoredFoundry.ContentSha256=="3aaa044009b8db239b903b52bd3d928a59efd678e813a1b2eb36b25333863272",
+            "published v1 geometry remains byte-exact after adding the retained v2 catalog");
+        foreach(var profile in new[]{SurfaceProfile.AuthoredFoundryV1,SurfaceProfile.AuthoredFoundryV2})
+            RunProfile((pass,name)=>check(pass,profile+": "+name),profile);
+        RunCatalog(check);
+    }
+    private static void RunProfile(Action<bool,string> check,SurfaceProfile profile)
+    {
         var s=new Simulation(42);
-        AuthoredFoundry.Populate(s.World);s.Fps.Teleport(16.5f,4,7.5f);s.AdvanceFrame(0,0,0,false);
+        AuthoredFoundry.Populate(s.World,profile);s.Fps.Teleport(16.5f,4,7.5f);s.AdvanceFrame(0,0,0,false);
         var chunk=s.World.Chunk;var geometry=chunk.Geometry;
         var stock=chunk.ToBytes();var required=new[]{BlockType.Workstation,BlockType.KineticMill,BlockType.Dynamo,BlockType.Wall};
         var costs=required.Select(type=>{BuildCost.TryGet(type,out var value);return value;}).ToArray();
@@ -15,7 +23,7 @@ internal static class AuthoredSurfaceTests
             && stock.Count(b=>b==(byte)BlockType.EmberOre)>=costs.Sum(c=>c.EmberOre)
             && stock.Count(b=>b==(byte)BlockType.Wood)>=costs.Sum(c=>c.Wood),
             "authored encounter contains enough real gatherable material for a workstation, mill, dynamo and defensive plate without debug grants");
-        check(AuthoredFoundry.SourcePartCount>150 && AuthoredFoundry.ContentSha256.Length==64,
+        check(AuthoredFoundry.GetSourcePartCount(profile)>150 && AuthoredFoundry.GetContentSha256(profile).Length==64,
             "authored original content loads with a validated closed topology and exact digest");
         check(geometry.Regions.All(r=>r.MaterialRole!=null && r.Label!=null)
             && geometry.TriangleCount>20_000,"authored regions expose their original material and component identity");
@@ -70,7 +78,7 @@ internal static class AuthoredSurfaceTests
             check(result==BuildResult.Success && chunk.Geometry.TriangleCount>before.TriangleCount,
                 "authored construction creates real original shared mesh components for "+type+" ("+result+", triangles "+before.TriangleCount+" -> "+chunk.Geometry.TriangleCount+")");
             var added=chunk.Geometry.Regions.Where(r=>!before.Regions.Contains(r)).ToArray();
-            var preview=AuthoredFoundry.ConstructionTemplate(type);
+            var preview=AuthoredFoundry.ConstructionTemplate(type,profile);
             bool same=added.Length==preview.Count;
             for(int j=0;j<added.Length && same;j++)
             {
@@ -87,7 +95,7 @@ internal static class AuthoredSurfaceTests
         }
         string saved=s.SaveToJson();var owner=s;var fps=s.Fps;var look=s.Look;
         check(s.LoadFromJson(saved) && s.SaveToJson()==saved && ReferenceEquals(s,owner) && ReferenceEquals(s.Fps,fps) && ReferenceEquals(s.Look,look)
-            && s.World.Chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1
+            && s.World.Chunk.SurfaceProfile==profile
             && s.World.Chunk.Get(11,4,11)==BlockType.Air,
             "authored exact save recovery preserves removal, all machine meshes and canonical owner identities");
         var cold=new Simulation(7);
@@ -111,18 +119,21 @@ internal static class AuthoredSurfaceTests
         bytes[VoxelChunk.Index(16,12,16)]=(byte)BlockType.EmberOre;corrupt["ChunkBase64"]=Convert.ToBase64String(bytes);
         check(!s.LoadFromJson(corrupt.ToJsonString()) && s.SaveToJson()==saved,
             "authored unsupported resource bindings cannot enter a save as invisible geometry");
-        using var contentStream=typeof(AuthoredFoundry).Assembly.GetManifestResourceStream("Forgeborne.Core.Content.CinderExchangeV1.json")!;
+        string resource=profile==SurfaceProfile.AuthoredFoundryV1 ? "CinderExchangeV1.json" : "CinderExchangeV2.json";
+        using var contentStream=typeof(AuthoredFoundry).Assembly.GetManifestResourceStream("Forgeborne.Core.Content."+resource)!;
         using var reader=new StreamReader(contentStream);string contentJson=reader.ReadToEnd();
         check(!contentJson.Contains('\r'),"authored embedded geometry uses canonical LF bytes so a Windows checkout cannot change save identity");
         void Reject(Action<JsonObject> alter,string name)
         {
             var value=JsonNode.Parse(contentJson)!.AsObject();alter(value);bool refused=false;
-            try{AuthoredFoundry.ValidatePayload(value.ToJsonString());}
+            try{AuthoredFoundry.ValidatePayload(value.ToJsonString(),profile);}
             catch(Exception e) when(e is InvalidOperationException or System.Text.Json.JsonException){refused=true;}
             check(refused,"authored content boundary rejects "+name);
         }
         Reject(v=>v["Schema"]=99,"unknown geometry schema");
         Reject(v=>v["Parts"]![0]!["Material"]="unknown","an unavailable material role");
+        if(profile==SurfaceProfile.AuthoredFoundryV1)
+            Reject(v=>v["Parts"]![0]!["Material"]="CastFloor","a v2-only material in the retained v1 contract");
         Reject(v=>v["Parts"]![0]!["Vertices"]![0]![0]=129,"out-of-contract coordinates");
         Reject(v=>v["Parts"]![0]!["Indices"]![0]=999999,"an invalid triangle vertex reference");
         Reject(v=>v["Parts"]![0]!["Normals"]![0]=new JsonArray(0,0,0),"a zero shading normal");
@@ -131,5 +142,85 @@ internal static class AuthoredSurfaceTests
             var part=v["Parts"]![0]!;var indices=part["Indices"]!.AsArray();var normals=part["Normals"]!.AsArray();
             for(int i=0;i<3;i++){indices.RemoveAt(indices.Count-1);normals.RemoveAt(normals.Count-1);}
         },"an open shell");
+    }
+
+    private static void RunCatalog(Action<bool,string> check)
+    {
+        var s=new Simulation(42);AuthoredFoundry.Populate(s.World);
+        s.Fps.Teleport(16.5f,4,7.5f);s.AdvanceFrame(0,0,0,false);
+        string v1=s.SaveToJson();int oldTriangles=s.World.Chunk.Geometry.TriangleCount;
+        AuthoredFoundry.Populate(s.World,SurfaceProfile.AuthoredFoundryV2);
+        string v2=s.SaveToJson();var geometry=s.World.Chunk.Geometry;
+        check(AuthoredFoundry.GetContentId(SurfaceProfile.AuthoredFoundryV2)!=AuthoredFoundry.ContentId
+            && AuthoredFoundry.GetContentSha256(SurfaceProfile.AuthoredFoundryV2)!=AuthoredFoundry.ContentSha256,
+            "retained authored catalogs have distinct explicit content identities");
+        var oldWall=AuthoredFoundry.ConstructionTemplate(BlockType.Wall).SelectMany(r=>r.BuildMesh().Vertices).ToArray();
+        var newWall=AuthoredFoundry.ConstructionTemplate(BlockType.Wall,SurfaceProfile.AuthoredFoundryV2).SelectMany(r=>r.BuildMesh().Vertices).ToArray();
+        check(!oldWall.SequenceEqual(newWall) && newWall.All(v=>v.Item1>=0 && v.Item1<=1 && v.Item2>=0 && v.Item2<=1 && v.Item3>=0 && v.Item3<=1),
+            "v2 builds an original bowed defensive plate while v1 retains its exact historical template");
+        foreach(var saved in new[]{v1,v2,v1,v2})
+        {
+            check(s.LoadFromJson(saved) && s.SaveToJson()==saved,
+                "same Simulation repeatedly resolves exact retained v1/v2 content without implicit conversion");
+            var bad=JsonNode.Parse(saved)!.AsObject();
+            bad["SurfaceProfile"]=saved==v1 ? (int)SurfaceProfile.AuthoredFoundryV2 : (int)SurfaceProfile.AuthoredFoundryV1;
+            check(!s.LoadFromJson(bad.ToJsonString()) && s.SaveToJson()==saved,
+                "a valid digest/id paired with the other profile is rejected before live mutation");
+        }
+        check(s.LoadFromJson(v1) && s.World.Chunk.Geometry.TriangleCount==oldTriangles
+            && s.LoadFromJson(v2) && s.World.Chunk.Geometry.TriangleCount==geometry.TriangleCount,
+            "catalog switching invalidates geometry while retaining each historical physical contract");
+        bool refused=false;
+        try{AuthoredFoundry.Populate(s.World,(SurfaceProfile)99);}catch(ArgumentOutOfRangeException){refused=true;}
+        check(refused && s.SaveToJson()==v2,"unsupported catalog population refuses before changing the existing world");
+        float expectedY=8.6f+4.73f*MathF.Sqrt(1-MathF.Pow(12/14.18f,2));
+        check(geometry.Raycast(new Vector3(28,7.2f,10),Vector3.UnitY,12,out var roof)
+            && MathF.Abs(roof.Position.Y-expectedY)<.015f && roof.Normal.Y<-.4f
+            && geometry.Contains(roof.Position+Vector3.UnitY*.04f),
+            "v2 vaulted roof has a closed physical underside matching an independent ellipse oracle");
+        check(!geometry.Raycast(new Vector3(16,8,10),Vector3.UnitY,20,out _),
+            "v2 daylight slot is real empty space rather than painted sky over a filled collider");
+
+        using var stream=typeof(AuthoredFoundry).Assembly.GetManifestResourceStream("Forgeborne.Core.Content.CinderExchangeV2.json")!;
+        using var reader=new StreamReader(stream);var payload=System.Text.Json.JsonSerializer.Deserialize<AuthoredFoundry.Payload>(reader.ReadToEnd())!;
+        var deposits=payload.Parts!.Where(p=>p.Kind=="Deposit" && p.Material=="Basalt").ToArray();
+        check(deposits.Any(p=>p.Vertices!.Any(v=>v[0]<p.Owner![0] || v[0]>p.Owner![0]+1 || v[2]<p.Owner![2] || v[2]>p.Owner![2]+1))
+            && deposits.Any(p=>p.Normals!.Any(n=>Math.Abs(n[1])>.05f && Math.Abs(n[1])<.8f && Math.Abs(n[0])>.1f && Math.Abs(n[2])>.1f)),
+            "v2 deposit fractures cross cell outlines and expose angled physical cuts rather than rectangular voxel holes");
+        var excessive=System.Text.Json.Nodes.JsonNode.Parse(System.Text.Json.JsonSerializer.Serialize(payload))!.AsObject();
+        var deposit=excessive["Parts"]!.AsArray().First(p=>p!["Kind"]!.GetValue<string>()=="Deposit")!;
+        deposit["Vertices"]![0]![0]=deposit["Owner"]![0]!.GetValue<int>()+1.5f;bool boundRefused=false;
+        try{AuthoredFoundry.ValidatePayload(excessive.ToJsonString(),SurfaceProfile.AuthoredFoundryV2);}
+        catch(InvalidOperationException e){boundRefused=e.Message.Contains("ledger cell");}
+        check(boundRefused,"v2 natural fracture reach remains bounded; an excessive horizontal extension is rejected before topology processing");
+        // Inclined internal fracture caps have intentional opposing flat
+        // normals. Compare the curved outer skin, preserving real hard edges.
+        var shared=new Dictionary<Vector3,Dictionary<string,List<Vector3>>>();int matches=0;bool continuous=true;
+        foreach(var part in payload.Parts!.Where(p=>p.Kind=="Deposit" && p.Material=="Basalt"))
+        {
+            string owner=string.Join(",",part.Owner!);
+            for(int triangle=0;triangle<part.Indices!.Length;triangle+=3)
+            {
+                Vector3 Normal(int corner){var n=part.Normals![triangle+corner];return new Vector3(n[0],n[1],n[2]);}
+                var first=Normal(0);
+                if(Vector3.Distance(first,Normal(1))<.00001f && Vector3.Distance(first,Normal(2))<.00001f)continue;
+                for(int corner=0;corner<3;corner++)
+                {
+                    var p=part.Vertices![part.Indices[triangle+corner]];var normal=Normal(corner);
+                    if(normal.Y<.05f || p[1]<4.05f)continue;
+                    var position=new Vector3(p[0],p[1],p[2]);
+                    if(!shared.TryGetValue(position,out var owners)){owners=new();shared.Add(position,owners);}
+                    if(!owners.TryGetValue(owner,out var normals)){normals=new();owners.Add(owner,normals);}
+                    normals.Add(normal);
+                }
+            }
+        }
+        foreach(var owners in shared.Values.Where(v=>v.Count>1))
+        {
+            if(owners.Values.Any(normals=>normals.Any(n=>Vector3.Distance(normals[0],n)>.01f)))continue;
+            var representatives=owners.Values.Select(n=>n[0]).ToArray();matches++;
+            continuous&=representatives.All(n=>Vector3.Distance(n,representatives[0])<.005f);
+        }
+        check(matches>50 && continuous,"v2 smooth outer skin continues across gather owners while physical fracture caps and hard creases stay sharp (samples "+matches+")");
     }
 }

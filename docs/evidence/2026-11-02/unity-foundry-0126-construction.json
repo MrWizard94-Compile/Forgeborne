@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "mainStartedAuthored": true,
+      "nineOriginalChoices": 9,
+      "exactPreviewPieces": 42,
+      "actualTransparentMaterial": true,
+      "previewMatchesPlacedSource": true,
+      "noCubeOutline": true,
+      "noExtraColliders": true,
+      "readOnlyPreview": true,
+      "productionPrimaryBuild": true,
+      "unchangedPrice": true,
+      "pauseCancelsGhost": true,
+      "sameSimulation": true,
+      "limits": "Paused scripted production routing; actual keyboard/native/performance/fun remain open."
+    },
+    "compiler": "codedom"
+  }
+}

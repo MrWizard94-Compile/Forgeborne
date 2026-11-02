@@ -1,0 +1,31 @@
+{
+  "observedAtUtc": "2026-11-02T14:14:46.1463677Z",
+  "nativePackage": "20261102T140715Z",
+  "privateArtifacts": "C:\\Users\\Bulkl\\.codex\\artifacts\\forgeborne-2026-11-02\\native-contact-20261102T140715Z",
+  "fixture": "exact pre-fix vessel collar contact pose; no enemies; original canonical v2 world",
+  "actualControls": [
+    "Windows import fixture",
+    "Resume",
+    "legacy W key",
+    "Escape pause",
+    "Windows export to new private file",
+    "Load existing user slot"
+  ],
+  "beforeFeet": [
+    6.0127454,
+    3.9999995,
+    16.5
+  ],
+  "afterFeet": [
+    6.11274576,
+    3.99999952,
+    16.5
+  ],
+  "nativeEscapeMetres": 0.10000036000000012,
+  "exportSha256": "05d485c5c59488f5b51ae871917c39e85a762b0d628b2f2245ac2e3519bda924",
+  "slotFiles": 2,
+  "slotFileSetAndBytesUnchanged": true,
+  "leftPausedWithExistingSlotLoaded": true,
+  "noAutomaticSlotRestoration": true,
+  "limits": "One actual native contact pose and W key; no full encounter, all-obstacle traversal, representative performance, heard mix or fun claim"
+}

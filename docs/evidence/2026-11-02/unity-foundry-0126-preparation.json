@@ -1,0 +1,15 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.126.0",
+      "v1Sha256": "3aaa044009b8db239b903b52bd3d928a59efd678e813a1b2eb36b25333863272",
+      "v2Sha256": "3db547ff7a68ce12e5e51126ca755f38076448c5eb831fde659d333c07e5d6bd",
+      "v2Parts": 369,
+      "retainedV1": true,
+      "defaultEntryMustBeVerifiedInPlay": true
+    },
+    "compiler": "codedom"
+  }
+}

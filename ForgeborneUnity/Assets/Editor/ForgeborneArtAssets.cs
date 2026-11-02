@@ -123,6 +123,8 @@ public static class ForgeborneArtAssets
         materials.Add("Cyan",Surface(shader,"Cyan",new Color(0.025f,0.62f,0.85f),0.25f,0.65f,0,2.5f));
         materials.Add("Amber",Surface(shader,"Amber",new Color(1,0.19f,0.018f),0.2f,0.62f,0,2.5f));
         materials.Add("Basalt",Surface(shader,"Basalt",new Color(0.12f,0.145f,0.16f),0.03f,0.22f,0.5f));
+        materials.Add("CastFloor",Surface(shader,"CastFloor",new Color(0.12f,0.145f,0.16f),0.03f,0.34f,0.2f));
+        materials.Add("EmberMineral",Surface(shader,"EmberMineral",new Color(0.22f,0.065f,0.018f),0.58f,0.38f,0.7f,0.55f));
         materials.Add("Paint",Surface(shader,"Paint",new Color(0.10f,0.22f,0.24f),0.55f,0.42f,0.42f));
         materials.Add("Warm",Surface(shader,"Warm",new Color(1,0.43f,0.15f),0.1f,0.5f,0,1.8f));
         materials.Add("Glass",Surface(shader,"Glass",new Color(0.12f,0.20f,0.24f),0.55f,0.82f,0.12f,0.08f));

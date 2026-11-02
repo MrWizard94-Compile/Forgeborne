@@ -1,0 +1,25 @@
+{
+  "observedAtUtc": "2026-11-02T07:49:31.0886274Z",
+  "nativeVersion": "0.126.0",
+  "nativeProcessPresent": true,
+  "privateSaveBackup": "C:\\Users\\Bulkl\\.codex\\artifacts\\forgeborne-2026-11-02\\native-0126-saves-before-20261102T073721Z",
+  "slotFiles": 2,
+  "slotAndBackupByteExactUnchanged": true,
+  "verified": [
+    "actual v1 slot loaded in native player",
+    "restart restored rebuilt v2 hall",
+    "Tab perspective orbital cutaway and FPS restoration",
+    "mouse shot 42/120 to 41/120",
+    "R reload to 42/119",
+    "Escape pause"
+  ],
+  "nativePausedAtLastUiObservation": true,
+  "export": "not exercised",
+  "movementGatherBuildColdV2": "not established in this native run",
+  "audioFunPerformance": "not accepted",
+  "boundedNativeLogBytes": 1764,
+  "diagnosticLines": [
+    "d3d12: failed to query info queue interface (0x80004002).\r"
+  ],
+  "noAutomaticSlotRestoration": true
+}

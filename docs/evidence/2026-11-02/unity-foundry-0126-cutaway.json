@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "roofPieces": 6,
+      "perspectiveCutaway": true,
+      "roofCollidersRetained": true,
+      "roofShadowsRetained": true,
+      "actualProductionCommandPickerReachesVisibleFloor": true,
+      "canonicalRoofRayUnchanged": true,
+      "fpsRoofRestored": true,
+      "worldAndSimulationUnchanged": true,
+      "target": [
+        20.0,
+        4.0,
+        10.0
+      ],
+      "physicalRoofHitDistance": 25.6149025,
+      "commandFloorHit": [
+        20.0,
+        4.0,
+        9.999998
+      ],
+      "scope": "Actual paused production camera/render/picker consumers; no native keyboard, representative performance or fun acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

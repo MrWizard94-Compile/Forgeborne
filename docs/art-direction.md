@@ -1,5 +1,15 @@
 # Forgeborne — Art Direction
 
+## Director refinement — 2026-11-02
+
+Rob said the hall is beginning to look good and called it real progress, while
+stressing how much remains. He then specified that the meshes must become more
+realistic and organic. Retain the emerging hall, palette and atmosphere; improve
+shape quality, natural asymmetry, weathered fracture forms, believable material
+transitions, weapon/hand anatomy and actor construction. Smooth shading alone
+does not meet this request. Inspect actual 3D silhouettes and close-up surfaces.
+This accepts a direction, not the finished meshes or the full AAA+ experience.
+
 ## Current director gate — 2026-11-01
 
 **Director correction: no blocky world aesthetic.** Rob explicitly challenged
@@ -26,6 +36,14 @@ measured PC performance. A dark filter, bloom, decorative clutter or a concept
 image alone cannot pass this gate. The entire playable encounter needs cohesion.
 Use the established industrial sci-fi palette/setting; do not copy BioShock art,
 Rapture/Columbia, names, architecture, trademarks or assets.
+
+## BioShock visual research
+
+Rob requested direct visual references on 2026-11-02 after acknowledging the
+texture improvement. The remotely viewed publisher/platform images and concrete
+original-art consequences are in [the visual study](bioshock-visual-study.md).
+Apply its construction, material, composition and environmental-history lessons
+through actual original meshes. Preserve all six equally important influences.
 
 ## Reference
 

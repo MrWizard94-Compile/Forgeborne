@@ -1,5 +1,26 @@
 # Forgeborne — Changelog
 
+## 0.126.0 — 2026-11-02 — Organic meshes, retained worlds and tactical cutaway
+
+- Added retained authored profile 3 with exact content identity, dense sculpted
+  formations, inclined 3D fractures, layered mineral veins, vaulted roof/stays and
+  bowed defensive plate. V1 data/source and saved-world behavior remain exact.
+- Added CastFloor/mineral response, profile-aware construction previews and a
+  perspective orbital roof cutaway whose command picking matches its visibility.
+  Canonical physical roofs, FPS rendering and shadows are retained.
+- Repaired player contact locks: stable body-relative/scaled collision sweeps
+  allow separating/tangent contact; bounded separation prevents rounding locks.
+  Actual native W escape from a formerly stuck pose is confirmed by Windows export.
+- 5629 source checks pass, Release 0 warnings/errors. Actual Main mesh/collider/
+  ray/gather/build/power/preview/recovery and GPU/cutaway consumers pass; final
+  geometry reproduces byte-exact. No second Simulation or Core source in Assets.
+- Windows QA build succeeded 0 warnings/errors. Native v1 load, v2 restart,
+  Tab/FPS/cutaway, mouse firing, R reload and Escape pause observed; original slots
+  unchanged at the recorded check. Full native loop/performance/audio/fun remain open.
+- Rob accepts the emerging direction as real progress and still requires more
+  realistic, organic meshes. Added a direct BioShock visual study using remotely
+  viewed references. Full AAA+ is not accepted. See foundry-v2-checkpoint.md.
+
 ## 0.125.0 — 2026-11-02 — Paired original surfaces and native QA
 
 - Added sixteen original matched pigment/HROM maps across eight surface roles,

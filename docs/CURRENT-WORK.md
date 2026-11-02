@@ -1,6 +1,45 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.125 surfaces and native QA
+## Current checkpoint — 0.126 retained v2 and organic physical art
+
+Rob now says the hall is beginning to look good and is real progress; he still
+requires more realistic, organic meshes. Preserve the direction; no AAA+ pass.
+Main adds retained authored profile 3, v1/v2 ID/digest resolution,
+vaulted roof, original fractured outcrops, low-profile branching mineral seams,
+bowed defensive plate, cast-floor material response and profile-aware previews.
+V1 JSON/Blender/generator stay unchanged. Existing slots retain their own profile;
+never restore older backups over newer user saves. No slot writes from these probes.
+Initial v2 was inspected in Unity and all actual mesh/ray/build/gather/recovery/
+preview checks passed. Initial-look evidence is preserved separately. The latest
+denser organic generation has 144624 source triangles; final Release is 0/0 and
+5629 checks pass after contact correction. Actual Main has 327 pieces/136320
+triangles; 300 collider rays,
+mesh/material/gather/build/preview/power/catalog/recovery and shader checks pass.
+Roof inspection exposed orbital occlusion; the repaired perspective cutaway
+keeps collisions/shadows and matches production command picking. Native build
+20261102T073159Z succeeded 0 errors/warnings; v1 load, v2 restart, Tab/FPS/cutaway,
+mouse shot, R reload and Escape pause observed. Slots unchanged at 07:49:31Z.
+The earlier native run predates Rob's reported movement lock. The corrected
+build 20261102T140715Z also succeeded 0/0. Real W escaped an imported old stuck
+pose by .10000036 m, verified through Windows export. Actual Unity approach/retreat
+and tangent checks pass; existing user slot/backup unchanged at 14:14:46Z, then
+loaded for paused review in the corrected player. Editor stopped.
+See movement-contact-checkpoint.md. Do not overwrite later user saves.
+See foundry-v2-checkpoint.md for full audit, manifest, commands and limits;
+foundry-v2-plan.md, art/tools/build_foundry_v2.py and fracture_geometry.py.
+Do not claim its verification from
+the earlier lower-density reports. Main's default now explicitly selects v2.
+Final v2 SHA 3db547ff7a68ce12e5e51126ca755f38076448c5eb831fde659d333c07e5d6bd
+reproduces exactly twice. Freeze it after publishing; retain new versions for
+future physical edits or implement a tested explicit migration.
+Full goal remains active; actor/weapon art, animation, native loop, performance,
+audio/fun and all six influences' depth remain open. Evolution remains 922dcbb,
+staged, not propagated; no second Constitution invocation/evolution.
+Rob requested actual BioShock visual references after acknowledging texture
+progress. Viewed reference observations and original-art next actions are in
+bioshock-visual-study.md; no third-party game art was imported.
+
+## Historical checkpoint — 0.125 surfaces and native QA
 
 Eight original paired surface recipes / sixteen 1024-square maps, measured colour
 calibration, triplanar material consumers and fourteen practicals are integrated.

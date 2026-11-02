@@ -123,7 +123,7 @@ public static class AimRay
             if(normal.X>=normal.Y && normal.X>=normal.Z)px+=Math.Sign(surface.Normal.X);
             else if(normal.Y>=normal.Z)py+=Math.Sign(surface.Normal.Y);
             else pz+=Math.Sign(surface.Normal.Z);
-            if(chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1)
+            if(AuthoredFoundry.IsAuthored(chunk.SurfaceProfile))
             {
                 var outside=surface.Position+surface.Normal*0.02f;
                 px=(int)Math.Floor(outside.X);py=(int)Math.Floor(outside.Y);pz=(int)Math.Floor(outside.Z);

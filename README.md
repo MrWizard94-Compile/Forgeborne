@@ -25,11 +25,12 @@ Rob's 2026-11-01 review rejected the sparse primitive presentation. Original
 environment/weapon/actor art, atmospheric lighting, animation and a cohesive
 playable encounter now take priority over feature expansion. Technical checks
 are scoped evidence; visual, gameplay and fun acceptance remain closed.
-Main now enters the original Cinder Exchange through saved surface profile 2.
+Main now enters the rebuilt Cinder Exchange through saved surface profile 3,
+with retained profile 2 for the original authored world.
 Authored architecture, deposits and constructed machines share their exact
 triangles with collision and aiming. Model-shaped construction ghosts replace
 the cube outline for new games. Old saves retain their previous rules. See
-[the current surfaces/native evidence and remaining quality gaps](docs/surface-material-checkpoint.md)
+[the current organic meshes/native evidence and remaining quality gaps](docs/foundry-v2-checkpoint.md)
 and [the world migration](docs/world-presentation-migration.md).
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
@@ -39,8 +40,10 @@ views, the authored exchange hall, resource materials, pointer capture,
 entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
 to create and inspect the scene on Windows. Exact interactive pose/time saves are
 verified. Windows export/import passes earlier actual Editor UI checks. Earlier
-native packages passed; 0.125's authored world now has a successful current Windows
-QA package and actual entry/Tab/Escape checks. Full native loop, export/cold-save
+native packages passed; 0.126 has a successful current Windows QA package and
+actual v1 load/v2 restart, Tab cutaway/FPS, firing/reload and Escape checks.
+The corrected build also proves native escape from a formerly stuck contact
+through actual W input and Windows import/export. Full native loop/current-v2 cold-save
 recovery and performance acceptance remain open. Studio-quality encounter/art/
 audio remain active work. A perspective overhead command view now has live
 component/render evidence and a native Tab-switch check; its full play gate remains open.

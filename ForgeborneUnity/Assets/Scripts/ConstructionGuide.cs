@@ -29,7 +29,7 @@ public sealed class ConstructionGuide : MonoBehaviour
     private GameObject? _ghostRoot;
     private readonly System.Collections.Generic.List<Mesh> _ghostMeshes=new System.Collections.Generic.List<Mesh>();
     private BlockType _ghostType;
-    private bool _lastAuthored;
+    private SurfaceProfile _lastProfile,_ghostProfile;
 
     void Start()
     {
@@ -99,13 +99,14 @@ public sealed class ConstructionGuide : MonoBehaviour
         if (Adapter.InputSuppressed || Adapter.IsOrbitalView || Adapter.HasPendingCommand
             || simulation.IsPlayerDead || simulation.IsObjectiveComplete) { Cancel(); return; }
         var preview=simulation.InspectBuildAhead(SelectedType);
-        bool authored=simulation.World.Chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1;
+        var profile=simulation.World.Chunk.SurfaceProfile;
+        bool authored=AuthoredFoundry.IsAuthored(profile);
         _ui.SetActive(true); _outline.enabled=preview.HasCell && !authored;
         if(_ghostRoot!=null)_ghostRoot.SetActive(authored && preview.HasCell);
         var inventory=simulation.World.Player.Inventory;
         int stone=inventory.Get(BlockType.Stone),ore=inventory.Get(BlockType.EmberOre),wood=inventory.Get(BlockType.Wood);
-        if (_hasLast && _last==preview && _stone==stone && _ore==ore && _wood==wood && _lastAuthored==authored) return;
-        _hasLast=true; _last=preview; _stone=stone; _ore=ore; _wood=wood;_lastAuthored=authored;
+        if (_hasLast && _last==preview && _stone==stone && _ore==ore && _wood==wood && _lastProfile==profile) return;
+        _hasLast=true; _last=preview; _stone=stone; _ore=ore; _wood=wood;_lastProfile=profile;
         Color color=preview.Result==BuildResult.Success ? new Color(0.05f,0.9f,1)
             : preview.Result==BuildResult.InsufficientResources ? new Color(1,0.6f,0.08f) : new Color(1,0.2f,0.08f);
         _material.color=color; _material.SetColor("_EmissionColor",color*2);
@@ -113,7 +114,7 @@ public sealed class ConstructionGuide : MonoBehaviour
         {
             if(authored)
             {
-                EnsureGhost(SelectedType);
+                EnsureGhost(SelectedType,profile);
                 _ghostRoot!.transform.position=new Vector3(preview.X,preview.Y,preview.Z);_ghostRoot.SetActive(true);
                 _ghostMaterial!.SetColor("_BaseColor",new Color(color.r,color.g,color.b,.30f));
             }
@@ -135,14 +136,14 @@ public sealed class ConstructionGuide : MonoBehaviour
         _label.color=color;
         _label.text=name+" · WHEEL SELECT · LMB PLACE · V EXIT\n"+recipe+"\n"+reason;
     }
-    private void EnsureGhost(BlockType type)
+    private void EnsureGhost(BlockType type,SurfaceProfile profile)
     {
-        if(_ghostRoot!=null && _ghostType==type)return;
+        if(_ghostRoot!=null && _ghostType==type && _ghostProfile==profile)return;
         if(_ghostRoot!=null){_ghostRoot.SetActive(false);Destroy(_ghostRoot);}
         foreach(var mesh in _ghostMeshes)Destroy(mesh);_ghostMeshes.Clear();
-        _ghostType=type;_ghostRoot=new GameObject("Authored construction preview");
+        _ghostType=type;_ghostProfile=profile;_ghostRoot=new GameObject("Authored construction preview");
         _ghostRoot.transform.SetParent(Adapter!=null && Adapter.MeshRenderer!=null ? Adapter.MeshRenderer.transform : null,false);
-        foreach(var region in AuthoredFoundry.ConstructionTemplate(type))
+        foreach(var region in AuthoredFoundry.ConstructionTemplate(type,profile))
         {
             var data=region.BuildMesh();var vertices=new Vector3[data.Vertices.Count];
             for(int i=0;i<vertices.Length;i++){var p=data.Vertices[i];vertices[i]=new Vector3(p.Item1,p.Item2,p.Item3);}

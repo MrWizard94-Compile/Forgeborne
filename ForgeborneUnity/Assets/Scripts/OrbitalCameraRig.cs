@@ -99,6 +99,7 @@ public sealed class OrbitalCameraRig : MonoBehaviour
             || Manager == null || Manager.Simulation == null || IsOrbital == orbital) return;
         InputAdapter.ResetInteraction(false); // Switching view cancels free pending commands without spending resources.
         IsOrbital = orbital;
+        if(Manager.MeshRenderer!=null)Manager.MeshRenderer.SetOverheadCutaway(orbital);
         FirstPersonCamera.enabled = !orbital;
         FirstPersonCamera.tag = orbital ? "Untagged" : "MainCamera";
         _camera.enabled = orbital;
@@ -127,6 +128,7 @@ public sealed class OrbitalCameraRig : MonoBehaviour
         if (FirstPersonCamera != null) { FirstPersonCamera.enabled = true; FirstPersonCamera.tag = "MainCamera"; }
         gameObject.tag = "Untagged";
         IsOrbital = false;
+        if(Manager!=null && Manager.MeshRenderer!=null)Manager.MeshRenderer.SetOverheadCutaway(false);
         if (InputAdapter != null) InputAdapter.SetCommandCamera(null);
         if (ViewModel != null) ViewModel.SetModelVisible(true);
         if (FirstPersonReticle != null) FirstPersonReticle.SetActive(true);

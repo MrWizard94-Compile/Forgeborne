@@ -12,7 +12,8 @@ public static class ForgeborneSurfaceAssets
         {"Graphite",new Vector2(.65f,.00032f)},{"Steel",new Vector2(.70f,.00013f)},
         {"Copper",new Vector2(.75f,.00036f)},{"Ceramic",new Vector2(1.2f,.00030f)},
         {"Rubber",new Vector2(.25f,.00022f)},{"Basalt",new Vector2(2f,.0022f)},
-        {"Paint",new Vector2(2f,.0011f)},{"Timber",new Vector2(1f,.0012f)}
+        {"Paint",new Vector2(2f,.0011f)},{"Timber",new Vector2(1f,.0012f)},
+        {"CastFloor",new Vector2(1.5f,.00012f)}
     };
     public static void Configure(Material material,string role,Color linearColour,Color linearEmission)
     {
@@ -23,12 +24,14 @@ public static class ForgeborneSurfaceAssets
         }
         else
         {
-            var color=Import(role+"_Color",true);var surface=Import(role+"_HROM",false);
+            string textureRole=role=="CastFloor" ? "Basalt" : role;
+            var color=Import(textureRole+"_Color",true);var surface=Import(textureRole+"_HROM",false);
             material.SetTexture("_BaseMap",color);material.SetTexture("_SurfaceMap",surface);
             material.SetFloat("_TextureStrength",1);material.SetFloat("_SurfaceTiling",1/recipe.x);
             material.SetFloat("_ReliefMetres",recipe.y);material.SetColor("_BaseColor",Color.white);
         }
         material.SetColor("_EmissionColor",linearEmission.gamma);
+        material.SetFloat("_RoughnessBias",role=="CastFloor" ? -.16f : 0);
     }
     static Texture2D Import(string name,bool color)
     {

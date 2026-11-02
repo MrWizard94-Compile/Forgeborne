@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "files": [
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\foundry-0126-fps-0.png",
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\foundry-0126-fps-1.png",
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\foundry-0126-fps-2.png",
+        "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\foundry-0126-fps-3.png"
+      ],
+      "actualProductionCamera": true,
+      "actualGatherFractureInspected": true,
+      "originalStateRestoredInFinally": true,
+      "overlayUiIncluded": false,
+      "scope": "Material/lighting visual inspection; no native/input/fun claim."
+    },
+    "compiler": "codedom"
+  }
+}

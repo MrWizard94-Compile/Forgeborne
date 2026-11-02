@@ -4,6 +4,28 @@ These are original work-in-progress assets. They do not establish the requested
 AAA+ quality or approval of the current world. Rob explicitly rejected the cubic
 courtyard. Its replacement is tracked in docs/world-presentation-migration.md.
 
+The current new game uses the retained Cinder Exchange v2 catalog. Its original
+physical source is `source/CinderExchangeV2.blend`, authored by
+`tools/build_foundry_v2.py` with `tools/fracture_geometry.py`. The same closed
+triangles feed the renderer, collision, gather, aiming and construction. V1's
+JSON, generator and Blender source remain frozen for existing saves. See
+`docs/foundry-v2-checkpoint.md` for exact identities, reproduction, actual Unity
+and limited native evidence, and remaining art gaps. Future physical changes
+must retain existing catalog identities or implement a tested migration.
+
+Generate v2 from the repository root with the pinned Blender executable:
+`--background --python-exit-code 1 --python art/tools/build_foundry_v2.py`.
+The explicit Python exit code is required: Blender's default process status can
+otherwise report success after an authoring exception. Two final geometry
+generations matched SHA-256; Blender container bytes are not reproducible.
+
+Eight original paired 1024-square pigment/HROM recipes are in
+`tools/bake_surface_library.py` and `source/FoundrySurfaces.json`. Unity's
+IndustrialSurface shader consumes those maps; CastFloor reuses the Basalt pair
+with separate relief/roughness settings. No downloaded art was introduced.
+
+## Earlier model sources
+
 `tools/build_visual_assets.py` authors the geometry in Blender 4.5.15 LTS. No
 models, textures, character templates or sampled art were imported. The script
 creates each `.blend` source, a geometry manifest and its Unity FBX export in one
@@ -19,15 +41,16 @@ run. Blender is a developer tool kept outside this repository; it is not shipped
 
 The suit is segmented, not skeletal/animated yet. Wardens still move by canonical
 grid steps. These are named quality gaps, not completed character animation.
-The foundry currently stands outside the playable yard and owns no collision.
-Do not treat the backdrop as a completed traversable environment.
+RelayFoundry is the earlier decorative backdrop and owns no collision. It is
+disabled in authored v1/v2 worlds. The current traversable exchange is the
+separate shared physical catalog described above.
 
 ## Reproduce and inspect
 
 From the repository root in PowerShell, with Play stopped:
 
 ```powershell
-& 'C:\Users\Bulkl\.codex\tools\blender-4.5.15\blender-4.5.15-windows-x64\blender.exe' --background --python art\tools\build_visual_assets.py
+& 'C:\Users\Bulkl\.codex\tools\blender-4.5.15\blender-4.5.15-windows-x64\blender.exe' --background --python-exit-code 1 --python art\tools\build_visual_assets.py
 ```
 
 The pinned official portable archive was SHA-256 verified:
@@ -58,6 +81,7 @@ also change text-file bytes. Regenerate the manifest after a new import/checkpoi
 `tools/unity-art-consumer-smoke.cs` runs against paused actual Main and verifies
 resource consumers, the authored suit handoff, unchanged Simulation/state and a
 rendered exposure response. Existing feedback/orbital/construction-guide checks
-also run against the new art. These are scripted Editor checks. Native art,
-heard mix, sustained performance, world geometry and Rob's visual/fun gates remain
-unmet; no screenshot or model count can grant those gates.
+also run against the new art. These are scripted Editor checks. The current
+checkpoint records limited actual native controls and retained-world loading.
+The complete native loop, heard mix, sustained performance and Rob's AAA+/fun
+gates remain unmet; no screenshot or model count can grant those gates.

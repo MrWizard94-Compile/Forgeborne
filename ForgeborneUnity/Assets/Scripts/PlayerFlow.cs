@@ -47,7 +47,7 @@ public sealed class PlayerFlow : MonoBehaviour
         if (_resume != null)
         {
             _resume.gameObject.SetActive(!terminal);
-            bool foundry=simulation.World.Chunk.SurfaceProfile==SurfaceProfile.AuthoredFoundryV1;
+            bool foundry=AuthoredFoundry.IsAuthored(simulation.World.Chunk.SurfaceProfile);
             _resume.GetComponentInChildren<Text>().text = _begun ? "RESUME" : foundry ? "ENTER CINDER EXCHANGE" : "ENTER THE COURTYARD";
         }
         if (_save != null)

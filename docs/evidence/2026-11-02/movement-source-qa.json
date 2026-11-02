@@ -1,0 +1,51 @@
+{
+  "configuration": "Release",
+  "warnings": 0,
+  "errors": 0,
+  "passed": 5629,
+  "failed": 0,
+  "testLogSha256": "d8ef3455ec083cba80e78131da390f4d8b34c41ad6106eb61084aacbc62a169b",
+  "newContactCaseOutput": [
+    "PASS AuthoredFoundryV1: vessel collar reaches a real obstruction",
+    "PASS AuthoredFoundryV1: vessel collar permits backing away after sustained contact",
+    "PASS AuthoredFoundryV1: vessel collar escape does not tunnel through another physical surface",
+    "PASS AuthoredFoundryV1: a retained contact pose recovers without restarting or teleporting",
+    "PASS AuthoredFoundryV1: wall slide starts from free playable space",
+    "PASS AuthoredFoundryV1: pressure into the hall wall preserves tangential movement",
+    "PASS AuthoredFoundryV2: vessel collar reaches a real obstruction",
+    "PASS AuthoredFoundryV2: vessel collar permits backing away after sustained contact",
+    "PASS AuthoredFoundryV2: vessel collar escape does not tunnel through another physical surface",
+    "PASS AuthoredFoundryV2: inclined formation west contact reaches a real obstruction",
+    "PASS AuthoredFoundryV2: inclined formation west contact permits backing away after sustained contact",
+    "PASS AuthoredFoundryV2: inclined formation west contact escape does not tunnel through another physical surface",
+    "PASS AuthoredFoundryV2: inclined formation south contact reaches a real obstruction",
+    "PASS AuthoredFoundryV2: inclined formation south contact permits backing away after sustained contact",
+    "PASS AuthoredFoundryV2: inclined formation south contact escape does not tunnel through another physical surface",
+    "PASS AuthoredFoundryV2: a retained contact pose recovers without restarting or teleporting",
+    "PASS AuthoredFoundryV2: wall slide starts from free playable space",
+    "PASS AuthoredFoundryV2: pressure into the hall wall preserves tangential movement",
+    "PASS box contact permits separating motion at x=6.3",
+    "PASS box contact permits tangent motion at x=6.3",
+    "PASS box contact still blocks motion into the solid at x=6.3",
+    "PASS box contact permits separating motion at x=6.299999",
+    "PASS box contact permits tangent motion at x=6.299999",
+    "PASS box contact still blocks motion into the solid at x=6.299999",
+    "PASS contact recovery preserves independent long-sweep box obstruction",
+    "PASS deeply contained bodies cannot bypass solid geometry through contact tolerance",
+    "",
+    "5629 passed, 0 failed."
+  ],
+  "beforeRepairProbe": {
+    "v1Contacts": 12,
+    "v1ReverseLocks": 1,
+    "v2Contacts": 16,
+    "v2ReverseLocks": 3
+  },
+  "afterRepairProbe": {
+    "v1Contacts": 12,
+    "v1ReverseLocks": 0,
+    "v2Contacts": 16,
+    "v2ReverseLocks": 0
+  },
+  "scope": "Production controller, analytical box, existing complete suite; test log is private tooling output, no raw user saves"
+}

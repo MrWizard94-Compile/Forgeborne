@@ -13,11 +13,28 @@ namespace Forgeborne.Core;
 public static class AuthoredFoundry
 {
     public const string ContentId="forgeborne.cinder-exchange.v1";
-    private static readonly Lazy<Content> BuiltIn=new(Load);
+    public const string ContentIdV2="forgeborne.cinder-exchange.v2";
+    private static readonly Lazy<Content> BuiltIn=new(()=>Load("CinderExchangeV1.json",ContentId));
+    private static readonly Lazy<Content> BuiltInV2=new(()=>Load("CinderExchangeV2.json",ContentIdV2));
     public static string ContentSha256=>BuiltIn.Value.Digest;
     public static int SourcePartCount=>BuiltIn.Value.Parts.Length;
+    public static bool IsAuthored(SurfaceProfile profile)=>profile==SurfaceProfile.AuthoredFoundryV1 || profile==SurfaceProfile.AuthoredFoundryV2;
+    public static string GetContentId(SurfaceProfile profile)=>profile switch
+    {
+        SurfaceProfile.AuthoredFoundryV1=>ContentId,
+        SurfaceProfile.AuthoredFoundryV2=>ContentIdV2,
+        _=>throw new ArgumentOutOfRangeException(nameof(profile))
+    };
+    private static Content Resolve(SurfaceProfile profile)=>profile switch
+    {
+        SurfaceProfile.AuthoredFoundryV1=>BuiltIn.Value,
+        SurfaceProfile.AuthoredFoundryV2=>BuiltInV2.Value,
+        _=>throw new ArgumentOutOfRangeException(nameof(profile))
+    };
+    public static string GetContentSha256(SurfaceProfile profile)=>Resolve(profile).Digest;
+    public static int GetSourcePartCount(SurfaceProfile profile)=>Resolve(profile).Parts.Length;
     private static readonly HashSet<string> Materials=new(StringComparer.Ordinal)
-        {"Graphite","Steel","Copper","Ceramic","Rubber","Cyan","Amber","Basalt","Paint","Warm","Glass","Timber"};
+        {"Graphite","Steel","Copper","Ceramic","Rubber","Cyan","Amber","Basalt","Paint","Warm","Glass","Timber","CastFloor","EmberMineral"};
 
     internal sealed class Payload
     {
@@ -71,26 +88,27 @@ public static class AuthoredFoundry
                 p.Value.Select((part,index)=>part.Create(index,0,0,0)).ToArray()));
         }
     }
-    private static Content Load()
+    private static Content Load(string resource,string expectedId)
     {
-        using var stream=typeof(AuthoredFoundry).Assembly.GetManifestResourceStream("Forgeborne.Core.Content.CinderExchangeV1.json")
+        using var stream=typeof(AuthoredFoundry).Assembly.GetManifestResourceStream("Forgeborne.Core.Content."+resource)
             ?? throw new InvalidOperationException("Embedded original foundry geometry is missing.");
         using var reader=new StreamReader(stream,Encoding.UTF8,true);
         string json=reader.ReadToEnd();
-        return Parse(json);
+        return Parse(json,expectedId);
     }
-    internal static void ValidatePayload(string json)=>Parse(json);
-    private static Content Parse(string json)
+    internal static void ValidatePayload(string json,SurfaceProfile profile=SurfaceProfile.AuthoredFoundryV1)=>Parse(json,GetContentId(profile));
+    private static Content Parse(string json,string expectedId)
     {
         if(json==null || json.Length>24_000_000)throw new InvalidOperationException("Foundry content exceeds its size contract.");
         var data=JsonSerializer.Deserialize<Payload>(json);
-        if(data?.Schema!=1 || data.Id!=ContentId || data.Parts==null || data.Parts.Length==0 || data.Parts.Length>1024)
+        if(data?.Schema!=1 || data.Id!=expectedId || data.Parts==null || data.Parts.Length==0 || data.Parts.Length>1024)
             throw new InvalidOperationException("Unsupported foundry content schema or identity.");
         var parts=new List<Part>();var names=new HashSet<string>(StringComparer.Ordinal);int triangleCount=0;
         foreach(var item in data.Parts)
         {
             if(item==null || string.IsNullOrWhiteSpace(item.Name) || item.Name!.Length>120 || !names.Add(item.Name)
                 || item.Material==null || !Materials.Contains(item.Material)
+                || (expectedId==ContentId && (item.Material=="CastFloor" || item.Material=="EmberMineral"))
                 || (item.Kind!="Static" && item.Kind!="Deposit" && item.Kind!="Template")
                 || item.Vertices==null || item.Indices==null || item.Normals==null
                 || item.Vertices.Length<4 || item.Vertices.Length>8192 || item.Indices.Length<12
@@ -120,7 +138,8 @@ public static class AuthoredFoundry
                 if(item.Kind!="Static")
                 {
                     var local=vertices[i]-(item.Kind=="Deposit" ? new Vector3(item.Owner![0],item.Owner[1],item.Owner[2]) : Vector3.Zero);
-                    if(local.X<0 || local.X>1 || local.Y<0 || local.Y>1 || local.Z<0 || local.Z>1)
+                    float spread=item.Kind=="Deposit" && expectedId==ContentIdV2 ? .45f : 0;
+                    if(local.X < -spread || local.X>1+spread || local.Y<0 || local.Y>1 || local.Z < -spread || local.Z>1+spread)
                         throw new InvalidOperationException("Bound geometry must stay inside its declared ledger cell: "+item.Name);
                 }
             }
@@ -172,7 +191,7 @@ public static class AuthoredFoundry
     internal static TerrainGeometry Build(VoxelChunk chunk,TerrainGeometry? previous)
     {
         ValidateLedger(chunk);
-        var content=BuiltIn.Value;var regions=new List<TerrainRegion>();
+        var content=Resolve(chunk.SurfaceProfile);var regions=new List<TerrainRegion>();
         foreach(var part in content.Parts)
             if(part.Kind=="Static" || (part.Kind=="Deposit" && chunk.Get(part.X,part.Y,part.Z)==part.Type))regions.Add(part.FixedRegion!);
         var prior=previous?.Regions.ToDictionary(p=>p.Id);
@@ -192,7 +211,7 @@ public static class AuthoredFoundry
 
     internal static void ValidateLedger(VoxelChunk chunk)
     {
-        var content=BuiltIn.Value;
+        var content=Resolve(chunk.SurfaceProfile);
         var deposits=content.Parts.Where(p=>p.Kind=="Deposit").Select(p=>(p.X,p.Y,p.Z,p.Type)).ToHashSet();
         for(int y=0;y<VoxelChunk.Size;y++)for(int z=0;z<VoxelChunk.Size;z++)for(int x=0;x<VoxelChunk.Size;x++)
         {
@@ -204,22 +223,24 @@ public static class AuthoredFoundry
     }
 
     /// <summary>The exact original construction meshes, in local placement space; no colliders or world mutation.</summary>
-    public static IReadOnlyList<TerrainRegion> ConstructionTemplate(BlockType type)
+    public static IReadOnlyList<TerrainRegion> ConstructionTemplate(BlockType type)=>ConstructionTemplate(type,SurfaceProfile.AuthoredFoundryV1);
+    public static IReadOnlyList<TerrainRegion> ConstructionTemplate(BlockType type,SurfaceProfile profile)
     {
-        if(!BuiltIn.Value.Previews.TryGetValue(type,out var regions))throw new ArgumentOutOfRangeException(nameof(type));
+        if(!Resolve(profile).Previews.TryGetValue(type,out var regions))throw new ArgumentOutOfRangeException(nameof(type));
         return regions;
     }
 
     /// <summary>Populate the existing zone. The caller owns the one Simulation and its pose.</summary>
-    public static void Populate(WorldZone world)
+    public static void Populate(WorldZone world)=>Populate(world,SurfaceProfile.AuthoredFoundryV1);
+    public static void Populate(WorldZone world,SurfaceProfile profile)
     {
         if(world==null)throw new ArgumentNullException(nameof(world));
-        var content=BuiltIn.Value;var bytes=new byte[VoxelChunk.Volume];
+        var content=Resolve(profile);var bytes=new byte[VoxelChunk.Volume];
         for(int y=0;y<=3;y++)for(int z=0;z<VoxelChunk.Size;z++)for(int x=0;x<VoxelChunk.Size;x++)
             bytes[VoxelChunk.Index(x,y,z)]=(byte)BlockType.Bedrock;
         foreach(var part in content.Parts)
             if(part.Kind=="Deposit")bytes[VoxelChunk.Index(part.X,part.Y,part.Z)]=(byte)part.Type;
-        world.Chunk.FromBytes(bytes);world.Chunk.SurfaceProfile=SurfaceProfile.AuthoredFoundryV1;
+        world.Chunk.FromBytes(bytes);world.Chunk.SurfaceProfile=profile;
         world.Player.X=16;world.Player.Y=4;world.Player.Z=7;
         world.Enemies.Clear();world.Squads.Clear();
     }

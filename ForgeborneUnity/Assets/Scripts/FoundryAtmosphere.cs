@@ -69,7 +69,7 @@ public sealed class FoundryAtmosphere : MonoBehaviour
     void LateUpdate()
     {
         if(_architecture!=null && _manager!=null && _manager.Simulation!=null)
-            _architecture.SetActive(_manager.Simulation.World.Chunk.SurfaceProfile!=Forgeborne.Core.SurfaceProfile.AuthoredFoundryV1);
+            _architecture.SetActive(!Forgeborne.Core.AuthoredFoundry.IsAuthored(_manager.Simulation.World.Chunk.SurfaceProfile));
     }
     IEnumerator CaptureReflection(ReflectionProbe probe)
     {
