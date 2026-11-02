@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "productionFire": true,
+      "independentCanonicalHitDistanceMetres": 2.50138855,
+      "traceStartsAtActualAuthoredMuzzle": true,
+      "traceEndsAtCanonicalHit": true,
+      "ammoAndDamagePreserved": true,
+      "selectedRestPoseRestored": true,
+      "presentationDoesNotAdvanceWorld": true,
+      "scope": "Scripted existing production action and real line renderer, not native input, heard mix or fun acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

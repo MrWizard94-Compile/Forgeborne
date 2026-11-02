@@ -36,9 +36,12 @@ The preceding 0.127 adds original continuous skinned gloves, refined carbine
 assemblies, transparent optic and reload presentation. Source/import, actual GPU
 poses/materials and native firing/reload/orbital/pause/load checks are recorded in
 [the carbine checkpoint](docs/carbine-art-checkpoint.md). AAA+ remains unmet.
-Current 0.128 slims the housing and refits its assemblies, with a saved holding
+The preceding 0.128 slims the housing and refits its assemblies, with a saved holding
 angle that exposes the firing hand. Actual render, shot and native evidence is in
 [the first-person craft checkpoint](docs/first-person-framing-checkpoint.md).
+Current 0.129 connects the support-hand reload to the magazine/charging slide
+and corrects sleeve cuff binding. It remains cosmetic, with further art and
+motion work required. See [the hand-motion checkpoint](docs/hand-motion-checkpoint.md).
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single

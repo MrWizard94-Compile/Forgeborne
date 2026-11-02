@@ -20,7 +20,17 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.128 refines the original receiver proportions/assemblies and first-person
+Current 0.129 connects the support-hand reload to the magazine and charging slide,
+with finger curl/thumb opposition and a 1.2-second cosmetic gesture. Rendered
+inspection rejected an open pose and corrected sleeve cuffs bound to the palm.
+Actual source/import binding, rig/contact/cadence/reset/shot checks pass. Windows
+package 20261102T214317Z and console pass with zero errors/warnings; native reload
+poses, firing, orbital/FPS, pause and existing-slot load observed. Saves exact at
+21:50:16Z; new player present and last observed paused, earlier native session
+not closed, Editor stopped. No final art, timed gameplay reload or fun approval.
+See [current hand-motion evidence](hand-motion-checkpoint.md).
+
+The preceding 0.128 refines the original receiver proportions/assemblies and first-person
 holding angle, preserving the corrected hand surfaces, bindings and rest rigs.
 Source/import, actual skin/reset/state and production shot/muzzle/hit checks pass.
 Windows package 20261102T210226Z succeeded with zero build/console errors/warnings;

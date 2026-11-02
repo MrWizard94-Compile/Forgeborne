@@ -16,6 +16,7 @@ public sealed class WeaponViewModel : MonoBehaviour
     private Vector3 _chargingRest,_magazineRest,_leftElbowRest,_leftWristRest,_leftGripRest;
     private Vector3 _chargingLocalRest,_magazineLocalRest;
     private Quaternion _leftForearmRotation,_leftPalmRotation;
+    private Vector3 _leftThumbOppositionAxis;
     private readonly List<BoneRest> _boneRest=new List<BoneRest>();
     private readonly List<FingerJoint> _leftFingers=new List<FingerJoint>(),_rightIndex=new List<FingerJoint>();
     private sealed class BoneRest
@@ -37,7 +38,7 @@ public sealed class WeaponViewModel : MonoBehaviour
     private Material? _flashMaterial;
     private Mesh? _flashMesh;
     private float _shotKick, _flashLife;
-    public const float ReloadPresentationSeconds=.8f;
+    public const float ReloadPresentationSeconds=1.2f;
     private float _reloadAge=ReloadPresentationSeconds;
     public Vector3 MuzzlePosition => _muzzle != null ? _muzzle.position : transform.position;
     public void SetModelVisible(bool visible)
@@ -85,6 +86,7 @@ public sealed class WeaponViewModel : MonoBehaviour
         if(_boneRest.Count!=34)throw new InvalidOperationException("Both original seventeen-joint rigs must reach the weapon view.");
         foreach(string digit in new[]{"Index","Middle","Ring","Little","Thumb"})CacheFinger("Left"+digit,_leftFingers);
         CacheFinger("RightIndex",_rightIndex);
+        _leftThumbOppositionAxis=_leftFingers[12].Bone.InverseTransformDirection(_modelRoot.transform.forward).normalized;
         if(_modelRoot.GetComponentsInChildren<Collider>(true).Length!=0)
             throw new InvalidOperationException("View art must not own collision.");
         var resource=Resources.Load<Material>("Art/Materials/Cyan");
@@ -153,20 +155,49 @@ public sealed class WeaponViewModel : MonoBehaviour
         _shotKick=Mathf.MoveTowards(_shotKick,0,deltaTime*9);
         _flashLife=Mathf.Max(0,_flashLife-deltaTime);_reloadAge=Mathf.Min(ReloadPresentationSeconds,_reloadAge+deltaTime);
         float time=_reloadAge/ReloadPresentationSeconds;
-        float reload=Mathf.Sin(time*Mathf.PI);
+        float reload=Ease(0,.22f,time)*(1-Ease(.75f,1,time));
         _modelRoot.transform.localPosition=ViewOffset+new Vector3(0,.006f*_shotKick-.025f*reload,-.045f*_shotKick);
         _modelRoot.transform.localRotation=Quaternion.Euler(ViewAngles)*Quaternion.Euler(-7*_shotKick+12*reload,0,-6*reload);
         foreach(var bone in _boneRest)bone.Restore();
-        float reach=Ease(.04f,.25f,time)*(1-Ease(.78f,.99f,time));
-        float draw=Ease(.30f,.45f,time)*(1-Ease(.58f,.76f,time));
-        if(_magazine!=null)_magazine.position=_modelRoot.transform.TransformPoint(_magazineRest+new Vector3(0,-.13f*draw,-.012f*draw));
+        float reach=Ease(.04f,.22f,time);
+        float draw=Ease(.30f,.44f,time)*(1-Ease(.48f,.62f,time));
+        float chargingReach=Ease(.65f,.76f,time);
+        float returnToGrip=Ease(.90f,1,time);
+        float charging=Ease(.78f,.84f,time)*(1-Ease(.86f,.90f,time));
+        var magazineTravel=new Vector3(0,-.13f*draw,-.012f*draw);
+        var chargingTravel=Vector3.back*(charging*.035f);
+        if(_magazine!=null)_magazine.position=_modelRoot.transform.TransformPoint(_magazineRest+magazineTravel);
+        if(_chargingHandle!=null)_chargingHandle.position=_modelRoot.transform.TransformPoint(_chargingRest+chargingTravel);
+        float open=-18*Mathf.Sin(reach*Mathf.PI)*(1-chargingReach)
+            -12*Mathf.Sin(chargingReach*Mathf.PI)*(1-returnToGrip)
+            -12*Mathf.Sin(returnToGrip*Mathf.PI);
+        float hookGrip=chargingReach*(1-returnToGrip);
+        for(int i=0;i<_leftFingers.Count;i++)
+        {
+            int digit=i/3,joint=i%3;
+            float curl=digit==4 ? (joint==0 ? 0 : joint==1 ? 20 : 15)
+                : (joint==0 ? 15 : joint==1 ? 25 : 20);
+            _leftFingers[i].Flex(open+curl*hookGrip);
+        }
+        _leftFingers[12].Bone.localRotation*=Quaternion.AngleAxis(-35*hookGrip,_leftThumbOppositionAxis);
+        foreach(var finger in _rightIndex)finger.Flex(6*_shotKick);
         if(_leftForearm!=null && _leftPalm!=null)
         {
-            var turn=Quaternion.Euler(-70*reach,0,0);
-            var contact=Vector3.Lerp(_leftGripRest,_magazineRest+new Vector3(-.047f,-.035f,.002f),reach)
-                +new Vector3(0,-.13f*draw,-.012f*draw);
-            var wrist=contact-turn*(_leftGripRest-_leftWristRest);
-            var preferredElbow=_leftElbowRest+new Vector3(0,-.08f*reach,-.15f*reach);
+            var grasp=Quaternion.Euler(-70,0,0);
+            var chargingGrasp=Quaternion.Euler(-70,-25,0);
+            var magazineWrist=_magazineRest+new Vector3(-.047f,-.035f,.002f)+magazineTravel
+                -grasp*(_leftGripRest-_leftWristRest);
+            // The distal index joint hooks outside the slide. Its actual rig
+            // offset, not a detached palm marker, follows the moving assembly.
+            var hookOffset=_modelRoot.transform.InverseTransformPoint(_leftFingers[2].Bone.position)-_leftWristRest;
+            var chargingWrist=_chargingRest+new Vector3(-.025f,-.002f,.027f)+chargingTravel-chargingGrasp*hookOffset;
+            var wrist=Vector3.Lerp(_leftWristRest,magazineWrist,reach);
+            wrist=Vector3.Lerp(wrist,chargingWrist,chargingReach);
+            wrist=Vector3.Lerp(wrist,_leftWristRest,returnToGrip);
+            var turn=Quaternion.Slerp(Quaternion.identity,grasp,reach);
+            turn=Quaternion.Slerp(turn,chargingGrasp,chargingReach);
+            turn=Quaternion.Slerp(turn,Quaternion.identity,returnToGrip);
+            var preferredElbow=_leftElbowRest+new Vector3(-.025f*chargingReach,-.08f*reach,-.15f*reach)*(1-returnToGrip);
             var direction=(wrist-preferredElbow).normalized;
             float length=Vector3.Distance(_leftWristRest,_leftElbowRest);
             var elbow=wrist-direction*length;
@@ -174,11 +205,6 @@ public sealed class WeaponViewModel : MonoBehaviour
             _leftForearm.rotation=_modelRoot.transform.rotation*Quaternion.FromToRotation(_leftWristRest-_leftElbowRest,direction)*_leftForearmRotation;
             _leftPalm.rotation=_modelRoot.transform.rotation*turn*_leftPalmRotation;
         }
-        float open=-18*Mathf.Sin(reach*Mathf.PI);
-        foreach(var finger in _leftFingers)finger.Flex(open);
-        foreach(var finger in _rightIndex)finger.Flex(6*_shotKick);
-        float charging=Ease(.75f,.83f,time)*(1-Ease(.88f,.96f,time));
-        if(_chargingHandle!=null)_chargingHandle.position=_modelRoot.transform.TransformPoint(_chargingRest+Vector3.back*(charging*.035f));
         if(_muzzleFlash!=null) _muzzleFlash.SetActive(_flashLife>0);
         if(_flashMaterial!=null) _flashMaterial.SetColor("_EmissionColor",(new Color(0.05f,0.8f,1)*(2+_flashLife*85)).gamma);
         if(_muzzleLight!=null) _muzzleLight.intensity=_flashLife*28;

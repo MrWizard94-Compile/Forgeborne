@@ -1,6 +1,29 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.128 first-person carbine craft
+## Current checkpoint — 0.129 support-hand motion and sleeve cuffs
+
+Original 1.2-second reload now grasps/withdraws/reseats the capacitor magazine,
+hooks/pulls/releases the charging slide, then returns to the foregrip. Fingers
+curl with thumb opposition. Cosmetic only: immediate Core ammo transfer and
+shot interruption remain unchanged. Rendered inspection rejected an open pose
+and exposed sleeve cuff bands bound to the palm; 640 original vertices per hand
+now bind to the forearm. Hand geometry/rest rigs and other weights stay exact.
+Actual imported split cuff vertices, pose/contact/cadence/reset/shot consumers
+pass. Source/import remain 88,224 triangles. Core/DLLs/catalogs/maps unchanged.
+
+Windows package 20261102T214317Z passes with zero build/console errors/warnings,
+194 files and no MCP DLL/assembly entry. Native magazine/charging poses, return,
+fire/reload, Tab orbital/FPS, Escape and existing-slot load were observed. Both
+saves exact at 21:50:16Z; exact new process present, last observed UI paused,
+Editor Play stopped. The prior native session was not closed; the new QA log is
+separate. These are dated observations; preserve later user changes.
+See hand-motion-checkpoint.md and evidence/2026-11-02/hand-motion-0129.
+
+Full six-influence AAA+ goal stays active and unaccepted. Hand anatomy/materials,
+continuous motion, actors/environment, full native loop/cold recovery, budgets,
+heard mix and director experience/fun remain open. Frozen law/evolution unchanged.
+
+## Historical checkpoint — 0.128 first-person carbine craft
 
 Original receiver cross sections are slimmer; panels, charging slide, optic and
 grip/magazine sockets are refitted. Actual Main uses (.19,-.10,.55), yaw -12 at

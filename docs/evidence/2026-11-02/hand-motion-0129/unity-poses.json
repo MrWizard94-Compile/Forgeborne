@@ -1,0 +1,79 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "oneSimulation": true,
+      "originalBoneCount": 34,
+      "skins": 2,
+      "actualLeftHandDeformation": true,
+      "noCrossHandBinding": true,
+      "forearmLengthPreserved": true,
+      "pausedPoseStable": true,
+      "exactRestReset": true,
+      "triggerFingerDisplacementMetres": 0.0208490863,
+      "orbitalVisibility": true,
+      "maximumForearmLengthError": 8.940697e-07,
+      "samples": [
+        {
+          "seconds": 0.0,
+          "leftVertexDisplacementMetres": 1.25657334e-06,
+          "rightVertexDisplacementMetres": 0.0,
+          "forearmLengthErrorMetres": 7.4505806e-07,
+          "magazineRootPosition": "(0.00, -0.11, 0.10)"
+        },
+        {
+          "seconds": 0.18,
+          "leftVertexDisplacementMetres": 0.248795941,
+          "rightVertexDisplacementMetres": 8.32866931e-07,
+          "forearmLengthErrorMetres": 2.98023224e-07,
+          "magazineRootPosition": "(0.00, -0.11, 0.10)"
+        },
+        {
+          "seconds": 0.420000017,
+          "leftVertexDisplacementMetres": 0.373879224,
+          "rightVertexDisplacementMetres": 1.11709028e-06,
+          "forearmLengthErrorMetres": 5.662441e-07,
+          "magazineRootPosition": "(0.00, -0.15, 0.10)"
+        },
+        {
+          "seconds": 0.6,
+          "leftVertexDisplacementMetres": 0.428871483,
+          "rightVertexDisplacementMetres": 1.11709028e-06,
+          "forearmLengthErrorMetres": 8.940697e-07,
+          "magazineRootPosition": "(0.00, -0.23, 0.09)"
+        },
+        {
+          "seconds": 0.840000033,
+          "leftVertexDisplacementMetres": 0.428572237,
+          "rightVertexDisplacementMetres": 1.11709028e-06,
+          "forearmLengthErrorMetres": 7.748604e-07,
+          "magazineRootPosition": "(0.00, -0.11, 0.10)"
+        },
+        {
+          "seconds": 1.008,
+          "leftVertexDisplacementMetres": 0.5294307,
+          "rightVertexDisplacementMetres": 2.09211453e-06,
+          "forearmLengthErrorMetres": 5.066395e-07,
+          "magazineRootPosition": "(0.00, -0.11, 0.10)"
+        },
+        {
+          "seconds": 1.2,
+          "leftVertexDisplacementMetres": 1.26270311e-06,
+          "rightVertexDisplacementMetres": 0.0,
+          "forearmLengthErrorMetres": 7.4505806e-07,
+          "magazineRootPosition": "(0.00, -0.11, 0.10)"
+        }
+      ],
+      "leftForearmLengthMetres": 0.289327145,
+      "rightForearmLengthMetres": 0.262506664,
+      "fillExcludesWorldLayers": true,
+      "warmPresentationUpdates": 600,
+      "warmReloadIntervalUpdates": 168,
+      "warmPresentationMilliseconds": 6.440300000000001,
+      "warmPresentationAllocatedBytes": 0,
+      "scope": "Actual production rig and CPU-baked skin consumers in paused Main. GPU deformation requires the separate frame-boundary captures. Warm presentation-only timing excludes rendering/skinning/platform overhead and is not representative native performance or fun acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

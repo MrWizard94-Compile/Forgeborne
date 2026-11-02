@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.129.0 — 2026-11-02 — Support-hand reload and sleeve cuff binding
+
+- Connected the support-hand sequence to magazine grasp/withdrawal/reseating and
+  charging-slide hook/pull/release, with finger curl and thumb opposition. The
+  cosmetic gesture lasts 1.2 seconds; Core ammo transfer/input rules are unchanged.
+- Corrected original sleeve cuff bands that followed the palm during wrist bends.
+  Geometry/rest rigs and other bindings are preserved; actual import is checked.
+- Actual rig/contact/cadence/pause/reset/shot checks and rendered/native poses pass
+  their scoped checks. Windows build/console: zero errors/warnings. Existing user
+  saves remain exact at check; the earlier native session was not closed.
+- Final hand/actor/environment art, full native loop, representative budgets,
+  heard mix and fun remain open. See docs/hand-motion-checkpoint.md.
+
 ## 0.128.0 — 2026-11-02 — Carbine housing and first-person framing
 
 - Slimmed the original receiver and refitted its panels, charging slide, optic,

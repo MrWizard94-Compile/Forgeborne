@@ -1,0 +1,26 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.129.0",
+      "cuffs": [
+        {
+          "skin": "LeftHandSkinned",
+          "cuffVertices": 738,
+          "cuffBoundTo": "LeftForearm",
+          "fourWeightSkin": true
+        },
+        {
+          "skin": "RightHandSkinned",
+          "cuffVertices": 738,
+          "cuffBoundTo": "RightForearm",
+          "fourWeightSkin": true
+        }
+      ],
+      "importedTriangles": 88224,
+      "scope": "Actual imported Rubber-role vertices and binding consumer; rendered bend and native review remain separate."
+    },
+    "compiler": "codedom"
+  }
+}

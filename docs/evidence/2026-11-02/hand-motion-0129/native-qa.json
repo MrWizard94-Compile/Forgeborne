@@ -1,0 +1,126 @@
+{
+  "version": "0.129.0",
+  "recordedAtUtc": "2026-11-02T21:50:16.5797769Z",
+  "package": "ForgeborneUnity/Builds/Windows-QA/20261102T214317Z",
+  "interface": "Actual native Windows player via sky inputs, no injected gameplay calls",
+  "launch": "Supported Unity Player CLI -logFile to a new private QA log; prior native session not closed",
+  "observations": {
+    "enteredFirstPerson": true,
+    "mouseShot": {
+      "before": "42/120",
+      "after": "41/120"
+    },
+    "legacyRReload": {
+      "magazineReachVisible": true,
+      "chargingHandAndCuffVisible": true,
+      "ammo": "42/119",
+      "returnedToForegrip": true
+    },
+    "tabOrbitalHidesView": true,
+    "tabReturnsSelectedFraming": true,
+    "escapePauses": true,
+    "existingSlotLoadedAndLastObservedPaused": true,
+    "loadedHud": {
+      "wood": 6,
+      "stone": 3,
+      "ammo": "20/119",
+      "squadVisible": true,
+      "coreDistanceMetres": 10
+    }
+  },
+  "frames": [
+    {
+      "path": "native-charging.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "1cec9444a41f6ce550213fc18c63bbf63874b0657cee4f6225c7b995f3307ff8"
+    },
+    {
+      "path": "native-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "955943a79a181d8a7046febc89b1d911283427d1a63501f121ee5a640c047dfe"
+    },
+    {
+      "path": "native-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "b64fa0f6df2b53f4e7076a576fe68c96e8402317894e84824b46114b1abbf600"
+    },
+    {
+      "path": "native-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "86f4401a6cd782d47569535c40d92f9c75de1ba486a0abaa8c7b7a0229e1ff03"
+    },
+    {
+      "path": "native-loaded.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "953f730c791d4282f6cd5cb6735deae81afb69ddec0adb4e84ba78145dc1cb75"
+    },
+    {
+      "path": "native-orbital.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "35e6e45ebc2410d0b5c3e6d9d63aa5902395a5ed869ea2def4945b050c247918"
+    },
+    {
+      "path": "native-paused.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "2e9ba62427968ba03c4cd11154a4ea37374149ededeb75d430e84fae87f0e3a9"
+    },
+    {
+      "path": "native-reload.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "cbc7509fe9d0342b897b7d334d6e5fde33079f5654ab235e286da5edfa83d890"
+    },
+    {
+      "path": "native-rest.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "fbcf97fa3da470268edec103a028d151cdd3a40770a8f0d44227e0956bf580d9"
+    },
+    {
+      "path": "native-restored.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "aecd8ed54e62b67e850da1682101f541c74782ae03f50c5adbb6f5dd9bd5a52a"
+    }
+  ],
+  "savePreservation": {
+    "checkedAtUtc": "2026-11-02T21:50:16.3646675Z",
+    "namesMatch": true,
+    "files": [
+      {
+        "name": "slot-1.json",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      },
+      {
+        "name": "slot-1.json.backup",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      }
+    ],
+    "allHashesMatch": true,
+    "restoredOrWrittenByQa": false
+  },
+  "boundedNativeLog": {
+    "snapshotAtUtc": "2026-11-02T21:50:16.3935411Z",
+    "bytes": 1764,
+    "sha256": "195bf8753ad29fa8f4b59e3487c82f912d83281c04dbc9131f74aef437deea95",
+    "separateQaLog": true,
+    "observedProjectExceptionPatternCount": 0,
+    "d3d12InfoQueueDiagnosticCount": 1,
+    "classification": "Retained inherited D3D12 validation-info diagnostic, see surface-material-checkpoint.md. Shared read-only live snapshot; not a shutdown log or complete stability proof."
+  },
+  "processAtReceipt": [
+    {
+      "pid": 40408,
+      "exactPackage": true,
+      "separateLogArgumentVerified": true
+    }
+  ],
+  "limits": "Dated scoped controls/pose/slot observations, not full native loop, current-v2 cold recovery, budgets, heard mix, stability, final art or fun acceptance. Cosmetic reload remains interruptible with immediate Core ammo transfer. Later user changes take precedence."
+}

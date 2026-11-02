@@ -1,0 +1,209 @@
+[
+  {
+    "phase": 0,
+    "seconds": 0.0,
+    "setter": {
+      "label": "reload-phase-0-00",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.0,
+      "setFrame": 13379,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-00.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.14, 0.41)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.39, 0.86)",
+      "normalFramesCrossed": 610,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.16,
+    "seconds": 0.192,
+    "setter": {
+      "label": "reload-phase-0-16",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.192,
+      "setFrame": 14565,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-16.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.13, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.34, 0.85)",
+      "normalFramesCrossed": 577,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.28,
+    "seconds": 0.336,
+    "setter": {
+      "label": "reload-phase-0-28",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.336,
+      "setFrame": 15736,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-28.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 573,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.44,
+    "seconds": 0.528,
+    "setter": {
+      "label": "reload-phase-0-44",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.528,
+      "setFrame": 16886,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-44.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 577,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.62,
+    "seconds": 0.744,
+    "setter": {
+      "label": "reload-phase-0-62",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.744,
+      "setFrame": 18029,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-62.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 568,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.76,
+    "seconds": 0.9119999999999999,
+    "setter": {
+      "label": "reload-phase-0-76",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.912,
+      "setFrame": 19153,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-76.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 575,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.84,
+    "seconds": 1.008,
+    "setter": {
+      "label": "reload-phase-0-84",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 1.008,
+      "setFrame": 20299,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-84.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.13, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.34, 0.85)",
+      "normalFramesCrossed": 573,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.9,
+    "seconds": 1.08,
+    "setter": {
+      "label": "reload-phase-0-90",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 1.08,
+      "setFrame": 21441,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-0-90.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.13, 0.40)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.37, 0.86)",
+      "normalFramesCrossed": 575,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 1,
+    "seconds": 1.2,
+    "setter": {
+      "label": "reload-phase-1-00",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 1.2,
+      "setFrame": 22585,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\hand-motion-0129\\rendered\\reload-phase-1-00.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.14, 0.41)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.39, 0.86)",
+      "normalFramesCrossed": 576,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  }
+]

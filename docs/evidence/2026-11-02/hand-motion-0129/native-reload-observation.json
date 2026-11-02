@@ -1,0 +1,7 @@
+{
+  "firstSnapshotReturnedAfterMs": 314.38259997963905,
+  "chargingSnapshotReturnedAfterMs": 1062.0333999991417,
+  "timingStartsBeforeInputApi": true,
+  "notGameplayPhaseOrPerformanceTiming": true,
+  "actualImagesEstablishMagazineAndChargingPoses": true
+}

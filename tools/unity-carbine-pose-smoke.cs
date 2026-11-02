@@ -30,7 +30,8 @@ try
     var magazineRest=magazine.localPosition;var bones=skins.SelectMany(s=>s.bones).Distinct().ToArray();
     var bonePositions=bones.Select(b=>b.localPosition).ToArray();var boneRotations=bones.Select(b=>b.localRotation).ToArray();
     var samples=new System.Collections.Generic.List<object>();float maxLeft=0,maxRight=0,maxLengthError=0;
-    var times=new[]{0f,.12f,.30f,.42f,.65f,.8f};
+    float duration=WeaponViewModel.ReloadPresentationSeconds;
+    var times=new[]{0f,.15f*duration,.35f*duration,.50f*duration,.70f*duration,.84f*duration,duration};
     foreach(float time in times)
     {
         view.ResetFeedbackPose();view.ReactReload();view.AdvancePresentation(time);
@@ -57,7 +58,8 @@ try
     view.ResetFeedbackPose();
     for(int i=0;i<20;i++)view.AdvancePresentation(1f/120);
     var timer=new System.Diagnostics.Stopwatch();long allocated=System.GC.GetAllocatedBytesForCurrentThread();timer.Start();
-    for(int i=0;i<600;i++){if(i%96==0)view.ReactReload();view.AdvancePresentation(1f/120);}
+    int reloadInterval=Mathf.CeilToInt(WeaponViewModel.ReloadPresentationSeconds*120)+24;
+    for(int i=0;i<600;i++){if(i%reloadInterval==0)view.ReactReload();view.AdvancePresentation(1f/120);}
     timer.Stop();allocated=System.GC.GetAllocatedBytesForCurrentThread()-allocated;
     if(allocated>256)throw new System.InvalidOperationException("Weapon presentation allocated during warm frame updates: "+allocated);
     view.ResetFeedbackPose();rig.SetOrbital(true);
@@ -67,7 +69,7 @@ try
         actualLeftHandDeformation=true,noCrossHandBinding=true,forearmLengthPreserved=true,pausedPoseStable=true,exactRestReset=true,
         triggerFingerDisplacementMetres=triggerMovement,orbitalVisibility=true,maximumForearmLengthError=maxLengthError,samples=samples,
         leftForearmLengthMetres=originalLength,rightForearmLengthMetres=rightLength,fillExcludesWorldLayers=true,
-        warmPresentationUpdates=600,warmPresentationMilliseconds=timer.Elapsed.TotalMilliseconds,warmPresentationAllocatedBytes=allocated,
+        warmPresentationUpdates=600,warmReloadIntervalUpdates=reloadInterval,warmPresentationMilliseconds=timer.Elapsed.TotalMilliseconds,warmPresentationAllocatedBytes=allocated,
         scope="Actual production rig and CPU-baked skin consumers in paused Main. GPU deformation requires the separate frame-boundary captures. Warm presentation-only timing excludes rendering/skinning/platform overhead and is not representative native performance or fun acceptance."};
 }
 finally

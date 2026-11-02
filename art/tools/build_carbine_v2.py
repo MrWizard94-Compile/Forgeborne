@@ -203,7 +203,7 @@ def build_hand(side):
     for offset in (-.032,-.022):
         centre=wrist+direction*offset
         obj=A.ring(side+" stitched cuff welt",centre,.033,.0012,"Rubber","SkinBuild",axis=tuple(direction))
-        trim.append((obj,side+"Palm"))
+        trim.append((obj,side+"Forearm"))
     if right:
         seam=[(.066,-.159,-.173),(.068,-.126,-.181),(.065,-.094,-.163)]
     else:

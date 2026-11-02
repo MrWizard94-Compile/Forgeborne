@@ -53,9 +53,15 @@ The original OpticGlass shader supplies the transparent combiner. See
 `docs/carbine-art-checkpoint.md` for source/import audits, actual GPU/native
 evidence, limits and full reproduction commands. The current 88,224-triangle count stays
 under its 100,000 budget; this is not proof of AAA+ quality or native performance.
-The latest receiver/framing pass is in `docs/first-person-framing-checkpoint.md`.
-Its source hand positions, bindings and rigs match 0.127 exactly, with equivalent
+The 0.128 receiver/framing pass is in `docs/first-person-framing-checkpoint.md`.
+At that checkpoint, source hand positions, bindings and rigs matched 0.127 exactly, with equivalent
 oriented polygon/material sets despite raw trim-face ordering differences.
+The current 0.129 pass changes only 640 cuff-vertex bindings per hand from palm
+to forearm and adds runtime grasp/charging motion. Actual indexed hand geometry,
+rest rigs, other weights and all twenty maps are preserved. The regular generator
+contains the binding correction; `tools/rebind_carbine_cuffs.py` can migrate an
+existing original source without regenerating geometry. See
+`docs/hand-motion-checkpoint.md` for source comparison, import, rendering and native evidence.
 
 ## Reproduce and inspect
 
