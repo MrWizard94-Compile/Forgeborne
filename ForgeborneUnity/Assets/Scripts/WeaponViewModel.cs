@@ -1,25 +1,51 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>Original authored carbine/gauntlet view. Presentation only; Core owns aim, ammo and damage.</summary>
 public sealed class WeaponViewModel : MonoBehaviour
 {
     public Transform? CameraAnchor;
-    public Vector3 ViewOffset = new Vector3(0.22f,-0.22f,0.60f);
+    public Vector3 ViewOffset = new Vector3(0.20f,-0.17f,0.70f);
     private GameObject? _modelRoot;
     private Transform? _muzzle;
     private Transform? _chargingHandle;
-    private Vector3 _chargingRest;
+    private Transform? _magazine,_leftForearm,_leftPalm;
+    private Vector3 _chargingRest,_magazineRest,_leftElbowRest,_leftWristRest,_leftGripRest;
+    private Vector3 _chargingLocalRest,_magazineLocalRest;
+    private Quaternion _leftForearmRotation,_leftPalmRotation;
+    private readonly List<BoneRest> _boneRest=new List<BoneRest>();
+    private readonly List<FingerJoint> _leftFingers=new List<FingerJoint>(),_rightIndex=new List<FingerJoint>();
+    private sealed class BoneRest
+    {
+        public Transform Bone=null!;
+        public Vector3 Position,Scale;
+        public Quaternion Rotation;
+        public void Restore(){Bone.localPosition=Position;Bone.localRotation=Rotation;Bone.localScale=Scale;}
+    }
+    private sealed class FingerJoint
+    {
+        public Transform Bone=null!;
+        public Vector3 BendAxis;
+        public void Flex(float degrees){Bone.localRotation*=Quaternion.AngleAxis(degrees,BendAxis);}
+    }
     private GameObject? _muzzleFlash;
     private Light? _muzzleLight;
+    private Light? _viewFill;
     private Material? _flashMaterial;
     private Mesh? _flashMesh;
     private float _shotKick, _flashLife;
-    private float _reloadAge=1;
+    public const float ReloadPresentationSeconds=.8f;
+    private float _reloadAge=ReloadPresentationSeconds;
     public Vector3 MuzzlePosition => _muzzle != null ? _muzzle.position : transform.position;
-    public void SetModelVisible(bool visible) { if(_modelRoot!=null) _modelRoot.SetActive(visible); }
-    public void ReactShot() { _shotKick=1; _flashLife=0.055f; }
+    public void SetModelVisible(bool visible)
+    {
+        if(_modelRoot==null)return;
+        ResetFeedbackPose();_modelRoot.SetActive(visible);
+        if(_viewFill!=null)_viewFill.enabled=visible;
+    }
+    public void ReactShot() { _shotKick=1; _flashLife=0.055f; _reloadAge=ReloadPresentationSeconds; }
     public void ReactReload() { _reloadAge=0; }
 
     void Start()
@@ -33,9 +59,31 @@ public sealed class WeaponViewModel : MonoBehaviour
             item.gameObject.layer=30; // Exclude camera-local geometry from the environment reflection.
             if(item.name=="MuzzleSocket") _muzzle=item;
             if(item.name=="ChargingHandle") _chargingHandle=item;
+            if(item.name=="Magazine") _magazine=item;
+            if(item.name=="LeftForearm") _leftForearm=item;
+            if(item.name=="LeftPalm") _leftPalm=item;
         }
         if(_muzzle==null) throw new InvalidOperationException("Authored muzzle landmark missing.");
-        if(_chargingHandle!=null) _chargingRest=_chargingHandle.localPosition;
+        if(_chargingHandle==null || _magazine==null || _leftForearm==null || _leftPalm==null)
+            throw new InvalidOperationException("Original carbine moving assemblies/glove rig missing.");
+        _chargingRest=_modelRoot.transform.InverseTransformPoint(_chargingHandle.position);
+        _magazineRest=_modelRoot.transform.InverseTransformPoint(_magazine.position);
+        _chargingLocalRest=_chargingHandle.localPosition;_magazineLocalRest=_magazine.localPosition;
+        _leftElbowRest=_modelRoot.transform.InverseTransformPoint(_leftForearm.position);
+        _leftWristRest=_modelRoot.transform.InverseTransformPoint(_leftPalm.position);
+        Transform? contact=null;
+        foreach(var item in _modelRoot.GetComponentsInChildren<Transform>(true))if(item.name=="LeftPalmContact")contact=item;
+        if(contact==null)throw new InvalidOperationException("Authored support-hand contact landmark missing.");
+        _leftGripRest=_modelRoot.transform.InverseTransformPoint(contact.position);
+        _leftForearmRotation=Quaternion.Inverse(_modelRoot.transform.rotation)*_leftForearm.rotation;
+        _leftPalmRotation=Quaternion.Inverse(_modelRoot.transform.rotation)*_leftPalm.rotation;
+        var bones=new HashSet<Transform>();
+        foreach(var skin in _modelRoot.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            foreach(var bone in skin.bones)
+                if(bones.Add(bone))_boneRest.Add(new BoneRest{Bone=bone,Position=bone.localPosition,Rotation=bone.localRotation,Scale=bone.localScale});
+        if(_boneRest.Count!=34)throw new InvalidOperationException("Both original seventeen-joint rigs must reach the weapon view.");
+        foreach(string digit in new[]{"Index","Middle","Ring","Little","Thumb"})CacheFinger("Left"+digit,_leftFingers);
+        CacheFinger("RightIndex",_rightIndex);
         if(_modelRoot.GetComponentsInChildren<Collider>(true).Length!=0)
             throw new InvalidOperationException("View art must not own collision.");
         var resource=Resources.Load<Material>("Art/Materials/Cyan");
@@ -67,27 +115,71 @@ public sealed class WeaponViewModel : MonoBehaviour
         _muzzleLight=_muzzleFlash.AddComponent<Light>();_muzzleLight.type=LightType.Point;
         _muzzleLight.color=new Color(0.05f,0.8f,1);_muzzleLight.range=1.6f;
         _muzzleLight.shadows=LightShadows.None;
+        var fill=new GameObject("Weapon diffuse fill");
+        fill.transform.SetParent(CameraAnchor,false);fill.transform.localPosition=new Vector3(-.35f,.16f,.05f);
+        _viewFill=fill.AddComponent<Light>();_viewFill.type=LightType.Point;
+        _viewFill.color=new Color(.82f,.86f,.90f);_viewFill.intensity=.45f;_viewFill.range=1.8f;
+        _viewFill.shadows=LightShadows.None;_viewFill.cullingMask=1<<30;
         ResetFeedbackPose();
     }
     public void ResetFeedbackPose()
     {
-        _shotKick=_flashLife=0;_reloadAge=1;
+        _shotKick=_flashLife=0;_reloadAge=ReloadPresentationSeconds;
         if(_modelRoot!=null){_modelRoot.transform.localPosition=ViewOffset;_modelRoot.transform.localRotation=Quaternion.identity;}
-        if(_chargingHandle!=null) _chargingHandle.localPosition=_chargingRest;
+        foreach(var bone in _boneRest)bone.Restore();
+        if(_chargingHandle!=null) _chargingHandle.localPosition=_chargingLocalRest;
+        if(_magazine!=null) _magazine.localPosition=_magazineLocalRest;
         if(_muzzleFlash!=null) _muzzleFlash.SetActive(false);
+        if(_muzzleLight!=null)_muzzleLight.intensity=0;
     }
-    void LateUpdate()
+    private void CacheFinger(string prefix,List<FingerJoint> result)
     {
-        if(_modelRoot==null) return;
-        float dt=Time.deltaTime;
-        _shotKick=Mathf.MoveTowards(_shotKick,0,dt*9);
-        _flashLife=Mathf.Max(0,_flashLife-dt);_reloadAge+=dt;
-        float reload=Mathf.Sin(Mathf.Clamp01(_reloadAge/0.3f)*Mathf.PI);
-        _modelRoot.transform.localPosition=ViewOffset+new Vector3(0,0.006f*_shotKick-0.06f*reload,-0.045f*_shotKick);
-        _modelRoot.transform.localRotation=Quaternion.Euler(-7*_shotKick+25*reload,0,-12*reload);
-        if(_chargingHandle!=null) _chargingHandle.localPosition=_chargingRest+Vector3.back*(reload*0.045f);
+        if(_modelRoot==null)return;
+        var joints=new Transform[3];
+        foreach(var bone in _boneRest)
+            for(int i=0;i<3;i++)if(bone.Bone.name==prefix+i)joints[i]=bone.Bone;
+        foreach(var joint in joints)if(joint==null)throw new InvalidOperationException("Original finger chain missing: "+prefix);
+        var normal=Vector3.Cross(joints[1].position-joints[0].position,joints[2].position-joints[1].position).normalized;
+        if(normal.sqrMagnitude<.5f)throw new InvalidOperationException("Original finger bend plane is undefined: "+prefix);
+        foreach(var joint in joints)result.Add(new FingerJoint{Bone=joint,BendAxis=joint.InverseTransformDirection(normal).normalized});
+    }
+    private static float Ease(float start,float end,float time)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(start,end,time));
+    void LateUpdate()=>AdvancePresentation(Time.deltaTime);
+    public void AdvancePresentation(float deltaTime)
+    {
+        if(float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime<0)throw new ArgumentOutOfRangeException(nameof(deltaTime));
+        if(_modelRoot==null || !_modelRoot.activeInHierarchy) return;
+        _shotKick=Mathf.MoveTowards(_shotKick,0,deltaTime*9);
+        _flashLife=Mathf.Max(0,_flashLife-deltaTime);_reloadAge=Mathf.Min(ReloadPresentationSeconds,_reloadAge+deltaTime);
+        float time=_reloadAge/ReloadPresentationSeconds;
+        float reload=Mathf.Sin(time*Mathf.PI);
+        _modelRoot.transform.localPosition=ViewOffset+new Vector3(0,.006f*_shotKick-.025f*reload,-.045f*_shotKick);
+        _modelRoot.transform.localRotation=Quaternion.Euler(-7*_shotKick+12*reload,0,-6*reload);
+        foreach(var bone in _boneRest)bone.Restore();
+        float reach=Ease(.04f,.25f,time)*(1-Ease(.78f,.99f,time));
+        float draw=Ease(.30f,.45f,time)*(1-Ease(.58f,.76f,time));
+        if(_magazine!=null)_magazine.position=_modelRoot.transform.TransformPoint(_magazineRest+new Vector3(0,-.13f*draw,-.012f*draw));
+        if(_leftForearm!=null && _leftPalm!=null)
+        {
+            var turn=Quaternion.Euler(-70*reach,0,0);
+            var contact=Vector3.Lerp(_leftGripRest,_magazineRest+new Vector3(-.047f,-.035f,.002f),reach)
+                +new Vector3(0,-.13f*draw,-.012f*draw);
+            var wrist=contact-turn*(_leftGripRest-_leftWristRest);
+            var preferredElbow=_leftElbowRest+new Vector3(0,-.08f*reach,-.15f*reach);
+            var direction=(wrist-preferredElbow).normalized;
+            float length=Vector3.Distance(_leftWristRest,_leftElbowRest);
+            var elbow=wrist-direction*length;
+            _leftForearm.position=_modelRoot.transform.TransformPoint(elbow);
+            _leftForearm.rotation=_modelRoot.transform.rotation*Quaternion.FromToRotation(_leftWristRest-_leftElbowRest,direction)*_leftForearmRotation;
+            _leftPalm.rotation=_modelRoot.transform.rotation*turn*_leftPalmRotation;
+        }
+        float open=-18*Mathf.Sin(reach*Mathf.PI);
+        foreach(var finger in _leftFingers)finger.Flex(open);
+        foreach(var finger in _rightIndex)finger.Flex(6*_shotKick);
+        float charging=Ease(.75f,.83f,time)*(1-Ease(.88f,.96f,time));
+        if(_chargingHandle!=null)_chargingHandle.position=_modelRoot.transform.TransformPoint(_chargingRest+Vector3.back*(charging*.035f));
         if(_muzzleFlash!=null) _muzzleFlash.SetActive(_flashLife>0);
-        if(_flashMaterial!=null) _flashMaterial.SetColor("_EmissionColor",new Color(0.05f,0.8f,1)*(2+_flashLife*85));
+        if(_flashMaterial!=null) _flashMaterial.SetColor("_EmissionColor",(new Color(0.05f,0.8f,1)*(2+_flashLife*85)).gamma);
         if(_muzzleLight!=null) _muzzleLight.intensity=_flashLife*28;
     }
     void OnDestroy()
@@ -95,5 +187,6 @@ public sealed class WeaponViewModel : MonoBehaviour
         if(_modelRoot!=null) Destroy(_modelRoot);
         if(_flashMesh!=null) Destroy(_flashMesh);
         if(_flashMaterial!=null) Destroy(_flashMaterial);
+        if(_viewFill!=null) Destroy(_viewFill.gameObject);
     }
 }

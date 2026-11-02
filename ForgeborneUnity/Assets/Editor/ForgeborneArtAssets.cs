@@ -111,6 +111,7 @@ public static class ForgeborneArtAssets
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling || EditorApplication.isUpdating)
             throw new InvalidOperationException("Stopped, imported Editor required.");
+        PrepareCarbineImporter();
         var shader=Shader.Find("Forgeborne/IndustrialSurface");
         if(shader==null || ShaderUtil.ShaderHasError(shader)) throw new InvalidOperationException("Industrial shader must import cleanly.");
         Folder(Root,"Materials"); Folder(Root,"Prefabs");
@@ -120,6 +121,9 @@ public static class ForgeborneArtAssets
         materials.Add("Copper",Surface(shader,"Copper",new Color(0.43f,0.19f,0.075f),0.77f,0.60f,0.4f));
         materials.Add("Ceramic",Surface(shader,"Ceramic",new Color(0.57f,0.63f,0.61f),0.12f,0.40f,0.22f));
         materials.Add("Rubber",Surface(shader,"Rubber",new Color(0.018f,0.025f,0.027f),0,0.18f,0.1f));
+        materials.Add("GloveFabric",Surface(shader,"GloveFabric",new Color(.16f,.105f,.061f),0,.39f,.12f));
+        materials.Add("SleeveFabric",Surface(shader,"SleeveFabric",new Color(.12f,.155f,.16f),0,.22f,.08f));
+        materials.Add("GloveStitch",Surface(shader,"GloveStitch",new Color(.28f,.21f,.13f),0,.15f,0));
         materials.Add("Cyan",Surface(shader,"Cyan",new Color(0.025f,0.62f,0.85f),0.25f,0.65f,0,2.5f));
         materials.Add("Amber",Surface(shader,"Amber",new Color(1,0.19f,0.018f),0.2f,0.62f,0,2.5f));
         materials.Add("Basalt",Surface(shader,"Basalt",new Color(0.12f,0.145f,0.16f),0.03f,0.22f,0.5f));
@@ -128,6 +132,14 @@ public static class ForgeborneArtAssets
         materials.Add("Paint",Surface(shader,"Paint",new Color(0.10f,0.22f,0.24f),0.55f,0.42f,0.42f));
         materials.Add("Warm",Surface(shader,"Warm",new Color(1,0.43f,0.15f),0.1f,0.5f,0,1.8f));
         materials.Add("Glass",Surface(shader,"Glass",new Color(0.12f,0.20f,0.24f),0.55f,0.82f,0.12f,0.08f));
+        var opticShader=Shader.Find("Forgeborne/OpticGlass");
+        if(opticShader==null || ShaderUtil.ShaderHasError(opticShader))throw new InvalidOperationException("Original optic glass shader must compile.");
+        string opticPath=Root+"/Materials/OpticGlass.mat";
+        var optic=AssetDatabase.LoadAssetAtPath<Material>(opticPath);
+        if(optic==null){optic=new Material(opticShader);AssetDatabase.CreateAsset(optic,opticPath);}
+        optic.shader=opticShader;optic.SetColor("_TintColor",new Color(.76f,.90f,.94f,.035f).gamma);
+        optic.SetFloat("_Roughness",.08f);optic.SetFloat("_ReflectionStrength",.15f);
+        EditorUtility.SetDirty(optic);materials.Add("OpticGlass",optic);
         materials.Add("Timber",Surface(shader,"Timber",new Color(0.32f,0.16f,0.065f),0,0.14f,0.45f));
         foreach(var name in new[]{"PulseCarbine","EmberWarden","AetherRelay","ForgeSuit","RelayFoundry"})
         {
@@ -151,6 +163,14 @@ public static class ForgeborneArtAssets
                     }
                     renderer.sharedMaterials=slots;
                     renderer.shadowCastingMode=name=="PulseCarbine" ? ShadowCastingMode.Off : ShadowCastingMode.On;
+                    var skin=renderer as SkinnedMeshRenderer;
+                    if(name=="PulseCarbine" && skin!=null)
+                    {
+                        skin.quality=SkinQuality.Bone4;
+                        // Two camera-local meshes must keep deforming while a
+                        // reload carries a glove through the frustum edge.
+                        skin.updateWhenOffscreen=true;
+                    }
                 }
                 if(instance.GetComponentsInChildren<Collider>(true).Length!=0)
                     throw new InvalidOperationException("Art must not create parallel collision ownership.");
@@ -171,6 +191,13 @@ public static class ForgeborneArtAssets
                     var muzzle=instance.GetComponentsInChildren<Transform>(true).Single(t=>t.name=="MuzzleSocket");
                     if(Mathf.Abs(muzzle.position.z-0.665f)>0.01f || Mathf.Abs(muzzle.position.y-0.016f)>0.01f)
                         throw new InvalidOperationException("Authored forward/up conversion failed: "+muzzle.position);
+                    var skins=instance.GetComponentsInChildren<SkinnedMeshRenderer>(true);
+                    if(skins.Length!=2)throw new InvalidOperationException("Both original glove consumers are required.");
+                    foreach(var skin in skins)ValidateCarbineSkin(skin);
+                    int triangles=instance.GetComponentsInChildren<MeshFilter>(true).Sum(f=>f.sharedMesh.triangles.Length/3)
+                        +skins.Sum(s=>s.sharedMesh.triangles.Length/3);
+                    if(triangles>100000)throw new InvalidOperationException("Carbine view exceeds its original 100k triangle budget.");
+                    foreach(var animator in instance.GetComponentsInChildren<Animator>(true))animator.enabled=false;
                 }
                 PrefabUtility.SaveAsPrefabAsset(instance,Root+"/Prefabs/"+name+".prefab");
                 Debug.Log("Forgeborne authored model prepared: "+name+" "+bounds);
@@ -178,6 +205,53 @@ public static class ForgeborneArtAssets
             finally { EditorSceneManager.ClosePreviewScene(preview); }
         }
         AssetDatabase.SaveAssets();
+    }
+
+    static void PrepareCarbineImporter()
+    {
+        var importer=AssetImporter.GetAtPath(Root+"/Models/PulseCarbine.fbx") as ModelImporter;
+        if(importer==null)throw new InvalidOperationException("Original carbine FBX importer missing.");
+        bool changed=importer.importAnimation || importer.importCameras || importer.importLights
+            || importer.animationType!=ModelImporterAnimationType.Generic || importer.avatarSetup!=ModelImporterAvatarSetup.NoAvatar
+            || importer.optimizeGameObjects || importer.optimizeBones || !importer.preserveHierarchy
+            || importer.skinWeights!=ModelImporterSkinWeights.Custom || importer.maxBonesPerVertex!=4
+            || importer.minBoneWeight!=.00001f;
+        if(!changed)return;
+        importer.importAnimation=false;importer.importCameras=false;importer.importLights=false;
+        importer.animationType=ModelImporterAnimationType.Generic;importer.avatarSetup=ModelImporterAvatarSetup.NoAvatar;
+        importer.optimizeGameObjects=false;importer.optimizeBones=false;importer.preserveHierarchy=true;
+        importer.skinWeights=ModelImporterSkinWeights.Custom;importer.maxBonesPerVertex=4;importer.minBoneWeight=.00001f;
+        importer.SaveAndReimport();
+    }
+
+    static void ValidateCarbineSkin(SkinnedMeshRenderer skin)
+    {
+        string prefix=skin.name=="LeftHandSkinned" ? "Left" : skin.name=="RightHandSkinned" ? "Right" : "";
+        if(prefix=="" || skin.sharedMesh==null || skin.bones.Length>34 || skin.bones.Any(b=>b==null)
+            || skin.sharedMesh.bindposes.Length!=skin.bones.Length)
+            throw new InvalidOperationException("Original glove bind palette is invalid.");
+        // Unity shares the 34-bone palette under the common FBX root. Each
+        // hand must actually bind only its own original seventeen bones.
+        var active=new HashSet<int>();var weights=skin.sharedMesh.boneWeights;
+        if(weights.Length!=skin.sharedMesh.vertexCount)throw new InvalidOperationException("Missing glove vertex bindings.");
+        foreach(var weight in weights)
+        {
+            float total=0;
+            var values=new[]{weight.weight0,weight.weight1,weight.weight2,weight.weight3};
+            var indices=new[]{weight.boneIndex0,weight.boneIndex1,weight.boneIndex2,weight.boneIndex3};
+            for(int i=0;i<4;i++)
+            {
+                float value=values[i];
+                if(float.IsNaN(value) || float.IsInfinity(value) || value<0)throw new InvalidOperationException("Invalid glove skin weight.");
+                if(value==0)continue;
+                int index=indices[i];
+                if(index<0 || index>=skin.bones.Length || !skin.bones[index].name.StartsWith(prefix,StringComparison.Ordinal))
+                    throw new InvalidOperationException("Glove binding crossed into the other hand's rig.");
+                active.Add(index);total+=value;
+            }
+            if(Mathf.Abs(total-1)>.00001f)throw new InvalidOperationException("Glove vertex weights are not normalized.");
+        }
+        if(active.Count!=17)throw new InvalidOperationException("All seventeen original glove joints must reach the actual mesh.");
     }
 
     static Material Surface(Shader shader,string name,Color colour,float metal,float smooth,float weather,float emission=0)

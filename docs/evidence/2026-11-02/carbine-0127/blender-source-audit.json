@@ -1,0 +1,42 @@
+{
+  "blender": "4.5.15 LTS",
+  "meshes": [
+    {
+      "mesh": "FrameMesh",
+      "vertices": 15206,
+      "triangles": 30020,
+      "degenerate": 0,
+      "smallestArea": 2.3131964321705917e-09
+    },
+    {
+      "mesh": "MagazineMesh",
+      "vertices": 928,
+      "triangles": 1824,
+      "degenerate": 0,
+      "smallestArea": 1.4458311391676624e-08
+    },
+    {
+      "mesh": "ChargingHandleMesh",
+      "vertices": 192,
+      "triangles": 376,
+      "degenerate": 0,
+      "smallestArea": 2.3133743464599787e-07
+    },
+    {
+      "mesh": "RightHandSkinned",
+      "vertices": 13934,
+      "triangles": 27832,
+      "degenerate": 0,
+      "smallestArea": 7.175121754626981e-08
+    },
+    {
+      "mesh": "LeftHandSkinned",
+      "vertices": 13934,
+      "triangles": 27832,
+      "degenerate": 0,
+      "smallestArea": 7.386896035483135e-08
+    }
+  ],
+  "triangles": 87884,
+  "sourceOnlyNotRuntimeAcceptance": true
+}

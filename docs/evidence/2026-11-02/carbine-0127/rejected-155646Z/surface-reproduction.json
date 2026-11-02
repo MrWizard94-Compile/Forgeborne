@@ -1,0 +1,10 @@
+{
+  "twoConsecutiveGloveBakesMatch": true,
+  "maps": {
+    "GloveFabric_Color.png": "732ddd86f29288517da9c7b928d3033e68876c89336283fc495b284b1bf0b0da",
+    "GloveFabric_HROM.png": "e7b766a9d2cb335012863a1825cf737f0c9ec82628778d0ae6778f46026fcb5f"
+  },
+  "retainedExistingMapsByteExact": 16,
+  "blender": "4.5.15 LTS",
+  "scope": "PNG field reproducibility; not Blender/FBX container bytes, full asset budgets or final art acceptance"
+}

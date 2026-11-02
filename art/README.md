@@ -33,7 +33,7 @@ run. Blender is a developer tool kept outside this repository; it is not shipped
 
 | Asset | Purpose | Triangles |
 |---|---|---:|
-| PulseCarbine | Original receiver/barrel/induction assemblies, gauntlets and muzzle landmark | 21602 |
+| PulseCarbine | Original refined carbine, continuous skinned gloves, moving assemblies and muzzle landmark | 87884 |
 | EmberWarden | Original compact hovering enemy shell and sensor | 7024 |
 | AetherRelay | Original caged induction chamber/objective | 4820 |
 | ForgeSuit | Original 1.79 m pressure suit for the orbital view | 12144 |
@@ -44,6 +44,15 @@ grid steps. These are named quality gaps, not completed character animation.
 RelayFoundry is the earlier decorative backdrop and owns no collision. It is
 disabled in authored v1/v2 worlds. The current traversable exchange is the
 separate shared physical catalog described above.
+
+Current PulseCarbine delegates to `tools/build_carbine_v2.py`: two continuous
+gloves, seventeen original joints per hand, at most four normalized influences,
+and no parallel collision. New GloveFabric and SleeveFabric pairs are authored separately
+by `tools/bake_glove_surface.py`; existing eight pairs are retained byte-exact.
+The original OpticGlass shader supplies the transparent combiner. See
+`docs/carbine-art-checkpoint.md` for source/import audits, actual GPU/native
+evidence, limits and full reproduction commands. The 87,884-triangle count stays
+under its 100,000 budget; this is not proof of AAA+ quality or native performance.
 
 ## Reproduce and inspect
 

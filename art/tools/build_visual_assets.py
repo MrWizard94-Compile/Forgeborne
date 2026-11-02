@@ -158,68 +158,10 @@ def bolt(center, axis=(1, 0, 0), parent="Frame", radius=0.0045):
     cylinder("Captive hex fastener", center, radius, 0.0035, "Steel", parent, axis, sides=6, bevel=0.0005)
 
 
-def glove(name, center, rotation):
-    x, y, z = center
-    rounded_volume(name+" palm", center, (0.080,0.060,0.10), "Rubber", name, rotation)
-    rounded_volume(name+" knuckle shell", (x,y+0.026,z), (0.073,0.023,0.080), "Graphite", name, rotation)
-    for i in range(4):
-        dx = (i-1.5)*0.017
-        rounded_volume(name+" finger", (x+dx,y-0.02,z+0.047), (0.017,0.040,0.037), "Rubber", name, rotation)
-        rounded_volume(name+" fingertip", (x+dx,y-0.044,z+0.032), (0.016,0.032,0.038), "Rubber", name, rotation)
-    rounded_volume(name+" thumb", (x+0.043,y-0.015,z-0.006), (0.028,0.043,0.055), "Rubber", name, rotation)
-
-
 def rifle():
-    begin("PulseCarbine")
-    outline = [(math.cos(i*math.pi/12)*.5,math.sin(i*math.pi/12)*.5) for i in range(24)]
-    profile("Forged pressure receiver", [(-0.24,0.115,0.135),(-0.17,0.15,0.15),(0.16,0.15,0.15),(0.27,0.10,0.105)], outline)
-    profile("Shoulder stock", [(-0.47,0.09,0.11),(-0.40,0.105,0.13),(-0.24,0.07,0.085)], outline, "Rubber")
-    box("Stock spine", (0,0.047,-0.30), (0.045,0.035,0.22), "Steel", bevel=0.006)
-    cylinder("Barrel core", (0,0.016,0.41), 0.024,0.34)
-    cylinder("Bored muzzle housing", (0,0.016,0.61), 0.038,0.09, "Graphite", sides=12)
-    cylinder("Muzzle aperture", (0,0.016,0.658), 0.022,0.002, "Rubber", bevel=0)
-    ring("Muzzle lip", (0,0.016,0.661), 0.027,0.004, "Steel")
-    for z in (0.29,0.35,0.41,0.47,0.53):
-        ring("Induction collar", (0,0.016,z),0.032,0.005)
-    for side in (-1,1):
-        box("Vented barrel shield", (side*0.041,-0.002,0.39),(0.014,0.064,0.25),"Graphite",bevel=0.005)
-        for z in (0.30,0.34,0.38,0.42,0.46):
-            box("Ceramic heat bridge",(side*0.049,0.004,z),(0.008,0.041,0.012),"Ceramic",bevel=0.002)
-        box("Replaceable side armour",(side*0.079,0.005,-0.004),(0.013,0.080,0.24),"Graphite",bevel=0.006)
-        box("Copper service panel",(side*0.087,0.005,-0.015),(0.005,0.047,0.15),"Copper",bevel=0.003)
-        for z in (-0.09,0.065):
-            for y in (-0.023,0.032):
-                bolt((side*0.092,y,z),axis=(side,0,0))
-    box("Grip",(0,-0.113,-0.13),(0.063,0.15,0.072),"Rubber",bevel=0.012,rotation=(16,0,0))
-    for y in (-0.08,-0.105,-0.13,-0.155):
-        box("Grip rib",(0,y,-0.169),(0.062,0.009,0.012),"Graphite",bevel=0.003)
-    box("Trigger guard base",(0,-0.125,-0.032),(0.042,0.017,0.11),"Steel",bevel=0.005)
-    box("Trigger guard front",(0,-0.094,0.018),(0.042,0.074,0.015),"Steel",bevel=0.005)
-    box("Capacitor magazine",(0,-0.11,0.105),(0.083,0.16,0.12),"Graphite","Magazine",0.010,(-7,0,0))
-    for side in (-1,1):
-        for z in (0.077,0.105,0.133):
-            box("Magazine charge gauge",(side*0.044,-0.10,z),(0.005,0.071,0.011),"Cyan","Magazine",0.002)
-    box("Magazine shoe",(0,-0.19,0.114),(0.098,0.023,0.14),"Copper","Magazine",0.005)
-    box("Sight rail",(0,0.084,-0.002),(0.054,0.025,0.28),"Steel",bevel=0.004)
-    for z in (-0.12,-0.08,-0.04,0,0.04,0.08):
-        box("Machined rail notch",(0,0.101,z),(0.059,0.009,0.014),"Graphite",bevel=0.0015)
-    cylinder("Readout pressure housing",(0,0.117,0.003),0.034,0.115,"Graphite",sides=32)
-    box("Readout glass",(0,0.139,-0.025),(0.050,0.003,0.057),"Cyan",bevel=0.002)
-    ring("Reflex sight rim",(0,0.137,0.13),0.028,0.005,"Steel")
-    box("Sight support",(0,0.108,0.13),(0.022,0.045,0.018),"Graphite",bevel=0.004)
-    cylinder("Power selector",(0.093,0.026,-0.128),0.013,0.012,"Copper",axis=(1,0,0),sides=12)
-    box("Charging handle",(-0.09,0.047,-0.08),(0.037,0.023,0.055),"Steel","ChargingHandle",0.005)
-    glove("RightHand",(0.012,-0.108,-0.117),(10,0,0))
-    glove("LeftHand",(-0.025,-0.069,0.285),(0,0,-12))
-    rounded_volume("Right arm under-suit",(0.115,-0.235,-0.30),(0.095,0.11,0.35),"Rubber","RightHand",(-22,-24,0))
-    rounded_volume("Right curved forearm shell",(0.12,-0.20,-0.30),(0.084,0.055,0.25),"Graphite","RightHand",(-22,-24,0))
-    rounded_volume("Left arm under-suit",(-0.17,-0.18,0.09),(0.095,0.11,0.34),"Rubber","LeftHand",(-24,29,0))
-    rounded_volume("Left curved forearm shell",(-0.17,-0.147,0.09),(0.084,0.055,0.24),"Graphite","LeftHand",(-24,29,0))
-    socket=bpy.data.objects.new("MuzzleSocket",None)
-    bpy.context.collection.objects.link(socket)
-    socket.parent=GROUPS["Root"]
-    socket.location=point((0,0.016,0.665))
-    export("PulseCarbine")
+    sys.path.insert(0,str(Path(__file__).resolve().parent))
+    from build_carbine_v2 import build_refined_carbine
+    build_refined_carbine(sys.modules[__name__])
 
 
 def warden():
@@ -410,7 +352,7 @@ def export(name,radius_limit=None):
     bpy.ops.wm.save_as_mainfile(filepath=str(SOURCE/(name+".blend")))
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.export_scene.fbx(filepath=str(EXPORT/(name+".fbx")),use_selection=True,
-        object_types={"MESH","EMPTY"},axis_forward="-Z",axis_up="Y",apply_unit_scale=True,
+        object_types={"MESH","EMPTY","ARMATURE"},axis_forward="-Z",axis_up="Y",apply_unit_scale=True,
         apply_scale_options="FBX_SCALE_ALL",bake_space_transform=False,
         use_mesh_modifiers=True,add_leaf_bones=False,bake_anim=False)
     manifest={"name":name,"authoring":"Original Forgeborne geometry; no imported assets",
@@ -418,13 +360,18 @@ def export(name,radius_limit=None):
         "gameBoundsMin":low,"gameBoundsMax":high,"horizontalRadius":radius,
         "vertices":len(vertices),"triangles":sum(sum(len(p.vertices)-2 for p in o.data.polygons) for o in bpy.context.scene.objects if o.type=="MESH"),
         "materials":list(MATERIALS),"status":"Authored candidate; Unity import/render and director review required"}
+    if name=="PulseCarbine":
+        manifest["sourceDependencies"]=["art/tools/build_visual_assets.py","art/tools/build_carbine_v2.py"]
+        manifest["deformation"]={"hands":2,"bonesPerHand":17,"maximumInfluencesPerVertex":4,
+            "continuousClosedGloves":True,"triangleBudget":100000,"runtimePoseVerificationRequired":True}
     (SOURCE/(name+".json")).write_text(json.dumps(manifest,indent=2)+"\n",encoding="utf-8")
     print("FORGEBORNE_ASSET",json.dumps(manifest))
 
 
-assert bpy.app.version[:3]==(4,5,15),bpy.app.version
-builders={"PulseCarbine":rifle,"EmberWarden":warden,"AetherRelay":relay,"ForgeSuit":suit,"RelayFoundry":foundry}
-selected=sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else list(builders)
-for asset in selected:
-    if asset not in builders:raise ValueError("Unknown original asset "+asset)
-    builders[asset]()
+if __name__=="__main__":
+    assert bpy.app.version[:3]==(4,5,15),bpy.app.version
+    builders={"PulseCarbine":rifle,"EmberWarden":warden,"AetherRelay":relay,"ForgeSuit":suit,"RelayFoundry":foundry}
+    selected=sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else list(builders)
+    for asset in selected:
+        if asset not in builders:raise ValueError("Unknown original asset "+asset)
+        builders[asset]()

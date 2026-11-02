@@ -20,7 +20,15 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.126 checkpoint adds dense organic formations, 3D fractures, roof/stays,
+Current 0.127 adds original continuous anatomical gloves, a 34-joint rig, refined
+carbine assembly, transparent optic and reload presentation. Actual imported
+skins, CPU poses/reset/state isolation, frame-boundary GPU captures/materials
+and native firing/reload/orbital/pause/existing-slot load pass their scoped checks.
+Current Windows QA build is 20261102T163104Z, zero build/console errors/warnings;
+user slots unchanged at 16:34:55Z, player left paused. See
+[current carbine evidence and full audit](carbine-art-checkpoint.md).
+
+The preceding 0.126 checkpoint adds dense organic formations, 3D fractures, roof/stays,
 bowed construction, retained v1/v2 worlds and an orbital cutaway with matching
 command picking. Current native QA build succeeded 0 warnings/errors; v1 load,
 v2 restart, Tab/FPS/cutaway, firing/reload and pause observed. Rob calls the
@@ -28,7 +36,7 @@ emerging direction real progress and still requires realistic, organic meshes.
 Player contact locks are corrected and verified in source, actual Main and one
 native stuck-pose/W/import/export case. Full native loop/current-v2 cold recovery, representative performance,
 heard audio and fun remain open; AAA+ is not accepted.
-See [current evidence and full acceptance audit](foundry-v2-checkpoint.md).
+See [retained world/contact evidence and acceptance audit](foundry-v2-checkpoint.md).
 
 The director's studio-production reference was read in full on 2026-10-31.
 Adopt its discipline ownership, design contracts, dependency gates, short evidence

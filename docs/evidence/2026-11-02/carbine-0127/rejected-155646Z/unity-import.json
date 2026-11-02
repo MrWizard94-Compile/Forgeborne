@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.127.0",
+      "skins": 2,
+      "bonePalettes": [
+        34,
+        34
+      ],
+      "activeBonesPerHand": 17,
+      "material": "GloveFabric",
+      "skinnedVertices": [
+        13821,
+        13819
+      ],
+      "importedTriangles": 86428,
+      "coreSha256": "3db547ff7a68ce12e5e51126ca755f38076448c5eb831fde659d333c07e5d6bd",
+      "scope": "Import and declared rig consumers; actual deformation, camera, runtime and quality still require inspection."
+    },
+    "compiler": "codedom"
+  }
+}

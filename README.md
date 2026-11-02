@@ -32,6 +32,10 @@ triangles with collision and aiming. Model-shaped construction ghosts replace
 the cube outline for new games. Old saves retain their previous rules. See
 [the current organic meshes/native evidence and remaining quality gaps](docs/foundry-v2-checkpoint.md)
 and [the world migration](docs/world-presentation-migration.md).
+The current 0.127 adds original continuous skinned gloves, refined carbine
+assemblies, transparent optic and reload presentation. Source/import, actual GPU
+poses/materials and native firing/reload/orbital/pause/load checks are recorded in
+[the carbine checkpoint](docs/carbine-art-checkpoint.md). AAA+ remains unmet.
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single
@@ -40,7 +44,7 @@ views, the authored exchange hall, resource materials, pointer capture,
 entry/pause/restart and local slot save/load, with a fixed real-time world cadence. Unity MCP was used
 to create and inspect the scene on Windows. Exact interactive pose/time saves are
 verified. Windows export/import passes earlier actual Editor UI checks. Earlier
-native packages passed; 0.126 has a successful current Windows QA package and
+native packages passed; 0.126 has a successful historical Windows QA package and
 actual v1 load/v2 restart, Tab cutaway/FPS, firing/reload and Escape checks.
 The corrected build also proves native escape from a formerly stuck contact
 through actual W input and Windows import/export. Full native loop/current-v2 cold-save

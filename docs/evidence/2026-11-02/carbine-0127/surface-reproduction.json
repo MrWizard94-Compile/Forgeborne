@@ -1,0 +1,12 @@
+{
+  "twoConsecutiveGloveAndSleeveBakesMatch": true,
+  "maps": {
+    "GloveFabric_Color.png": "11d9e913a4dd48a674e03e7d316f5ede48d3f6c5306cc4f8694f570640bcdcf9",
+    "GloveFabric_HROM.png": "e7b766a9d2cb335012863a1825cf737f0c9ec82628778d0ae6778f46026fcb5f",
+    "SleeveFabric_Color.png": "63bc70545dcb875de892481ecc79e1d2f8ab79e96c0e2b4de91dbf15f452560c",
+    "SleeveFabric_HROM.png": "191a512a4756d91f0706f86f1190ebbeee3eb5018d61b6118c22f4f9ed63d7b0"
+  },
+  "retainedExistingMapsByteExact": 16,
+  "blender": "4.5.15 LTS",
+  "scope": "PNG field reproducibility; not Blender/FBX containers, native budgets or visual acceptance"
+}

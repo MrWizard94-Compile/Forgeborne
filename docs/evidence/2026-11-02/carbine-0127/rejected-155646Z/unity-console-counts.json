@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "unityVersion": "6000.3.27f2",
+      "countsByType": {
+        "errors": 0,
+        "warnings": 0,
+        "logs": 3
+      },
+      "matchingEntries": [
+        {
+          "index": 0,
+          "mode": 8406016,
+          "message": "1 URP assets included in build\r\n- ForgebornePipeline - Assets/Rendering/ForgebornePipeline.asset\r\n\t - ForgeborneRenderer - Assets/Rendering/ForgeborneRenderer.asset - UnityEngine.Rendering.Universal.UniversalRendererData\r\n\nUnityEditor.BuildPipeline:BuildPlayer (UnityEditor.BuildPlayerOptions)\nForgeborneWindowsBuild:Build (string) (at Assets/Editor/ForgeborneWindowsBuild.cs:68)\nForgeborneWindowsBuild/<>c__DisplayClass2_0:<Request>b__0 () (at Assets/Editor/ForgeborneWindowsBuild.cs:49)\nUnityEditor.EditorApplication:Internal_CallUpdateFunctions ()\n",
+          "file": "./Library/PackageCache/com.unity.render-pipelines.universal@ee0b6bbace10/Editor/BuildProcessors/URPPreprocessBuild.cs",
+          "line": 73
+        }
+      ],
+      "note": "Read-only actual Unity counts and raw entry modes; no log suppression or installed-package changes."
+    },
+    "compiler": "codedom"
+  }
+}

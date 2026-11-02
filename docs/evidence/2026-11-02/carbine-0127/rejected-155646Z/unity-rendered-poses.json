@@ -1,0 +1,112 @@
+{
+  "actualFrameBoundaryCaptures": [
+    {
+      "setter": {
+        "setFrame": 15470,
+        "seconds": 0.0,
+        "requiresLaterRenderedFrame": true
+      },
+      "capture": {
+        "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\rendered-reload-0.00.png",
+        "mode": "reload",
+        "seconds": 0.0,
+        "setFrame": 15470,
+        "captureFrame": 16056,
+        "normalPlayerLoopFramesCrossed": 586,
+        "actualSkinnedRenderer": true,
+        "canonicalStateUnchanged": true,
+        "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+      }
+    },
+    {
+      "setter": {
+        "setFrame": 16618,
+        "seconds": 0.12,
+        "requiresLaterRenderedFrame": true
+      },
+      "capture": {
+        "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\rendered-reload-0.12.png",
+        "mode": "reload",
+        "seconds": 0.12,
+        "setFrame": 16618,
+        "captureFrame": 17180,
+        "normalPlayerLoopFramesCrossed": 562,
+        "actualSkinnedRenderer": true,
+        "canonicalStateUnchanged": true,
+        "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+      }
+    },
+    {
+      "setter": {
+        "setFrame": 17774,
+        "seconds": 0.3,
+        "requiresLaterRenderedFrame": true
+      },
+      "capture": {
+        "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\rendered-reload-0.30.png",
+        "mode": "reload",
+        "seconds": 0.3,
+        "setFrame": 17774,
+        "captureFrame": 18331,
+        "normalPlayerLoopFramesCrossed": 557,
+        "actualSkinnedRenderer": true,
+        "canonicalStateUnchanged": true,
+        "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+      }
+    },
+    {
+      "setter": {
+        "setFrame": 18912,
+        "seconds": 0.42,
+        "requiresLaterRenderedFrame": true
+      },
+      "capture": {
+        "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\rendered-reload-0.42.png",
+        "mode": "reload",
+        "seconds": 0.42,
+        "setFrame": 18912,
+        "captureFrame": 19486,
+        "normalPlayerLoopFramesCrossed": 574,
+        "actualSkinnedRenderer": true,
+        "canonicalStateUnchanged": true,
+        "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+      }
+    },
+    {
+      "setter": {
+        "setFrame": 20058,
+        "seconds": 0.65,
+        "requiresLaterRenderedFrame": true
+      },
+      "capture": {
+        "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\rendered-reload-0.65.png",
+        "mode": "reload",
+        "seconds": 0.65,
+        "setFrame": 20058,
+        "captureFrame": 20634,
+        "normalPlayerLoopFramesCrossed": 576,
+        "actualSkinnedRenderer": true,
+        "canonicalStateUnchanged": true,
+        "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+      }
+    },
+    {
+      "setter": {
+        "setFrame": 21204,
+        "seconds": 0.8,
+        "requiresLaterRenderedFrame": true
+      },
+      "capture": {
+        "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\rendered-reload-0.80.png",
+        "mode": "reload",
+        "seconds": 0.8,
+        "setFrame": 21204,
+        "captureFrame": 21742,
+        "normalPlayerLoopFramesCrossed": 538,
+        "actualSkinnedRenderer": true,
+        "canonicalStateUnchanged": true,
+        "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+      }
+    }
+  ]
+}

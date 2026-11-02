@@ -1,6 +1,32 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.126 retained v2 and organic physical art
+## Current checkpoint — 0.127 original carbine and anatomical gloves
+
+Rob questioned the initial native arm/hand appearance before publication.
+That candidate is preserved under rejected-155646Z. The revised candidate has
+.263/.289 m forearms, slimmer palms, varied fingers, shaped cloth sleeves,
+separate leather, authored magazine contact and view-only fill. Actual revised
+CPU/GPU and native checks pass; Rob has not accepted the revised art.
+
+Original continuous gloves, 34-joint manual rig, refined carbine assembly,
+seated magazine/grip and transparent optic are integrated in actual Main.
+Source/import agree on 87,884 triangles, four normalized influences, seventeen
+active joints per hand. New original glove/sleeve pairs reproduce; older sixteen maps,
+Core source/DLLs and retained world content remain unchanged. CPU pose/reset/
+state checks and separate real frame-boundary GPU captures pass. Actual material
+GPU probes and Windows package 20261102T163104Z pass, zero build/console errors
+or warnings. Native entry, firing, visible reload, orbital hide/FPS return,
+Escape and existing-slot load were observed. Slots remained byte-exact at
+16:34:55Z; current native player left paused, Editor stopped. Never restore
+older private backups over later user saves. See carbine-art-checkpoint.md and
+evidence/2026-11-02/carbine-0127 for exact scope, manifest, commands and audit.
+
+Full AAA+ goal stays active. Art/actors/animation, believable environment depth,
+complete native loop/cold recovery, budgets, heard mix and fun remain open.
+Six influences stay equally important; BioShock reference observations are in
+bioshock-visual-study.md. Evolution still 922dcbb, staged, not propagated.
+
+## Historical checkpoint — 0.126 retained v2 and organic physical art
 
 Rob now says the hall is beginning to look good and is real progress; he still
 requires more realistic, organic meshes. Preserve the direction; no AAA+ pass.

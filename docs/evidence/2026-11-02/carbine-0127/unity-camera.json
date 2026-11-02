@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\carbine-fps-rest.png",
+      "actualProductionCamera": true,
+      "restPose": true,
+      "overlayUiIncluded": false,
+      "scope": "Original weapon/glove visual inspection, not native input or final art acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

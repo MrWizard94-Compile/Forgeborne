@@ -14,6 +14,7 @@ public sealed class PlayerFlow : MonoBehaviour
     public FpsInputAdapter? InputAdapter;
     private GameObject? _menu;
     private Text? _heading;
+    private Text? _location;
     private Text? _status;
     private Text? _resources;
     private Text? _viewHints;
@@ -41,13 +42,14 @@ public sealed class PlayerFlow : MonoBehaviour
         var simulation = Manager != null ? Manager.Simulation : null;
         if (simulation == null) return;
         bool terminal = simulation.IsPlayerDead || simulation.IsObjectiveComplete;
+        bool foundry=AuthoredFoundry.IsAuthored(simulation.World.Chunk.SurfaceProfile);
+        if(_location!=null)_location.text=foundry ? "CINDER EXCHANGE  /  GATHER · BUILD · SURVIVE" : "RELAY YARD  /  GATHER · BUILD · SURVIVE";
         if (terminal && !IsMenuOpen) OpenMenu();
         if (_heading != null) _heading.text = simulation.IsPlayerDead ? "SUIT BREACH" :
             simulation.IsObjectiveComplete ? "RELAY DISABLED" : _begun ? "PAUSED" : "FORGEBORNE";
         if (_resume != null)
         {
             _resume.gameObject.SetActive(!terminal);
-            bool foundry=AuthoredFoundry.IsAuthored(simulation.World.Chunk.SurfaceProfile);
             _resume.GetComponentInChildren<Text>().text = _begun ? "RESUME" : foundry ? "ENTER CINDER EXCHANGE" : "ENTER THE COURTYARD";
         }
         if (_save != null)
@@ -328,8 +330,8 @@ public sealed class PlayerFlow : MonoBehaviour
         var stripe = Box(card, "Energy rule", new Vector2(0.5f,1), Vector2.zero, new Vector2(840, 4));
         stripe.gameObject.AddComponent<Image>().color = new Color(0.15f,0.85f,1f);
         _heading = Label(card, "Heading", new Vector2(0.5f,1), new Vector2(0,-45), new Vector2(730,70), 44, Color.white, TextAnchor.UpperCenter);
-        Label(card, "Location", new Vector2(0.5f,1), new Vector2(0,-115), new Vector2(730,40), 20,
-            new Color(0.25f,0.85f,1), TextAnchor.UpperCenter).text = "RELAY YARD  /  GATHER · BUILD · SURVIVE";
+        _location=Label(card, "Location", new Vector2(0.5f,1), new Vector2(0,-115), new Vector2(730,40), 20,
+            new Color(0.25f,0.85f,1), TextAnchor.UpperCenter);
         Label(card, "Brief", new Vector2(0.5f,1), new Vector2(0,-170), new Vector2(700,110), 22,
             new Color(0.8f,0.85f,0.9f), TextAnchor.UpperCenter).text = "Salvage stone and ember ore. Build useful cover and a workstation.\nOutmaneuver the wardens, then destroy the relay.\nWASD · Move   Mouse · Look   E · Gather   Q · Wall   B · Workstation";
         _resume = ActionButton(card, "ENTER THE COURTYARD", 310, Resume);

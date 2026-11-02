@@ -4,18 +4,18 @@
   "tool": "4.5.15 LTS",
   "source": "art/tools/build_visual_assets.py",
   "gameBoundsMin": [
-    -0.25597724318504333,
-    -0.31741419434547424,
-    -0.4699999988079071
+    -0.29934266209602356,
+    -0.559745728969574,
+    -0.5067504048347473
   ],
   "gameBoundsMax": [
-    0.1938508152961731,
-    0.16999998688697815,
-    0.6650000214576721
+    0.30599984526634216,
+    0.15945370495319366,
+    0.6639999747276306
   ],
-  "horizontalRadius": 0.665547916063542,
-  "vertices": 15564,
-  "triangles": 30796,
+  "horizontalRadius": 0.664598425260185,
+  "vertices": 44194,
+  "triangles": 87884,
   "materials": [
     "Graphite",
     "Steel",
@@ -27,7 +27,23 @@
     "Basalt",
     "Paint",
     "Warm",
-    "Glass"
+    "Glass",
+    "GloveFabric",
+    "SleeveFabric",
+    "GloveStitch",
+    "OpticGlass"
   ],
-  "status": "Authored candidate; Unity import/render and director review required"
+  "status": "Authored candidate; Unity import/render and director review required",
+  "sourceDependencies": [
+    "art/tools/build_visual_assets.py",
+    "art/tools/build_carbine_v2.py"
+  ],
+  "deformation": {
+    "hands": 2,
+    "bonesPerHand": 17,
+    "maximumInfluencesPerVertex": 4,
+    "continuousClosedGloves": true,
+    "triangleBudget": 100000,
+    "runtimePoseVerificationRequired": true
+  }
 }

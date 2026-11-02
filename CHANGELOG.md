@@ -1,5 +1,23 @@
 # Forgeborne — Changelog
 
+## 0.127.0 — 2026-11-02 — Original carbine and continuous skinned gloves
+
+- Rebuilt the original view weapon with continuous anatomical gloves, seventeen
+  joints per hand, normalized four-weight bindings, seated tapered grip/magazine,
+  bored muzzle, open shroud, curved guard and purposeful service fittings.
+- Reworked arms/hands after Rob's review: shorter forearms, slimmer palms, varied fingers,
+  shaped cloth sleeves and authored magazine contact; revised art review remains open.
+- Added original leather/cloth pigment/HROM maps and transparent optic coating. Added
+  support-hand reload/trigger presentation, exact reset and orbital visibility;
+  Core ammo/damage/input and retained physical content remain unchanged.
+- Source/import agree on 87,884 triangles. Production CPU rig/state/reset checks,
+  separate actual frame-boundary skin captures and GPU material probes pass.
+  Windows build/console: zero errors/warnings. Native firing/reload, Tab orbital/
+  FPS, Escape and existing-slot load observed; user slots remain exact at check.
+- Corrected the authored-world menu caption. Full environment/actor art, weapon
+  feel, native complete loop, representative budgets, audio and fun remain open.
+  AAA+ is not accepted. See docs/carbine-art-checkpoint.md.
+
 ## 0.126.0 — 2026-11-02 — Organic meshes, retained worlds and tactical cutaway
 
 - Added retained authored profile 3 with exact content identity, dense sculpted

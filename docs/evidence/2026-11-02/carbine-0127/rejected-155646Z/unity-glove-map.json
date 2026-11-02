@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "actualGpuSamples": 6,
+      "maximumLinearChannelError": 0.009589225,
+      "importedTextureRuntimeBytes": 5681632,
+      "pairedColorAndDataConsumers": true,
+      "packedMetalAlphaPreservesRgb": true,
+      "mipsAndRepeat": true,
+      "cpuCopiesDisabled": true,
+      "actualBc7AndTrilinear": true,
+      "scope": "Compressed texture value/import proof; not a rendered-game performance or AAA+ acceptance claim."
+    },
+    "compiler": "codedom"
+  }
+}

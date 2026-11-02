@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "actualGpuPixelsPerState": 256,
+      "clearMeanLinear": 1.0,
+      "productionCoatingMeanLinear": 0.9725029,
+      "highAbsorptionMeanLinear": 0.3647537,
+      "productionShaderTransmission": true,
+      "actualMaterialResponse": true,
+      "originalMaterialUnchanged": true,
+      "scope": "Isolated static optical-material GPU A/B with the production shader, no post-processing. Not whole-game performance, native driver stability or art/fun acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

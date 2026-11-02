@@ -1,0 +1,96 @@
+{
+  "version": "0.127.0",
+  "recordedAtUtc": "2026-11-02T16:14:20.969134+00:00",
+  "package": "ForgeborneUnity/Builds/Windows-QA/20261102T155646Z",
+  "interface": "Actual Windows native player, computer-use sky APIs; no injected gameplay calls",
+  "observations": {
+    "entryCaption": "CINDER EXCHANGE",
+    "enteredFirstPerson": true,
+    "mouseShot": {
+      "before": "42/120",
+      "after": "41/120"
+    },
+    "legacyRReload": {
+      "ammo": "42/119",
+      "visibleSupportHandGesture": true
+    },
+    "tabOrbitalHidesWeapon": true,
+    "tabReturnsFirstPerson": true,
+    "escapePauses": true,
+    "existingSlotLoadedWhilePaused": true,
+    "leftPausedForDirector": true
+  },
+  "frames": [
+    {
+      "path": "native-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "f554f216b0f84ff6db6bce749979962d85257b3b81e819e1b5beb3aad71284af"
+    },
+    {
+      "path": "native-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "956240582d632b2b423d7ab67263708fc073a754dadfb34ca8c30a5657e97637"
+    },
+    {
+      "path": "native-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "2973b5409035d5aed90beae56e443e09be9c22776c7110a998d9fd576d94d901"
+    },
+    {
+      "path": "native-reload.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "f615c8142ab04e5749278a8c4388a4545f8ce25707aa4bac92e0534d57d5b7cd"
+    },
+    {
+      "path": "native-orbital.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "2bdf165487250764988de7909807ac1f0deaf78b08583e330cb5ef5ea2511ed5"
+    },
+    {
+      "path": "native-restored.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "716a18773dbf923e32b7ef67f61e7027aec126db6fdb8c98eaf0284150f4a74a"
+    },
+    {
+      "path": "native-paused.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "064af07937d1d7939a4f0e34b8a75617066a8d4ae0517b333fbffb5a2660ade5"
+    },
+    {
+      "path": "native-loaded.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "664c96c1b849d1459c509b0579305f7c5b916f541001b9cb4dd781dfcde18b37"
+    }
+  ],
+  "savePreservation": {
+    "checkedAtUtc": "2026-11-02T16:10:47.7822699Z",
+    "namesMatch": true,
+    "files": [
+      {
+        "name": "slot-1.json",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      },
+      {
+        "name": "slot-1.json.backup",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      }
+    ],
+    "allHashesMatch": true
+  },
+  "boundedNativeLog": {
+    "bytes": 1764,
+    "sha256": "68c2e9751dd6945548b8942b0449197c017418fc879a485f39cc59214073aaf7",
+    "observedProjectExceptionPatternCount": 0,
+    "d3d12InfoQueueDiagnosticCount": 1,
+    "classification": "Retained upstream validation-info diagnostic; see surface-material-checkpoint.md. No suppression, OS graphics tool or security change."
+  },
+  "limits": "Scoped native controls and one existing-slot load. Not native movement retest, complete gather/build/survive loop, current-v2 cold-slot recovery, representative performance, heard mix, visual approval or fun acceptance. Later user save changes take precedence."
+}

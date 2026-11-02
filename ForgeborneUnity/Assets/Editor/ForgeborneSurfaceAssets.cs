@@ -13,7 +13,8 @@ public static class ForgeborneSurfaceAssets
         {"Copper",new Vector2(.75f,.00036f)},{"Ceramic",new Vector2(1.2f,.00030f)},
         {"Rubber",new Vector2(.25f,.00022f)},{"Basalt",new Vector2(2f,.0022f)},
         {"Paint",new Vector2(2f,.0011f)},{"Timber",new Vector2(1f,.0012f)},
-        {"CastFloor",new Vector2(1.5f,.00012f)}
+        {"CastFloor",new Vector2(1.5f,.00012f)},{"GloveFabric",new Vector2(.12f,.00018f)},
+        {"SleeveFabric",new Vector2(.16f,.00013f)}
     };
     public static void Configure(Material material,string role,Color linearColour,Color linearEmission)
     {

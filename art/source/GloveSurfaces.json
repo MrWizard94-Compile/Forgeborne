@@ -1,0 +1,184 @@
+{
+  "authoring": "Original Forgeborne leather grain, no external art",
+  "blender": "4.5.15 LTS",
+  "numpy": "1.26.4",
+  "resolution": 1024,
+  "source": "art/tools/bake_glove_surface.py",
+  "sharedFieldsSource": "art/tools/bake_surface_library.py",
+  "materials": {
+    "GloveFabric": {
+      "recipe": {
+        "color": [
+          0.16,
+          0.105,
+          0.061
+        ],
+        "tileMetres": 0.12,
+        "heightMetres": 0.00018,
+        "metal": 0,
+        "rough": 0.61,
+        "seed": 919
+      },
+      "color": {
+        "file": "GloveFabric_Color.png",
+        "bytes": 999407,
+        "sha256": "11d9e913a4dd48a674e03e7d316f5ede48d3f6c5306cc4f8694f570640bcdcf9"
+      },
+      "surface": {
+        "file": "GloveFabric_HROM.png",
+        "bytes": 1932599,
+        "sha256": "e7b766a9d2cb335012863a1825cf737f0c9ec82628778d0ae6778f46026fcb5f"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.1619442800930446,
+            0.10627593286842073,
+            0.061741258859280806
+          ],
+          "surface": [
+            0.5772417641369215,
+            0.5570046573774236,
+            0.9941024780273438,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.1422490892603696,
+            0.09335096399911887,
+            0.05423246710211305
+          ],
+          "surface": [
+            0.5320794929783219,
+            0.5643085852002937,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.15420882742532585,
+            0.10119954210025657,
+            0.05879211743065526
+          ],
+          "surface": [
+            0.4527264904592795,
+            0.583216592787985,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.14970514356950304,
+        0.09824399959609034,
+        0.05707508790294948
+      ],
+      "roughnessRange": [
+        0.4702961901871705,
+        0.7792934759950171
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    },
+    "SleeveFabric": {
+      "recipe": {
+        "color": [
+          0.12,
+          0.155,
+          0.16
+        ],
+        "tileMetres": 0.16,
+        "heightMetres": 0.00013,
+        "metal": 0,
+        "rough": 0.78,
+        "seed": 1021
+      },
+      "color": {
+        "file": "SleeveFabric_Color.png",
+        "bytes": 1139954,
+        "sha256": "63bc70545dcb875de892481ecc79e1d2f8ab79e96c0e2b4de91dbf15f452560c"
+      },
+      "surface": {
+        "file": "SleeveFabric_HROM.png",
+        "bytes": 1810962,
+        "sha256": "191a512a4756d91f0706f86f1190ebbeee3eb5018d61b6118c22f4f9ed63d7b0"
+      },
+      "gpuProbeSamples": [
+        {
+          "pixel": [
+            17,
+            29
+          ],
+          "colorLinear": [
+            0.09560462801333185,
+            0.12348931489383487,
+            0.12747283735110912
+          ],
+          "surface": [
+            0.5007500668025113,
+            0.7278184176955887,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            513,
+            619
+          ],
+          "colorLinear": [
+            0.11896529940846687,
+            0.1536635163523977,
+            0.15862039921128915
+          ],
+          "surface": [
+            0.5966952243177085,
+            0.8284323903459864,
+            1.0,
+            0.0
+          ]
+        },
+        {
+          "pixel": [
+            899,
+            731
+          ],
+          "colorLinear": [
+            0.12056669316486289,
+            0.15573198334988478,
+            0.16075559088648386
+          ],
+          "surface": [
+            0.5205010386595728,
+            0.8388933632066522,
+            1.0,
+            0.0
+          ]
+        }
+      ],
+      "linearColorMean": [
+        0.11024911464568549,
+        0.14240511069557873,
+        0.14699881952758623
+      ],
+      "roughnessRange": [
+        0.6950759071959651,
+        0.8648969767099939
+      ],
+      "packedContract": "R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"
+    }
+  }
+}

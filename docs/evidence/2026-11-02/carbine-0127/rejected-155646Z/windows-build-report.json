@@ -1,0 +1,13 @@
+{
+    "unityVersion": "6000.3.27f2",
+    "productVersion": "0.127.0",
+    "output": "C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261102T155646Z\\Forgeborne.exe",
+    "backend": "Mono2x",
+    "options": "None",
+    "result": "Succeeded",
+    "errors": 0,
+    "warnings": 0,
+    "bytes": 164968515,
+    "seconds": 34.199578699999999,
+    "exception": ""
+}

@@ -602,7 +602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponViewModel
   CameraAnchor: {fileID: 1227818796}
-  ViewOffset: {x: 0.2, y: -0.22, z: 0.5}
+  ViewOffset: {x: 0.2, y: -0.17, z: 0.7}
 --- !u!114 &1227818793
 MonoBehaviour:
   m_ObjectHideFlags: 0

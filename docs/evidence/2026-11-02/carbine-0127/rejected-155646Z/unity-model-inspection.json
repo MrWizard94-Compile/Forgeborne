@@ -1,0 +1,26 @@
+{
+  "diagnosticModelPoses": [
+    {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\inspection-right.png",
+      "mode": "inspection-right",
+      "seconds": 0.0,
+      "setFrame": 50805,
+      "captureFrame": 51373,
+      "normalPlayerLoopFramesCrossed": 568,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+    },
+    {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\carbine-0127\\inspection-left.png",
+      "mode": "inspection-left",
+      "seconds": 0.0,
+      "setFrame": 51922,
+      "captureFrame": 52497,
+      "normalPlayerLoopFramesCrossed": 575,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual production pose retained across normal player/render frames before camera capture; no baked replacement mesh, native input or final-quality claim."
+    }
+  ]
+}

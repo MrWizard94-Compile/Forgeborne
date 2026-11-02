@@ -106,6 +106,22 @@ def bake(name,recipe):
         craze=np.maximum(0,1-np.abs(np.sin((U*8+noise(5,5,seed+9)*.15)*math.pi*2))/.025)
         craze*=smooth(.45,.70,noise(5,7,seed+10))
         color*=1-.27*craze[...,None];height-=.18*craze;rough+=.1*craze
+    elif name=="GloveFabric":
+        # Original leather grain and compressed pores, separate from rubber's
+        # regular moulded weave. Macro seams/folds belong to the actual mesh.
+        pore=noise(173,181,seed+15)
+        grain_field=noise(71,67,seed+16)
+        depressions=smooth(.68,.91,pore+.16*(grain_field-.5))
+        raised=smooth(.51,.77,grain_field)
+        height+=.18*(grain_field-.5)-.22*depressions+.05*(micro-.5)
+        color*=.94+.10*raised[...,None]-.10*depressions[...,None]
+        rough+=.12*depressions-.09*raised;ao-=.10*depressions
+    elif name=="SleeveFabric":
+        warp=np.sin(U*math.pi*256);weft=np.sin(V*math.pi*256)
+        twill=.5+.5*np.sin((U*128+V*128)*math.pi*2)
+        weave=.55*warp*weft+.45*twill
+        height+=.12*weave+.05*(micro-.5)
+        color*=.93+.08*weave[...,None];rough+=.07*(micro-.5)
     elif name=="Rubber":
         weave=(np.sin(U*math.pi*512)*np.sin(V*math.pi*512))*.5+.5
         height+=.18*(weave-.5)+.04*(micro-.5)
@@ -135,14 +151,15 @@ def bake(name,recipe):
         "packedContract":"R=height, G=roughness, B=occlusion, A=metalness; raw linear; no alpha premultiplication"}
 
 
-assert bpy.app.version[:3]==(4,5,15)
-bpy.ops.wm.read_factory_settings(use_empty=True)
-DEST.mkdir(parents=True,exist_ok=True)
-report={"authoring":"Original Forgeborne procedural surface fields; no external art",
-        "blender":bpy.app.version_string,"numpy":np.__version__,"resolution":SIZE,"source":"art/tools/bake_surface_library.py","materials":{}}
-for name,recipe in RECIPES.items():
-    report["materials"][name]=bake(name,recipe)
-    print("BAKED",name,flush=True)
-manifest=ROOT/"art/source/FoundrySurfaces.json"
-manifest.write_bytes((json.dumps(report,indent=2)+"\n").encode("utf-8"))
-print(json.dumps({"manifest":str(manifest),"materials":len(RECIPES),"maps":len(RECIPES)*2}))
+if __name__=="__main__":
+    assert bpy.app.version[:3]==(4,5,15)
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    DEST.mkdir(parents=True,exist_ok=True)
+    report={"authoring":"Original Forgeborne procedural surface fields; no external art",
+            "blender":bpy.app.version_string,"numpy":np.__version__,"resolution":SIZE,"source":"art/tools/bake_surface_library.py","materials":{}}
+    for name,recipe in RECIPES.items():
+        report["materials"][name]=bake(name,recipe)
+        print("BAKED",name,flush=True)
+    manifest=ROOT/"art/source/FoundrySurfaces.json"
+    manifest.write_bytes((json.dumps(report,indent=2)+"\n").encode("utf-8"))
+    print(json.dumps({"manifest":str(manifest),"materials":len(RECIPES),"maps":len(RECIPES)*2}))
