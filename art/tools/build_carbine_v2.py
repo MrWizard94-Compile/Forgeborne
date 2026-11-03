@@ -173,7 +173,13 @@ def build_hand(side):
                "Little":[(.048,-.159,-.163),(.037,-.156,-.126),(.002,-.154,-.115),(-.030,-.160,-.143)],
                "Thumb":[(.050,-.096,-.164),(.028,-.074,-.180),(-.014,-.075,-.158),(-.028,-.096,-.136)]}
     else:
-        elbow=Vector((-.195,-.235,.045));wrist=Vector((-.078,-.074,.255));palm=Vector((-.044,-.042,.327))
+        wrist=Vector((-.078,-.074,.255));palm=Vector((-.044,-.042,.327))
+        # Author the support elbow for the actual camera-local weapon offset.
+        # The old x=-.195 elbow was almost cancelled by ViewOffset.x=.19 and
+        # made the sleeve enter on the camera centre line. Keep its original
+        # forearm length while bringing the elbow left and slightly forward.
+        forearm_length=(wrist-Vector((-.195,-.235,.045))).length
+        elbow=wrist-Vector((.24,.145,.075)).normalized()*forearm_length
         paths={}
         for name,z,length in zip(("Index","Middle","Ring","Little"),(.365,.340,.315,.290),(.96,1.04,.98,.84)):
             paths[name]=[(-.044,-.052,z),(-.044+.021*length,-.080,z),
@@ -259,12 +265,8 @@ def build_hand(side):
         obj=A.ring(side+" stitched cuff welt",centre,.033,.0012,"Rubber","SkinBuild",axis=tuple(direction))
         trim.append((obj,side+"Forearm"))
     trim.extend((obj,None) for obj in fitted_dorsal_stitches(side,skin))
-    # Individual small dorsal reinforcements retain the knuckle rhythm instead
-    # of a single hard plate that made the whole hand read as a mechanical claw.
-    for digit in ("Index","Middle","Ring","Little"):
-        p=Vector(paths[digit][0]);p.x+=(.010 if right else -.009)
-        pad=A.rounded_volume(side+digit+" stitched knuckle pad",p,(.009,.015,.022),"GloveFabric","SkinBuild")
-        trim.append((pad,side+digit+"0"))
+    # Knuckles are part of the continuous phalange surface. Separate rounded
+    # beads at the MCP joints looked detached from the glove during flexion.
     for t in (.18,.47,.73):
         point=elbow.lerp(wrist,t)
         a=point+Vector((.042 if right else -.042,.004,0))

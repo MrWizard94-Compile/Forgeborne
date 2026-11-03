@@ -1,0 +1,32 @@
+{
+  "blender": "4.5.15 LTS",
+  "isolatedGeneration": true,
+  "reviewedSourceAndFbxUnmodified": true,
+  "sourceTriangles": 85304,
+  "sourceVertices": 43044,
+  "sourceGeometryManifestExact": true,
+  "sourceFitAndQuantizedWeaponAuditExact": true,
+  "hands": [
+    {
+      "side": "Left",
+      "vertices": 13344,
+      "bones": 17,
+      "orientedGeometryMaterialBindingAndRestSha256": "dd6c46485aa54f2089b4a246814d247176473c0b2ec11d22310ede1eb223d8c9",
+      "indexedPositionsWeightsRestAndOrientedRoleTopologyExact": true,
+      "rawFaceListOrderExact": true
+    },
+    {
+      "side": "Right",
+      "vertices": 13200,
+      "bones": 17,
+      "orientedGeometryMaterialBindingAndRestSha256": "9ba0fd70b3c0ba7cec0c16990a9a856d6b8454f978db21f3b87f3c7cccd85011",
+      "indexedPositionsWeightsRestAndOrientedRoleTopologyExact": true,
+      "rawFaceListOrderExact": true
+    }
+  ],
+  "reviewedBlendSha256": "bbf5fe7ab7e177a8393f35b70d2554c31d52122aeed09babcf95cf9767aa9d2e",
+  "regeneratedBlendSha256": "ad0412af2eeeeb2a1867efd1944f2716826502559d19668e9c6c44e6c8e839c5",
+  "reviewedFbxSha256": "558a23141952944f07790077815645492054aa20ac9c9c375708f51d265186b9",
+  "regeneratedFbxSha256": "3345d62dce0493d2da69d324e5ade912f61a42e18d725fe5fd67e7b3667c56d5",
+  "scope": "Second isolated generation reproduces recorded source geometry/material/binding/rest contracts. Containers may vary; no second import/native or director acceptance claim."
+}

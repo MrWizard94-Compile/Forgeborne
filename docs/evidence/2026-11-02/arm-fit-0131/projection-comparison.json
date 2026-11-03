@@ -1,0 +1,10 @@
+{
+  "baselineVersion": "0.130.0",
+  "version": "0.131.0",
+  "observationWidthPixels": 1920,
+  "leftElbowViewportXBefore": 0.492679536,
+  "leftElbowViewportXAfter": 0.404091865,
+  "projectedLeftwardShiftPixels": 170.08832831999996,
+  "leftWristCameraDisplacementMetres": 1.9686617281802994e-06,
+  "scope": "Actual rest-joint camera projections; separate images required for sleeve silhouette, no anatomy or fun acceptance."
+}

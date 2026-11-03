@@ -33,7 +33,7 @@ run. Blender is a developer tool kept outside this repository; it is not shipped
 
 | Asset | Purpose | Triangles |
 |---|---|---:|
-| PulseCarbine | Original refined carbine, continuous skinned gloves, moving assemblies and muzzle landmark | 89528 |
+| PulseCarbine | Original refined carbine, continuous skinned gloves, moving assemblies and muzzle landmark | 85304 |
 | EmberWarden | Original compact hovering enemy shell and sensor | 7024 |
 | AetherRelay | Original caged induction chamber/objective | 4820 |
 | ForgeSuit | Original 1.79 m pressure suit for the orbital view | 12144 |
@@ -51,7 +51,7 @@ and no parallel collision. New GloveFabric and SleeveFabric pairs are authored s
 by `tools/bake_glove_surface.py`; existing eight pairs are retained byte-exact.
 The original OpticGlass shader supplies the transparent combiner. See
 `docs/carbine-art-checkpoint.md` for source/import audits, actual GPU/native
-evidence, limits and full reproduction commands. The current 89,528-triangle count stays
+evidence, limits and full reproduction commands. The current 85,304-triangle count stays
 under its 100,000 budget; this is not proof of AAA+ quality or native performance.
 The 0.128 receiver/framing pass is in `docs/first-person-framing-checkpoint.md`.
 At that checkpoint, source hand positions, bindings and rigs matched 0.127 exactly, with equivalent
@@ -62,7 +62,7 @@ rest rigs, other weights and all twenty maps are preserved. The regular generato
 contains the binding correction; `tools/rebind_carbine_cuffs.py` can migrate an
 existing original source without regenerating geometry. See
 `docs/hand-motion-checkpoint.md` for source comparison, import, rendering and native evidence.
-Current 0.130 replaces swollen palms/uniform finger tubes with tapered wrist/
+The preceding 0.130 replaces swollen palms/uniform finger tubes with tapered wrist/
 metacarpal forms, shaped phalanges, rounded tips, blended smaller thumb pads and
 dorsal stitching fitted to the actual skin. Stitch weights follow the nearest
 skin vertex. Glove geometry/bindings are intentionally regenerated; rest rigs,
@@ -70,6 +70,13 @@ landmarks, quantized weapon surfaces and all twenty PNGs are preserved. The
 read-only `tools/audit_glove_form.py` checks closed bodies, joint coverage,
 normalized skin and stitch fit. See `docs/glove-form-checkpoint.md` for rejected
 candidates, source/import/render/native evidence and remaining craft gaps.
+Current 0.131 repositions the support elbow for actual first-person camera fit
+while retaining forearm length and source wrist/grip references. Four separate
+round knuckle pieces per hand are removed. The right rig/connected body is
+preserved; left sleeve/body/bindings and forearm rest change intentionally, with
+descendant matrix float variance recorded. All maps and weapon surfaces remain
+preserved. See `docs/arm-fit-checkpoint.md` for source, regeneration, import,
+rendered/native observations and remaining anatomy/tailoring/motion gaps.
 
 ## Reproduce and inspect
 

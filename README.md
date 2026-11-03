@@ -42,11 +42,16 @@ angle that exposes the firing hand. Actual render, shot and native evidence is i
 The preceding 0.129 connects the support-hand reload to the magazine/charging slide
 and corrects sleeve cuff binding. It remains cosmetic, with further art and
 motion work required. See [the hand-motion checkpoint](docs/hand-motion-checkpoint.md).
-Current 0.130 replaces swollen palms/uniform finger tubes with shaped original
+The preceding 0.130 replaces swollen palms/uniform finger tubes with shaped original
 gloves and fitted, skin-weighted stitches. A native thumb candidate was rejected
 and corrected. Actual import, poses, rendering and affected Windows controls pass
 their scoped checks; finer tailoring and continuous motion remain open. See
 [the glove-form checkpoint](docs/glove-form-checkpoint.md).
+Current 0.131 corrects the support elbow's camera-local placement and removes
+detached-looking round knuckle trim. Forearm length and source grip landmarks
+are preserved; actual rendered/native poses and affected controls were checked.
+Further anatomy, tailoring and motion remain open. See
+[the arm-fit checkpoint](docs/arm-fit-checkpoint.md).
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single

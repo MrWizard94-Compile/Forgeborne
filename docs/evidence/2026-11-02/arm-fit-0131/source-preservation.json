@@ -1,0 +1,101 @@
+{
+  "baselineCommit": "1400c67d2c8253740a745a41828b3409c81d5f01",
+  "weaponAssembliesExactAtRecordedQuantum": true,
+  "weaponAssemblies": [
+    {
+      "mesh": "FrameMesh",
+      "triangles": 30360,
+      "orientedSurfaceAndRoleSha256": "615e18efd2f5edc570415dbb9dd9547879de1c31abb20598c23dc221efb16843",
+      "positionQuantumMetres": 1e-07
+    },
+    {
+      "mesh": "MagazineMesh",
+      "triangles": 1824,
+      "orientedSurfaceAndRoleSha256": "9b422695809d5944a58736a54619d787e3659e8b01335f8c1ca2f4a52793da9b",
+      "positionQuantumMetres": 1e-07
+    },
+    {
+      "mesh": "ChargingHandleMesh",
+      "triangles": 376,
+      "orientedSurfaceAndRoleSha256": "cd0f5259769c938d18d2599cd544f32e1c551c4d841a1af9d5f4a80280dfc0b9",
+      "positionQuantumMetres": 1e-07
+    }
+  ],
+  "sourceLandmarksExact": true,
+  "rigObjectMatricesExact": true,
+  "hands": [
+    {
+      "side": "Left",
+      "changedRestBoneAttributes": [
+        "LeftForearm",
+        "LeftPalm",
+        "LeftIndex0",
+        "LeftIndex1",
+        "LeftIndex2",
+        "LeftMiddle0",
+        "LeftMiddle1",
+        "LeftMiddle2",
+        "LeftRing0",
+        "LeftRing1",
+        "LeftRing2",
+        "LeftLittle0",
+        "LeftLittle1",
+        "LeftLittle2",
+        "LeftThumb0",
+        "LeftThumb1",
+        "LeftThumb2"
+      ],
+      "changedRestEndpoints": [
+        "LeftForearm"
+      ],
+      "originalJointCount": 17,
+      "oldForearmHeadBlender": [
+        0.19499999284744263,
+        -0.04500000178813934,
+        -0.23499999940395355
+      ],
+      "newForearmHeadBlender": [
+        0.31722959876060486,
+        -0.18024073541164398,
+        -0.21853455901145935
+      ],
+      "wristRestExact": true,
+      "oldForearmLengthMetres": 0.2893267956774396,
+      "newForearmLengthMetres": 0.28932677987866007,
+      "lengthDifferenceMetres": 1.5798779506859262e-08,
+      "nonForearmEndpointsAndParentNamesExact": true,
+      "maximumDescendantRestMatrixElementDifference": 5.960464477539062e-07,
+      "maximumDescendantRestMatrixTranslationDifferenceMetres": 2.9802322387695312e-08,
+      "descendantMatrixTolerance": 1e-06,
+      "removedDetachedKnuckleComponents": 4,
+      "rightPrimaryBodyPositionsWeightsOrientedRolesExact": null
+    },
+    {
+      "side": "Right",
+      "changedRestBoneAttributes": [],
+      "changedRestEndpoints": [],
+      "originalJointCount": 17,
+      "oldForearmHeadBlender": [
+        -0.20999999344348907,
+        0.36500000953674316,
+        -0.3199999928474426
+      ],
+      "newForearmHeadBlender": [
+        -0.20999999344348907,
+        0.36500000953674316,
+        -0.3199999928474426
+      ],
+      "wristRestExact": true,
+      "oldForearmLengthMetres": 0.26250714081633764,
+      "newForearmLengthMetres": 0.26250714081633764,
+      "lengthDifferenceMetres": 0.0,
+      "nonForearmEndpointsAndParentNamesExact": true,
+      "maximumDescendantRestMatrixElementDifference": 0,
+      "maximumDescendantRestMatrixTranslationDifferenceMetres": 0,
+      "descendantMatrixTolerance": 1e-06,
+      "removedDetachedKnuckleComponents": 4,
+      "rightPrimaryBodyPositionsWeightsOrientedRolesExact": true
+    }
+  ],
+  "scope": "Only LeftForearm authored endpoints change. Palm/finger endpoints and parent names are exact; left descendant rest matrices have recorded bounded float32 variance. Right rig is exact. Left sleeve/body/bindings are regenerated, four round knuckle trim components per hand removed. Right connected body geometry/weights/oriented roles remain exact; no final visual or fun acceptance."
+}

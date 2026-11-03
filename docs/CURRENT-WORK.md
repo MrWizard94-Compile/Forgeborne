@@ -1,6 +1,28 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.130 organic glove form
+## Current checkpoint — 0.131 support-arm fit and glove trim
+
+Actual rest projection exposed the source elbow almost on the screen centre line.
+Original source now moves it left/forward while retaining forearm length and
+wrist/grip landmarks. Four separate round knuckle trim pieces per hand are removed.
+Source/import: 85,304 triangles; normalized skin, closed bodies, source comparison,
+isolated regeneration, pose/contact/cadence/reset/shot and three rendered views pass.
+Right rest rig/body preserved; left descendant matrix float variance is explicit.
+Runtime C#/Main/Core/DLLs/catalogs/twenty maps remain unchanged.
+
+Windows package 20261103T031237Z has zero build/console errors/warnings, 193 files
+and no MCP/Coplay assembly entry. Native revised sleeve, two shots/R reloads,
+magazine/charging/return poses, orbital/FPS, Escape and existing-slot load observed.
+Both saves exact at 2026-11-03 03:23:11Z; exact new process present, last observed
+paused after loading, Editor stopped. Earlier sessions were not closed. These are
+dated observations; preserve later user changes. See arm-fit-checkpoint.md and
+evidence/2026-11-02/arm-fit-0131.
+
+Full six-influence AAA+ goal stays active and unaccepted. Hand/actor/environment
+craft, continuous motion, full native loop/cold recovery, budgets, heard mix and
+director experience/fun remain open. Frozen law/evolution unchanged.
+
+## Historical checkpoint — 0.130 organic glove form
 
 Original tapered wrist/palm forms, shaped phalanges, rounded fingertips, smaller
 thumb pads and fitted skin-weighted stitches replace the swollen glove shapes.

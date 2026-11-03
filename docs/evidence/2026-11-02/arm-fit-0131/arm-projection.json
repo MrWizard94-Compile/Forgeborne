@@ -1,0 +1,72 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.131.0",
+      "fieldOfView": 75.0,
+      "viewOffset": "(0.19, -0.10, 0.55)",
+      "viewAngles": "(0.00, -12.00, 0.00)",
+      "bones": [
+        {
+          "name": "LeftForearm",
+          "cameraPosition": [
+            -0.157772064,
+            -0.318534374,
+            0.660346031
+          ],
+          "viewport": [
+            0.404091865,
+            0.1856784,
+            0.660346031
+          ]
+        },
+        {
+          "name": "LeftPalm",
+          "cameraPosition": [
+            0.06068611,
+            -0.173999786,
+            0.783210754
+          ],
+          "viewport": [
+            0.531103551,
+            0.355236351,
+            0.783210754
+          ]
+        },
+        {
+          "name": "RightForearm",
+          "cameraPosition": [
+            0.471298218,
+            -0.420000076,
+            0.236637592
+          ],
+          "viewport": [
+            1.29948807,
+            -0.656525254,
+            0.236637592
+          ]
+        },
+        {
+          "name": "RightPalm",
+          "cameraPosition": [
+            0.295578,
+            -0.274000168,
+            0.36592865
+          ],
+          "viewport": [
+            0.824246049,
+            0.0120854974,
+            0.36592865
+          ]
+        }
+      ],
+      "leftForearmMetres": 0.289326727,
+      "rightForearmMetres": 0.262506664,
+      "sameSimulation": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual rest rig camera projections; visible sleeve silhouette and art quality require rendered review."
+    },
+    "compiler": "codedom"
+  }
+}

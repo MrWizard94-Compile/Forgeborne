@@ -1,0 +1,14 @@
+{
+  "firstReload": {
+    "snapshotCallbackMs": [
+      356.03659999370575,
+      434.90479999780655
+    ],
+    "observed": "Both snapshots show magazine reach/draw; neither is a charging frame"
+  },
+  "secondReload": {
+    "snapshotCallbackMs": 1017.8813000023365,
+    "observed": "Charging hand and revised sleeve visible"
+  },
+  "scope": "Wall clocks begin before the native input API. Scheduling a screenshot does not measure authoritative animation phase or performance."
+}

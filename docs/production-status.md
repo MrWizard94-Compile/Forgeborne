@@ -20,7 +20,17 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.130 replaces swollen palms and uniform fingers with original tapered
+Current 0.131 corrects support-arm camera fit and removes detached-looking knuckle
+trim. Actual elbow projection moves left while source wrist/grip and forearm
+length are preserved. Rest-matrix float variance is recorded. Source/import,
+isolated regeneration, pose/shot/render and affected native controls pass their
+scoped checks. Windows package 20261103T031237Z and console have zero errors/
+warnings; saves exact at 2026-11-03 03:23:11Z. Exact new player present and last
+observed paused after loading; earlier sessions not closed, Editor stopped.
+Further anatomy/tailoring/motion and full-game gates remain open. See
+[current arm-fit evidence](arm-fit-checkpoint.md).
+
+The preceding 0.130 replaces swollen palms and uniform fingers with original tapered
 glove forms, shaped phalanges, blended thumb pads and fitted skin-weighted stitches.
 Rest rigs/landmarks and quantized weapon surfaces remain preserved; new glove
 surfaces/bindings are intentional. Actual import/pose/shot/render checks pass.
@@ -29,7 +39,7 @@ Windows package 20261102T225546Z and console have zero errors/warnings; affected
 native controls/reload/slot load observed. Saves exact at 23:04:02Z, exact process
 present and last observed paused; Editor stopped. Earlier sessions were not closed.
 Further tailoring/animation and full-game gates remain open. See
-[current glove-form evidence](glove-form-checkpoint.md).
+[preceding glove-form evidence](glove-form-checkpoint.md).
 
 The preceding 0.129 connects the support-hand reload to the magazine and charging slide,
 with finger curl/thumb opposition and a 1.2-second cosmetic gesture. Rendered

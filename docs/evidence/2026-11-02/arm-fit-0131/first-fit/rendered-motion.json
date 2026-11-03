@@ -1,0 +1,71 @@
+[
+  {
+    "phase": 0.0,
+    "seconds": 0.0,
+    "setter": {
+      "label": "reload-phase-0-00",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.0,
+      "setFrame": 12008,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\arm-fit-0131\\first-fit\\reload-phase-0-00.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.14, 0.41)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.39, 0.86)",
+      "normalFramesCrossed": 569,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.44,
+    "seconds": 0.528,
+    "setter": {
+      "label": "reload-phase-0-44",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.528,
+      "setFrame": 13125,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\arm-fit-0131\\first-fit\\reload-phase-0-44.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 541,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.84,
+    "seconds": 1.008,
+    "setter": {
+      "label": "reload-phase-0-84",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 1.008,
+      "setFrame": 14232,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-02\\arm-fit-0131\\first-fit\\reload-phase-0-84.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.13, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.34, 0.85)",
+      "normalFramesCrossed": 560,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  }
+]

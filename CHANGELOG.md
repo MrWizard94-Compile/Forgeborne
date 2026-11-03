@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.131.0 — 2026-11-02 — Support-arm fit and glove trim
+
+- Repositioned the original support elbow for the actual camera-local weapon
+  offset, preserving forearm length and source wrist/grip landmarks. The sleeve
+  now enters from the left instead of rising along the screen centre line.
+- Removed detached-looking round knuckle trim; the continuous glove retains its
+  shaped knuckles and fitted stitching. Source/import: 85,304 triangles.
+- Actual source/import/pose/render and affected native controls pass their scoped
+  checks. Windows build/console: zero errors/warnings; existing saves unchanged
+  at check. Rest-matrix floating-point variance is explicitly recorded.
+- Hand anatomy, tailoring, motion and the full AAA+ game/fun gates remain open.
+  See docs/arm-fit-checkpoint.md.
+
 ## 0.130.0 — 2026-11-02 — Organic glove form and fitted stitching
 
 - Replaced swollen palms and uniform finger tubes with original tapered glove
