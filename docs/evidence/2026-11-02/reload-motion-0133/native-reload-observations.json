@@ -1,0 +1,107 @@
+{
+  "frames": [
+    {
+      "path": "native-01-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-02-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-03-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-04-magazine.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-05-charging.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-06-return.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-07-orbital.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-08-fps-restored.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-09-paused.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-10-slot-loaded.jpg",
+      "width": 1920,
+      "height": 1080,
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T050015Z\\Forgeborne.exe",
+        "id": 19858738,
+        "title": "Forgeborne"
+      }
+    }
+  ],
+  "magazineObservationCompleteMs": 968.2569000124931,
+  "chargingObservationCompleteMs": 1614.770700007677,
+  "scope": "Original native screenshots, windowed player. Wall clocks start before R input call and end after snapshot; not animation phases, motion continuity or performance evidence."
+}

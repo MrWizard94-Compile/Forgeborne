@@ -30,8 +30,8 @@ try
         var p=root.InverseTransformPoint(palm.TransformPoint(localContact));
         var h=root.InverseTransformPoint(hook.position);
         var m=root.InverseTransformPoint(magazine.position);var c=root.InverseTransformPoint(slide.position);
-        if(phase>=.22f && phase<=.65f){magSamples++;magError=Mathf.Max(magError,Vector3.Distance(p,m+new Vector3(-.047f,-.035f,.002f)));}
-        if(phase>=.76f && phase<=.90f){hookSamples++;hookError=Mathf.Max(hookError,Vector3.Distance(h,c+new Vector3(-.025f,-.002f,.027f)));}
+        if(phase>=.18f && phase<=.50f){magSamples++;magError=Mathf.Max(magError,Vector3.Distance(p,m+new Vector3(-.047f,-.035f,.002f)));}
+        if(phase>=.68f && phase<=.84f){hookSamples++;hookError=Mathf.Max(hookError,Vector3.Distance(h,c+new Vector3(-.025f,-.002f,.027f)));}
         lengthError=Mathf.Max(lengthError,Mathf.Abs(Vector3.Distance(palm.position,elbow.position)-forearmLength));
         maxSlideTravel=Mathf.Max(maxSlideTravel,Vector3.Distance(slide.localPosition,slideRest));
         if(i>0)maxStep=Mathf.Max(maxStep,Vector3.Distance(p,previous));previous=p;
@@ -43,7 +43,7 @@ try
             records.Add(new{phase=phase,seconds=duration*phase,palm=p.ToString(),hook=h.ToString(),magazine=m.ToString(),slide=c.ToString()});
         }
     }
-    if(magSamples<80 || hookSamples<25 || magError>.00002f || hookError>.00002f || lengthError>.00002f || rightError>.00002f
+    if(magSamples<75 || hookSamples<38 || magError>.00002f || hookError>.00002f || lengthError>.00002f || rightError>.00002f
         || maxStep>.04f || Mathf.Abs(maxSlideTravel-.035f)>.00002f || error(leftRest,bake(left))>.00002f)
         throw new System.InvalidOperationException("Dense reload contact/continuity/skin contract failed: "+magError+" / "+hookError+" / "+maxStep);
     // Same elapsed moment from different update cadences, compared on actual skin.

@@ -1,0 +1,22 @@
+{
+  "success": false,
+  "failure": "System.InvalidOperationException: Capture cancelled.\r\n  at MCPDynamicCode+<Execute>c__AnonStorey0.<>m__1 () [0x00020] in <1cf27a7e918a48eb8a9a79fd574e05ca>:0 ",
+  "version": "0.133.0",
+  "unityVersion": "6000.3.27f2",
+  "startedUtc": "2026-11-03T05:00:07.0909516Z",
+  "finishedUtc": "2026-11-03T05:00:07.1231971Z",
+  "width": 1280,
+  "height": 720,
+  "framesPerSecond": 60,
+  "durationSeconds": 2.1,
+  "expectedFrames": 127,
+  "actualFrames": 0,
+  "frames": [],
+  "actualSkins": 2,
+  "canonicalStateUnchanged": true,
+  "sameSimulation": true,
+  "viewEnabledRestored": true,
+  "runInBackgroundRestored": true,
+  "cameraTargetRestored": true,
+  "scope": "Silent scripted actual Unity camera renders. Each pose crosses normal player frames before capture. Encoded 60fps playback is not native input, realtime performance, human motion or art/fun acceptance."
+}

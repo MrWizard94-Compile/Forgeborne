@@ -1,0 +1,534 @@
+{
+  "success": true,
+  "failure": null,
+  "version": "0.132.0",
+  "unityVersion": "6000.3.27f2",
+  "startedUtc": "2026-11-03T04:55:15.2116212Z",
+  "finishedUtc": "2026-11-03T04:55:17.7308092Z",
+  "width": 1280,
+  "height": 720,
+  "framesPerSecond": 60,
+  "durationSeconds": 1.2,
+  "expectedFrames": 73,
+  "actualFrames": 73,
+  "frames": [
+    {
+      "index": 0,
+      "elapsedSeconds": 0.0,
+      "setFrame": 2,
+      "captureFrame": 4,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 1,
+      "elapsedSeconds": 0.0166666675,
+      "setFrame": 4,
+      "captureFrame": 6,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 2,
+      "elapsedSeconds": 0.0333333351,
+      "setFrame": 6,
+      "captureFrame": 8,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 3,
+      "elapsedSeconds": 0.05,
+      "setFrame": 8,
+      "captureFrame": 10,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 4,
+      "elapsedSeconds": 0.06666667,
+      "setFrame": 10,
+      "captureFrame": 12,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 5,
+      "elapsedSeconds": 0.0833333358,
+      "setFrame": 12,
+      "captureFrame": 14,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 6,
+      "elapsedSeconds": 0.1,
+      "setFrame": 14,
+      "captureFrame": 16,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 7,
+      "elapsedSeconds": 0.116666675,
+      "setFrame": 16,
+      "captureFrame": 18,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 8,
+      "elapsedSeconds": 0.13333334,
+      "setFrame": 18,
+      "captureFrame": 20,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 9,
+      "elapsedSeconds": 0.15,
+      "setFrame": 20,
+      "captureFrame": 22,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 10,
+      "elapsedSeconds": 0.166666672,
+      "setFrame": 22,
+      "captureFrame": 24,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 11,
+      "elapsedSeconds": 0.183333337,
+      "setFrame": 24,
+      "captureFrame": 26,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 12,
+      "elapsedSeconds": 0.2,
+      "setFrame": 26,
+      "captureFrame": 28,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 13,
+      "elapsedSeconds": 0.216666669,
+      "setFrame": 28,
+      "captureFrame": 30,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 14,
+      "elapsedSeconds": 0.233333349,
+      "setFrame": 30,
+      "captureFrame": 32,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 15,
+      "elapsedSeconds": 0.25,
+      "setFrame": 32,
+      "captureFrame": 34,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 16,
+      "elapsedSeconds": 0.266666681,
+      "setFrame": 34,
+      "captureFrame": 36,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 17,
+      "elapsedSeconds": 0.283333331,
+      "setFrame": 36,
+      "captureFrame": 38,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 18,
+      "elapsedSeconds": 0.3,
+      "setFrame": 38,
+      "captureFrame": 40,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 19,
+      "elapsedSeconds": 0.3166667,
+      "setFrame": 40,
+      "captureFrame": 42,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 20,
+      "elapsedSeconds": 0.333333343,
+      "setFrame": 42,
+      "captureFrame": 44,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 21,
+      "elapsedSeconds": 0.350000024,
+      "setFrame": 44,
+      "captureFrame": 46,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 22,
+      "elapsedSeconds": 0.366666675,
+      "setFrame": 46,
+      "captureFrame": 48,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 23,
+      "elapsedSeconds": 0.383333355,
+      "setFrame": 48,
+      "captureFrame": 50,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 24,
+      "elapsedSeconds": 0.4,
+      "setFrame": 50,
+      "captureFrame": 52,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 25,
+      "elapsedSeconds": 0.4166667,
+      "setFrame": 52,
+      "captureFrame": 54,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 26,
+      "elapsedSeconds": 0.433333337,
+      "setFrame": 54,
+      "captureFrame": 56,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 27,
+      "elapsedSeconds": 0.450000018,
+      "setFrame": 56,
+      "captureFrame": 58,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 28,
+      "elapsedSeconds": 0.4666667,
+      "setFrame": 58,
+      "captureFrame": 60,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 29,
+      "elapsedSeconds": 0.483333349,
+      "setFrame": 60,
+      "captureFrame": 62,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 30,
+      "elapsedSeconds": 0.5,
+      "setFrame": 62,
+      "captureFrame": 64,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 31,
+      "elapsedSeconds": 0.5166667,
+      "setFrame": 64,
+      "captureFrame": 66,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 32,
+      "elapsedSeconds": 0.533333361,
+      "setFrame": 66,
+      "captureFrame": 68,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 33,
+      "elapsedSeconds": 0.55,
+      "setFrame": 68,
+      "captureFrame": 70,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 34,
+      "elapsedSeconds": 0.566666663,
+      "setFrame": 70,
+      "captureFrame": 72,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 35,
+      "elapsedSeconds": 0.5833334,
+      "setFrame": 72,
+      "captureFrame": 74,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 36,
+      "elapsedSeconds": 0.6,
+      "setFrame": 74,
+      "captureFrame": 76,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 37,
+      "elapsedSeconds": 0.6166667,
+      "setFrame": 76,
+      "captureFrame": 78,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 38,
+      "elapsedSeconds": 0.6333334,
+      "setFrame": 78,
+      "captureFrame": 80,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 39,
+      "elapsedSeconds": 0.650000036,
+      "setFrame": 80,
+      "captureFrame": 82,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 40,
+      "elapsedSeconds": 0.6666667,
+      "setFrame": 82,
+      "captureFrame": 84,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 41,
+      "elapsedSeconds": 0.683333337,
+      "setFrame": 84,
+      "captureFrame": 86,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 42,
+      "elapsedSeconds": 0.700000048,
+      "setFrame": 86,
+      "captureFrame": 88,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 43,
+      "elapsedSeconds": 0.7166667,
+      "setFrame": 88,
+      "captureFrame": 90,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 44,
+      "elapsedSeconds": 0.733333349,
+      "setFrame": 90,
+      "captureFrame": 92,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 45,
+      "elapsedSeconds": 0.75,
+      "setFrame": 92,
+      "captureFrame": 94,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 46,
+      "elapsedSeconds": 0.7666667,
+      "setFrame": 94,
+      "captureFrame": 96,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 47,
+      "elapsedSeconds": 0.783333361,
+      "setFrame": 96,
+      "captureFrame": 98,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 48,
+      "elapsedSeconds": 0.8,
+      "setFrame": 98,
+      "captureFrame": 100,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 49,
+      "elapsedSeconds": 0.8166667,
+      "setFrame": 100,
+      "captureFrame": 102,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 50,
+      "elapsedSeconds": 0.8333334,
+      "setFrame": 102,
+      "captureFrame": 104,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 51,
+      "elapsedSeconds": 0.85,
+      "setFrame": 104,
+      "captureFrame": 106,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 52,
+      "elapsedSeconds": 0.8666667,
+      "setFrame": 106,
+      "captureFrame": 108,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 53,
+      "elapsedSeconds": 0.8833334,
+      "setFrame": 108,
+      "captureFrame": 110,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 54,
+      "elapsedSeconds": 0.900000036,
+      "setFrame": 110,
+      "captureFrame": 112,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 55,
+      "elapsedSeconds": 0.9166667,
+      "setFrame": 112,
+      "captureFrame": 114,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 56,
+      "elapsedSeconds": 0.9333334,
+      "setFrame": 114,
+      "captureFrame": 116,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 57,
+      "elapsedSeconds": 0.950000048,
+      "setFrame": 116,
+      "captureFrame": 118,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 58,
+      "elapsedSeconds": 0.9666667,
+      "setFrame": 118,
+      "captureFrame": 120,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 59,
+      "elapsedSeconds": 0.983333349,
+      "setFrame": 120,
+      "captureFrame": 122,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 60,
+      "elapsedSeconds": 1.0,
+      "setFrame": 122,
+      "captureFrame": 124,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 61,
+      "elapsedSeconds": 1.01666665,
+      "setFrame": 124,
+      "captureFrame": 126,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 62,
+      "elapsedSeconds": 1.03333342,
+      "setFrame": 126,
+      "captureFrame": 128,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 63,
+      "elapsedSeconds": 1.05000007,
+      "setFrame": 128,
+      "captureFrame": 130,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 64,
+      "elapsedSeconds": 1.06666672,
+      "setFrame": 130,
+      "captureFrame": 132,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 65,
+      "elapsedSeconds": 1.08333337,
+      "setFrame": 132,
+      "captureFrame": 134,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 66,
+      "elapsedSeconds": 1.1,
+      "setFrame": 134,
+      "captureFrame": 136,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 67,
+      "elapsedSeconds": 1.11666667,
+      "setFrame": 136,
+      "captureFrame": 138,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 68,
+      "elapsedSeconds": 1.13333333,
+      "setFrame": 138,
+      "captureFrame": 140,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 69,
+      "elapsedSeconds": 1.1500001,
+      "setFrame": 140,
+      "captureFrame": 142,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 70,
+      "elapsedSeconds": 1.16666675,
+      "setFrame": 142,
+      "captureFrame": 144,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 71,
+      "elapsedSeconds": 1.1833334,
+      "setFrame": 144,
+      "captureFrame": 146,
+      "normalFramesCrossed": 2
+    },
+    {
+      "index": 72,
+      "elapsedSeconds": 1.2,
+      "setFrame": 146,
+      "captureFrame": 148,
+      "normalFramesCrossed": 2
+    }
+  ],
+  "actualSkins": 2,
+  "canonicalStateUnchanged": true,
+  "sameSimulation": true,
+  "viewEnabledRestored": true,
+  "runInBackgroundRestored": true,
+  "cameraTargetRestored": true,
+  "scope": "Silent scripted actual Unity camera renders. Each pose crosses normal player frames before capture. Encoded 60fps playback is not native input, realtime performance, human motion or art/fun acceptance."
+}

@@ -1,6 +1,29 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.132 glove construction
+## Current checkpoint — 0.133 reload pacing and paths
+
+The cosmetic reload now lasts 2.1 seconds, with quintic easing, outward transition
+arcs and a double elapsed-time accumulator. The final return grows from 120 to
+336 ms. Same-interval actual rig speed/acceleration fall to 2.7284 m/s and
+57.6546 m/s², below the working art budgets. The 2.0-second candidate failed
+the acceleration gate and was adjusted without loosening it. All source art/
+maps/rigs, Core/DLLs/catalogs/Main and gameplay rules remain unchanged.
+
+Affected actual contact/skin/cadence/reset/shot checks pass. Silent normal-frame
+Unity clips record baseline/current motion, with cancellation cleanup checked.
+Windows package 20261103T050015Z and console have zero errors/warnings, 194 files
+and no MCP/Coplay assembly entry. Native fire/R reload, magazine/charging/return,
+Tab orbital/FPS, Escape and existing-slot load observed. Both saves exact at
+2026-11-03 05:04:03Z; exact process present at receipt, last observed paused after
+loading; Editor stopped. Earlier sessions not closed by QA. Later user changes
+take precedence. See reload-motion-checkpoint.md and
+evidence/2026-11-02/reload-motion-0133.
+
+Full six-influence AAA+ goal remains active and unaccepted. Hand anatomy/tailoring,
+actor/environment craft, full native loop/cold recovery, budgets, heard mix and
+director experience/fun remain open. Frozen law/evolution unchanged.
+
+## Historical checkpoint — 0.132 glove construction
 
 Original narrower palms, rounded-square fingers, interdigital saddles and authored
 flexion folds now support a woven dorsal panel/leather glove construction. Cuts

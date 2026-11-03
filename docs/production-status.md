@@ -20,7 +20,18 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.132 adds original glove construction: narrower palms, shaped fingers,
+Current 0.133 lengthens the cosmetic reload to 2.1 seconds, with quintic easing,
+outward transition arcs and robust elapsed-time accumulation. Same-time-interval
+actual palm speed falls from 5.7503 to 2.7284 m/s and acceleration from 169.5174
+to 57.6546 m/s². Actual contact/skin/cadence/reset/shot checks, real Unity
+clips and affected native controls pass their scoped checks. Art, Core/DLLs,
+catalogs/Main and gameplay rules remain unchanged. Windows package 20261103T050015Z
+and console have zero errors/warnings; saves exact at 2026-11-03 05:04:03Z. Exact
+process present at receipt, last observed paused after loading; Editor stopped.
+Earlier sessions not closed by QA. Anatomy and final motion quality remain
+unaccepted. See [current reload-motion evidence](reload-motion-checkpoint.md).
+
+The preceding 0.132 adds original glove construction: narrower palms, shaped fingers,
 webbing/flexion detail and one sewn woven dorsal panel per leather glove. An
 initial rendered fabric-island candidate was rejected and repaired. Rest rigs,
 weapon surfaces and maps are preserved; glove geometry/bindings/roles change.

@@ -1,0 +1,137 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "sameSimulation": true,
+      "reloadPresentationSeconds": 2.1,
+      "denseSamples": 241,
+      "magazineContactSamples": 77,
+      "maximumPalmMagazineErrorMetres": 2.30503679e-06,
+      "chargingContactSamples": 38,
+      "maximumHookSlideErrorMetres": 1.84457178e-06,
+      "maximumForearmLengthErrorMetres": 1.04308128e-06,
+      "maximumOtherHandSkinErrorMetres": 2.51931e-06,
+      "maximumPalmStepAt240IntervalsMetres": 0.0238303989,
+      "chargingSlideTravelMetres": 0.0350005031,
+      "cadenceHz": [
+        30,
+        60,
+        144
+      ],
+      "maximumCadenceSkinErrorMetres": 2.08116739e-06,
+      "pausedStable": true,
+      "shotInterruptionReturnsSupportHand": true,
+      "exactImportedRestReset": true,
+      "canonicalStateUnchanged": true,
+      "samples": [
+        {
+          "phase": 0.0,
+          "seconds": 0.0,
+          "palm": "(-0.04, -0.04, 0.33)",
+          "hook": "(0.01, -0.07, 0.36)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.0833333358,
+          "seconds": 0.175,
+          "palm": "(-0.04, -0.06, 0.27)",
+          "hook": "(0.00, -0.10, 0.32)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.166666672,
+          "seconds": 0.35,
+          "palm": "(-0.05, -0.14, 0.11)",
+          "hook": "(0.01, -0.12, 0.15)",
+          "magazine": "(0.00, -0.11, 0.11)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.25,
+          "seconds": 0.525,
+          "palm": "(-0.05, -0.15, 0.11)",
+          "hook": "(0.01, -0.12, 0.15)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.333333343,
+          "seconds": 0.7,
+          "palm": "(-0.05, -0.27, 0.10)",
+          "hook": "(0.01, -0.25, 0.14)",
+          "magazine": "(0.00, -0.24, 0.09)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.416666657,
+          "seconds": 0.87499994,
+          "palm": "(-0.05, -0.24, 0.10)",
+          "hook": "(0.01, -0.22, 0.14)",
+          "magazine": "(0.00, -0.21, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.5,
+          "seconds": 1.05,
+          "palm": "(-0.05, -0.14, 0.11)",
+          "hook": "(0.01, -0.12, 0.15)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.5833333,
+          "seconds": 1.2249999,
+          "palm": "(-0.14, -0.05, -0.03)",
+          "hook": "(-0.09, -0.03, 0.03)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.6666667,
+          "seconds": 1.4,
+          "palm": "(-0.12, 0.00, -0.10)",
+          "hook": "(-0.08, 0.04, -0.07)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.75,
+          "seconds": 1.57499993,
+          "palm": "(-0.12, 0.00, -0.14)",
+          "hook": "(-0.08, 0.04, -0.10)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.13)"
+        },
+        {
+          "phase": 0.8333333,
+          "seconds": 1.74999988,
+          "palm": "(-0.12, 0.00, -0.10)",
+          "hook": "(-0.08, 0.04, -0.07)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 0.9166667,
+          "seconds": 1.925,
+          "palm": "(-0.15, -0.05, 0.10)",
+          "hook": "(-0.11, -0.05, 0.16)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        },
+        {
+          "phase": 1.0,
+          "seconds": 2.1,
+          "palm": "(-0.04, -0.04, 0.33)",
+          "hook": "(0.01, -0.07, 0.36)",
+          "magazine": "(0.00, -0.11, 0.10)",
+          "slide": "(-0.06, 0.04, -0.10)"
+        }
+      ],
+      "limits": "Scripted actual rig/CPU skin. Joint/palm references do not prove visible surface contact or final animation quality. Separate rendered/native and director review required. Cosmetic reload only; Core transfer remains immediate."
+    },
+    "compiler": "codedom"
+  }
+}

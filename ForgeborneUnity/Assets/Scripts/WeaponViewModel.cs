@@ -38,8 +38,8 @@ public sealed class WeaponViewModel : MonoBehaviour
     private Material? _flashMaterial;
     private Mesh? _flashMesh;
     private float _shotKick, _flashLife;
-    public const float ReloadPresentationSeconds=1.2f;
-    private float _reloadAge=ReloadPresentationSeconds;
+    public const float ReloadPresentationSeconds=2.1f;
+    private double _reloadAge=ReloadPresentationSeconds;
     public Vector3 MuzzlePosition => _muzzle != null ? _muzzle.position : transform.position;
     public void SetModelVisible(bool visible)
     {
@@ -146,24 +146,33 @@ public sealed class WeaponViewModel : MonoBehaviour
         if(normal.sqrMagnitude<.5f)throw new InvalidOperationException("Original finger bend plane is undefined: "+prefix);
         foreach(var joint in joints)result.Add(new FingerJoint{Bone=joint,BendAxis=joint.InverseTransformDirection(normal).normalized});
     }
-    private static float Ease(float start,float end,float time)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(start,end,time));
+    private static float Ease(float start,float end,float time)
+    {
+        float t=Mathf.InverseLerp(start,end,time);
+        return t*t*t*(t*(t*6-15)+10); // Zero velocity and acceleration at each hold.
+    }
+    private static float ClearanceArc(float time)
+    {
+        float t=time*(1-time);
+        return 64*t*t*t;
+    }
     void LateUpdate()=>AdvancePresentation(Time.deltaTime);
     public void AdvancePresentation(float deltaTime)
     {
         if(float.IsNaN(deltaTime) || float.IsInfinity(deltaTime) || deltaTime<0)throw new ArgumentOutOfRangeException(nameof(deltaTime));
         if(_modelRoot==null || !_modelRoot.activeInHierarchy) return;
         _shotKick=Mathf.MoveTowards(_shotKick,0,deltaTime*9);
-        _flashLife=Mathf.Max(0,_flashLife-deltaTime);_reloadAge=Mathf.Min(ReloadPresentationSeconds,_reloadAge+deltaTime);
-        float time=_reloadAge/ReloadPresentationSeconds;
+        _flashLife=Mathf.Max(0,_flashLife-deltaTime);_reloadAge=Math.Min(ReloadPresentationSeconds,_reloadAge+deltaTime);
+        float time=(float)(_reloadAge/ReloadPresentationSeconds);
         float reload=Ease(0,.22f,time)*(1-Ease(.75f,1,time));
         _modelRoot.transform.localPosition=ViewOffset+new Vector3(0,.006f*_shotKick-.025f*reload,-.045f*_shotKick);
         _modelRoot.transform.localRotation=Quaternion.Euler(ViewAngles)*Quaternion.Euler(-7*_shotKick+12*reload,0,-6*reload);
         foreach(var bone in _boneRest)bone.Restore();
-        float reach=Ease(.04f,.22f,time);
-        float draw=Ease(.30f,.44f,time)*(1-Ease(.48f,.62f,time));
-        float chargingReach=Ease(.65f,.76f,time);
-        float returnToGrip=Ease(.90f,1,time);
-        float charging=Ease(.78f,.84f,time)*(1-Ease(.86f,.90f,time));
+        float reach=Ease(.02f,.18f,time);
+        float draw=Ease(.24f,.34f,time)*(1-Ease(.38f,.48f,time));
+        float chargingReach=Ease(.50f,.68f,time);
+        float returnToGrip=Ease(.84f,1,time);
+        float charging=Ease(.70f,.76f,time)*(1-Ease(.79f,.84f,time));
         var magazineTravel=new Vector3(0,-.13f*draw,-.012f*draw);
         var chargingTravel=Vector3.back*(charging*.035f);
         if(_magazine!=null)_magazine.position=_modelRoot.transform.TransformPoint(_magazineRest+magazineTravel);
@@ -194,6 +203,10 @@ public sealed class WeaponViewModel : MonoBehaviour
             var wrist=Vector3.Lerp(_leftWristRest,magazineWrist,reach);
             wrist=Vector3.Lerp(wrist,chargingWrist,chargingReach);
             wrist=Vector3.Lerp(wrist,_leftWristRest,returnToGrip);
+            // Lift away from the receiver between contacts instead of cutting
+            // directly through it. Both arcs are zero at the held contacts.
+            wrist+=new Vector3(-.070f,.025f,-.035f)*ClearanceArc(chargingReach)*(1-returnToGrip)
+                +new Vector3(-.065f,-.045f,.015f)*ClearanceArc(returnToGrip);
             var turn=Quaternion.Slerp(Quaternion.identity,grasp,reach);
             turn=Quaternion.Slerp(turn,chargingGrasp,chargingReach);
             turn=Quaternion.Slerp(turn,Quaternion.identity,returnToGrip);

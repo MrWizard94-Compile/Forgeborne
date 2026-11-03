@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.133.0 — 2026-11-03 — Support-hand reload pacing
+
+- Replaced the fast straight return with a 2.1-second cosmetic reload, quintic
+  easing and outward transition arcs. Core ammo transfer/firing rules stay intact.
+- Same-interval actual rig peak palm speed/acceleration fall from 5.7503 m/s and
+  169.5174 m/s² to 2.7284 m/s and 57.6546 m/s². The first candidate failed the
+  working acceleration budget and was adjusted without weakening the gate.
+- Actual skin/contact/cadence/pause/reset/shot, real Unity clip renders and
+  affected native controls checked. Windows build/console: zero errors/warnings;
+  existing saves unchanged at check. Art/source assets remain byte-exact.
+- Hand anatomy, character/environment art and full AAA+ game/fun gates remain open.
+  See docs/reload-motion-checkpoint.md for evidence and limits.
+
 ## 0.132.0 — 2026-11-02 — Woven glove panels and flexion detail
 
 - Added original narrower palms, rounded-square finger sections, interdigital
