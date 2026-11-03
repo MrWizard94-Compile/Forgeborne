@@ -4,7 +4,7 @@
   "tool": "4.5.15 LTS",
   "source": "art/tools/build_visual_assets.py",
   "gameBoundsMin": [
-    -0.4225318431854248,
+    -0.4094768762588501,
     -0.559708833694458,
     -0.5070713758468628
   ],
@@ -14,8 +14,8 @@
     0.6639999747276306
   ],
   "horizontalRadius": 0.664598425260185,
-  "vertices": 47073,
-  "triangles": 93342,
+  "vertices": 46654,
+  "triangles": 92520,
   "materials": [
     "Graphite",
     "Steel",

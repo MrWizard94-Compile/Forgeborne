@@ -15,7 +15,8 @@ from mathutils.kdtree import KDTree
 A=None
 
 
-def tube(name,points,radii,role="GloveFabric",parent="SkinBuild",sides=12,steps=4,folds=False,section_power=1.0):
+def tube(name,points,radii,role="GloveFabric",parent="SkinBuild",sides=12,steps=4,folds=False,section_power=1.0,
+         section_axis=None,pad_section=False):
     points=[Vector(p) for p in points]
     radii=[Vector((r,r)) if isinstance(r,(float,int)) else Vector(r) for r in radii]
     samples=[]
@@ -30,7 +31,7 @@ def tube(name,points,radii,role="GloveFabric",parent="SkinBuild",sides=12,steps=
     vertices=[];faces=[];previous=None
     for i,(p,r) in enumerate(samples):
         tangent=(samples[min(i+1,len(samples)-1)][0]-samples[max(0,i-1)][0]).normalized()
-        u=tangent.cross(Vector((0,1,0)))
+        u=(Vector(section_axis)-tangent*Vector(section_axis).dot(tangent)) if section_axis is not None else tangent.cross(Vector((0,1,0)))
         if u.length<.01:u=tangent.cross(Vector((1,0,0)))
         u.normalize()
         if previous is not None and u.dot(previous)<0:u=-u
@@ -45,6 +46,10 @@ def tube(name,points,radii,role="GloveFabric",parent="SkinBuild",sides=12,steps=
             if section_power!=1.0:
                 cosine=math.copysign(abs(cosine)**section_power,cosine)
                 sine=math.copysign(abs(sine)**section_power,sine)
+            if pad_section:
+                # The bend-plane normal spans the finger's width. The outside
+                # has a flatter leather back; the inside retains a rounded pad.
+                sine=max(sine,-.82) if sine<0 else sine*1.04
             vertices.append(tuple(A.point(p+(r.x+fold)*u*cosine+(r.y+fold)*v*sine)))
         if i:
             for side in range(sides):
@@ -120,10 +125,14 @@ def glove_palm(side,wrist,direction):
                   ((.050,-.137,-.160),(.016,.032)),((.048,-.118,-.140),(.0155,.028)),
                   ((.047,-.104,-.120),(.013,.0175)),((.045,-.103,-.114),(.007,.009))]
     else:
-        sections=[((-.068,-.061,.280),(.020,.024)),
-                  ((-.053,-.049,.302),(.016,.021)),((-.044,-.042,.330),(.015,.021)),
-                  ((-.043,-.045,.351),(.0155,.0205)),((-.043,-.050,.372),(.013,.0175)),
-                  ((-.043,-.051,.378),(.007,.009))]
+        # The four knuckles span Z across the grip. Build the palm up from a
+        # wrist beneath their centre, rather than a long tube along that span.
+        sections=[(wrist-direction*.014,(.024,.024)),(wrist,(.023,.021)),
+                  ((-.058,-.119,.324),(.029,.016)),((-.049,-.099,.329),(.040,.015)),
+                  ((-.044,-.078,.329),(.043,.0145)),((-.043,-.061,.328),(.041,.014)),
+                  ((-.043,-.055,.328),(.032,.011)),((-.043,-.049,.328),(.018,.007))]
+        return tube(side+" tailored metacarpal glove",[p for p,_ in sections],[r for _,r in sections],
+                    sides=24,steps=6,section_axis=(0,0,1))
     sections=[(wrist-direction*.014,(.028,.023)),(wrist,(.025,.021))]+sections
     return tube(side+" tailored metacarpal glove",[p for p,_ in sections],[r for _,r in sections],
                 sides=24,steps=6)
@@ -134,19 +143,22 @@ def glove_digit(side,digit,path):
     a,b,c,tip=[Vector(p) for p in path]
     if digit=="Thumb":tip=c.lerp(tip,.75)
     tangent=(tip-c).normalized()
-    radius=.0092 if digit=="Thumb" else .0076 if digit=="Little" else .0087
+    radius={"Thumb":.0094,"Index":.0084,"Middle":.0086,"Ring":.0082,"Little":.0071}[digit]
     centres=[a,a.lerp(b,.72),b,b.lerp(c,.40),b.lerp(c,.78),c,c.lerp(tip,.66),
              tip,tip+tangent*.003,tip+tangent*.005]
-    profile=[1.05,.93,1.07,.87,.85,.95,.78,.65,.35,.04]
+    profile=[1.04,.88,1.08,.80,.78,.94,.74,.57,.29,.035]
     # Oval pads distinguish the dorsal knuckle width from the softer finger pad.
-    radii=[(radius*r,radius*r*.86) for r in profile]
-    return tube(side+" "+digit+" shaped glove",centres,radii,steps=3,sides=20,section_power=.82)
+    radii=[(radius*r,radius*r*.84) for r in profile]
+    across=(b-a).cross(c-b).normalized()
+    return tube(side+" "+digit+" shaped glove",centres,radii,steps=3,sides=20,section_power=.90,
+                section_axis=across,pad_section=True)
 
 
 def dorsal_outline(side):
     return [(-.156,-.180),(-.143,-.164),(-.126,-.145),(-.108,-.126),(-.100,-.131),
-        (-.115,-.153),(-.134,-.176)] if side=="Right" else [(-.054,.281),(-.059,.301),(-.059,.326),
-        (-.057,.351),(-.048,.365),(-.035,.349),(-.027,.324),(-.034,.299),(-.045,.281)]
+        (-.115,-.153),(-.134,-.176)] if side=="Right" else [(-.107,.317),
+        (-.107,.338),(-.094,.353),(-.078,.360),(-.063,.351),(-.064,.312),
+        (-.077,.299),(-.093,.305)]
 
 
 def glove_webbing(side,paths):
@@ -198,7 +210,10 @@ def construct_glove_surface(side,skin,paths,wrist,direction):
         selected=[]
         for face in bm.faces:
             p=Vector(A.game(face.calc_center_median()))
-            if face.normal.dot(outward)>.08 and low.x<=p.y<=high.x and low.y<=p.z<=high.y:selected.append(face)
+            # The panel is on the outer palm. Do not project its cutting lines
+            # through curled fingers on the far half of the grip.
+            if (p.x*(1 if side=="Right" else -1)>.015 and face.normal.dot(outward)>.08
+                and low.x<=p.y<=high.x and low.y<=p.z<=high.y):selected.append(face)
         edges={edge for face in selected for edge in face.edges}
         vertices={vertex for edge in edges for vertex in edge.verts}
         dy,dz=end[0]-start[0],end[1]-start[1]
@@ -245,6 +260,8 @@ def construct_glove_surface(side,skin,paths,wrist,direction):
         face.use_smooth=True
     skin.data.update()
 
+    return {index for face in skin.data.polygons if face.index in panel for index in face.vertices}
+
 
 def fitted_dorsal_stitches(side,skin):
     """Project original seam dashes onto the same cut panel outline."""
@@ -254,7 +271,7 @@ def fitted_dorsal_stitches(side,skin):
     def project(y,z):
         origin=inverse@A.point((.18 if right else -.18,y,z))
         hit,point,normal,_=skin.ray_cast(origin,direction,distance=.4)
-        if not hit:raise RuntimeError(side+" authored dorsal seam missed the original glove")
+        if not hit:raise RuntimeError(side+" authored dorsal seam missed the original glove at Y/Z "+str((y,z)))
         return Vector(A.game(skin.matrix_world@(point+normal*.0004)))
     parts=[]
     for start,end in zip(yz,yz[1:]+yz[:1]):
@@ -275,23 +292,23 @@ def build_hand(side):
                "Middle":[(.052,-.116,-.148),(.046,-.112,-.108),(.005,-.112,-.097),(-.027,-.119,-.124)],
                "Ring":[(.052,-.139,-.152),(.043,-.136,-.117),(.001,-.135,-.108),(-.026,-.142,-.136)],
                "Little":[(.048,-.159,-.163),(.037,-.156,-.126),(.002,-.154,-.115),(-.030,-.160,-.143)],
-               "Thumb":[(.050,-.096,-.164),(.028,-.074,-.180),(-.014,-.075,-.158),(-.028,-.096,-.136)]}
+               "Thumb":[(.047,-.105,-.164),(.029,-.080,-.179),(-.008,-.075,-.159),(-.026,-.092,-.140)]}
     else:
-        wrist=Vector((-.078,-.074,.255));palm=Vector((-.044,-.042,.327))
+        wrist=Vector((-.065,-.138,.320));palm=Vector((-.044,-.070,.328))
         # Author the support elbow for the actual camera-local weapon offset.
         # The old x=-.195 elbow was almost cancelled by ViewOffset.x=.19 and
         # made the sleeve enter on the camera centre line. Keep its original
         # forearm length while bringing the elbow left and slightly forward.
-        forearm_length=(wrist-Vector((-.195,-.235,.045))).length
+        forearm_length=(Vector((-.078,-.074,.255))-Vector((-.195,-.235,.045))).length
         elbow=wrist-Vector((.24,.145,.075)).normalized()*forearm_length
         paths={}
         for name,z,length in zip(("Index","Middle","Ring","Little"),(.365,.340,.315,.290),(.96,1.04,.98,.84)):
             paths[name]=[(-.044,-.052,z),(-.044+.021*length,-.080,z),
                          (-.044+.060*length,-.071,z),(-.044+.086*length,-.044,z-.004)]
-        paths["Thumb"]=[(-.045,-.012,.285),(-.047,.018,.305),(-.022,.041,.332),(.003,.045,.350)]
+        paths["Thumb"]=[(-.055,-.075,.350),(-.055,-.040,.370),(-.047,-.025,.398),(-.043,-.030,.422)]
     length=(wrist-elbow).length
     if not .24<length<.32:raise RuntimeError(side+" forearm proportions are outside the authored adult suit range")
-    bones={side+"Forearm":(elbow,wrist,None),side+"Palm":(wrist,palm+Vector((0,0,.025)),side+"Forearm")}
+    bones={side+"Forearm":(elbow,wrist,None),side+"Palm":(wrist,palm+Vector((0,0,.025) if right else (0,.025,0)),side+"Forearm")}
     direction=(wrist-elbow).normalized()
     soft=[glove_palm(side,wrist,direction)]
     continuation=elbow+Vector((.035 if right else -.045,-.22,-.095))
@@ -300,11 +317,11 @@ def build_hand(side):
                      steps=8,sides=24,folds=True))
     # The palm's thumb pad and little-finger heel are distinct volumes, rather
     # than one overinflated ellipsoid hiding all metacarpal structure.
-    thenar=(.043,-.118,-.164) if right else (-.038,-.015,.305)
-    heel=(.044,-.157,-.170) if right else (-.045,-.043,.291)
-    thumb_pad_size=(.024,.044,.028) if right else (.027,.032,.038)
-    soft.append(A.rounded_volume(side+" opposed thumb pad",thenar,thumb_pad_size,"GloveFabric","SkinBuild"))
-    soft.append(A.rounded_volume(side+" little finger palm heel",heel,(.025,.027,.041),"GloveFabric","SkinBuild"))
+    heel=(.044,-.157,-.170) if right else (-.043,-.091,.293)
+    thenar=[(.047,-.127,-.166),(.045,-.113,-.165),(.045,-.104,-.161)] if right else [(-.050,-.110,.346),(-.046,-.091,.354),(-.052,-.074,.355)]
+    thenar_radii=[(.010,.016),(.011,.016),(.010,.013)] if right else [(.012,.017),(.013,.016),(.011,.014)]
+    soft.append(tube(side+" tapered thenar saddle",thenar,thenar_radii,steps=5,sides=20))
+    soft.append(A.rounded_volume(side+" little finger palm heel",heel,(.025,.027,.041) if right else (.025,.043,.028),"GloveFabric","SkinBuild"))
     for digit,path in paths.items():
         soft.append(glove_digit(side,digit,path))
         for i in range(3):bones[side+digit+str(i)]=(Vector(path[i]),Vector(path[i+1]),side+"Palm" if i==0 else side+digit+str(i-1))
@@ -319,7 +336,7 @@ def build_hand(side):
     if triangles>27000:
         decimate=skin.modifiers.new("Bounded view topology","DECIMATE");decimate.ratio=27000/triangles
         bpy.ops.object.modifier_apply(modifier=decimate.name)
-    construct_glove_surface(side,skin,paths,wrist,direction)
+    back_panel_vertices=construct_glove_surface(side,skin,paths,wrist,direction)
     # Validate a single connected closed organic surface before adding rigid trim.
     bm=bmesh.new();bm.from_mesh(skin.data);bm.verts.ensure_lookup_table()
     if any(not e.is_manifold for e in bm.edges):raise RuntimeError(side+" glove surface is open or nonmanifold")
@@ -339,6 +356,9 @@ def build_hand(side):
         if parent:bone.parent=rig_data.edit_bones[parent]
     bpy.ops.object.mode_set(mode="OBJECT")
     groups={name:skin.vertex_groups.new(name=name) for name in bones}
+    panel_tree=KDTree(len(back_panel_vertices))
+    for index in sorted(back_panel_vertices):panel_tree.insert(skin.data.vertices[index].co,index)
+    panel_tree.balance()
     for vertex in skin.data.vertices:
         p=Vector(A.game(skin.matrix_world @ vertex.co));distances=[]
         for name,(head,tail,_) in bones.items():
@@ -348,6 +368,9 @@ def build_hand(side):
         # Sleeve vertices follow the forearm, not nearby curled fingers.
         # At the wrist, blend across a short cuff into the palm. Finger chains
         # bind locally instead of averaging unrelated adjacent digits.
+        if vertex.index in back_panel_vertices:
+            groups[side+"Palm"].add([vertex.index],1,"REPLACE")
+            continue
         along=(p-wrist).dot(direction)
         if along<.008:
             palm_weight=max(0,min(1,(along+.025)/.033))
@@ -358,7 +381,13 @@ def build_hand(side):
         digit=next((name for name in paths if closest.startswith(side+name)),None)
         nearest=[entry for entry in distances if entry[1]==side+"Palm" or (digit and entry[1].startswith(side+digit))][:4]
         weights=[1/(.004+distance)**4 for distance,_ in nearest];total=sum(weights)
-        for (_,name),weight in zip(nearest,weights):groups[name].add([vertex.index],weight/total,"REPLACE")
+        # The sewn back belongs to the palm. Blend out over adjacent leather so
+        # thumb opposition cannot pull panel corners into narrow spikes.
+        _,_,panel_distance=panel_tree.find(vertex.co)
+        hold=max(0,min(1,(.012-panel_distance)/.008));hold=hold*hold*(3-2*hold)
+        for (_,name),weight in zip(nearest,weights):
+            value=(weight/total)*(1-hold)+(hold if name==side+"Palm" else 0)
+            if value>0:groups[name].add([vertex.index],value,"REPLACE")
     trim=[]
     for offset in (-.032,-.022):
         centre=wrist+direction*offset
@@ -398,7 +427,7 @@ def build_hand(side):
     # Blender's default exporter otherwise names all armatures Armature.
     rig_data.display_type="STICK"
     contact=bpy.data.objects.new(side+"PalmContact",None);bpy.context.collection.objects.link(contact)
-    contact.parent=A.GROUPS["Root"];contact.location=A.point(palm)
+    contact.parent=A.GROUPS["Root"];contact.location=A.point(palm if right else (-.044,-.042,.327))
     return {"side":side,"bones":len(bones),"skinVertices":len(combined.data.vertices),"continuousGlove":True,"maxInfluences":4,"forearmLengthMetres":length}
 
 

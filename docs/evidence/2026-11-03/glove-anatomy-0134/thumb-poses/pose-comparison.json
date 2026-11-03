@@ -1,0 +1,46 @@
+[
+  {
+    "extraThumb0FlexDegrees": -45,
+    "setter": {
+      "label": "thumb-extra-m45",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 1.596,
+      "setFrame": 38831,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-03\\glove-anatomy-0134\\thumb-poses\\thumb-extra-m45.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 558,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "extraThumb0FlexDegrees": -65,
+    "setter": {
+      "label": "thumb-extra-m65",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 1.596,
+      "setFrame": 39932,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-03\\glove-anatomy-0134\\thumb-poses\\thumb-extra-m65.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 576,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  }
+]

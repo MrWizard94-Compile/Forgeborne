@@ -1,0 +1,15 @@
+{
+  "hands": [
+    {
+      "side": "Left",
+      "indexedGeometryTopologyMaterialRolesAndRestExact": true,
+      "bindingsIntentionallyChanged": true
+    },
+    {
+      "side": "Right",
+      "indexedGeometryTopologyMaterialRolesAndRestExact": true,
+      "bindingsIntentionallyChanged": true
+    }
+  ],
+  "scope": "Binding-only source change after thumb geometry refit; actual imported deformation tested separately."
+}

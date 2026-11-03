@@ -1,0 +1,20 @@
+{
+  "isolatedGeneration": true,
+  "reviewedSourceAndFbxUnmodified": true,
+  "sourceGeometryManifestExact": true,
+  "hands": [
+    {
+      "side": "Left",
+      "indexedPositionsWeightsRestAndOrientedRolesExact": true,
+      "rawFaceOrderExact": true
+    },
+    {
+      "side": "Right",
+      "indexedPositionsWeightsRestAndOrientedRolesExact": true,
+      "rawFaceOrderExact": true
+    }
+  ],
+  "reviewedBlendSha256": "a6183e0a65d45c77efbf4e1c49b015f1821a5a196ec8a70aa134e853ab94e557",
+  "reviewedFbxSha256": "a4c21f982829efb84577c8f21c610ee88666c0ce5f2325cf9e87f2d6e1548d4c",
+  "scope": "Indexed source positions/weights/rest and oriented material topology; Blender/FBX container bytes may differ. Not runtime or art/fun acceptance."
+}

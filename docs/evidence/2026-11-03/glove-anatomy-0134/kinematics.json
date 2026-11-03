@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.134.0",
+      "durationSeconds": 2.1,
+      "sampleHz": 240,
+      "intervals": 504,
+      "actualStepSeconds": 0.00416666642,
+      "cameraSpacePalmPeakSpeedMetresPerSecond": 2.73163319,
+      "peakSpeedTimeSeconds": 1.96041656,
+      "cameraSpaceWristPeakSpeedMetresPerSecond": 2.526876,
+      "cameraSpacePalmPeakAccelerationMetresPerSecondSquared": 56.0450363,
+      "peakAccelerationTimeSeconds": 1.93333316,
+      "maximumForearmLengthErrorMetres": 1.43051147e-06,
+      "canonicalStateUnchanged": true,
+      "sameSimulation": true,
+      "scope": "Actual rig finite differences at fixed elapsed-time intervals. Camera-space contact/wrist references, not visible pixels, human biomechanics limits, native performance or natural-motion/fun acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "success": false,
+  "message": "Compilation failed",
+  "data": {
+    "errors": [
+      "Line 19: The member `UnityEngine.Vector3.normalized' cannot be used as method or delegate",
+      "Line 43: The left-hand side of an assignment must be a variable, a property or an indexer"
+    ],
+    "compiler": "codedom"
+  }
+}

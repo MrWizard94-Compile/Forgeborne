@@ -184,11 +184,16 @@ public sealed class WeaponViewModel : MonoBehaviour
         for(int i=0;i<_leftFingers.Count;i++)
         {
             int digit=i/3,joint=i%3;
+            // The index hooks the slide; the remaining fingers close into the
+            // palm instead of extending across the receiver with the index.
             float curl=digit==4 ? (joint==0 ? 0 : joint==1 ? 20 : 15)
-                : (joint==0 ? 15 : joint==1 ? 25 : 20);
+                : digit==0 ? (joint==0 ? 15 : joint==1 ? 25 : 20)
+                : (joint==0 ? 40 : joint==1 ? 40 : 25);
             _leftFingers[i].Flex(open+curl*hookGrip);
         }
         _leftFingers[12].Bone.localRotation*=Quaternion.AngleAxis(-35*hookGrip,_leftThumbOppositionAxis);
+        // Fold the refitted thumb toward the index after opposition.
+        _leftFingers[12].Flex(-65*hookGrip);
         foreach(var finger in _rightIndex)finger.Flex(6*_shotKick);
         if(_leftForearm!=null && _leftPalm!=null)
         {

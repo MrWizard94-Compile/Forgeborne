@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.134.0",
+      "hands": [
+        {
+          "side": "Left",
+          "actualImportedPanelVertices": 315,
+          "maximumNonPalmWeight": 0.0,
+          "maximumPalmLocalBakedPanelDisplacementMetres": 2.8914194e-06,
+          "maximumThumb0LocalRotationDegrees": 60.35536
+        },
+        {
+          "side": "Right",
+          "actualImportedPanelVertices": 123,
+          "maximumNonPalmWeight": 0.0,
+          "maximumPalmLocalBakedPanelDisplacementMetres": 2.51127949e-06,
+          "maximumThumb0LocalRotationDegrees": 0.0
+        }
+      ],
+      "sameSimulation": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual imported weights and CPU-baked skin across reload phases. Rigid palm panel stability prevents thumb-driven corner spikes; not dynamic cloth, final anatomy, realtime performance or director art/fun acceptance."
+    },
+    "compiler": "codedom"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "message": "Runtime error: Left panel pinching/thumb articulation contract failed: 0.9958594 / 0.01675498 / 60.35536",
+  "data": {
+    "exceptionType": "InvalidOperationException",
+    "stackTrace": "  at MCPDynamicCode.Execute () [0x00520] in <df4129e9e7344844975b2ad941a1e5d9>:0 \r\n  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)\r\n  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <b2ed3aa968d84284a17b07ec9195055c>:0 ",
+    "compiler": "codedom"
+  }
+}

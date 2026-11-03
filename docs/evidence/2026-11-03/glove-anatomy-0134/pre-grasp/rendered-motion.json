@@ -1,0 +1,48 @@
+[
+  {
+    "phase": 0.0,
+    "seconds": 0.0,
+    "setter": {
+      "label": "reload-phase-0-00",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 0.0,
+      "setFrame": 9520,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-03\\glove-anatomy-0134\\selected\\reload-phase-0-00.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.74, 0.14, 0.41)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.39, 0.86)",
+      "normalFramesCrossed": 558,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  },
+  {
+    "phase": 0.76,
+    "seconds": 1.596,
+    "setter": {
+      "label": "reload-phase-0-76",
+      "offset": "(0.19, -0.10, 0.55)",
+      "yaw": -12.0,
+      "age": 1.596,
+      "setFrame": 10634,
+      "canonicalStateUnchanged": true
+    },
+    "capture": {
+      "image": "C:\\WPAI\\Gaming\\Forgeborne\\docs\\evidence\\2026-11-03\\glove-anatomy-0134\\selected\\reload-phase-0-76.png",
+      "offset": "(0.19, -0.10, 0.55)",
+      "fieldOfView": 75.0,
+      "rightPalmRestLandmarkViewport": "(0.75, 0.12, 0.39)",
+      "leftPalmRestLandmarkViewport": "(0.53, 0.32, 0.85)",
+      "normalFramesCrossed": 559,
+      "actualSkinnedRenderer": true,
+      "canonicalStateUnchanged": true,
+      "scope": "Actual FPS camera and original geometry. Rest landmarks are projection diagnostics, not visible-pixel, native-input, final-art or fun acceptance."
+    }
+  }
+]

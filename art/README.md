@@ -33,7 +33,7 @@ run. Blender is a developer tool kept outside this repository; it is not shipped
 
 | Asset | Purpose | Triangles |
 |---|---|---:|
-| PulseCarbine | Original refined carbine, continuous skinned gloves, moving assemblies and muzzle landmark | 93342 |
+| PulseCarbine | Original refined carbine, continuous skinned gloves, moving assemblies and muzzle landmark | 92520 |
 | EmberWarden | Original compact hovering enemy shell and sensor | 7024 |
 | AetherRelay | Original caged induction chamber/objective | 4820 |
 | ForgeSuit | Original 1.79 m pressure suit for the orbital view | 12144 |
@@ -51,7 +51,7 @@ and no parallel collision. New GloveFabric and SleeveFabric pairs are authored s
 by `tools/bake_glove_surface.py`; existing eight pairs are retained byte-exact.
 The original OpticGlass shader supplies the transparent combiner. See
 `docs/carbine-art-checkpoint.md` for source/import audits, actual GPU/native
-evidence, limits and full reproduction commands. The current 93,342-triangle count stays
+evidence, limits and full reproduction commands. The current 92,520-triangle count stays
 under its 100,000 budget; this is not proof of AAA+ quality or native performance.
 The 0.128 receiver/framing pass is in `docs/first-person-framing-checkpoint.md`.
 At that checkpoint, source hand positions, bindings and rigs matched 0.127 exactly, with equivalent
@@ -77,7 +77,7 @@ preserved; left sleeve/body/bindings and forearm rest change intentionally, with
 descendant matrix float variance recorded. All maps and weapon surfaces remain
 preserved. See `docs/arm-fit-checkpoint.md` for source, regeneration, import,
 rendered/native observations and remaining anatomy/tailoring/motion gaps.
-Current 0.132 adds narrower palms, rounded-square finger sections, interdigital
+The preceding 0.132 adds narrower palms, rounded-square finger sections, interdigital
 saddles and shallow authored flexion folds. One connected woven back panel and
 its fitted stitches share a cut outline; leather remains on palm/fingers. Existing
 maps/materials and rest rigs are preserved; new glove geometry/bindings/material
@@ -85,6 +85,19 @@ roles are intentional. `audit_glove_form.py --require-dorsal-panels` independent
 checks connected cloth regions and stitch-to-material-boundary fit. See
 `docs/glove-construction-checkpoint.md` for rejected candidates, regeneration,
 actual import/render/native evidence and remaining quality gates.
+
+Current 0.134 corrects the support palm's axis and wrist placement, with a broad
+flattened palm, tapered thenar sweeps, opposed thumbs and finger sections aligned
+to their bend planes. The original grip landmarks and weapon surfaces remain;
+the left wrist/palm/forearm and both thumb chains intentionally change. Other
+finger anchors remain exact, with measured left descendant rest-matrix float
+variance. The woven back panel/stitches are refitted, and non-index fingers close
+during charging. The thumb folds toward the index; the woven panel follows the
+palm, with a smooth binding transition through surrounding leather, preventing
+corners from being pulled into spikes. The opt-in source panel-binding gate and
+`tools/unity-glove-panel-smoke.cs` check actual imported/baked panel stability.
+See `docs/glove-anatomy-checkpoint.md` for rejected source/render
+candidates, preservation, reproduction, actual consumer evidence and open gates.
 
 ## Reproduce and inspect
 

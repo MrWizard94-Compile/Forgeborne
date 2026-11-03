@@ -1,0 +1,40 @@
+{
+  "recordedAtUtc": "2026-11-03T13:21:59.950Z",
+  "originalFramesUnedited": true,
+  "windowId": 50070420,
+  "physicalEscapeInterruptionRetainedIn": "native-partial/observations.json",
+  "resumedByExplicitUserInstruction": "Resume QA player testing",
+  "reloadRoundCounts": {
+    "before": "41/120",
+    "after": "42/119"
+  },
+  "snapshotCompletionAfterReloadInputMilliseconds": {
+    "magazine": 1127.223600000143,
+    "charging": 1642.663899987936
+  },
+  "timingLimit": "Wall time from before R input through screenshot completion; not an exact animation phase or native performance measurement.",
+  "observedReturnToForegrip": true,
+  "tabOrbitalAndFps": true,
+  "escapePaused": true,
+  "slotLoadedWhilePaused": true,
+  "loadedHud": {
+    "ammo": "20/119",
+    "stone": 3,
+    "ember": 0,
+    "wood": 6,
+    "coreDistanceMetres": 10,
+    "squadVisible": true
+  },
+  "frameNames": [
+    "native-01-entry.jpg",
+    "native-02-fps.jpg",
+    "native-03-fired.jpg",
+    "native-04-magazine.jpg",
+    "native-05-charging.jpg",
+    "native-06-return.jpg",
+    "native-07-orbital.jpg",
+    "native-08-fps-restored.jpg",
+    "native-09-paused.jpg",
+    "native-10-slot-loaded.jpg"
+  ]
+}

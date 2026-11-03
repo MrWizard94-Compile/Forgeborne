@@ -1,0 +1,8 @@
+{
+  "expectedRejection": true,
+  "fixture": "Pre-binding thumb-refit source, candidate 3",
+  "blenderExitCode": 1,
+  "diagnostic": "AssertionError: ('Left', 0.995862054056488)",
+  "sourceGuard": "--require-palm-panel-binding",
+  "scope": "Read-only old source rejection. Current source and actual imported panel checks pass separately."
+}

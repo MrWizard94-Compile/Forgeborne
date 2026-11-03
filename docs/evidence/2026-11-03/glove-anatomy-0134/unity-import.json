@@ -1,0 +1,34 @@
+{
+  "success": true,
+  "message": "Code executed successfully.",
+  "data": {
+    "result": {
+      "version": "0.134.0",
+      "cuffs": [
+        {
+          "skin": "LeftHandSkinned",
+          "cuffVertices": 738,
+          "cuffBoundTo": "LeftForearm",
+          "fourWeightSkin": true,
+          "actualImportedVertices": 15240,
+          "activeJoints": 17,
+          "maximumInfluences": 4,
+          "maximumWeightSumError": 1.1920929e-07
+        },
+        {
+          "skin": "RightHandSkinned",
+          "cuffVertices": 738,
+          "cuffBoundTo": "RightForearm",
+          "fourWeightSkin": true,
+          "actualImportedVertices": 15110,
+          "activeJoints": 17,
+          "maximumInfluences": 4,
+          "maximumWeightSumError": 1.1920929e-07
+        }
+      ],
+      "importedTriangles": 92520,
+      "scope": "Actual imported Rubber-role vertices and binding consumer; rendered bend and native review remain separate."
+    },
+    "compiler": "codedom"
+  }
+}

@@ -1,6 +1,34 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.133 reload pacing and paths
+## Current checkpoint — 0.134 glove anatomy and binding
+
+Branch codex/glove-thumb-phalanges is based on main 70410c0. The source now has a
+broad support palm with its wrist below the knuckles, refitted thumb saddles,
+bend-plane finger sections and a closed charging grasp. A sewn panel binding
+defect exposed by thumb articulation is repaired: actual panel movement relative
+to the palm falls from 16.755 mm to <=.003 mm. Source/import: 92,520 triangles.
+Other joint anchors, grip/weapon references, Core/DLLs/catalogs/maps/Main and
+gameplay rules remain protected, with left rest-matrix float variance recorded.
+
+Source/reproduction, actual imported panel/skin/contact/cadence/reset/shot and
+normal-frame Unity rendering pass their scoped checks. Windows package
+20261103T124500Z and console have zero errors/warnings; package inventory is 194
+files with no MCP/Coplay assembly entry. Physical Escape stopped the first
+reload observation; Rob explicitly authorized resuming only the QA player.
+Native R (42/119), magazine/charging/return, Tab orbital/FPS, Escape and existing
+slot load now pass their affected checks. Ten original native frames retained.
+Both saves exact at 2026-11-03 13:22:04Z; exact owned PID 74560 matched at receipt,
+last observed paused after loading. Bounded log: zero project-exception-pattern
+matches, one inherited/classified D3D12 info-queue diagnostic. Editor stopped.
+Affected checks support this authorized main update.
+
+Earlier native 20261103T054528Z was rejected for its thumb silhouette; only its
+exact owned QA process was stopped, with saves unchanged. No older saves were
+restored. See glove-anatomy-checkpoint.md and evidence/2026-11-03/glove-anatomy-0134.
+The full six-influence AAA+ goal and art/experience/fun gates remain active/open.
+Frozen law/evolution unchanged.
+
+## Historical checkpoint — 0.133 reload pacing and paths
 
 The cosmetic reload now lasts 2.1 seconds, with quintic easing, outward transition
 arcs and a double elapsed-time accumulator. The final return grows from 120 to

@@ -1,0 +1,47 @@
+{
+  "version": "0.134.0",
+  "package": "ForgeborneUnity/Builds/Windows-QA/20261103T124500Z",
+  "frames": [
+    {
+      "path": "native-partial/native-01-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "9380420458722486767a03474ce471f41125e9bbd0628c209ef4ec49ab06c0a6",
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T124500Z\\Forgeborne.exe",
+        "id": 50070420,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-partial/native-02-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "de6086c667fa1a1dd26da87b110cb0ae3077a08589f95ff0e2a55dc6ff9fa7aa",
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T124500Z\\Forgeborne.exe",
+        "id": 50070420,
+        "title": "Forgeborne"
+      }
+    },
+    {
+      "path": "native-partial/native-03-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "2230df27b7c92898002631d12621ed8cbe989285d1b281a330354ce636a670fe",
+      "window": {
+        "app": "process:C:\\WPAI\\Gaming\\Forgeborne\\ForgeborneUnity\\Builds\\Windows-QA\\20261103T124500Z\\Forgeborne.exe",
+        "id": 50070420,
+        "title": "Forgeborne"
+      }
+    }
+  ],
+  "observations": {
+    "enteredFirstPerson": true,
+    "fireAmmoBefore": "42/120",
+    "fireAmmoAfter": "41/120",
+    "reloadOutcome": "Unknown: Computer Use stopped with physical Escape"
+  },
+  "complete": false,
+  "scope": "Only frames retained before the Escape interruption. This export performs file I/O and issues no app-control calls. Further native control and slot checks remain pending."
+}

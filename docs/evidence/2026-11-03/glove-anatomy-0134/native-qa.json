@@ -1,0 +1,136 @@
+{
+  "version": "0.134.0",
+  "recordedAtUtc": "2026-11-03T13:22:04.7267136Z",
+  "package": "ForgeborneUnity/Builds/Windows-QA/20261103T124500Z",
+  "interface": "Actual native Windows player via sky inputs, no injected gameplay calls",
+  "observations": {
+    "enteredFirstPerson": true,
+    "revisedReloadAndHandReturnInspected": true,
+    "reloadPresentationSeconds": 2.1,
+    "physicalEscapeStopRespected": true,
+    "explicitUserResume": "Resume QA player testing",
+    "shots": [
+      {
+        "before": "42/120",
+        "after": "41/120"
+      }
+    ],
+    "legacyRReloads": [
+      "42/119"
+    ],
+    "magazineReachAndChargingHandVisible": true,
+    "returnedToForegrip": true,
+    "tabOrbitalHidesView": true,
+    "tabReturnsSelectedFraming": true,
+    "escapePauses": true,
+    "existingSlotLoadedAndLastObservedPaused": true,
+    "loadedHud": {
+      "ammo": "20/119",
+      "stone": 3,
+      "wood": 6,
+      "squadVisible": true,
+      "coreDistanceMetres": 10
+    }
+  },
+  "frames": [
+    {
+      "path": "native-01-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "9380420458722486767a03474ce471f41125e9bbd0628c209ef4ec49ab06c0a6"
+    },
+    {
+      "path": "native-02-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "de6086c667fa1a1dd26da87b110cb0ae3077a08589f95ff0e2a55dc6ff9fa7aa"
+    },
+    {
+      "path": "native-03-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "2230df27b7c92898002631d12621ed8cbe989285d1b281a330354ce636a670fe"
+    },
+    {
+      "path": "native-04-magazine.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "43c47ee6d270332610b0399e5a87e7f5022cc7def243c7b45f33e1e923d09ec1"
+    },
+    {
+      "path": "native-05-charging.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "73e21958d7d54dd32b1ab0562bd3d2c9b9dfdf1e63f159ff87b30ba0f5a036fd"
+    },
+    {
+      "path": "native-06-return.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a93dcec3cf0011311201ea2c6f5a3ac34011939904c31a68c8e6b410fafff66c"
+    },
+    {
+      "path": "native-07-orbital.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "a0482728f1ec026560ca3bcd6b727c173fb76552781d77ec08aae420b7970e98"
+    },
+    {
+      "path": "native-08-fps-restored.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "f7ba8dd9d1f4a3d7647a21232aa59c757e031c9488759d8432f75ea7d1479038"
+    },
+    {
+      "path": "native-09-paused.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "5250a379d12ae7e7e232754aab387e80130b8bae18f5447c52c59e5e261581fb"
+    },
+    {
+      "path": "native-10-slot-loaded.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "8bdd679cd367a22b95cdbf6daf847316678e3f16b3ec6fb3c74681b2a2cc6a27"
+    }
+  ],
+  "reloadObservationReceipt": "native-reload-observations.json",
+  "savePreservation": {
+    "checkedAtUtc": "2026-11-03T13:22:04.3882381Z",
+    "namesMatch": true,
+    "files": [
+      {
+        "name": "slot-1.json",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      },
+      {
+        "name": "slot-1.json.backup",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      }
+    ],
+    "allHashesMatch": true,
+    "restoredOrWrittenByQa": false
+  },
+  "boundedNativeLog": {
+    "snapshotAtUtc": "2026-11-03T13:22:04.6832840Z",
+    "bytes": 1764,
+    "sha256": "28425068431ae349313c3a83b146f7b5c64a714a9b1dae7742b307e81367dd49",
+    "separateQaLog": true,
+    "projectExceptionPattern": "(?im)(?:NullReferenceException|MissingReferenceException|InvalidOperationException|Argument(?:Null|OutOfRange)?Exception|IndexOutOfRangeException|Unhandled Exception|Exception:)",
+    "observedProjectExceptionPatternCount": 0,
+    "d3d12InfoQueueDiagnosticPattern": "(?im)^.*d3d12.*info\\s*queue.*$",
+    "d3d12InfoQueueDiagnosticCount": 1,
+    "classification": "Bounded read-only live log; inherited D3D12 diagnostic retained, see surface-material-checkpoint.md. Not shutdown or sustained stability evidence."
+  },
+  "processAtReceipt": [
+    {
+      "pid": 74560,
+      "exactPackage": true,
+      "separateLogArgumentVerified": true,
+      "creationTimeMatchesLaunch": true,
+      "creationTimeDifferenceSeconds": 9E-07
+    }
+  ],
+  "earlierNativeSessionsNotClosed": true,
+  "limits": "Dated affected controls/poses/slot evidence. No full native loop, current-v2 cold recovery, representative budgets, heard mix, stability, director visual or fun acceptance. Later user changes take precedence."
+}

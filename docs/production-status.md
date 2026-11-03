@@ -20,7 +20,18 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.133 lengthens the cosmetic reload to 2.1 seconds, with quintic easing,
+Current 0.134 corrects the support palm/wrist/thumb forms and
+charging grasp, with a palm-bound woven panel and blended leather bindings.
+Actual panel pinching falls from 16.755 mm to <=.003 mm. Source/reproduction,
+imported skin/motion/shot/render and Windows build/console checks pass their
+scoped gates. After respecting a physical Escape stop and Rob's explicit resume,
+native R/magazine/charging/return, Tab orbital/FPS, pause and existing-slot load
+pass their affected checks. Both saves exact at 2026-11-03 13:22:04Z; exact owned
+player present at receipt, last observed paused, Editor stopped. Affected checks
+support this authorized main update. Full AAA+ art/fun remains unaccepted.
+See [current glove-anatomy evidence](glove-anatomy-checkpoint.md).
+
+The preceding 0.133 lengthens the cosmetic reload to 2.1 seconds, with quintic easing,
 outward transition arcs and robust elapsed-time accumulation. Same-time-interval
 actual palm speed falls from 5.7503 to 2.7284 m/s and acceleration from 169.5174
 to 57.6546 m/s². Actual contact/skin/cadence/reset/shot checks, real Unity

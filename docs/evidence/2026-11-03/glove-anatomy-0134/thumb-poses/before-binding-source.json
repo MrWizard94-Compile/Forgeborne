@@ -1,0 +1,14 @@
+[
+  {
+    "path": "art/source/PulseCarbine.blend",
+    "sha256": "1c1e575fcf68a5213d8ac103f15fd1222fec7ceab0c021897b92912e3b5106fa"
+  },
+  {
+    "path": "ForgeborneUnity/Assets/Resources/Art/Models/PulseCarbine.fbx",
+    "sha256": "4ad96ab014649fefc4c8c430f5158b0e01efd03d3c1b4266323d769dd505524d"
+  },
+  {
+    "path": "ForgeborneUnity/Assets/Scripts/WeaponViewModel.cs",
+    "sha256": "19fee5db99f6d2625f7fe6327dd468fc99c49f2c5227cacf6c978b1f4773095e"
+  }
+]

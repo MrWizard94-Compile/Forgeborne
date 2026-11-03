@@ -1,5 +1,20 @@
 # Forgeborne — Changelog
 
+## 0.134.0 — 2026-11-03 — Palm anatomy and panel skinning
+
+- Rebuilt the support palm/wrist layout, refitted thumb saddles and finger
+  sections, and closed the charging grasp while retaining existing timing and
+  canonical gameplay. Source/import: 92,520 triangles.
+- Fixed thumb rotation pulling the woven panel into spikes. The actual imported
+  panel's palm-relative error falls from 16.755 mm to below .003 mm. Added
+  source and actual imported/baked-panel checks with retained negative evidence.
+- Source, reproduction, actual skin/motion/shot/render and Windows build/console
+  checks pass. After Rob explicitly resumed QA following a physical Escape stop,
+  native reload/hand return, Tab orbital/FPS, pause and existing-slot load pass
+  their affected checks. Both saves remain exact at the dated check.
+- Full AAA+ anatomy/art, native-loop, budgets, heard mix and fun gates remain open.
+  See docs/glove-anatomy-checkpoint.md.
+
 ## 0.133.0 — 2026-11-03 — Support-hand reload pacing
 
 - Replaced the fast straight return with a 2.1-second cosmetic reload, quintic

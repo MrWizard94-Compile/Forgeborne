@@ -13,6 +13,7 @@ parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--output',required=True)
 parser.add_argument('--require-fitted-stitches',action='store_true')
 parser.add_argument('--require-dorsal-panels',action='store_true')
+parser.add_argument('--require-palm-panel-binding',action='store_true')
 args=parser.parse_args(sys.argv[sys.argv.index('--')+1:] if '--' in sys.argv else [])
 assert bpy.app.version[:3]==(4,5,15)
 bpy.context.view_layer.update()
@@ -115,6 +116,10 @@ for side in ('Left','Right'):
     if args.require_dorsal_panels:
         assert panel_faces and panel_components==1 and border,(side,len(panel_faces),panel_components)
         assert maximum_border_gap is not None and maximum_border_gap<.0015,(side,maximum_border_gap)
+    panel_vertices={vertex for index in panel_faces for vertex in mesh.polygons[index].vertices}
+    maximum_panel_nonpalm=max((sum(weight for name,weight in weights(index).items() if name!=side+'Palm') for index in panel_vertices),default=0)
+    if args.require_palm_panel_binding:
+        assert panel_vertices and maximum_panel_nonpalm<.00001,(side,maximum_panel_nonpalm)
     hands.append(dict(side=side,vertices=len(mesh.vertices),triangles=sum(len(p.vertices)-2 for p in mesh.polygons),
         rigObjectWorldMatrix=[list(row) for row in rig.matrix_world],
         sourceComponentsIncludingTrim=len(components),closedPrimaryBodyVertices=len(primary),nonmanifoldEdges=open_edges,
@@ -123,13 +128,15 @@ for side in ('Left','Right'):
         maximumStitchDistanceFromBodyMetres=maximum_gap,maximumStitchNearestSkinWeightL1Error=maximum_weight_error,
         dorsalFabricFaces=len(panel_faces),dorsalFabricComponents=panel_components,
         dorsalFabricAreaSquareMetres=sum(mesh.polygons[index].area for index in panel_faces),
-        dorsalPanelLeatherBoundaryEdges=len(border),maximumStitchDistanceFromPanelBoundaryMetres=maximum_border_gap))
+        dorsalPanelLeatherBoundaryEdges=len(border),maximumStitchDistanceFromPanelBoundaryMetres=maximum_border_gap,
+        dorsalPanelVertices=len(panel_vertices),maximumPanelNonPalmWeight=maximum_panel_nonpalm))
 
 landmarks={name:list(bpy.data.objects['PulseCarbine'].matrix_world.inverted()@bpy.data.objects[name].matrix_world.translation)
     for name in ('MuzzleSocket','ArtRight','ArtUp','ArtForward','LeftPalmContact','RightPalmContact')}
 report=dict(blender=bpy.app.version_string,weaponAssemblies=weapon,hands=hands,modelSpaceBlenderLandmarks=landmarks,
     fittedStitchContractRequired=args.require_fitted_stitches,
     dorsalPanelContractRequired=args.require_dorsal_panels,
+    palmPanelBindingContractRequired=args.require_palm_panel_binding,
     scope='Source topology/binding and quantized oriented weapon surfaces. No claim of natural anatomy, actual import, rendered skin, native controls or director acceptance.')
 Path(args.output).write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(report))

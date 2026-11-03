@@ -57,10 +57,15 @@ and shallow flexion folds while preserving the rest rigs. A rendered candidate
 with stray fabric patches was rejected and repaired. Source/import, actual poses/
 rendering and affected native controls are recorded in
 [the glove-construction checkpoint](docs/glove-construction-checkpoint.md).
-Current 0.133 slows the support-hand reload return, adds eased outward transition
+The preceding 0.133 slows the support-hand reload return, adds eased outward transition
 arcs and preserves original art/gameplay. Actual rig, skin, real Unity clips and
 affected native controls are checked; anatomy and final motion quality remain
 unaccepted. See [the reload-motion checkpoint](docs/reload-motion-checkpoint.md).
+Current 0.134 corrects the support palm/wrist layout, refits thumb and finger
+forms, and closes the charging grasp. The sewn panel now follows the palm,
+preventing thumb rotation from pulling its corners into spikes. Source/imported
+skin, actual Unity renders and native evidence are recorded in
+[the glove-anatomy checkpoint](docs/glove-anatomy-checkpoint.md). AAA+ remains unmet.
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single

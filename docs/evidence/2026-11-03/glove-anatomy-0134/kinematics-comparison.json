@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "baselineVersion": "0.132.0",
+  "currentVersion": "0.134.0",
+  "baselineDurationSeconds": 1.2,
+  "currentDurationSeconds": 2.1,
+  "sampleHz": 240,
+  "metrics": [
+    {
+      "metric": "cameraSpacePalmPeakSpeedMetresPerSecond",
+      "baseline": 5.75032139,
+      "current": 2.73163319,
+      "workingArtBudget": 3.5,
+      "reductionPercent": 52.49599101103459,
+      "passed": true
+    },
+    {
+      "metric": "cameraSpacePalmPeakAccelerationMetresPerSecondSquared",
+      "baseline": 169.51738,
+      "current": 56.0450363,
+      "workingArtBudget": 60.0,
+      "reductionPercent": 66.93847185462636,
+      "passed": true
+    }
+  ],
+  "limits": "Working animation budgets for actual camera-space rig references. Not universal biomechanics, visible-mesh clearance, native performance or art/fun acceptance."
+}

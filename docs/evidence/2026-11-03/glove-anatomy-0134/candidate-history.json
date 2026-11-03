@@ -1,0 +1,48 @@
+{
+  "baselineCommit": "70410c044614c6d5023833a00b04a4a1a9c94239",
+  "attempts": [
+    {
+      "candidate": "Initial thumb and finger-section source",
+      "rejectedBy": "Pre-export triangle-area guard",
+      "finding": "A panel cutting line reached a curled finger on the far half of the grip and produced an 8.600209211032141e-13 square-metre triangle.",
+      "resolution": "Limit panel cutting to the outer palm half. Keep the original 1e-12 square-metre guard."
+    },
+    {
+      "candidate": "Repaired 92642-triangle thumb and finger source",
+      "sourceAndImportChecksPassed": true,
+      "rejectedBy": "Rendered anatomy inspection",
+      "finding": "The inherited support palm runs along the knuckle span instead of rising from a wrist below it, creating a large curved silhouette during reload.",
+      "evidence": "rejected-first/",
+      "resolution": "Rebuild the support palm across its width; move its wrist and elbow while retaining forearm length and the grip landmark. Refit thumb, heel and dorsal panel."
+    },
+    {
+      "candidate": "First broad-palm panel outline",
+      "rejectedBy": "Source seam projection and independent panel-boundary checks",
+      "finding": "The first outline reached outside the new palm. A subsequent lower outline crossed the wrist-region measurement boundary and failed the 1.5 mm panel fit gate at 29.344849 mm.",
+      "resolution": "Refit the panel above the wrist transition. No audit or tolerance changes."
+    },
+    {
+      "candidate": "Broad palm before charging-grasp revision",
+      "finding": "The three non-index fingers remained extended across the receiver in the charging view.",
+      "evidence": "pre-grasp/",
+      "resolution": "Keep the index hook and timing; increase the other three fingers' charging curl to 40/40/25 degrees."
+    },
+    {
+      "candidate": "First native broad-palm package 20261103T054528Z",
+      "rejectedBy": "Native rest silhouette",
+      "finding": "Support thumb stood upright beside the barrel as a thin loop.",
+      "evidence": "rejected-native-thumb/",
+      "resolution": "Shorten and refit the thumb forward along the grip; stop only the exact owned rejected QA process without Quit/autosave, with saves unchanged."
+    },
+    {
+      "candidate": "Thumb charging pose after geometry refit",
+      "rejectedBy": "Rendered pose comparison and actual imported panel deformation",
+      "finding": "Thumb flexion pulled panel corners into spikes. Actual old skin moved 0.01675498 m in palm space; maximum non-palm weight was 0.9958594.",
+      "evidence": "thumb-poses/",
+      "resolution": "Select the -65 degree additional thumb fold, bind the sewn panel to the palm and blend surrounding leather over 4-12 mm; add source and actual imported/baked-panel checks without relaxing tolerances."
+    }
+  ],
+  "selectedSourceTriangles": 92520,
+  "selectedSourceVertices": 46654,
+  "limits": "Selected contribution remains work in progress. Source/skin/render/native checks do not establish AAA+ anatomy, art or fun acceptance."
+}
