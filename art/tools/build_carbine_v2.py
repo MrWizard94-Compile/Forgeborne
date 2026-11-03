@@ -15,7 +15,7 @@ from mathutils.kdtree import KDTree
 A=None
 
 
-def tube(name,points,radii,role="GloveFabric",parent="SkinBuild",sides=12,steps=4,folds=False):
+def tube(name,points,radii,role="GloveFabric",parent="SkinBuild",sides=12,steps=4,folds=False,section_power=1.0):
     points=[Vector(p) for p in points]
     radii=[Vector((r,r)) if isinstance(r,(float,int)) else Vector(r) for r in radii]
     samples=[]
@@ -41,7 +41,11 @@ def tube(name,points,radii,role="GloveFabric",parent="SkinBuild",sides=12,steps=
             # is oval rather than the old constant circular pipe.
             length=i/max(1,len(samples)-1)
             fold=.0024*math.sin(length*math.pi*22+angle*.8)*math.sin(length*math.pi)**2 if folds else 0
-            vertices.append(tuple(A.point(p+(r.x+fold)*u*math.cos(angle)+(r.y+fold)*v*math.sin(angle))))
+            cosine,sine=math.cos(angle),math.sin(angle)
+            if section_power!=1.0:
+                cosine=math.copysign(abs(cosine)**section_power,cosine)
+                sine=math.copysign(abs(sine)**section_power,sine)
+            vertices.append(tuple(A.point(p+(r.x+fold)*u*cosine+(r.y+fold)*v*sine)))
         if i:
             for side in range(sides):
                 j=(side+1)%sides
@@ -113,12 +117,12 @@ def glove_palm(side,wrist,direction):
     """Original wrist/metacarpal fan, with a thinner back and staggered knuckles."""
     if side=="Right":
         sections=[((.057,-.154,-.180),(.018,.030)),
-                  ((.050,-.137,-.160),(.016,.037)),((.048,-.118,-.140),(.0155,.032)),
+                  ((.050,-.137,-.160),(.016,.032)),((.048,-.118,-.140),(.0155,.028)),
                   ((.047,-.104,-.120),(.013,.0175)),((.045,-.103,-.114),(.007,.009))]
     else:
         sections=[((-.068,-.061,.280),(.020,.024)),
-                  ((-.053,-.049,.302),(.016,.027)),((-.044,-.042,.330),(.015,.027)),
-                  ((-.043,-.045,.351),(.0155,.0265)),((-.043,-.050,.372),(.013,.0175)),
+                  ((-.053,-.049,.302),(.016,.021)),((-.044,-.042,.330),(.015,.021)),
+                  ((-.043,-.045,.351),(.0155,.0205)),((-.043,-.050,.372),(.013,.0175)),
                   ((-.043,-.051,.378),(.007,.009))]
     sections=[(wrist-direction*.014,(.028,.023)),(wrist,(.025,.021))]+sections
     return tube(side+" tailored metacarpal glove",[p for p,_ in sections],[r for _,r in sections],
@@ -136,15 +140,115 @@ def glove_digit(side,digit,path):
     profile=[1.05,.93,1.07,.87,.85,.95,.78,.65,.35,.04]
     # Oval pads distinguish the dorsal knuckle width from the softer finger pad.
     radii=[(radius*r,radius*r*.86) for r in profile]
-    return tube(side+" "+digit+" shaped glove",centres,radii,steps=3,sides=16)
+    return tube(side+" "+digit+" shaped glove",centres,radii,steps=3,sides=20,section_power=.82)
+
+
+def dorsal_outline(side):
+    return [(-.156,-.180),(-.143,-.164),(-.126,-.145),(-.108,-.126),(-.100,-.131),
+        (-.115,-.153),(-.134,-.176)] if side=="Right" else [(-.054,.281),(-.059,.301),(-.059,.326),
+        (-.057,.351),(-.048,.365),(-.035,.349),(-.027,.324),(-.034,.299),(-.045,.281)]
+
+
+def glove_webbing(side,paths):
+    """Original soft interdigital saddles; leave the distal fingers separate."""
+    parts=[]
+    digits=("Index","Middle","Ring","Little")
+    for first,second in zip(digits,digits[1:]):
+        a,b=([Vector(p) for p in paths[name]] for name in (first,second))
+        start=a[0].lerp(a[1],.24);end=b[0].lerp(b[1],.24)
+        saddle=(a[0]+b[0])*.5+((a[1]-a[0])+(b[1]-b[0]))*.04
+        parts.append(tube(side+first+second+" continuous glove web",[start,saddle,end],
+                          [(.0075,.008),(.0085,.009),(.0075,.008)],steps=4,sides=16))
+    return parts
+
+
+def construct_glove_surface(side,skin,paths,wrist,direction):
+    """Sculpt flexion folds and cut a sewn dorsal panel into the closed body."""
+    chains={name:[Vector(p) for p in points] for name,points in paths.items()}
+    for vertex in skin.data.vertices:
+        p=Vector(A.game(vertex.co));nearest=None
+        for name,points in chains.items():
+            for segment,(head,tail) in enumerate(zip(points,points[1:])):
+                delta=tail-head;t=max(0,min(1,(p-head).dot(delta)/delta.length_squared))
+                candidate=((p-head-delta*t).length,name,segment,t)
+                if nearest is None or candidate[0]<nearest[0]:nearest=candidate
+        distance,digit,segment,t=nearest
+        if distance>.016 or (segment==0 and t<.30):continue
+        points=chains[digit];displacement=Vector((0,0,0))
+        for joint in (1,2):
+            incoming=(points[joint]-points[joint-1]).normalized()
+            outgoing=(points[joint+1]-points[joint]).normalized()
+            tangent=(incoming+outgoing).normalized();inner=(outgoing-incoming).normalized()
+            delta=p-points[joint];axial=delta.dot(tangent);radial=delta-tangent*axial
+            if abs(axial)>.010 or not .003<radial.length<.015:continue
+            facing=max(0,radial.normalized().dot(inner))**2
+            crease=.00075*math.exp(-((axial+.0025)/.0022)**2)
+            crease+=.00040*math.exp(-((axial-.0020)/.0018)**2)
+            displacement-=radial.normalized()*crease*facing
+        vertex.co=A.point(p+displacement)
+    skin.data.update()
+
+    outline=dorsal_outline(side)
+    low=Vector((min(p[0] for p in outline)-.004,min(p[1] for p in outline)-.004))
+    high=Vector((max(p[0] for p in outline)+.004,max(p[1] for p in outline)+.004))
+    outward=A.point((1 if side=="Right" else -1,0,0))
+    bm=bmesh.new();bm.from_mesh(skin.data);bm.normal_update()
+    for start,end in zip(outline,outline[1:]+outline[:1]):
+        bm.verts.index_update();bm.edges.index_update();bm.faces.index_update()
+        selected=[]
+        for face in bm.faces:
+            p=Vector(A.game(face.calc_center_median()))
+            if face.normal.dot(outward)>.08 and low.x<=p.y<=high.x and low.y<=p.z<=high.y:selected.append(face)
+        edges={edge for face in selected for edge in face.edges}
+        vertices={vertex for edge in edges for vertex in edge.verts}
+        dy,dz=end[0]-start[0],end[1]-start[1]
+        bmesh.ops.bisect_plane(bm,geom=sorted(vertices,key=lambda v:v.index)+sorted(edges,key=lambda e:e.index)+selected,dist=.000001,
+            plane_co=A.point((0,*start)),plane_no=A.point((0,-dz,dy)).normalized())
+        bm.normal_update()
+    bmesh.ops.dissolve_degenerate(bm,dist=.000001,edges=list(bm.edges))
+    # A cut can leave three collinear corners in a quad. Choose the diagonal
+    # explicitly instead of letting a later fixed quad split create a sliver.
+    bmesh.ops.triangulate(bm,faces=list(bm.faces),quad_method='BEAUTY',ngon_method='EAR_CLIP')
+    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(skin.data);bm.free()
+    skin.data.update()
+    sleeve_slot=len(skin.data.materials);skin.data.materials.append(A.MATERIALS["SleeveFabric"])
+    def in_panel(y,z):
+        inside=False
+        for (ay,az),(by,bz) in zip(outline,outline[1:]+outline[:1]):
+            if (az>z)!=(bz>z) and y<(by-ay)*(z-az)/(bz-az)+ay:inside=not inside
+        return inside
+    candidates={face.index for face in skin.data.polygons if face.normal.dot(outward)>.08
+                and in_panel(Vector(A.game(face.center)).y,Vector(A.game(face.center)).z)}
+    # A sewn back is one piece of cloth. Grow it from the actual exposed palm,
+    # so occluded finger surfaces with the same Y/Z projection stay leather.
+    seed_y=sum(p[0] for p in outline)/len(outline);seed_z=sum(p[1] for p in outline)/len(outline)
+    origin=A.point((.18 if side=="Right" else -.18,seed_y,seed_z))
+    hit,_,_,seed=skin.ray_cast(origin,-outward,distance=.4)
+    if not hit or seed not in candidates:raise RuntimeError(side+" dorsal panel seed missed its cloth surface")
+    edge_faces={}
+    for face in skin.data.polygons:
+        indices=list(face.vertices)
+        for a,b in zip(indices,indices[1:]+indices[:1]):edge_faces.setdefault(tuple(sorted((a,b))),[]).append(face.index)
+    adjacency={index:set() for index in candidates}
+    for faces in edge_faces.values():
+        selected=set(faces)&candidates
+        for index in selected:adjacency[index].update(selected-{index})
+    panel=set();pending=[seed]
+    while pending:
+        index=pending.pop()
+        if index in panel:continue
+        panel.add(index);pending.extend(adjacency[index]-panel)
+    for face in skin.data.polygons:
+        p=Vector(A.game(face.center))
+        if (p-wrist).dot(direction)<-.038 or face.index in panel:
+            face.material_index=sleeve_slot
+        face.use_smooth=True
+    skin.data.update()
 
 
 def fitted_dorsal_stitches(side,skin):
-    """Project original seam dashes onto the real glove, not a floating guide."""
-    right=side=="Right"
-    yz=[(-.156,-.180),(-.143,-.164),(-.126,-.145),(-.108,-.126),(-.100,-.131),
-        (-.115,-.153),(-.134,-.176)] if right else [(-.054,.281),(-.059,.301),(-.059,.326),
-        (-.057,.351),(-.048,.365),(-.030,.349),(-.021,.324),(-.028,.299),(-.042,.281)]
+    """Project original seam dashes onto the same cut panel outline."""
+    right=side=="Right";yz=dorsal_outline(side)
     inverse=skin.matrix_world.inverted()
     direction=(inverse.to_3x3()@A.point((-1 if right else 1,0,0))).normalized()
     def project(y,z):
@@ -153,7 +257,7 @@ def fitted_dorsal_stitches(side,skin):
         if not hit:raise RuntimeError(side+" authored dorsal seam missed the original glove")
         return Vector(A.game(skin.matrix_world@(point+normal*.0004)))
     parts=[]
-    for start,end in zip(yz,yz[1:]):
+    for start,end in zip(yz,yz[1:]+yz[:1]):
         start,end=Vector(start),Vector(end)
         count=max(1,math.ceil((end-start).length/.0045))
         for i in range(count):
@@ -196,24 +300,26 @@ def build_hand(side):
                      steps=8,sides=24,folds=True))
     # The palm's thumb pad and little-finger heel are distinct volumes, rather
     # than one overinflated ellipsoid hiding all metacarpal structure.
-    thenar=(.043,-.118,-.164) if right else (-.038,-.014,.305)
+    thenar=(.043,-.118,-.164) if right else (-.038,-.015,.305)
     heel=(.044,-.157,-.170) if right else (-.045,-.043,.291)
-    thumb_pad_size=(.024,.044,.028) if right else (.027,.034,.038)
+    thumb_pad_size=(.024,.044,.028) if right else (.027,.032,.038)
     soft.append(A.rounded_volume(side+" opposed thumb pad",thenar,thumb_pad_size,"GloveFabric","SkinBuild"))
     soft.append(A.rounded_volume(side+" little finger palm heel",heel,(.025,.027,.041),"GloveFabric","SkinBuild"))
     for digit,path in paths.items():
         soft.append(glove_digit(side,digit,path))
         for i in range(3):bones[side+digit+str(i)]=(Vector(path[i]),Vector(path[i+1]),side+"Palm" if i==0 else side+digit+str(i-1))
+    soft.extend(glove_webbing(side,paths))
     skin=join(soft,side+" continuous glove and sleeve")
-    remesh=skin.modifiers.new("Continuous original glove volume","REMESH");remesh.mode="VOXEL";remesh.voxel_size=.0015
+    remesh=skin.modifiers.new("Continuous original glove volume","REMESH");remesh.mode="VOXEL";remesh.voxel_size=.0012
     remesh.use_smooth_shade=True;remesh.use_remove_disconnected=False
     bpy.ops.object.modifier_apply(modifier=remesh.name)
     smooth=skin.modifiers.new("Pressure fabric relaxation","SMOOTH");smooth.factor=.45;smooth.iterations=2
     bpy.ops.object.modifier_apply(modifier=smooth.name)
     triangles=sum(len(p.vertices)-2 for p in skin.data.polygons)
-    if triangles>24000:
-        decimate=skin.modifiers.new("Bounded view topology","DECIMATE");decimate.ratio=24000/triangles
+    if triangles>27000:
+        decimate=skin.modifiers.new("Bounded view topology","DECIMATE");decimate.ratio=27000/triangles
         bpy.ops.object.modifier_apply(modifier=decimate.name)
+    construct_glove_surface(side,skin,paths,wrist,direction)
     # Validate a single connected closed organic surface before adding rigid trim.
     bm=bmesh.new();bm.from_mesh(skin.data);bm.verts.ensure_lookup_table()
     if any(not e.is_manifold for e in bm.edges):raise RuntimeError(side+" glove surface is open or nonmanifold")
@@ -224,12 +330,6 @@ def build_hand(side):
         seen.add(vertex);pending.extend(e.other_vert(vertex) for e in vertex.link_edges)
     if len(seen)!=len(bm.verts):raise RuntimeError(side+" glove has disconnected anatomy")
     bm.free()
-    for polygon in skin.data.polygons:polygon.use_smooth=True
-    sleeve_slot=len(skin.data.materials);skin.data.materials.append(A.MATERIALS["SleeveFabric"])
-    for polygon in skin.data.polygons:
-        p=Vector(A.game(skin.matrix_world@polygon.center))
-        if (p-wrist).dot(direction)<-.038:polygon.material_index=sleeve_slot
-
     rig_data=bpy.data.armatures.new(side+" original glove skeleton")
     rig=bpy.data.objects.new(side+"HandRig",rig_data);bpy.context.collection.objects.link(rig);rig.parent=A.GROUPS["Root"]
     bpy.ops.object.select_all(action="DESELECT");rig.select_set(True);bpy.context.view_layer.objects.active=rig

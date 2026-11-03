@@ -1,6 +1,29 @@
 # Forgeborne continuation checkpoint
 
-## Current checkpoint — 0.131 support-arm fit and glove trim
+## Current checkpoint — 0.132 glove construction
+
+Original narrower palms, rounded-square fingers, interdigital saddles and authored
+flexion folds now support a woven dorsal panel/leather glove construction. Cuts
+and stitching share an outline; a ray-seeded connected region prevents fabric
+islands on fingertips. The first rendered candidate failed that gate and is kept
+separately. Both rest rigs, grip references, weapon surfaces and twenty maps are
+preserved; glove geometry/bindings/roles change intentionally. Source/import:
+93,342 triangles. Source fit/panel, isolated regeneration, actual skin/pose/shot/
+render and native affected-control checks pass. Runtime/Core/Main remain unchanged.
+
+Windows package 20261103T041055Z has zero build/console errors/warnings, 193 files
+and no MCP/Coplay assembly entry. Native fire/R reload, magazine reach/charging/
+return, Tab orbital/FPS, Escape and existing-slot load observed. Both saves exact
+at 2026-11-03 04:21:51Z; exact new process present, last observed paused after
+loading, Editor stopped. Earlier sessions were not closed. These are dated checks;
+preserve later user changes. See glove-construction-checkpoint.md and
+evidence/2026-11-02/glove-construction-0132.
+
+Full six-influence AAA+ goal remains active and unaccepted. Further hand/actor/
+environment craft, continuous motion, full native loop/cold recovery, budgets,
+heard mix and director experience/fun remain open. Frozen law/evolution unchanged.
+
+## Historical checkpoint — 0.131 support-arm fit and glove trim
 
 Actual rest projection exposed the source elbow almost on the screen centre line.
 Original source now moves it left/forward while retaining forearm length and

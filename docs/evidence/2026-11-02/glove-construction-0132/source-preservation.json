@@ -1,0 +1,43 @@
+{
+  "baselineCommit": "58bf95283eff3ee60fbf971d55b5584fc8a35d78",
+  "weaponAssembliesExactAtRecordedQuantum": true,
+  "weaponAssemblies": [
+    {
+      "mesh": "FrameMesh",
+      "triangles": 30360,
+      "orientedSurfaceAndRoleSha256": "615e18efd2f5edc570415dbb9dd9547879de1c31abb20598c23dc221efb16843",
+      "positionQuantumMetres": 1e-07
+    },
+    {
+      "mesh": "MagazineMesh",
+      "triangles": 1824,
+      "orientedSurfaceAndRoleSha256": "9b422695809d5944a58736a54619d787e3659e8b01335f8c1ca2f4a52793da9b",
+      "positionQuantumMetres": 1e-07
+    },
+    {
+      "mesh": "ChargingHandleMesh",
+      "triangles": 376,
+      "orientedSurfaceAndRoleSha256": "cd0f5259769c938d18d2599cd544f32e1c551c4d841a1af9d5f4a80280dfc0b9",
+      "positionQuantumMetres": 1e-07
+    }
+  ],
+  "sourceLandmarksExact": true,
+  "rigObjectMatricesExact": true,
+  "rigs": [
+    {
+      "side": "Left",
+      "bones": 17,
+      "boneRestAttributesExact": true,
+      "restSha256": "d307a1b2032ac5b43c1e11f5f6ef3f91d1dc32da09d12af0df15878817451850",
+      "gloveSurfacesBindingsAndRoleAssignmentIntentionallyChanged": true
+    },
+    {
+      "side": "Right",
+      "bones": 17,
+      "boneRestAttributesExact": true,
+      "restSha256": "0c5003e473618ba51d676f8ceafbf3e57ee12c3c95133fcc779612a9a0ff7ad6",
+      "gloveSurfacesBindingsAndRoleAssignmentIntentionallyChanged": true
+    }
+  ],
+  "scope": "Both seventeen-joint rest rigs, source landmarks and quantized oriented weapon surfaces/roles are preserved. Glove surfaces/bindings/material-role assignment change intentionally. No final anatomy, native or director acceptance."
+}

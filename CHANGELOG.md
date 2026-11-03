@@ -1,5 +1,18 @@
 # Forgeborne — Changelog
 
+## 0.132.0 — 2026-11-02 — Woven glove panels and flexion detail
+
+- Added original narrower palms, rounded-square finger sections, interdigital
+  saddles and shallow authored flexion folds. Rest rigs/grip paths remain exact.
+- Cut a connected woven back panel with fitted stitching into each leather glove,
+  reusing the original maps/materials. Rejected fingertip fabric islands after
+  source/render inspection and repaired the panel construction.
+- Source/import: 93,342 triangles. Actual skin/pose/shot/render, isolated generation
+  and affected native controls pass their scoped checks. Windows build/console:
+  zero errors/warnings; existing saves unchanged at check.
+- Further anatomy/tailoring, animation and full AAA+ game/fun gates remain open.
+  See docs/glove-construction-checkpoint.md.
+
 ## 0.131.0 — 2026-11-02 — Support-arm fit and glove trim
 
 - Repositioned the original support elbow for the actual camera-local weapon

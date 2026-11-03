@@ -1,0 +1,132 @@
+{
+  "version": "0.132.0",
+  "recordedAtUtc": "2026-11-03T04:21:52.0155030Z",
+  "package": "ForgeborneUnity/Builds/Windows-QA/20261103T041055Z",
+  "interface": "Actual native Windows player via sky inputs, no injected gameplay calls",
+  "observations": {
+    "enteredFirstPerson": true,
+    "wovenDorsalPanelAndLeatherFingersInspected": true,
+    "shots": [
+      {
+        "before": "42/120",
+        "after": "41/120"
+      }
+    ],
+    "legacyRReloads": [
+      "42/119"
+    ],
+    "magazineReachAndChargingHandVisible": true,
+    "returnedToForegrip": true,
+    "tabOrbitalHidesView": true,
+    "tabReturnsSelectedFraming": true,
+    "escapePauses": true,
+    "existingSlotLoadedAndLastObservedPaused": true,
+    "loadedHud": {
+      "ammo": "20/119",
+      "stone": 3,
+      "wood": 6,
+      "squadVisible": true,
+      "coreDistanceMetres": 10
+    }
+  },
+  "frames": [
+    {
+      "path": "native-charging.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "b7c00c857f9b1be8b345233aef257611a3b9b5070ab6dad853b91a9c69b05430"
+    },
+    {
+      "path": "native-entry.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "7fa1d3812a683ce9adbb38eb6e3a6f42855f0366675b9e099947ae843a977cde"
+    },
+    {
+      "path": "native-fired.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "4ed278a689275deb89c867e080a58b1cf50f938fb93147f7122c2c123b3afdcb"
+    },
+    {
+      "path": "native-fps.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "c7458dcd558ddbdd01c7900ea170b1e2281d473c24b63398867caac0c5da47f7"
+    },
+    {
+      "path": "native-loaded.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "7f12f977cc298524ce4cf69442bb531104ed11de6da1e30f2abc33c57fa26d0c"
+    },
+    {
+      "path": "native-orbital.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "913ea2a95d416ff1ed234354609e00168f8cb1b90375a5d3bdba9ac3fd0f0df7"
+    },
+    {
+      "path": "native-paused.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "f33f47d3875bdbb5248157bc50000d6e844619ad344bdab8bee39283209edaab"
+    },
+    {
+      "path": "native-reload.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "4b0e8c3fa3b10e9d054607fe197cb0246f3b96e7f0efc4a447213f3801bfb39d"
+    },
+    {
+      "path": "native-rest.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "ebf53ad4e04f403637c7b4f23fadeeb26be7b8013493479efdec0b3747d75fcd"
+    },
+    {
+      "path": "native-restored.jpg",
+      "width": 1920,
+      "height": 1080,
+      "sha256": "61777d9b768adca9a2f096e60c46ed1dbcec7c5638ccffb26298710aaa3164be"
+    }
+  ],
+  "savePreservation": {
+    "checkedAtUtc": "2026-11-03T04:21:51.7495813Z",
+    "namesMatch": true,
+    "files": [
+      {
+        "name": "slot-1.json",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      },
+      {
+        "name": "slot-1.json.backup",
+        "sha256": "45907026441df7a17f6c0c5c6be99414a7464f04dcbe869e1f2a4827c5ec6bc8"
+      }
+    ],
+    "allHashesMatch": true,
+    "restoredOrWrittenByQa": false
+  },
+  "boundedNativeLog": {
+    "snapshotAtUtc": "2026-11-03T04:21:51.9842566Z",
+    "bytes": 1764,
+    "sha256": "5756794fbf1325da5d1d81d8b465b2239450f714f8562bd5ce707d76f8726512",
+    "separateQaLog": true,
+    "projectExceptionPattern": "(?im)(?:NullReferenceException|MissingReferenceException|InvalidOperationException|Argument(?:Null|OutOfRange)?Exception|IndexOutOfRangeException|Unhandled Exception|Exception:)",
+    "observedProjectExceptionPatternCount": 0,
+    "d3d12InfoQueueDiagnosticPattern": "(?im)^.*d3d12.*info\\s*queue.*$",
+    "d3d12InfoQueueDiagnosticCount": 1,
+    "classification": "Bounded read-only live log; inherited D3D12 diagnostic retained, see surface-material-checkpoint.md. Not shutdown or sustained stability evidence."
+  },
+  "processAtReceipt": [
+    {
+      "pid": 58452,
+      "exactPackage": true,
+      "separateLogArgumentVerified": true,
+      "creationTimeMatchesLaunch": true,
+      "creationTimeDifferenceSeconds": 2E-07
+    }
+  ],
+  "earlierNativeSessionsNotClosed": true,
+  "limits": "Dated affected controls/poses/slot evidence. No full native loop, current-v2 cold recovery, representative budgets, heard mix, stability, director visual or fun acceptance. Later user changes take precedence."
+}

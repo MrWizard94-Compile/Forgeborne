@@ -20,7 +20,18 @@ pushed to main directly. Release, licence, visibility and unrelated repository
 changes still require his direction. This is publication authority, not visual
 or fun acceptance.
 
-Current 0.131 corrects support-arm camera fit and removes detached-looking knuckle
+Current 0.132 adds original glove construction: narrower palms, shaped fingers,
+webbing/flexion detail and one sewn woven dorsal panel per leather glove. An
+initial rendered fabric-island candidate was rejected and repaired. Rest rigs,
+weapon surfaces and maps are preserved; glove geometry/bindings/roles change.
+Source/import/regeneration/pose/shot/render checks and affected native controls
+pass their scoped checks. Windows package 20261103T041055Z and console have zero
+errors/warnings; saves exact at 2026-11-03 04:21:51Z. Exact new process present,
+last observed paused after loading, Editor stopped. Earlier sessions not closed.
+Further anatomy/tailoring/motion and full-game gates remain open. See
+[current glove-construction evidence](glove-construction-checkpoint.md).
+
+The preceding 0.131 corrects support-arm camera fit and removes detached-looking knuckle
 trim. Actual elbow projection moves left while source wrist/grip and forearm
 length are preserved. Rest-matrix float variance is recorded. Source/import,
 isolated regeneration, pose/shot/render and affected native controls pass their
@@ -28,7 +39,7 @@ scoped checks. Windows package 20261103T031237Z and console have zero errors/
 warnings; saves exact at 2026-11-03 03:23:11Z. Exact new player present and last
 observed paused after loading; earlier sessions not closed, Editor stopped.
 Further anatomy/tailoring/motion and full-game gates remain open. See
-[current arm-fit evidence](arm-fit-checkpoint.md).
+[preceding arm-fit evidence](arm-fit-checkpoint.md).
 
 The preceding 0.130 replaces swollen palms and uniform fingers with original tapered
 glove forms, shaped phalanges, blended thumb pads and fitted skin-weighted stitches.

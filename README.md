@@ -47,11 +47,16 @@ gloves and fitted, skin-weighted stitches. A native thumb candidate was rejected
 and corrected. Actual import, poses, rendering and affected Windows controls pass
 their scoped checks; finer tailoring and continuous motion remain open. See
 [the glove-form checkpoint](docs/glove-form-checkpoint.md).
-Current 0.131 corrects the support elbow's camera-local placement and removes
+The preceding 0.131 corrects the support elbow's camera-local placement and removes
 detached-looking round knuckle trim. Forearm length and source grip landmarks
 are preserved; actual rendered/native poses and affected controls were checked.
 Further anatomy, tailoring and motion remain open. See
 [the arm-fit checkpoint](docs/arm-fit-checkpoint.md).
+Current 0.132 adds woven glove-back panels, fitted seam boundaries, shaped fingers
+and shallow flexion folds while preserving the rest rigs. A rendered candidate
+with stray fabric patches was rejected and repaired. Source/import, actual poses/
+rendering and affected native controls are recorded in
+[the glove-construction checkpoint](docs/glove-construction-checkpoint.md).
 
 `ForgeborneUnity/Assets/Scenes/Main.unity` now opens in Unity 6000.3.27f2.
 It wires the FPS, chunk, HUD and squad adapters to GameManager's single

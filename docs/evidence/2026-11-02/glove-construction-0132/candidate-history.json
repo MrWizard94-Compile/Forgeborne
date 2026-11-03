@@ -1,0 +1,28 @@
+{
+  "sourceFailuresBeforeExport": [
+    {
+      "stage": "Connected body",
+      "observation": "Three-vertex disconnected sliver near the left thumb pad was present before folds/panel cuts",
+      "retainedCheck": "One closed connected body",
+      "repair": "Narrower palm volume and closer thumb-pad overlap; no disconnected geometry accepted"
+    },
+    {
+      "stage": "Fitted stitch projection",
+      "observation": "Old left return outline missed the narrowed body",
+      "repair": "Move the shared panel/stitch return outline onto the actual narrowed glove"
+    },
+    {
+      "stage": "Pre-export degeneracy",
+      "observation": "One left GloveFabric quad produced a 6.787752127296211e-13 square-metre triangle from three collinear corners",
+      "repair": "Explicit beauty triangulation after panel cuts; original area threshold retained"
+    }
+  ],
+  "rejectedRenderedCandidate": {
+    "path": "first-look/",
+    "reason": "Unwanted separate fabric islands on fingertips",
+    "leftDorsalFabricComponents": 6,
+    "rightDorsalFabricComponents": 1,
+    "repair": "Grow one connected cloth region from a ray-selected exposed dorsal-palm seed; retain offcuts as leather"
+  },
+  "limits": "Candidate history from actual tool output and inspected frames. Failed source attempts stopped before asset export. Final source/import/render/native acceptance are separate reports."
+}
